@@ -1,19 +1,20 @@
 // Tests for Game.cpp
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <cstdlib>
 #include <KSolve.hpp>
 
 using namespace std;
 
-std::vector<Card> Cards(std::vector<std::string> strings)
+CardVec Cards(std::vector<std::string> strings)
 {
 	std::vector<Card> result;
+	Card acard(0);
 	for (auto is = strings.begin(); is < strings.end(); ++is)
 	{
-		Card acard(SPADES,ACE);
-		assert(Card::FromString(*is, acard));
+		bool validCardString = Card::FromString(*is, acard);
+		assert(validCardString);
 		result.push_back(acard);
 	}
 	return result;
@@ -121,12 +122,6 @@ void PrintOutcome(KSolveResult outcome, const Moves& solution)
 		cout << " from " << pilestring[mv.From()];
 		cout << " to " << pilestring[mv.To()] << endl;
 	}
-}
-
-// Returns a randomly selected integer k such that 0 <= k < bound.
-unsigned RandomPick(unsigned bound)
-{
-	return rand() % bound;
 }
 
 bool operator==(const Pile&a, const Pile&b)
@@ -257,14 +252,14 @@ int main()
 			"ct","dt","st","ht","cj","ck","cq","dj","sj","hj","dq","sq","hq",
 			"dk","sk","hk"};
 	}
-	{
-		// deal3 can be solved in 86 moves in draw 3 mode. Takes a while.
-		vector<string> deal3{
-			"s5","h3","c3","c7","c8","d9","ck","h2","d4","dj","h8","d7",
-		"c5","d3","d6","dt","s8","d5","dk","s6","h7","s4","sk","c9","ct",
-		"s7","h6","cj","hj","c4","s3","hk","h9","da","ca","d8","c2","st",
-		"dq","h5","s2","sa","hq","sq","ht","s9","sj","d2","c6","ha","cq","h4"};
+	// deal3 can be solved in 86 moves in draw 3 mode. Takes a while.
+	vector<string> deal3{
+		"s5","h3","c3","c7","c8","d9","ck","h2","d4","dj","h8","d7",
+	"c5","d3","d6","dt","s8","d5","dk","s6","h7","s4","sk","c9","ct",
+	"s7","h6","cj","hj","c4","s3","hk","h9","da","ca","d8","c2","st",
+	"dq","h5","s2","sa","hq","sq","ht","s9","sj","d2","c6","ha","cq","h4"};
 
+	{
 		// Test GameStateType creation.
 		Game game(Cards(deal3),3);
 		unsigned nMoves = 100;
@@ -278,7 +273,7 @@ int main()
 			game.Deal();
 			for (unsigned imv = 0; imv <nMoves; ++imv){
 				Moves avail = game.AvailableMoves();
-				Move move = avail[RandomPick(avail.size())];
+				Move move = avail[rand()%avail.size()];
 				game.MakeMove(move);
 				GameStateType state(game);
 				auto pMatch = find(states.begin(),states.end(),state);

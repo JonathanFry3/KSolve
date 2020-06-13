@@ -1,0 +1,5 @@
+original 64 bit	86	120.125
+original 64 bit	86	130.094
+original 64 bit	86	142.078
+original 64 bit	86	115.078
+original 64 bit	86	150.875

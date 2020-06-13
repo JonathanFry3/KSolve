@@ -1,0 +1,56 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build gametest",
+			"command": "g++",
+			"args": [
+				"-g",
+				"Game.cpp",
+				"KSolve.cpp",
+				"gametest.cpp",
+				"-I",
+				"${workspaceFolder}",
+				"-o",
+				"${workspaceFolder}/gametest"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build speeder",
+			"command": "g++",
+			"args": [
+				"-g",
+				"-O",
+				"Game.cpp",
+				"KSolve.cpp",
+				"speeder.cpp",
+				"-I",
+				"${workspaceFolder}",
+				"-o",
+				"${workspaceFolder}/speeder"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}

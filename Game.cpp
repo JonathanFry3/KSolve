@@ -3,7 +3,7 @@
 */
 
 #include <Game.hpp>
-#include <assert.h>
+#include <cassert>
 
 const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");

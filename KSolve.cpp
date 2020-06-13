@@ -2,7 +2,6 @@
 #include <cassert>
 #include <stack>
 #include <unordered_map>
-#include <assert.h>
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -26,6 +25,8 @@ struct State {
 	Moves _movesMade;
 	Moves & _minSolution;
 	unsigned _minSolutionCount;
+	unsigned _stateSize;			// expected value of _previousStates.size()
+	unsigned _stateWins;			// count of previously encountered states have lower minimum move counts
 
 	State(const CardVec & deck, 
 			Moves& solution, 
@@ -36,10 +37,12 @@ struct State {
 		, _previousStates(maxStates,Hasher())
 		, _minSolution(solution)
 		, _game(deck,draw)
-		//, _movesMade(maxMoves)
 		, _minSolutionCount(maxMoves)
+		, _stateSize(0)
+		, _stateWins(0)
 		{
 			_movesMade.reserve(maxMoves);
+			_minSolution.clear();
 		}
 
 	Moves MakeAutoMoves();
@@ -151,10 +154,14 @@ void State::RecordState(unsigned minMoveCount)
 {
 	GameStateType pState(_game);
 	unsigned & storedMinimumCount = _previousStates[pState];
+	_stateSize += storedMinimumCount == 0;
+	if (_stateSize != _previousStates.size())
+		assert(_stateSize == _previousStates.size());
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
 		_histories[minMoveCount].push(_movesMade);
-	}
+	} 
+	else ++_stateWins;
 }
 
 GameStateType::GameStateType(const Game& game)
