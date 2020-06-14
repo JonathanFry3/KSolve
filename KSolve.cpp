@@ -12,6 +12,7 @@ public:
   {
 	size_t result = std::hash<std::uint32_t>()(gs._psts[0]);
 	for (unsigned i = 1; i < 7; ++i) {
+		result << 1;
 		result ^= std::hash<std::uint32_t>()(gs._psts[i]);
 	}
 	return result;
@@ -197,21 +198,23 @@ GameStateType::GameStateType(const Game& game)
 		_psts[i] = p.chi;
 	}
 	for (unsigned i = 0; i < 4; ++i) {
-		p.chi = _psts[i];
+		p.chi = _psts[i+2];
 		p._other = game.Foundation()[i].Size();
-		_psts[i] = p.chi;
+		_psts[i+2] = p.chi;
 	}
-	p.chi = _psts[4];
+	p.chi = _psts[6];
 	p._other = game.Stock().Size();
-	_psts[4] = p.chi;
+	_psts[6] = p.chi;
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
 {
-	for (unsigned i = 0; i<7; ++i){
-		if (_psts[i] != other._psts[i])
-			return false;
-	}
-	return true;
+	return _psts[0] == other._psts[0]
+	    && _psts[1] == other._psts[1]
+	    && _psts[2] == other._psts[2]
+	    && _psts[3] == other._psts[3]
+	    && _psts[4] == other._psts[4]
+	    && _psts[5] == other._psts[5]
+	    && _psts[6] == other._psts[6];
 }
 

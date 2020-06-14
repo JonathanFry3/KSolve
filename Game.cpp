@@ -91,7 +91,6 @@ bool Card::FromString(const std::string& s0, Card & card)
 std::vector<Card> Pile::Pop(unsigned n)
 {
 	std::vector<Card> result;
-	result.reserve(n);
 	result.insert(result.end(), _cards.end()-n, _cards.end());
 	_cards.erase(_cards.end()-n, _cards.end());
 	return result;
@@ -100,7 +99,8 @@ std::vector<Card> Pile::Pop(unsigned n)
 std::vector<Card> Pile::Draw(unsigned n)
 {
 	std::vector<Card> result = this->Pop(n);
-	std::reverse(result.begin(),result.end());
+	if (n > 1)
+		std::reverse(result.begin(),result.end());
 	return result;
 }
 Game::Game(CardVec deck,unsigned draw)

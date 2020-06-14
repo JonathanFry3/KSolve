@@ -46,8 +46,8 @@ int main()
 	if (!out.is_open()){
 		exit(100);
 	}
-	int nRuns = 5;
-	string trialName = "original 64 bit";
+	int nRuns = 1;
+	string trialName = "profileing";
 	CardVec deck(Cards(deal3));
 	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){

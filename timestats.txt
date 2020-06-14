@@ -3,3 +3,10 @@ original 64 bit	86	130.094
 original 64 bit	86	142.078
 original 64 bit	86	115.078
 original 64 bit	86	150.875
+shifty hasher 64	86	117.812
+shifty hasher 64	86	114.719
+shifty hasher 64	86	115.891
+shifty hasher 64	86	114.906
+shifty hasher 64	86	115.172
+profiling	86	173.25
+profileing	86	165.312
