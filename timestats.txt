@@ -13,3 +13,8 @@ CardVec custom type 64	86	110.766
 CardVec custom type 64	86	107.578
 CardVec custom type 64	86	108.078
 CardVec custom type 64	86	108.984
+SkippableMove() 64	86	62.0625
+SkippableMove() 64	86	58.4844
+SkippableMove() 64	86	58.3594
+SkippableMove() 64	86	58.7031
+SkippableMove() 64	86	59.4062

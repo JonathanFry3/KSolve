@@ -46,8 +46,8 @@ int main()
 	if (!out.is_open()){
 		exit(100);
 	}
-	int nRuns = 4;
-	string trialName = "CardVec custom type 64";
+	int nRuns = 5;
+	string trialName = "SkippableMove() 64";
 	std::vector<Card> deck(Cards(deal3));
 	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){

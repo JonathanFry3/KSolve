@@ -50,7 +50,9 @@ struct State {
 	void CheckForMinSolution();
 	void RecordState(unsigned minMoveCount);
 	unsigned MinimumMoves();
+	bool SkippableMove(const Move& mv);
 };
+
 
 KSolveResult KSolve(const std::vector<Card> & deck,
 		Moves& solution,
@@ -139,7 +141,28 @@ Moves State::MakeAutoMoves()
 		_movesMade.push_back(avail[0]);
 		_game.MakeMove(avail[0]);
 	}
+	for (auto i = avail.begin(); i < avail.end(); ++i){
+		if (SkippableMove(*i))
+			avail.erase(i);
+	}
 	return avail;
+}
+
+// Return true if this move cannot be in a minimum solution.
+bool State::SkippableMove(const Move& trial)
+{
+	// Scan for a previous move that moved the same sequence of cards as this move.
+	// If neither the present move's to pile nor that move's to pile has 
+	// changed between moves, the result this move could have been achieved
+	// at the time of the last one, saving a move.
+	if (trial.To() == WASTE || trial.From() == WASTE) return false;
+	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
+		const Move & mv = *imv;
+		if (mv.To() == trial.To()) return false;		// trial move's to pile has changed
+		if (mv.To() == trial.From())
+			return  mv.N() == trial.N();
+	}
+	return false;
 }
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
