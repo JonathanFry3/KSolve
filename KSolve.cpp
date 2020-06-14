@@ -29,7 +29,7 @@ struct State {
 	unsigned _stateSize;			// expected value of _previousStates.size()
 	unsigned _stateWins;			// count of previously encountered states have lower minimum move counts
 
-	State(const CardVec & deck, 
+	State(const std::vector<Card> & deck, 
 			Moves& solution, 
 			unsigned draw, 
 			unsigned maxMoves, 
@@ -52,7 +52,7 @@ struct State {
 	unsigned MinimumMoves();
 };
 
-KSolveResult KSolve(const CardVec & deck,
+KSolveResult KSolve(const std::vector<Card> & deck,
 		Moves& solution,
 		unsigned draw,
 		unsigned maxMoves,

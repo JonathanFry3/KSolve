@@ -87,23 +87,22 @@ bool Card::FromString(const std::string& s0, Card & card)
 	return result;
 }
 
-
-std::vector<Card> Pile::Pop(unsigned n)
+CardVec Pile::Pop(unsigned n)
 {
-	std::vector<Card> result;
-	result.insert(result.end(), _cards.end()-n, _cards.end());
-	_cards.erase(_cards.end()-n, _cards.end());
+	CardVec result;
+	result.append(_cards.end()-n, _cards.end());
+	_cards.pop_back(n);
 	return result;
 }
 
-std::vector<Card> Pile::Draw(unsigned n)
+CardVec Pile::Draw(unsigned n)
 {
-	std::vector<Card> result = this->Pop(n);
+	CardVec result = this->Pop(n);
 	if (n > 1)
 		std::reverse(result.begin(),result.end());
 	return result;
 }
-Game::Game(CardVec deck,unsigned draw)
+Game::Game(const std::vector<Card> &deck,unsigned draw)
 	: _deck(deck)
 	, _waste(WASTE)
 	, _stock(STOCK)
@@ -134,7 +133,7 @@ void Game::Deal()
 		}
 		_tableau[i].IncrUpCount(1);      // turn up the top card
 	}
-	_stock.Push(_deck.begin()+28,_deck.end());
+	_stock.Push(_deck.data()+28,_deck.data()+_deck.size());
 	_stock.SetUpCount(24);
 	_stock.ReverseCards();
 }

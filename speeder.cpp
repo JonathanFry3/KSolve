@@ -7,9 +7,9 @@
 
 using namespace std;
 
-CardVec Cards(std::vector<std::string> strings)
+vector<Card> Cards(std::vector<std::string> strings)
 {
-	std::vector<Card> result;
+	vector<Card> result;
 	Card acard(0);
 	for (auto is = strings.begin(); is < strings.end(); ++is)
 	{
@@ -46,9 +46,9 @@ int main()
 	if (!out.is_open()){
 		exit(100);
 	}
-	int nRuns = 1;
-	string trialName = "profileing";
-	CardVec deck(Cards(deal3));
+	int nRuns = 4;
+	string trialName = "CardVec custom type 64";
+	std::vector<Card> deck(Cards(deal3));
 	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();
