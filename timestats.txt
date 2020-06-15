@@ -3,8 +3,4 @@ shifty hasher 64	86	114.719
 CardVec custom type 64	86	107.578
 SkippableMove() 64	86	58.3594
 SkippableMove() 64	86	82.2031
-SkippableMove() 64	86	84.9531
 SkippableMove() 64	86	81.4844
-SkippableMove() 64	86	81.9531
-SkippableMove() 64	86	81.8281
-SkippableMove() 64	86	83.0625
