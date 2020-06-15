@@ -51,6 +51,7 @@ struct State {
 	void RecordState(unsigned minMoveCount);
 	unsigned MinimumMoves();
 	bool SkippableMove(const Move& mv);
+	Moves FilteredAvailableMoves();
 };
 
 
@@ -136,11 +137,18 @@ Moves State::MakeAutoMoves()
 {
 	Moves avail;
 	while (_movesMade.size() < _minSolutionCount && 
-			(avail = _game.AvailableMoves()).size() == 1)
+			(avail = FilteredAvailableMoves()).size() == 1)
 	{
 		_movesMade.push_back(avail[0]);
 		_game.MakeMove(avail[0]);
 	}
+	return avail;
+}
+
+// Return a vector of the available moves that pass the SkippableMove filter
+Moves State::FilteredAvailableMoves()
+{
+	Moves avail = _game.AvailableMoves();
 	for (auto i = avail.begin(); i < avail.end(); ++i){
 		if (SkippableMove(*i))
 			avail.erase(i);
@@ -148,19 +156,42 @@ Moves State::MakeAutoMoves()
 	return avail;
 }
 
+
 // Return true if this move cannot be in a minimum solution.
 bool State::SkippableMove(const Move& trial)
 {
-	// Scan for a previous move that moved the same sequence of cards as this move.
-	// If neither the present move's to pile nor that move's to pile has 
-	// changed between moves, the result this move could have been achieved
-	// at the time of the last one, saving a move.
-	if (trial.To() == WASTE || trial.From() == WASTE) return false;
+	/* 
+	Consider a move at time T0 from A to B and the next move
+	from B, which goes to C at time Tn.  The move at Tn is
+	skippable if the same result could have been achieved 
+	at T0 by moving the same cards directly from A to C.
+
+	We are now at Tn looking back for a T0 move.  B is our from pile
+	and C is our to pile.  A candidate T0 move is one that moves
+	to our from pile (pile B).
+
+	Do those two moves move the same set of cards?.  Yes if
+	no intervening move has changed pile B and the two moves
+	move the same number of cards.
+
+	Was the move from A to C possible at T0? Yes if no intervening
+	move has changed pile C.
+	*/
+	auto B = trial.From();
+	auto C = trial.To();
+	if (C == WASTE || B == WASTE) return false;
 	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
 		const Move & mv = *imv;
-		if (mv.To() == trial.To()) return false;		// trial move's to pile has changed
-		if (mv.To() == trial.From())
+		if (mv.To() == B){
+			// candidate T0 move
 			return  mv.N() == trial.N();
+		} else {
+			// intervening move
+			if (mv.To() == C || mv.From() == C)
+				return false;			// trial move's to pile (C) has changed
+			if (mv.From() == B) 
+				return false;			// trial move's from pile (B) has changed
+		}
 	}
 	return false;
 }

@@ -1,20 +1,10 @@
-original 64 bit	86	120.125
-original 64 bit	86	130.094
-original 64 bit	86	142.078
 original 64 bit	86	115.078
-original 64 bit	86	150.875
-shifty hasher 64	86	117.812
 shifty hasher 64	86	114.719
-shifty hasher 64	86	115.891
-shifty hasher 64	86	114.906
-shifty hasher 64	86	115.172
-CardVec custom type 64	86	109.469
-CardVec custom type 64	86	110.766
 CardVec custom type 64	86	107.578
-CardVec custom type 64	86	108.078
-CardVec custom type 64	86	108.984
-SkippableMove() 64	86	62.0625
-SkippableMove() 64	86	58.4844
 SkippableMove() 64	86	58.3594
-SkippableMove() 64	86	58.7031
-SkippableMove() 64	86	59.4062
+SkippableMove() 64	86	82.2031
+SkippableMove() 64	86	84.9531
+SkippableMove() 64	86	81.4844
+SkippableMove() 64	86	81.9531
+SkippableMove() 64	86	81.8281
+SkippableMove() 64	86	83.0625
