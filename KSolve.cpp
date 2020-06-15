@@ -12,6 +12,7 @@ public:
   {
 	size_t result = std::hash<std::uint32_t>()(gs._psts[0]);
 	for (unsigned i = 1; i < 7; ++i) {
+		result << 1;
 		result ^= std::hash<std::uint32_t>()(gs._psts[i]);
 	}
 	return result;
@@ -28,7 +29,7 @@ struct State {
 	unsigned _stateSize;			// expected value of _previousStates.size()
 	unsigned _stateWins;			// count of previously encountered states have lower minimum move counts
 
-	State(const CardVec & deck, 
+	State(const std::vector<Card> & deck, 
 			Moves& solution, 
 			unsigned draw, 
 			unsigned maxMoves, 
@@ -49,9 +50,12 @@ struct State {
 	void CheckForMinSolution();
 	void RecordState(unsigned minMoveCount);
 	unsigned MinimumMoves();
+	bool SkippableMove(const Move& mv);
+	Moves FilteredAvailableMoves();
 };
 
-KSolveResult KSolve(const CardVec & deck,
+
+KSolveResult KSolve(const std::vector<Card> & deck,
 		Moves& solution,
 		unsigned draw,
 		unsigned maxMoves,
@@ -133,12 +137,63 @@ Moves State::MakeAutoMoves()
 {
 	Moves avail;
 	while (_movesMade.size() < _minSolutionCount && 
-			(avail = _game.AvailableMoves()).size() == 1)
+			(avail = FilteredAvailableMoves()).size() == 1)
 	{
 		_movesMade.push_back(avail[0]);
 		_game.MakeMove(avail[0]);
 	}
 	return avail;
+}
+
+// Return a vector of the available moves that pass the SkippableMove filter
+Moves State::FilteredAvailableMoves()
+{
+	Moves avail = _game.AvailableMoves();
+	for (auto i = avail.begin(); i < avail.end(); ++i){
+		if (SkippableMove(*i))
+			avail.erase(i);
+	}
+	return avail;
+}
+
+
+// Return true if this move cannot be in a minimum solution.
+bool State::SkippableMove(const Move& trial)
+{
+	/* 
+	Consider a move at time T0 from A to B and the next move
+	from B, which goes to C at time Tn.  The move at Tn is
+	skippable if the same result could have been achieved 
+	at T0 by moving the same cards directly from A to C.
+
+	We are now at Tn looking back for a T0 move.  B is our from pile
+	and C is our to pile.  A candidate T0 move is one that moves
+	to our from pile (pile B).
+
+	Do those two moves move the same set of cards?.  Yes if
+	no intervening move has changed pile B and the two moves
+	move the same number of cards.
+
+	Was the move from A to C possible at T0? Yes if no intervening
+	move has changed pile C.
+	*/
+	auto B = trial.From();
+	auto C = trial.To();
+	if (C == WASTE || B == WASTE) return false;
+	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
+		const Move & mv = *imv;
+		if (mv.To() == B){
+			// candidate T0 move
+			return  mv.N() == trial.N();
+		} else {
+			// intervening move
+			if (mv.To() == C || mv.From() == C)
+				return false;			// trial move's to pile (C) has changed
+			if (mv.From() == B) 
+				return false;			// trial move's from pile (B) has changed
+		}
+	}
+	return false;
 }
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
@@ -197,21 +252,23 @@ GameStateType::GameStateType(const Game& game)
 		_psts[i] = p.chi;
 	}
 	for (unsigned i = 0; i < 4; ++i) {
-		p.chi = _psts[i];
+		p.chi = _psts[i+2];
 		p._other = game.Foundation()[i].Size();
-		_psts[i] = p.chi;
+		_psts[i+2] = p.chi;
 	}
-	p.chi = _psts[4];
+	p.chi = _psts[6];
 	p._other = game.Stock().Size();
-	_psts[4] = p.chi;
+	_psts[6] = p.chi;
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
 {
-	for (unsigned i = 0; i<7; ++i){
-		if (_psts[i] != other._psts[i])
-			return false;
-	}
-	return true;
+	return _psts[0] == other._psts[0]
+	    && _psts[1] == other._psts[1]
+	    && _psts[2] == other._psts[2]
+	    && _psts[3] == other._psts[3]
+	    && _psts[4] == other._psts[4]
+	    && _psts[5] == other._psts[5]
+	    && _psts[6] == other._psts[6];
 }
 

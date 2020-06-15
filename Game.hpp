@@ -16,6 +16,7 @@
 #include <vector>
 #include <algorithm>
 #include <array>
+#include <utility>		// for swap()
 
 enum Rank_t : unsigned char
  {
@@ -52,6 +53,7 @@ private:
 
 public:
 	static bool FromString(const std::string& s0, Card & card);
+	Card(){}
 
 	Card(Suit_t suit,unsigned char rank) : 
 		_suit(suit),
@@ -118,8 +120,52 @@ public:
 
 };
 typedef std::vector<Move> Moves;
-typedef std::vector<Card> CardVec;
 
+// CardVec is a very specialized vector.  Its capacity is always 24
+// and it does not check for overfilling.
+class CardVec {
+	Card* _begin;
+	Card* _end;
+	Card _cds[24];
+
+public:
+	CardVec() : _begin(_cds),_end(_cds), _cds(){}
+	CardVec(const CardVec& orig)
+				:_begin(_cds)
+				,_end(_begin+orig.size())
+				{std::copy(orig._begin,orig._end,_cds);}
+	Card & operator[](unsigned i)					{return _cds[i];}
+	const Card& operator[](unsigned i) const		{return _cds[i];}
+	Card* begin()									{return _begin;}
+	const Card* begin() const						{return _begin;}
+	size_t size() const								{return _end-_begin;}
+	Card* end()										{return _end;}
+	const Card* end() const							{return _end;}
+	Card & back()									{return *(_end-1);}
+	const Card& back() const						{return *(_end-1);}
+	void pop_back()									{_end -= 1;}
+	void pop_back(unsigned n)						{_end -= n;}
+	void push_back(const Card& cd)					{*_end = cd; _end += 1;}
+	void append(const Card* begin, const Card* end)	
+					{for (const Card* i=begin;i<end;++i){*(_end++)=*i;}}
+	void clear()									{_end = _begin;}
+	bool operator==(const CardVec& other) const
+					{	
+						if (size() != other.size()) return false;
+						const Card* j = other._begin;
+						for(const Card*i=_begin;i < _end;++i,++j){
+							if (*i != *j) return false;
+						}
+						return true;
+					}
+	CardVec& operator=(const CardVec& other) 
+					{
+						std::copy(other._begin,other._end,_cds);
+						_end = _cds+other.size();
+						return *this;
+					}
+	void swap(CardVec& other)					{std::swap(*this,other);}
+};		// end class CardVec
 
 enum PileCode {
 	WASTE = 0,
@@ -155,7 +201,6 @@ public:
 	, _isTableau(TABLEAU <= code && code < TABLEAU+7)
 	, _isFoundation(FOUNDATION <= code && code < FOUNDATION+4)
 	{
-		_cards.reserve(24);
 	}
 
 	unsigned Code() const 							{return _code;}
@@ -172,8 +217,8 @@ public:
 	void Push(const Card & c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
 	CardVec Draw(unsigned n);         // like Pop(), but reverses order of cards drawn
-	void Push( CardVec::const_iterator begin,  CardVec::const_iterator end)
-											{_cards.insert(_cards.end(),begin,end);}
+	void Push( const Card* begin,  const Card* end)
+											{_cards.append(begin,end);}
 	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
 	Card Top() const                        {return *(_cards.end()-_upCount);}
 	Card Back() const                       {return _cards.back();}
@@ -188,12 +233,12 @@ class Game
 	Pile _stock;
 	std::array<Pile,7> _tableau;
 	std::array<Pile,4> _foundation;
-	CardVec _deck;
+	std::vector<Card> _deck;
 	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
 	std::array<Pile *,13> _allPiles;
 
 public:
-	Game(CardVec deck,unsigned draw=1);
+	Game(const std::vector<Card>& deck,unsigned draw=1);
 
 	Pile& Waste()       							{return _waste;}
 	Pile& Stock()       							{return _stock;}

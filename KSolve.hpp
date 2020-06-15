@@ -7,7 +7,7 @@
 
 
 enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-KSolveResult KSolve(const CardVec & deck,
+KSolveResult KSolve(const std::vector<Card> & deck,
 		Moves& solution,
 		unsigned draw=1,
 		unsigned maxMoves=512,

@@ -7,9 +7,9 @@
 
 using namespace std;
 
-CardVec Cards(std::vector<std::string> strings)
+vector<Card> Cards(std::vector<std::string> strings)
 {
-	std::vector<Card> result;
+	vector<Card> result;
 	Card acard(0);
 	for (auto is = strings.begin(); is < strings.end(); ++is)
 	{
@@ -60,6 +60,14 @@ static void PrintGame(const Game& game)
 	}
 }
 
+static void CheckCards(const Pile & pile, array<bool,52>& present)
+{
+	for (auto card: pile.Cards()){
+		assert(!present[card.Value()]);
+		present[card.Value()] = true;
+	}
+}
+
 static void Validate(const Game & game)
 {
 	// See if we have 52 cards
@@ -68,6 +76,13 @@ static void Validate(const Game & game)
 		nCards += (*ip)->Size();
 	}
 	assert(nCards == 52);
+
+	// see if each card is present just once
+	array<bool,52> present{false*52};
+	CheckCards(game.Stock(),present);
+	CheckCards(game.Waste(),present);
+	for (auto& pile: game.Tableau()) CheckCards(pile,present);
+	for (auto& pile: game.Foundation()) CheckCards(pile,present);
 
 	// See if the face-up cards in the tableau are in proper stacks
 	const auto& tableau = game.Tableau();
@@ -161,7 +176,7 @@ int main()
 		"h3", "dk", "s3", "dj", "sk", "c7", "h8", "h4", "c6", "hj", "c4", "sj","da", 
 		"st", "c2", "d8", "dq", "s7", "d6", "ct", "s2", "cj", "d7", "ht", "hk","d2", 
 		"h2", "h9", "s9", "h5", "h7", "c3", "d4", "h6", "sa", "s4", "hq", "d9","d5"});
-	CardVec deck = Cards(sdeck);
+	vector<Card> deck = Cards(sdeck);
 	assert(deck.size() == 52);
 
 	// Test Game::Deal()
@@ -275,6 +290,7 @@ int main()
 				Moves avail = game.AvailableMoves();
 				Move move = avail[rand()%avail.size()];
 				game.MakeMove(move);
+				Validate(game);
 				GameStateType state(game);
 				auto pMatch = find(states.begin(),states.end(),state);
 				if (pMatch!=states.end()){
