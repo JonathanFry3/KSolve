@@ -1,7 +1,7 @@
 #include <KSolve.hpp>
 #include <cassert>
 #include <stack>
-#include <unordered_map>
+#include <robin_hood.h>     // for unordered_map
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -10,10 +10,9 @@ class Hasher
 public:
   size_t operator() (const GameStateType & gs) const
   {
-	size_t result = std::hash<std::uint32_t>()(gs._psts[0]);
+	size_t result = robin_hood::hash<std::uint32_t>()(gs._psts[0]);
 	for (unsigned i = 1; i < 7; ++i) {
-		result << 1;
-		result ^= std::hash<std::uint32_t>()(gs._psts[i]);
+		result ^= robin_hood::hash<std::uint32_t>()(gs._psts[i]);
 	}
 	return result;
   }
@@ -21,7 +20,7 @@ public:
 
 struct State {
 	std::vector<HistoryStack> _histories;
-	std::unordered_map<GameStateType,unsigned,Hasher> _previousStates;
+	robin_hood::unordered_flat_map<GameStateType,unsigned,Hasher> _previousStates;
 	Game _game;
 	Moves _movesMade;
 	Moves & _minSolution;
