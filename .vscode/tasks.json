@@ -32,7 +32,7 @@
 			"command": "g++",
 			"args": [
 				"-g",
-				"-O",
+				"-O3",
 				"Game.cpp",
 				"KSolve.cpp",
 				"speeder.cpp",
