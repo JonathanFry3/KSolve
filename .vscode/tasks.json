@@ -33,6 +33,7 @@
 			"args": [
 				"-g",
 				"-O3",
+				"-DNDEBUG",
 				"Game.cpp",
 				"KSolve.cpp",
 				"speeder.cpp",

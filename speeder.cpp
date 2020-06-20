@@ -40,14 +40,19 @@ int main()
 		"d5","d2","c4","s2","c8","d8","s8","h8","c9","d9","s9","h9",
 		"ct","dt","st","ht","cj","ck","cq","dj","sj","hj","dq","sq","hq",
 		"dk","sk","hk"};
-
+	vector<string> deal102 {
+		"ct","s7","ck","d6","h3","dt","sk","h9","d2","s8","dq","c9","st",
+		"da","s9","ht","d5","hj","hq","s6","cj","h5","d7","c5","sq","c8",
+		"cq","s2","c6","s3","c4","h4","h7","c2","sa","c3","hk","d3","h2",
+		"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
+	};
 	ofstream out;
 	out.open("timestats.txt",_S_app);
 	if (!out.is_open()){
 		exit(100);
 	}
 	int nRuns = 5;
-	string trialName = "-O3 64";
+	string trialName = "-O3 tableau move optimization 64";
 	std::vector<Card> deck(Cards(deal3));
 	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){

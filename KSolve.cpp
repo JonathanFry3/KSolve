@@ -25,21 +25,21 @@ struct State {
 	Moves _movesMade;
 	Moves & _minSolution;
 	unsigned _minSolutionCount;
-	unsigned _stateSize;			// expected value of _previousStates.size()
-	unsigned _stateWins;			// count of previously encountered states have lower minimum move counts
+	unsigned _stateWins;
+	unsigned _skippableWins;
 
 	State(const std::vector<Card> & deck, 
 			Moves& solution, 
 			unsigned draw, 
 			unsigned maxMoves, 
 			unsigned maxStates)
-		: _histories(maxMoves,HistoryStack())
+		: _histories(maxMoves*5/3,HistoryStack())
 		, _previousStates(maxStates,Hasher())
 		, _minSolution(solution)
 		, _game(deck,draw)
 		, _minSolutionCount(maxMoves)
-		, _stateSize(0)
 		, _stateWins(0)
+		, _skippableWins(0)
 		{
 			_movesMade.reserve(maxMoves);
 			_minSolution.clear();
@@ -74,7 +74,8 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 	state._histories[startMoves].push(state._movesMade);
 
 	unsigned ih;
-	for  (ih= startMoves; ih < state._minSolutionCount; ++ih) {
+	for  (ih= startMoves; ih < state._minSolutionCount
+			 && state._previousStates.size() <maxStates; ++ih) {
 		auto &h = state._histories[ih];
 		// scan histories from shortest to longest
 		while (h.size() && state._previousStates.size() <maxStates) {
@@ -91,7 +92,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 				// We have a solution.  See if it is a new champion.
 				state.CheckForMinSolution();
 				// See if it the final winner.
-				if (ih == state._minSolutionCount)
+				if (ih == state._movesMade.size())
 					break;
 			}
 			unsigned minMoveCount = state.MinimumMoves();
@@ -103,8 +104,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 					state._game.MakeMove(mv);
 					minMoveCount = state.MinimumMoves();
 					if (minMoveCount < state._minSolutionCount){
-						if (minMoveCount < ih)
-							assert(ih <= minMoveCount);
+						assert(ih <= minMoveCount);
 						state.RecordState(minMoveCount);
 					}
 					state._game.UnMakeMove(mv);
@@ -114,7 +114,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 		}
 	}
 	KSolveResult outcome;
-	if (ih >= maxMoves || state._previousStates.size() > maxStates){
+	if (ih >= maxMoves || state._previousStates.size() >= maxStates){
 		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
 	} else {
 		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
@@ -149,8 +149,10 @@ Moves State::FilteredAvailableMoves()
 {
 	Moves avail = _game.AvailableMoves();
 	for (auto i = avail.begin(); i < avail.end(); ++i){
-		if (SkippableMove(*i))
+		if (SkippableMove(*i)) {
 			avail.erase(i);
+			++_skippableWins;
+		}	
 	}
 	return avail;
 }
@@ -180,7 +182,7 @@ bool State::SkippableMove(const Move& trial)
 	auto C = trial.To();
 	if (C == WASTE || B == WASTE) return false;
 	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
-		const Move & mv = *imv;
+		Move mv = *imv;
 		if (mv.To() == B){
 			// candidate T0 move
 			return  mv.N() == trial.N();
@@ -208,14 +210,10 @@ void State::RecordState(unsigned minMoveCount)
 {
 	GameStateType pState(_game);
 	unsigned & storedMinimumCount = _previousStates[pState];
-	_stateSize += storedMinimumCount == 0;
-	if (_stateSize != _previousStates.size())
-		assert(_stateSize == _previousStates.size());
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
 		_histories[minMoveCount].push(_movesMade);
-	} 
-	else ++_stateWins;
+	} else ++_stateWins;
 }
 
 GameStateType::GameStateType(const Game& game)
@@ -228,10 +226,10 @@ GameStateType::GameStateType(const Game& game)
 			unsigned _isMajor:12;
 			unsigned int _other : 10;
 		};
-		uint32_t chi;
+		uint32_t asUnsigned;
 	} p;
 	for (unsigned i = 0; i<7; ++i){
-		p.chi = 0;	// clear all bits
+		p.asUnsigned = 0;	// clear all bits
 		const Pile& tp = game.Tableau()[i];
 		unsigned upCount = tp.UpCount();
 		p._upCount = upCount;
@@ -248,16 +246,16 @@ GameStateType::GameStateType(const Game& game)
 			}
 			p._isMajor = isMajorBits;
 		}
-		_psts[i] = p.chi;
+		_psts[i] = p.asUnsigned;
 	}
 	for (unsigned i = 0; i < 4; ++i) {
-		p.chi = _psts[i+2];
+		p.asUnsigned = _psts[i+2];
 		p._other = game.Foundation()[i].Size();
-		_psts[i+2] = p.chi;
+		_psts[i+2] = p.asUnsigned;
 	}
-	p.chi = _psts[6];
+	p.asUnsigned = _psts[6];
 	p._other = game.Stock().Size();
-	_psts[6] = p.chi;
+	_psts[6] = p.asUnsigned;
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
