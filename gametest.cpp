@@ -167,7 +167,7 @@ int main()
 	assert(tcard.AsString() == "st");
 	assert(Card::FromString("7d",tcard));
 	assert(tcard.AsString() == "d7");
-	assert(tcard.IsRed());
+	assert(tcard.OddRed());
 	assert(tcard.Value() == 25);
 	assert(!tcard.IsMajor());
 
@@ -274,9 +274,15 @@ int main()
 	"s7","h6","cj","hj","c4","s3","hk","h9","da","ca","d8","c2","st",
 	"dq","h5","s2","sa","hq","sq","ht","s9","sj","d2","c6","ha","cq","h4"};
 
+	vector<string> deal102 {
+		"ct","s7","ck","d6","h3","dt","sk","h9","d2","s8","dq","c9","st",
+		"da","s9","ht","d5","hj","hq","s6","cj","h5","d7","c5","sq","c8",
+		"cq","s2","c6","s3","c4","h4","h7","c2","sa","c3","hk","d3","h2",
+		"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
+	};
 	{
 		// Test GameStateType creation.
-		Game game(Cards(deal3),3);
+		Game game(Cards(deal102));
 		unsigned nMoves = 100;
 		std::vector<GameStateType> states;
 		states.reserve(nMoves);
@@ -303,5 +309,11 @@ int main()
 				states.push_back(state);
 			}
 		}
+	}
+	{
+		Moves solution;
+		PrintGame(Game(Cards(deal3)));
+		auto outcome = KSolve(Cards(deal102),solution,1,102,6000000); 
+		PrintOutcome(outcome, solution);
 	}
 }

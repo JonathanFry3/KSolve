@@ -47,9 +47,8 @@ private:
 	// "Major" here means spades or hearts, rather than clubs or diamonds. 
 	unsigned char _suit;
 	unsigned char _rank;
-	unsigned char _value;
-	unsigned char _isRed:1;
-	unsigned char _isMajor:1;
+	unsigned char _isMajor;
+	unsigned char _parity;
 
 public:
 	static bool FromString(const std::string& s0, Card & card);
@@ -58,28 +57,26 @@ public:
 	Card(Suit_t suit,unsigned char rank) : 
 		_suit(suit),
 		_rank(rank),
-		_value(rank*4+suit),
-		_isRed(suit&1),
-		_isMajor(suit>>1)
+		_isMajor(suit>>1),
+		_parity((rank&1)^(suit&1))
 		{}
 
 	Card(unsigned int value):
 		_suit(value%4),
 		_rank(value/4),
-		_value(value),
-		_isRed(_suit&1),
-		_isMajor(_suit>>1)
+		_isMajor(_suit>>1),
+		_parity((_rank&1)^(_suit&1))
 		{}
 
 
-	unsigned char Suit() const {return _suit;}
-	unsigned char Rank() const {return _rank;}
-	unsigned Value() const {return _value;}
-	bool IsRed() const {return _isRed;}
-	bool IsMajor() const{return _isMajor;}
+	unsigned char Suit() const 			{return _suit;}
+	unsigned char Rank() const 			{return _rank;}
+	bool IsMajor() const				{return _isMajor;}
+	bool OddRed() const 				{return _parity;}  // true for card that fit on stacks where odd cards are red
+	unsigned Value() const				{return 4*_rank+_suit;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
 	bool Covers(const Card & other) const
-		{return _isRed != other ._isRed && _rank+1 == other._rank;}
+		{return _parity == other._parity && _rank+1 == other._rank;}
 	bool operator==(const Card& other) const {return _suit==other._suit && _rank==other._rank;}
 	bool operator!=(const Card& other) const {return ! (other == *this);}
 };
@@ -110,14 +107,13 @@ public:
 		, _fromUpCount(fromUpCount)
 		{}
 
-	unsigned From() const {return _from;}
-	unsigned To()   const {return _to;}
-	unsigned N()    const {return _n;}              // an N of 0 means do nothing
-	unsigned FromUpCount() const {return _fromUpCount;}
+	unsigned From() const 			{return _from;}
+	unsigned To()   const			{return _to;}
+	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
+	unsigned FromUpCount() const 	{return _fromUpCount;}
 	void SetFrom(unsigned fm)       {_from = fm;}
 	void SetTo(unsigned to)         {_to = to;}
 	void SetN(unsigned n)           {_n = n;}
-
 };
 typedef std::vector<Move> Moves;
 

@@ -201,7 +201,7 @@ void  Game::UnMakeMove(const Move & mv)
 // Returns a Moves vector that may be empty or contain one such move.
 static Moves ShortFoundationMove(const Game & gm)
 {
-	int shortLen = 14;          // length of shortest foundation pile
+	int shortLen = 14;          // length of shortest foundation pile(s)
 	const auto& fnd = gm.Foundation();
 	Moves result;
 	for (int ifnd = 0; ifnd < 4; ++ifnd) {
@@ -218,7 +218,8 @@ static Moves ShortFoundationMove(const Game & gm)
 			unsigned suit = card.Suit();
 			if (card.Rank() == shortLen) {
 				if (fnd[suit].Size() == shortLen) {
-					result.push_back(Move(iPile,FOUNDATION+suit,1,0));
+					unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
+					result.push_back(Move(iPile,FOUNDATION+suit,1,up));
 				}
 			}
 		}
@@ -257,30 +258,54 @@ Moves Game::AvailableMoves() const
 		for (const Pile& fromPile: _tableau) {
 			// skip empty from piles
 			if (fromPile.Size() == 0) continue;
+			auto up = fromPile.UpCount();
 
 			bool kingMoved = false;     // prevents moving the same king twice
 			for (const Pile& toPile: _tableau) {
 				if (&fromPile == &toPile) continue;
 
 				if (toPile.Size() == 0) { 
-					if (!kingMoved && fromPile.Size() > fromPile.UpCount() &&
+					if (!kingMoved && fromPile.Size() > up &&
 						fromPile.Top().Rank() == KING) {
 						// toPile is empty, a king sits atop the from pile's up
 						// cards, and it is covering at least one down card.
-						auto up = fromPile.UpCount();
 						result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
+						kingMoved = true;
 					}
 				} else {
-					// Other moves follow the opposite-color-and-next-lower-rank rule
-					auto cardToCover = toPile.Back();
-					if (cardToCover.Rank() > TWO) { // don't cover a deuce
-						const auto& fromCds = fromPile.Cards();
-						for (auto ic = fromCds.end()-fromPile.UpCount(); ic < fromCds.end(); ++ic) {
-							if (ic->Covers(cardToCover)) {
-								result.push_back(Move(fromPile.Code(),toPile.Code(),
-									fromCds.end()-ic, fromPile.UpCount()));
-							}
-						}
+					// Other moves follow the opposite-color-and-next-lower-rank rule.
+					// We move from one tableau pile to another only to 
+					// (a) move all the up cards on the from pile, or
+					// (b) expose a card on the from pile that can be moved to a foundation
+					// 	   pile.
+					Card cardToCover = toPile.Back();
+					if (cardToCover.Rank() <= TWO) { // never cover a deuce
+						continue;
+					}
+					const auto& fromCds = fromPile.Cards();
+					// See whether any of the from pile's up cards can be moved
+					// to the to pile.
+					Card fromBase = fromPile.Top();
+					Card fromTip = fromPile.Back();
+					unsigned toRank = cardToCover.Rank();
+					if (!(fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
+							&& (fromTip.OddRed() == cardToCover.OddRed())))
+						continue;
+					// Some face-up card in the from pile covers the top card
+					// in the to pile, so a move is possible.
+					int moveCount = cardToCover.Rank() -  fromTip.Rank();
+					assert(0 < moveCount && moveCount <= up);
+					if (moveCount == up){
+						// move all the up cards on the from pile.
+						assert(fromPile.Top().Covers(cardToCover));
+						result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
+						continue;
+					}
+					Card exposed = *(fromCds.end()-moveCount-1);
+					if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
+						// This move will expose a card that can be moved to its foundation pile.
+						assert((fromCds.end()-moveCount)->Covers(cardToCover));
+						result.push_back(Move(fromPile.Code(),toPile.Code(),moveCount,up));
 					}
 				}
 			}
@@ -339,5 +364,3 @@ unsigned Game::FoundationCardCount() const
 	}
 	return result;
 }
-
-
