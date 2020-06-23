@@ -91,44 +91,41 @@ bool FromString(std::string s, Card & card);
 // CardVec is a very specialized vector.  Its capacity is always 24
 // and it does not check for overfilling.
 class CardVec {
-	Card* _begin;
-	Card* _end;
+	std::uint32_t _size;
 	Card _cds[24];
 
 public:
-	CardVec() : _begin(_cds),_end(_cds), _cds(){}
+	CardVec() : _size(0), _cds(){}
 	CardVec(const CardVec& orig)
-				:_begin(_cds)
-				,_end(_begin+orig.size())
-				{std::copy(orig._begin,orig._end,_cds);}
+				: _size(orig._size)
+				{std::copy(orig._cds,orig._cds+_size,_cds);}
 	Card & operator[](unsigned i)					{return _cds[i];}
 	const Card& operator[](unsigned i) const		{return _cds[i];}
-	Card* begin()									{return _begin;}
-	const Card* begin() const						{return _begin;}
-	size_t size() const								{return _end-_begin;}
-	Card* end()										{return _end;}
-	const Card* end() const							{return _end;}
-	Card & back()									{return *(_end-1);}
-	const Card& back() const						{return *(_end-1);}
-	void pop_back()									{_end -= 1;}
-	void pop_back(unsigned n)						{_end -= n;}
-	void push_back(const Card& cd)					{*_end = cd; _end += 1;}
+	Card* begin()									{return _cds;}
+	const Card* begin() const						{return _cds;}
+	size_t size() const								{return _size;}
+	Card* end()										{return _cds+_size;}
+	const Card* end() const							{return _cds+_size;}
+	Card & back()									{return *(_cds+_size-1);}
+	const Card& back() const						{return *(_cds+_size-1);}
+	void pop_back()									{_size -= 1;}
+	void pop_back(unsigned n)						{_size -= n;}
+	void push_back(const Card& cd)					{_cds[_size] = cd; _size += 1;}
 	void append(const Card* begin, const Card* end)	
-					{for (const Card* i=begin;i<end;++i){*(_end++)=*i;}}
-	void clear()									{_end = _begin;}
+					{for (const Card* i=begin;i<end;++i){_cds[_size++]=*i;}}
+	void clear()									{_size = 0;}
 	bool operator==(const CardVec& other) const
 					{	
-						if (size() != other.size()) return false;
-						const Card* j = other._begin;
-						for(const Card*i=_begin;i < _end;++i,++j){
-							if (*i != *j) return false;
+						if (_size != other._size) return false;
+						for(unsigned i = 0; i < _size; ++i){
+							if ((*this)[i] != other[i]) return false;
 						}
 						return true;
 					}
 	CardVec& operator=(const CardVec& other) 
 					{
-						std::copy(other._begin,other._end,_cds);
-						_end = _cds+other.size();
+						std::copy(other._cds,other._cds+other._size,_cds);
+						_size = other._size;
 						return *this;
 					}
 	void swap(CardVec& other)					{std::swap(*this,other);}
@@ -218,9 +215,9 @@ private:
 	};
 
 public:
-	// Construct a talon move.  Represents 'nMoves' draws + recycles.
+	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
-	// from stock.
+	// from stock. One card is then moved from the waste pile to the "to" pile.
 	Move(unsigned to, unsigned nMoves, int draw)
 		: _from(STOCK)
 		, _to(to)
