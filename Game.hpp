@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <utility>		// for swap()
+#include <cassert>
 
 enum Rank_t : unsigned char
  {
@@ -86,36 +87,6 @@ public:
 // Returns true if it succeeds.
 bool FromString(std::string s, Card & card);
 
-
-// Directions for a move.  Game::AvailableMoves() creates these.
-// Game::UnMakeMove() cannot infer the value of the from tableau pile's
-// up count before the move (because of flips), so Game::AvailableMoves() 
-// includes that in any Move from a tableau pile.
-class Move
-{
-private:
-	unsigned char _from;
-	unsigned char _to;
-	unsigned char _n;
-	unsigned char _fromUpCount;
-
-public:
-	Move(unsigned char from, unsigned char to, unsigned char n, unsigned char fromUpCount=0)
-		: _from(from)
-		, _to(to)
-		, _n(n)
-		, _fromUpCount(fromUpCount)
-		{}
-
-	unsigned From() const 			{return _from;}
-	unsigned To()   const			{return _to;}
-	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
-	unsigned FromUpCount() const 	{return _fromUpCount;}
-	void SetFrom(unsigned fm)       {_from = fm;}
-	void SetTo(unsigned to)         {_to = to;}
-	void SetN(unsigned n)           {_n = n;}
-};
-typedef std::vector<Move> Moves;
 
 // CardVec is a very specialized vector.  Its capacity is always 24
 // and it does not check for overfilling.
@@ -219,9 +190,65 @@ public:
 	Card Top() const                        {return *(_cards.end()-_upCount);}
 	Card Back() const                       {return _cards.back();}
 	void ClearCards()                       {_cards.clear(); _upCount = 0;}
-	void SwapCards(Pile & other)            {_cards.swap(other._cards);}
-	void ReverseCards()                     {std::reverse(_cards.begin(),_cards.end());}
+	void Draw(Pile & from)					{_cards.push_back(from._cards.back()); from._cards.pop_back();}
+	void Draw(Pile & from, int nCards);
 };
+
+// Directions for a move.  Game::AvailableMoves() creates these.
+// Game::UnMakeMove() cannot infer the value of the from tableau pile's
+// up count before the move (because of flips), so Game::AvailableMoves() 
+// includes that in any Move from a tableau pile.
+//
+// Game::AvailableMoves creates Moves around the talon (the waste and
+// stock piles) that must be counted as multiple moves.  The number
+// of actual moves implied by a Move object is given by NMoves().
+class Move
+{
+private:
+	unsigned char _from;
+	unsigned char _to;
+	unsigned char _nMoves;
+	union {
+		struct {
+			// Non-talon move
+			unsigned char _n:4;
+			unsigned char _fromUpCount:4;
+		};
+		signed char _draw;			// draw this many cards (may be negative)
+	};
+
+public:
+	// Construct a talon move.  Represents 'nMoves' draws + recycles.
+	// Their cumulative effect is to draw 'draw' cards (may be negative)
+	// from stock.
+	Move(unsigned to, unsigned nMoves, int draw)
+		: _from(STOCK)
+		, _to(to)
+		, _nMoves(nMoves)
+		, _draw(draw)
+		{}
+	// Construct a non-talon move
+	Move(unsigned from, unsigned to, unsigned n, unsigned fromUpCount)
+		: _from(from)
+		, _to(to)
+		, _nMoves(1)
+		, _n(n)
+		, _fromUpCount(fromUpCount)
+		{
+			assert(from != STOCK);
+		}
+
+	unsigned From() const 			{return _from;}
+	unsigned To()   const			{return _to;}
+	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
+	unsigned FromUpCount() const 	{return _fromUpCount;}
+	unsigned NMoves() const			{return _nMoves;}
+	int Draw() const				{return _draw;}
+};
+typedef std::vector<Move> Moves;
+
+// Returns the number of actual moves implied by a series of Moves.
+unsigned MoveCount(const Moves & moves);
 
 class Game
 {
@@ -232,6 +259,19 @@ class Game
 	std::vector<Card> _deck;
 	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
 	std::array<Pile *,13> _allPiles;
+
+	struct TalonFuture {
+		Card _card;
+		unsigned char _nMoves;
+		signed char _draw;
+
+		TalonFuture(const Card& card, unsigned nMoves, int draw)
+			: _card(card)
+			, _nMoves(nMoves)
+			, _draw(draw)
+			{}
+	};
+	std::vector<TalonFuture> TalonMoves() const;
 
 public:
 	Game(const std::vector<Card>& deck,unsigned draw=1);

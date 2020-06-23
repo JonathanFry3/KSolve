@@ -52,7 +52,7 @@ int main()
 		exit(100);
 	}
 	int nRuns = 5;
-	string trialName = "-O3 tableau move optimization 64";
+	string trialName = "-O3 talon look-ahead 64";
 	std::vector<Card> deck(Cards(deal3));
 	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){
@@ -61,7 +61,7 @@ int main()
 		clock_t t1 = clock();
 		assert(result==SOLVED);
 		out << trialName << '\t' 
-			<< moves.size() << '\t' 
+			<< MoveCount(moves) << '\t' 
 			<<float(t1-t0)/CLOCKS_PER_SEC << endl;
 	}
 }

@@ -49,7 +49,9 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "cstring": "cpp",
+        "set": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"

@@ -1,5 +1,4 @@
 #include <KSolve.hpp>
-#include <cassert>
 #include <stack>
 #include <robin_hood.h>     // for unordered_map
 
@@ -74,7 +73,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 	state._histories[startMoves].push(state._movesMade);
 
 	unsigned ih;
-	for  (ih= startMoves; ih < state._minSolutionCount
+	for  (ih= startMoves; ih <= state._minSolutionCount
 			 && state._previousStates.size() <maxStates; ++ih) {
 		auto &h = state._histories[ih];
 		// scan histories from shortest to longest
@@ -89,10 +88,10 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 			Moves avail = state.MakeAutoMoves();
 
 			if (state._game.GameOver()) {
-				// We have a solution.  See if it is a new champion.
+				// We have a solution.  See if it is a new champion
 				state.CheckForMinSolution();
 				// See if it the final winner.
-				if (ih == state._movesMade.size())
+				if (ih == MoveCount(state._movesMade))
 					break;
 			}
 			unsigned minMoveCount = state.MinimumMoves();
@@ -114,7 +113,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 		}
 	}
 	KSolveResult outcome;
-	if (ih >= maxMoves || state._previousStates.size() >= maxStates){
+	if (ih > maxMoves || state._previousStates.size() >= maxStates){
 		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
 	} else {
 		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
@@ -126,7 +125,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 // a game that begins as this one has begun.
 unsigned State::MinimumMoves()
 {
-	unsigned result = 52 - _game.FoundationCardCount() + _movesMade.size();
+	unsigned result = 52 - _game.FoundationCardCount() + MoveCount(_movesMade);
 	unsigned draw = _game.Draw();
 	unsigned draws = _game.Stock().Size();
 	result += (draw == 1) ? draws : (draws+draw-1)/draw;
@@ -135,11 +134,13 @@ unsigned State::MinimumMoves()
 Moves State::MakeAutoMoves()
 {
 	Moves avail;
-	while (_movesMade.size() < _minSolutionCount && 
+	unsigned mvCount = MoveCount(_movesMade);
+	while (mvCount < _minSolutionCount && 
 			(avail = FilteredAvailableMoves()).size() == 1)
 	{
 		_movesMade.push_back(avail[0]);
 		_game.MakeMove(avail[0]);
+		mvCount += avail[0].NMoves();
 	}
 	return avail;
 }
@@ -179,8 +180,8 @@ bool State::SkippableMove(const Move& trial)
 	move has changed pile C.
 	*/
 	auto B = trial.From();
+	if (B == STOCK || B == WASTE) return false;
 	auto C = trial.To();
-	if (C == WASTE || B == WASTE) return false;
 	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
 		Move mv = *imv;
 		if (mv.To() == B){
@@ -196,16 +197,18 @@ bool State::SkippableMove(const Move& trial)
 	}
 	return false;
 }
+
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
 void State::CheckForMinSolution(){
 	unsigned x = _minSolution.size();
-	unsigned nmv = _movesMade.size();
+	unsigned nmv = MoveCount(_movesMade);
 	if (x == 0 || nmv < x) {
 		_minSolution = _movesMade;
 		_minSolutionCount = nmv;
 	}
 }
+
 void State::RecordState(unsigned minMoveCount)
 {
 	GameStateType pState(_game);
@@ -268,4 +271,3 @@ bool GameStateType::operator==(const GameStateType& other) const
 	    && _psts[5] == other._psts[5]
 	    && _psts[6] == other._psts[6];
 }
-

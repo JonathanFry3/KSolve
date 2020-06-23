@@ -129,13 +129,24 @@ void PrintOutcome(KSolveResult outcome, const Moves& solution)
 									"Gave up without solving", "Impossible"};
 	cout << "Outcome: " << outcomeWords[outcome];
 	if (solution.size()){
-		cout << " in " << solution.size() << " moves";
+		cout << " in " << MoveCount(solution) << " moves";
 	}
 	cout  << endl;
 	for (auto mv : solution){
-		cout << "Move " << mv.N();
-		cout << " from " << pilestring[mv.From()];
-		cout << " to " << pilestring[mv.To()] << endl;
+		if (mv.From() != STOCK){
+			cout << "Move " << mv.N();
+			cout << " from " << pilestring[mv.From()];
+			cout << " to " << pilestring[mv.To()] << endl;
+		} else {
+			unsigned nm = mv.NMoves();
+			cout << "Draw ";
+			if (nm == 1) cout << "once";
+			else cout << nm << " times";
+			cout << endl;
+			cout << "Move " << 1;
+			cout << " from " << pilestring[mv.From()];
+			cout << " to " << pilestring[mv.To()] << endl;
+		}
 	}
 }
 
@@ -174,7 +185,8 @@ int main()
 	std::vector<std::string> sdeck({
 		"sq", "c5", "s5", "ha", "c9", "ca", "s6", "cq", "s8", "ck", "dt", "d3","c8", 
 		"h3", "dk", "s3", "dj", "sk", "c7", "h8", "h4", "c6", "hj", "c4", "sj","da", 
-		"st", "c2", "d8", "dq", "s7", "d6", "ct", "s2", "cj", "d7", "ht", "hk","d2", 
+		"st", "c2", 
+		"d8", "dq", "s7", "d6", "ct", "s2", "cj", "d7", "ht", "hk","d2", 
 		"h2", "h9", "s9", "h5", "h7", "c3", "d4", "h6", "sa", "s4", "hq", "d9","d5"});
 	vector<Card> deck = Cards(sdeck);
 	assert(deck.size() == 52);
@@ -198,13 +210,11 @@ int main()
 		assert (sol.Tableau()[1].UpCount() == 2);
 
 		assert (sol.Stock().Size() == 24);
-		sol.MakeMove(Move(STOCK,WASTE,1,0));
-		sol.MakeMove(Move(STOCK,WASTE,1,0));
-		sol.MakeMove(Move(STOCK,WASTE,1,0));
-		sol.MakeMove(Move(STOCK,WASTE,1,0));
+		sol.MakeMove(Move(FOUNDATION2D,4,4));
 		assert (sol.Stock().Size()==20);
-		assert (sol.Waste().Size()==4);
-		assert (sol.Waste()[0].AsString()=="d8");
+		assert (sol.Waste().Size()==3);
+		assert (sol.Foundation()[1].Back().AsString()=="d6");
+		assert (sol.Waste().Back().AsString()=="s7");
 		assert (sol.Stock().Back().AsString()=="ct");
 		sol.MakeMove(Move(WASTE,TABLEAU1,1,0));
 		assert (sol.Tableau()[0].UpCount() == 1);
@@ -222,7 +232,7 @@ int main()
 		unsigned nreps = 20;
 		Moves movesMade;
 		for (unsigned rep=0; rep<nreps; ++rep) {
-			const auto& moves = sol.AvailableMoves();
+			Moves moves = sol.AvailableMoves();
 			movesMade.push_back(moves[0]);
 			sol.MakeMove(moves[0]);
 			Validate(sol);
@@ -250,13 +260,15 @@ int main()
 		vector<string> quick
 			 {"ca","c8","da","d6","dt","dk","s2","c2","c9","d2","d7","dj",
 			"sa","c3","ct","d3","d8","dq","c4","cj","d4","d9","c5","cq","d5",
-			"c6","ck","c7","s3","s4","s5","s6","s7","s8","s9","st","sj","sq",
+			"c6","ck","c7",
+			"s3","s4","s5","s6","s7","s8","s9","st","sj","sq",
 			"sk","ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"};
 		{
 			Moves solution;
-			auto outcome = KSolve(Cards(quick),solution,1); 
+			PrintGame(Game(Cards(quick)));
+			auto outcome = KSolve(Cards(quick),solution,1,77,3000000); 
 			assert(outcome == SOLVED);
-			assert(solution.size() == 76);
+			assert(MoveCount(solution) == 76);
 		}
 
 		// Still another...
@@ -267,6 +279,7 @@ int main()
 			"ct","dt","st","ht","cj","ck","cq","dj","sj","hj","dq","sq","hq",
 			"dk","sk","hk"};
 	}
+
 	// deal3 can be solved in 86 moves in draw 3 mode. Takes a while.
 	vector<string> deal3{
 		"s5","h3","c3","c7","c8","d9","ck","h2","d4","dj","h8","d7",
@@ -287,6 +300,7 @@ int main()
 		std::vector<GameStateType> states;
 		states.reserve(nMoves);
 		std::vector<Game> prevGames;
+		Moves movesMade;
 		prevGames.reserve(nMoves);
 		for (unsigned rep = 0; rep < 1000; ++rep){
 			states.clear();
@@ -294,26 +308,38 @@ int main()
 			game.Deal();
 			for (unsigned imv = 0; imv <nMoves; ++imv){
 				Moves avail = game.AvailableMoves();
-				Move move = avail[rand()%avail.size()];
-				game.MakeMove(move);
-				Validate(game);
-				GameStateType state(game);
-				auto pMatch = find(states.begin(),states.end(),state);
-				if (pMatch!=states.end()){
-					// state matches a previous GameStateType.  See if 
-					// game matches the corresponding Game.
-					unsigned which = pMatch - states.begin();
-					assert(game == prevGames[which]);
+				if (avail.size()) {
+					Move move = avail[rand()%avail.size()];
+					game.MakeMove(move);
+					movesMade.push_back(move);
+					Validate(game);
+					GameStateType state(game);
+					auto pMatch = find(states.begin(),states.end(),state);
+					if (pMatch!=states.end()){
+						// state matches a previous GameStateType.  See if 
+						// game matches the corresponding Game.
+						unsigned which = pMatch - states.begin();
+						assert(game == prevGames[which]);
+					}
+					prevGames.push_back(game);
+					states.push_back(state);
+				} else {
+					// We hit a dead end.  Back up and try a different random
+					// branch.
+					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
+					{
+						game.UnMakeMove(movesMade.back());
+						movesMade.pop_back();
+						Validate(game);
+					}
 				}
-				prevGames.push_back(game);
-				states.push_back(state);
 			}
 		}
 	}
 	{
 		Moves solution;
-		PrintGame(Game(Cards(deal3)));
-		auto outcome = KSolve(Cards(deal102),solution,1,102,6000000); 
+		PrintGame(Game(Cards(deal102)));
+		auto outcome = KSolve(Cards(deal102),solution,1,105,5000000); 
 		PrintOutcome(outcome, solution);
 	}
 }
