@@ -13,10 +13,8 @@ const std::string ranks("a23456789tjqka");
 static std::string Filtered(std::string input, std::string filter)
 {
 	std::string result;
-	for (auto ic = input.begin(); ic<input.end(); ++ic)
-	{
-		if (filter.find(*ic) != std::string::npos)
-		{
+	for (auto ic = input.begin(); ic<input.end(); ++ic)	{
+		if (filter.find(*ic) != std::string::npos) {
 			result += *ic;
 		}
 	}
@@ -27,8 +25,7 @@ static std::string LowerCase(const std::string & in)
 {
 	std::string result;
 	result.reserve(in.length());
-	for (auto ich = in.begin(); ich < in.end(); ++ich)
-	{
+	for (auto ich = in.begin(); ich < in.end(); ++ich)	{
 		result.push_back(std::tolower(*ich));
 	}
 	return result;
@@ -60,9 +57,11 @@ std::pair<bool,Card> Card::FromString(const std::string& s0)
 			{
 				// assume it is last
 				suitIndex = suits.find(s1.back());
-				suit = static_cast<Suit_t>(suitIndex);
 				ok = suitIndex != std::string::npos;
-				rankStr = s1.substr(0,s1.length()-1);
+				if (ok) {
+					suit = static_cast<Suit_t>(suitIndex);
+					rankStr = s1.substr(0,s1.length()-1);
+				}
 			}
 		}
 	}
@@ -90,9 +89,12 @@ CardVec Pile::Pop(unsigned n)
 
 CardVec Pile::Draw(unsigned n)
 {
-	CardVec result = this->Pop(n);
-	if (n > 1)
-		std::reverse(result.begin(),result.end());
+	CardVec result;
+	for (unsigned i = 0; i < n; ++i)
+	{
+		result.push_back(_cards.back());
+		_cards.pop_back();
+	}
 	return result;
 }
 
@@ -132,15 +134,12 @@ Game::Game(const std::vector<Card> &deck,unsigned draw)
 // Deal the cards for Klondike Solitaire.
 void Game::Deal()
 {
-	for (auto pile: _allPiles)
-	{
+	for (auto pile: _allPiles)	{
 		pile->ClearCards();
 	}
 	unsigned ideck = 0;
-	for (unsigned i = 0; i<7; ++i)
-	{
-		for (unsigned icd = i; icd < 7; ++icd)
-		{
+	for (unsigned i = 0; i<7; ++i) {
+		for (unsigned icd = i; icd < 7; ++icd)	{
 			_tableau[icd].Push(_deck[ideck++]);
 		}
 		_tableau[i].IncrUpCount(1);      // turn up the top card
@@ -236,24 +235,36 @@ static Moves ShortFoundationMove(const Game & gm, unsigned shortLen)
 	return result;
 }
 
+struct TalonFuture {
+	Card _card;
+	unsigned char _nMoves;
+	signed char _draw;
+
+	TalonFuture(const Card& card, unsigned nMoves, int draw)
+		: _card(card)
+		, _nMoves(nMoves)
+		, _draw(draw)
+		{}
+};
+
 // Return a vector of all the cards that can be played
 // from the talon (the stock and waste piles), along
 // with the number of moves requied to reach each one
 // and the number of cards that must be drawn (or undrawn)
 // to reach each one.
-std::vector<Game::TalonFuture> Game::TalonMoves() const
+static std::vector<TalonFuture> TalonMoves(const Game & game)
 {
-	unsigned talonSize = _waste.Size() + _stock.Size();
-	std::vector<Game::TalonFuture> result;
-	result.reserve(talonSize);
-
+	std::vector<TalonFuture> result;
+	unsigned talonSize = game.Waste().Size() + game.Stock().Size();
 	if (talonSize == 0) return result;
 
+	result.reserve(talonSize);
+	Pile waste = game.Waste();
+	Pile stock = game.Stock();
 	unsigned nMoves = 0;
 	unsigned nRecycles = 0;
-	unsigned originalWasteSize = _waste.Size();
-	Pile waste = _waste;
-	Pile stock = _stock;
+	unsigned originalWasteSize = waste.Size();
+	unsigned draw = game.Draw();
 
 	do {
 		if (waste.Size()) {
@@ -263,7 +274,7 @@ std::vector<Game::TalonFuture> Game::TalonMoves() const
 		if (stock.Size()) {
 			// Draw from the stock pile
 			nMoves += 1;
-			waste.Draw(stock, std::min<unsigned>(_draw,stock.Size()));
+			waste.Draw(stock, std::min<unsigned>(draw,stock.Size()));
 		} else {
 			// Recycle the waste pile
 			nMoves += 1;
@@ -274,12 +285,27 @@ std::vector<Game::TalonFuture> Game::TalonMoves() const
 	return result;
 }
 
+// See if we need any more empty tableau columns.  We don't if
+// the number of empty columns plus the number with a king at
+// the top and no face-down cards is at least four.
+static bool NeedEmptyColumn(const std::array<Pile,7>& tableau)
+{
+	unsigned nEmpty = 0;
+	for (const Pile& pile : tableau){
+		unsigned size = pile.Size();
+		nEmpty +=  (size == 0) ||
+			(size == pile.UpCount() && pile[0].Rank() == KING);
+		if (nEmpty == 4) return false;
+	}
+	return true;
+}
+
 /*
 If any short-foundation moves exist, returns one of those.
 Otherwise, returns a list of moves that are legal and not
 known to be sub-optimal.  Rather than generate individual draws from
 stock to waste, it generates Move objects that represent one or more
-draws and that expose a playable top waste card.
+draws and that expose a playable top waste card and then play that card.
 */
 Moves Game::AvailableMoves() const 
 {
@@ -301,8 +327,12 @@ Moves Game::AvailableMoves() const
 			}
 		}
 	}
+
+	// Do we need more empty columns?
+	bool needEmptyColumn = NeedEmptyColumn(_tableau);
+
 	// Look for moves between tableau piles.  These may involve
-	// multiple cards
+	// multiple cards.
 	for (const Pile& fromPile: _tableau) {
 		// skip empty from piles
 		if (fromPile.Size() == 0) continue;
@@ -315,15 +345,15 @@ Moves Game::AvailableMoves() const
 			if (toPile.Size() == 0) { 
 				if (!kingMoved && fromPile.Size() > up &&
 					fromPile.Top().Rank() == KING) {
-					// toPile is empty, a king sits atop the from pile's up
-					// cards, and it is covering at least one down card.
+					// toPile is empty, a king sits atop fromPile's face-up
+					// cards, and it is covering at least one face-down card.
 					result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
 					kingMoved = true;
 				}
 			} else {
 				// Other moves follow the opposite-color-and-next-lower-rank rule.
 				// We move from one tableau pile to another only to 
-				// (a) move all the up cards on the from pile, or
+				// (a) move all the face-up cards on the from pile, or
 				// (b) expose a card on the from pile that can be moved to a foundation
 				// 	   pile.
 				Card cardToCover = toPile.Back();
@@ -344,9 +374,11 @@ Moves Game::AvailableMoves() const
 				int moveCount = cardToCover.Rank() -  fromTip.Rank();
 				assert(0 < moveCount && moveCount <= up);
 				if (moveCount == up){
-					// move all the up cards on the from pile.
-					assert(fromPile.Top().Covers(cardToCover));
-					result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
+					if (needEmptyColumn) {
+						// move all the up cards on the from pile.
+						assert(fromPile.Top().Covers(cardToCover));
+						result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
+					}
 					continue;
 				}
 				Card exposed = *(fromCds.end()-moveCount-1);
@@ -360,7 +392,7 @@ Moves Game::AvailableMoves() const
 	}
 	// Look for move from waste to tableau or foundation, including moves that become available 
 	// after one or more draws.  
-	std::vector<TalonFuture> talon(TalonMoves());
+	std::vector<TalonFuture> talon(TalonMoves(*this));
 	for (const TalonFuture & mv : talon){
 		if (mv._card.Rank() == _foundation[mv._card.Suit()].Size()){
 			unsigned pileNo = FOUNDATION+mv._card.Suit();

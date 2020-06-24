@@ -9,14 +9,13 @@
 	foundation  the four piles, one for each suit, to which one wishes to move all the cards
 	tableau     the seven piles originally dealt with one card turned up.
 
-	
-	Any solvers defined here will operate on these objects.
+	The talon is the stock and waste piles considered as a single entity.
+
+	Any solvers implemented here will operate on these objects.
 */ 
 #include <string>
 #include <vector>
-#include <algorithm>
 #include <array>
-#include <utility>		// for swap()
 #include <cassert>
 
 enum Rank_t : unsigned char
@@ -130,8 +129,7 @@ public:
 						_size = other._size;
 						return *this;
 					}
-	void swap(CardVec& other)					{std::swap(*this,other);}
-};		// end class CardVec
+};	// end class CardVec
 
 enum PileCode {
 	WASTE = 0,
@@ -156,7 +154,7 @@ class Pile
 private:
 	CardVec _cards;
 	unsigned short _code;
-	short _upCount;
+	unsigned short _upCount;
 	bool _isTableau;
 	bool _isFoundation;
 
@@ -166,24 +164,23 @@ public:
 	, _upCount(0)
 	, _isTableau(TABLEAU <= code && code < TABLEAU+7)
 	, _isFoundation(FOUNDATION <= code && code < FOUNDATION+4)
-	{
-	}
+	{}
 
 	unsigned Code() const 							{return _code;}
-	int UpCount() const 							{return _upCount;}
+	unsigned UpCount() const 						{return _upCount;}
 	bool IsTableau() const 							{return _isTableau;}
 	bool IsFoundation() const 						{return _isFoundation;}
 	unsigned Size() const 							{return _cards.size();}
 
-	void SetUpCount(int up)   						{_upCount = up;}
-	void IncrUpCount(int c) 						{ _upCount += c;}
+	void SetUpCount(unsigned up)					{_upCount = up;}
+	void IncrUpCount(int c) 						{_upCount += c;}
 	const Card & operator[](unsigned which) const   {return _cards[which];}
 	const CardVec& Cards() const 					{return _cards;}
 	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(const Card & c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
 	CardVec Draw(unsigned n);         // like Pop(), but reverses order of cards drawn
-	void Push( const Card* begin,  const Card* end)
+	void Push(const Card* begin, const Card* end)
 											{_cards.append(begin,end);}
 	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
 	Card Top() const                        {return *(_cards.end()-_upCount);}
@@ -258,19 +255,6 @@ class Game
 	std::vector<Card> _deck;
 	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
 	std::array<Pile *,13> _allPiles;
-
-	struct TalonFuture {
-		Card _card;
-		unsigned char _nMoves;
-		signed char _draw;
-
-		TalonFuture(const Card& card, unsigned nMoves, int draw)
-			: _card(card)
-			, _nMoves(nMoves)
-			, _draw(draw)
-			{}
-	};
-	std::vector<TalonFuture> TalonMoves() const;
 
 public:
 	Game(const std::vector<Card>& deck,unsigned draw=1);

@@ -1,10 +1,11 @@
-// Tests for Game.cpp
+// Tests for Game.cpp KSolve.cpp
 
+#include <KSolve.hpp>
 #include <cassert>
 #include <iostream>
 #include <iomanip>	  // for setw()
 #include <cstdlib>
-#include <KSolve.hpp>
+#include <algorithm>  // for find()
 
 using namespace std;
 
