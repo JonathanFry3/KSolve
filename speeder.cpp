@@ -7,28 +7,29 @@
 
 using namespace std;
 
-vector<Card> Cards(std::vector<std::string> strings)
+vector<Card> Cards(vector<string> strings)
 {
 	vector<Card> result;
-	Card acard(0);
-	for (auto is = strings.begin(); is < strings.end(); ++is)
+	for (const auto& str: strings)
 	{
-		bool validCardString = Card::FromString(*is, acard);
+		auto pair = Card::FromString(str);
+		bool validCardString = pair.first;
 		assert(validCardString);
-		result.push_back(acard);
+		result.push_back(pair.second);
 	}
 	return result;
 }
 
 int main()
 {
-	// Writes a tab-delimited text file containing two columns:
-	//		the name of this trial, and
+	// Writes a tab-delimited text file containing three columns:
+	//		the name of this trial, 
+	//		the number of moves in the solution found, and
 	//		the processor time for one run of this trial
 	// File generated from various trials can be concatenated into a data
 	//		set for analysis purposes.
 
-		// deal3 can be solved in 86 moves in draw 3 mode. Takes a while.
+	// deal3 can be solved in 86 moves in draw 3 mode. Takes a while.
 	vector<string> deal3{
 		"s5","h3","c3","c7","c8","d9","ck","h2","d4","dj","h8","d7",
 	"c5","d3","d6","dt","s8","d5","dk","s6","h7","s4","sk","c9","ct",
@@ -54,14 +55,13 @@ int main()
 	int nRuns = 5;
 	string trialName = "-O3 talon look-ahead 64";
 	std::vector<Card> deck(Cards(deal3));
-	Moves moves;
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();
-		KSolveResult result = KSolve(deck,moves,3);
+		auto outcome = KSolve(deck,3);
 		clock_t t1 = clock();
-		assert(result==SOLVED);
+		assert(outcome.first==SOLVED);
 		out << trialName << '\t' 
-			<< MoveCount(moves) << '\t' 
+			<< MoveCount(outcome.second) << '\t' 
 			<<float(t1-t0)/CLOCKS_PER_SEC << endl;
 	}
 }

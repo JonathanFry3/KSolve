@@ -2,20 +2,21 @@
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>	  // for setw()
 #include <cstdlib>
 #include <KSolve.hpp>
 
 using namespace std;
 
-vector<Card> Cards(std::vector<std::string> strings)
+vector<Card> Cards(const std::vector<std::string>& strings)
 {
 	vector<Card> result;
-	Card acard(0);
-	for (auto is = strings.begin(); is < strings.end(); ++is)
+	for (const auto& str: strings)
 	{
-		bool validCardString = Card::FromString(*is, acard);
+		auto outcome = Card::FromString(str);
+		bool validCardString = outcome.first;
 		assert(validCardString);
-		result.push_back(acard);
+		result.push_back(outcome.second);
 	}
 	return result;
 }
@@ -108,7 +109,7 @@ static void Validate(const Game & game)
 }
 
 // enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-void PrintOutcome(KSolveResult outcome, const Moves& solution)
+void PrintOutcome(KSolveResult outcome, unsigned draw, const Moves& solution)
 {
 	vector<string> pilestring{
 		"waste    ",
@@ -132,22 +133,57 @@ void PrintOutcome(KSolveResult outcome, const Moves& solution)
 		cout << " in " << MoveCount(solution) << " moves";
 	}
 	cout  << endl;
+
+	unsigned stock = 24;
+	unsigned waste = 0;
+	unsigned mvnum = 0;
 	for (auto mv : solution){
 		if (mv.From() != STOCK){
-			cout << "Move " << mv.N();
+			cout << setw(3) << ++mvnum << " Move " << mv.N();
 			cout << " from " << pilestring[mv.From()];
 			cout << " to " << pilestring[mv.To()] << endl;
+			if (mv.From() == WASTE){
+				assert (waste >= 1);
+				waste -= 1;
+			}
 		} else {
-			unsigned nm = mv.NMoves();
-			cout << "Draw ";
-			if (nm == 1) cout << "once";
-			else cout << nm << " times";
-			cout << endl;
-			cout << "Move " << 1;
-			cout << " from " << pilestring[mv.From()];
+			assert(stock+waste > 0);
+			unsigned nTalonMoves = mv.NMoves()-1;
+			unsigned stockMovesLeft = (stock+draw-1)/draw;
+			if (nTalonMoves > stockMovesLeft) {
+				// Draw all remaining cards from stock
+				cout << setw(3) << ++mvnum << " Move " << stock << " from ";
+				cout << pilestring[STOCK] << " to ";
+				cout << pilestring[WASTE] << endl;
+				mvnum += stockMovesLeft-1;
+				waste += stock;
+				stock = 0;
+				// Recycle the waste pile
+				cout << setw(3) << ++mvnum << " Move " << waste << " from ";
+				cout << pilestring[WASTE] << " to ";
+				cout << pilestring[STOCK] << endl;
+				stock = waste;
+				waste = 0;
+				nTalonMoves -= stockMovesLeft+1;
+			}
+			if (nTalonMoves > 0) {
+				unsigned nMoved = std::min<unsigned>(stock,nTalonMoves*draw);
+				cout << setw(3) << ++mvnum << " Draw " << nMoved << " from ";
+				cout << pilestring[STOCK] << endl;
+				assert (stock >= nMoved && waste+nMoved <= 24);
+				assert(stock >= nMoved);
+				stock -= nMoved;
+				waste += nMoved;
+				assert(waste <= 24);
+				mvnum += nTalonMoves-1;
+			}
+			cout << setw(3) << ++mvnum << " Move 1 from " << pilestring[WASTE];
 			cout << " to " << pilestring[mv.To()] << endl;
+			assert(waste >= 1);
+			waste -= 1;
 		}
 	}
+	assert(stock==0 && waste==0);
 }
 
 bool operator==(const Pile&a, const Pile&b)
@@ -174,9 +210,15 @@ int main()
 	// Test Card
 	assert(Card(HEARTS,THREE).AsString() == "h3");
 	Card tcard(CLUBS,ACE);
-	assert(Card::FromString("S10",tcard));
+	std::pair<bool,Card> pair = Card::FromString("S10");
+	bool validCardString = pair.first;
+	if (validCardString) tcard = pair.second;
+	assert(validCardString);
 	assert(tcard.AsString() == "st");
-	assert(Card::FromString("7d",tcard));
+	pair = Card::FromString("7d");
+	validCardString = pair.first;
+	assert(validCardString);
+	tcard = pair.second;
 	assert(tcard.AsString() == "d7");
 	assert(tcard.OddRed());
 	assert(tcard.Value() == 25);
@@ -264,9 +306,10 @@ int main()
 			"s3","s4","s5","s6","s7","s8","s9","st","sj","sq",
 			"sk","ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"};
 		{
-			Moves solution;
 			PrintGame(Game(Cards(quick)));
-			auto outcome = KSolve(Cards(quick),solution,1,77,3000000); 
+			auto out = KSolve(Cards(quick),1,77,3000000); 
+			auto& outcome(out.first);
+			Moves& solution(out.second);
 			assert(outcome == SOLVED);
 			assert(MoveCount(solution) == 76);
 		}
@@ -337,9 +380,8 @@ int main()
 		}
 	}
 	{
-		Moves solution;
-		PrintGame(Game(Cards(deal102)));
-		auto outcome = KSolve(Cards(deal102),solution,1,105,5000000); 
-		PrintOutcome(outcome, solution);
+		PrintGame(Game(deck));
+		auto outcome = KSolve(deck,1); 
+		PrintOutcome(outcome.first, 1, outcome.second);
 	}
 }

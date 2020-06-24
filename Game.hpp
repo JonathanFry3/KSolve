@@ -52,7 +52,6 @@ private:
 	unsigned char _parity;
 
 public:
-	static bool FromString(const std::string& s0, Card & card);
 	Card(){}
 
 	Card(Suit_t suit,unsigned char rank) : 
@@ -73,19 +72,22 @@ public:
 	unsigned char Suit() const 			{return _suit;}
 	unsigned char Rank() const 			{return _rank;}
 	bool IsMajor() const				{return _isMajor;}
-	bool OddRed() const 				{return _parity;}  // true for card that fit on stacks where odd cards are red
+	bool OddRed() const 				{return _parity;}  // true for card that fits on stacks where odd cards are red
 	unsigned Value() const				{return 4*_rank+_suit;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(const Card & other) const
+	bool Covers(const Card & other) const // can other be moved onto this card on a tableau pile?
 		{return _parity == other._parity && _rank+1 == other._rank;}
 	bool operator==(const Card& other) const {return _suit==other._suit && _rank==other._rank;}
 	bool operator!=(const Card& other) const {return ! (other == *this);}
-};
 
-// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
-// Ignores characters that cannot appear in a valid card string.
-// Returns true if it succeeds.
-bool FromString(std::string s, Card & card);
+	// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
+	// Ignores characters that cannot appear in a valid card string.
+	// Suit may come before or after rank, and letters may be in
+	// upper or lower case, or mixed.
+	// Returns true and the specified Card if it succeeds, 
+	// false and garbage if it fails,
+	static std::pair<bool,Card> FromString(const std::string& s);
+};
 
 
 // CardVec is a very specialized vector.  Its capacity is always 24
@@ -98,7 +100,7 @@ public:
 	CardVec() : _size(0), _cds(){}
 	CardVec(const CardVec& orig)
 				: _size(orig._size)
-				{std::copy(orig._cds,orig._cds+_size,_cds);}
+				{std::copy(orig._cds,orig._cds+orig._size,_cds);}
 	Card & operator[](unsigned i)					{return _cds[i];}
 	const Card& operator[](unsigned i) const		{return _cds[i];}
 	Card* begin()									{return _cds;}
@@ -112,7 +114,7 @@ public:
 	void pop_back(unsigned n)						{_size -= n;}
 	void push_back(const Card& cd)					{_cds[_size] = cd; _size += 1;}
 	void append(const Card* begin, const Card* end)	
-					{for (const Card* i=begin;i<end;++i){_cds[_size++]=*i;}}
+					{for (auto i=begin;i<end;++i){_cds[_size++]=*i;}}
 	void clear()									{_size = 0;}
 	bool operator==(const CardVec& other) const
 					{	

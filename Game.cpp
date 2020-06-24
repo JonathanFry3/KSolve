@@ -42,49 +42,42 @@ std::string Card::AsString() const
 
 // Make a Card from a string like "ah" or "s8".
 // Returns true if it succeeds.
-bool Card::FromString(const std::string& s0, Card & card)    
+std::pair<bool,Card> Card::FromString(const std::string& s0)    
 {
 	std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
 	Suit_t suit;
 	Rank_t rank;
-	bool result = s1.length() == 2 || s1.length() == 3;
+	bool ok = s1.length() == 2 || s1.length() == 3;
 	std::string rankStr;
-	if (result)
-	{
+	if (ok)	{
 		auto suitIndex = suits.find(s1[0]);
-		if (suitIndex != std::string::npos)
-		{
+		if (suitIndex != std::string::npos)	{
 			// input has suit first
 			suit = static_cast<Suit_t>(suitIndex);
 			rankStr = s1.substr(1);
-		}
-		else
-		{
+		} else {
 			// suit does not appear first in input
 			{
 				// assume it is last
 				suitIndex = suits.find(s1.back());
 				suit = static_cast<Suit_t>(suitIndex);
-				result = suitIndex != std::string::npos;
+				ok = suitIndex != std::string::npos;
 				rankStr = s1.substr(0,s1.length()-1);
 			}
 		}
 	}
-	if (result)
-	{
+	if (ok)	{
 		if (rankStr == "10") {rankStr = "t";}
 		auto rankIndex = ranks.find(rankStr);
-		result = rankIndex != std::string::npos;
-		if (result)
-		{
+		ok = rankIndex != std::string::npos;
+		if (ok)	{
 			rank = static_cast<Rank_t>(rankIndex);
 		}
 	}
-	if (result)
-	{
+	Card card;
+	if (ok)
 		card = Card(suit,rank);
-	}
-	return result;
+	return std::pair<bool,Card>(ok,card);
 }
 
 CardVec Pile::Pop(unsigned n)

@@ -53,19 +53,21 @@ struct State {
 };
 
 
-KSolveResult KSolve(const std::vector<Card> & deck,
-		Moves& solution,
+std::pair<KSolveResult,Moves> KSolve(
+		const std::vector<Card> & deck,
 		unsigned draw,
 		unsigned maxMoves,
 		unsigned maxStates)
 {
+	Moves solution;
 	State state(deck,solution,draw,maxMoves,maxStates);
 
 	Moves avail = state.MakeAutoMoves();
 
 	if (avail.size() == 0) {
 		solution = state._movesMade;
-		return state._game.GameOver() ? SOLVED : IMPOSSIBLE;
+		KSolveResult rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
+		return std::pair<KSolveResult,Moves>(rc,solution);
 	}
 	assert(avail.size() > 1);
 
@@ -118,7 +120,7 @@ KSolveResult KSolve(const std::vector<Card> & deck,
 	} else {
 		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
 	}
-	return outcome;
+	return std::pair<KSolveResult,Moves>(outcome,solution);
 }
 
 // Return a lower bound on the total number of moves required to complete
