@@ -9,14 +9,14 @@
 	foundation  the four piles, one for each suit, to which one wishes to move all the cards
 	tableau     the seven piles originally dealt with one card turned up.
 
-	
-	Any solvers defined here will operate on these objects.
+	The talon is the stock and waste piles considered as a single entity.
+
+	Any solvers implemented here will operate on these objects.
 */ 
 #include <string>
 #include <vector>
-#include <algorithm>
 #include <array>
-#include <utility>		// for swap()
+#include <cassert>
 
 enum Rank_t : unsigned char
  {
@@ -51,7 +51,6 @@ private:
 	unsigned char _parity;
 
 public:
-	static bool FromString(const std::string& s0, Card & card);
 	Card(){}
 
 	Card(Suit_t suit,unsigned char rank) : 
@@ -72,96 +71,65 @@ public:
 	unsigned char Suit() const 			{return _suit;}
 	unsigned char Rank() const 			{return _rank;}
 	bool IsMajor() const				{return _isMajor;}
-	bool OddRed() const 				{return _parity;}  // true for card that fit on stacks where odd cards are red
+	bool OddRed() const 				{return _parity;}  // true for card that fits on stacks where odd cards are red
 	unsigned Value() const				{return 4*_rank+_suit;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(const Card & other) const
+	bool Covers(const Card & other) const // can other be moved onto this card on a tableau pile?
 		{return _parity == other._parity && _rank+1 == other._rank;}
 	bool operator==(const Card& other) const {return _suit==other._suit && _rank==other._rank;}
 	bool operator!=(const Card& other) const {return ! (other == *this);}
+
+	// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
+	// Ignores characters that cannot appear in a valid card string.
+	// Suit may come before or after rank, and letters may be in
+	// upper or lower case, or mixed.
+	// Returns true and the specified Card if it succeeds, 
+	// false and garbage if it fails,
+	static std::pair<bool,Card> FromString(const std::string& s);
 };
 
-// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
-// Ignores characters that cannot appear in a valid card string.
-// Returns true if it succeeds.
-bool FromString(std::string s, Card & card);
-
-
-// Directions for a move.  Game::AvailableMoves() creates these.
-// Game::UnMakeMove() cannot infer the value of the from tableau pile's
-// up count before the move (because of flips), so Game::AvailableMoves() 
-// includes that in any Move from a tableau pile.
-class Move
-{
-private:
-	unsigned char _from;
-	unsigned char _to;
-	unsigned char _n;
-	unsigned char _fromUpCount;
-
-public:
-	Move(unsigned char from, unsigned char to, unsigned char n, unsigned char fromUpCount=0)
-		: _from(from)
-		, _to(to)
-		, _n(n)
-		, _fromUpCount(fromUpCount)
-		{}
-
-	unsigned From() const 			{return _from;}
-	unsigned To()   const			{return _to;}
-	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
-	unsigned FromUpCount() const 	{return _fromUpCount;}
-	void SetFrom(unsigned fm)       {_from = fm;}
-	void SetTo(unsigned to)         {_to = to;}
-	void SetN(unsigned n)           {_n = n;}
-};
-typedef std::vector<Move> Moves;
 
 // CardVec is a very specialized vector.  Its capacity is always 24
 // and it does not check for overfilling.
 class CardVec {
-	Card* _begin;
-	Card* _end;
+	std::uint32_t _size;
 	Card _cds[24];
 
 public:
-	CardVec() : _begin(_cds),_end(_cds), _cds(){}
+	CardVec() : _size(0), _cds(){}
 	CardVec(const CardVec& orig)
-				:_begin(_cds)
-				,_end(_begin+orig.size())
-				{std::copy(orig._begin,orig._end,_cds);}
+				: _size(orig._size)
+				{std::copy(orig._cds,orig._cds+orig._size,_cds);}
 	Card & operator[](unsigned i)					{return _cds[i];}
 	const Card& operator[](unsigned i) const		{return _cds[i];}
-	Card* begin()									{return _begin;}
-	const Card* begin() const						{return _begin;}
-	size_t size() const								{return _end-_begin;}
-	Card* end()										{return _end;}
-	const Card* end() const							{return _end;}
-	Card & back()									{return *(_end-1);}
-	const Card& back() const						{return *(_end-1);}
-	void pop_back()									{_end -= 1;}
-	void pop_back(unsigned n)						{_end -= n;}
-	void push_back(const Card& cd)					{*_end = cd; _end += 1;}
+	Card* begin()									{return _cds;}
+	const Card* begin() const						{return _cds;}
+	size_t size() const								{return _size;}
+	Card* end()										{return _cds+_size;}
+	const Card* end() const							{return _cds+_size;}
+	Card & back()									{return *(_cds+_size-1);}
+	const Card& back() const						{return *(_cds+_size-1);}
+	void pop_back()									{_size -= 1;}
+	void pop_back(unsigned n)						{_size -= n;}
+	void push_back(const Card& cd)					{_cds[_size] = cd; _size += 1;}
 	void append(const Card* begin, const Card* end)	
-					{for (const Card* i=begin;i<end;++i){*(_end++)=*i;}}
-	void clear()									{_end = _begin;}
+					{for (auto i=begin;i<end;++i){_cds[_size++]=*i;}}
+	void clear()									{_size = 0;}
 	bool operator==(const CardVec& other) const
 					{	
-						if (size() != other.size()) return false;
-						const Card* j = other._begin;
-						for(const Card*i=_begin;i < _end;++i,++j){
-							if (*i != *j) return false;
+						if (_size != other._size) return false;
+						for(unsigned i = 0; i < _size; ++i){
+							if ((*this)[i] != other[i]) return false;
 						}
 						return true;
 					}
 	CardVec& operator=(const CardVec& other) 
 					{
-						std::copy(other._begin,other._end,_cds);
-						_end = _cds+other.size();
+						std::copy(other._cds,other._cds+other._size,_cds);
+						_size = other._size;
 						return *this;
 					}
-	void swap(CardVec& other)					{std::swap(*this,other);}
-};		// end class CardVec
+};	// end class CardVec
 
 enum PileCode {
 	WASTE = 0,
@@ -186,7 +154,7 @@ class Pile
 private:
 	CardVec _cards;
 	unsigned short _code;
-	short _upCount;
+	unsigned short _upCount;
 	bool _isTableau;
 	bool _isFoundation;
 
@@ -196,32 +164,87 @@ public:
 	, _upCount(0)
 	, _isTableau(TABLEAU <= code && code < TABLEAU+7)
 	, _isFoundation(FOUNDATION <= code && code < FOUNDATION+4)
-	{
-	}
+	{}
 
 	unsigned Code() const 							{return _code;}
-	int UpCount() const 							{return _upCount;}
+	unsigned UpCount() const 						{return _upCount;}
 	bool IsTableau() const 							{return _isTableau;}
 	bool IsFoundation() const 						{return _isFoundation;}
 	unsigned Size() const 							{return _cards.size();}
 
-	void SetUpCount(int up)   						{_upCount = up;}
-	void IncrUpCount(int c) 						{ _upCount += c;}
+	void SetUpCount(unsigned up)					{_upCount = up;}
+	void IncrUpCount(int c) 						{_upCount += c;}
 	const Card & operator[](unsigned which) const   {return _cards[which];}
 	const CardVec& Cards() const 					{return _cards;}
 	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(const Card & c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
 	CardVec Draw(unsigned n);         // like Pop(), but reverses order of cards drawn
-	void Push( const Card* begin,  const Card* end)
+	void Push(const Card* begin, const Card* end)
 											{_cards.append(begin,end);}
 	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
 	Card Top() const                        {return *(_cards.end()-_upCount);}
 	Card Back() const                       {return _cards.back();}
 	void ClearCards()                       {_cards.clear(); _upCount = 0;}
-	void SwapCards(Pile & other)            {_cards.swap(other._cards);}
-	void ReverseCards()                     {std::reverse(_cards.begin(),_cards.end());}
+	void Draw(Pile & from)					{_cards.push_back(from._cards.back()); from._cards.pop_back();}
+	void Draw(Pile & from, int nCards);
 };
+
+// Directions for a move.  Game::AvailableMoves() creates these.
+// Game::UnMakeMove() cannot infer the value of the from tableau pile's
+// up count before the move (because of flips), so Game::AvailableMoves() 
+// includes that in any Move from a tableau pile.
+//
+// Game::AvailableMoves creates Moves around the talon (the waste and
+// stock piles) that must be counted as multiple moves.  The number
+// of actual moves implied by a Move object is given by NMoves().
+class Move
+{
+private:
+	unsigned char _from;
+	unsigned char _to;
+	unsigned char _nMoves;
+	union {
+		struct {
+			// Non-talon move
+			unsigned char _n:4;
+			unsigned char _fromUpCount:4;
+		};
+		signed char _draw;			// draw this many cards (may be negative)
+	};
+
+public:
+	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
+	// Their cumulative effect is to draw 'draw' cards (may be negative)
+	// from stock. One card is then moved from the waste pile to the "to" pile.
+	Move(unsigned to, unsigned nMoves, int draw)
+		: _from(STOCK)
+		, _to(to)
+		, _nMoves(nMoves)
+		, _draw(draw)
+		{}
+	// Construct a non-talon move
+	Move(unsigned from, unsigned to, unsigned n, unsigned fromUpCount)
+		: _from(from)
+		, _to(to)
+		, _nMoves(1)
+		, _n(n)
+		, _fromUpCount(fromUpCount)
+		{
+			assert(from != STOCK);
+		}
+
+	unsigned From() const 			{return _from;}
+	unsigned To()   const			{return _to;}
+	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
+	unsigned FromUpCount() const 	{return _fromUpCount;}
+	unsigned NMoves() const			{return _nMoves;}
+	int Draw() const				{return _draw;}
+};
+typedef std::vector<Move> Moves;
+
+// Returns the number of actual moves implied by a series of Moves.
+unsigned MoveCount(const Moves & moves);
 
 class Game
 {

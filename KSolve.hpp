@@ -3,15 +3,23 @@
 // Solver.hpp declares a Klondike Solitaire solver function and auxiliaries
 
 #include <Game.hpp>
-#include <cstdint>
+#include <cstdint>		// for std::uint32_t
+#include <utility>		// for std::pair
 
 
+// Solves the game of Klondike Solitaire for minimum moves if possible.
+// Returns a result code and a Moves vector.  The vector contains
+// the minimum solution if the code retured is SOLVED. It will contain
+// a solution that may not be minimal if the code is GAVEUP_SOLVED.
+// Otherwise, it will be empty.
 enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-KSolveResult KSolve(const std::vector<Card> & deck,
-		Moves& solution,
-		unsigned draw=1,
-		unsigned maxMoves=512,
-		unsigned maxStates=10000000);
+std::pair<KSolveResult,Moves> KSolve(
+		const std::vector<Card> & deck, // The deck to be played
+		unsigned draw=1,				// number of cards to draw from stock at a time
+		unsigned maxMoves=512,			// give up if the minimum possible number
+										// of moves in any solution exceeds this.
+		unsigned maxStates=10000000);	// Give up is the number of unique game states
+										// examined exceeds this.
 
 
 // A compact representation of the current game state.
