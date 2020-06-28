@@ -51,7 +51,8 @@
         "typeinfo": "cpp",
         "iostream": "cpp",
         "cstring": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "iomanip": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"

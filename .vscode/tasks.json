@@ -3,6 +3,29 @@
 	"tasks": [
 		{
 			"type": "shell",
+			"label": "C/C++:  g++ build KlondikeSolver",
+			"command": "g++",
+			"args": [
+				"-g",
+				"Game.cpp",
+				"KSolve.cpp",
+				"KlondikeSolver.cpp",
+				"-o",
+				"${workspaceFolder}/KlondikeSolver"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++:  g++ build gametest",
 			"command": "g++",
 			"args": [
@@ -10,8 +33,6 @@
 				"Game.cpp",
 				"KSolve.cpp",
 				"gametest.cpp",
-				"-I",
-				"${workspaceFolder}",
 				"-o",
 				"${workspaceFolder}/gametest"
 			],

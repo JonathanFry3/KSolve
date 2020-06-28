@@ -1,7 +1,7 @@
 /* speeder.cpp - driver for testing performance 
 */
 #include <fstream>
-#include <KSolve.hpp>
+#include "KSolve.hpp"
 #include <cassert>
 #include <ctime>
 

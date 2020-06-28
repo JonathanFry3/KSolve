@@ -1,6 +1,6 @@
 // Tests for Game.cpp KSolve.cpp
 
-#include <KSolve.hpp>
+#include "KSolve.hpp"
 #include <cassert>
 #include <iostream>
 #include <iomanip>	  // for setw()
@@ -110,7 +110,7 @@ static void Validate(const Game & game)
 }
 
 // enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-void PrintOutcome(KSolveResult outcome, unsigned draw, const Moves& solution)
+void PrintOutcome(KSolveResult outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
 		"waste    ",
@@ -130,61 +130,24 @@ void PrintOutcome(KSolveResult outcome, unsigned draw, const Moves& solution)
 	vector<string> outcomeWords{"Minimal Solution","Solution may not be minimal",
 									"Gave up without solving", "Impossible"};
 	cout << "Outcome: " << outcomeWords[outcome];
-	if (solution.size()){
-		cout << " in " << MoveCount(solution) << " moves";
+	if (moves.size()){
+		cout << " in " << moves.back().MoveNum() << " moves";
 	}
 	cout  << endl;
 
-	unsigned stock = 24;
-	unsigned waste = 0;
-	unsigned mvnum = 0;
-	for (auto mv : solution){
-		if (mv.From() != STOCK){
-			cout << setw(3) << ++mvnum << " Move " << mv.N();
-			cout << " from " << pilestring[mv.From()];
-			cout << " to " << pilestring[mv.To()] << endl;
-			if (mv.From() == WASTE){
-				assert (waste >= 1);
-				waste -= 1;
-			}
+	for (auto mv : moves){
+		unsigned from = mv.From();
+		unsigned to = mv.To();
+		if (from != STOCK){
+			cout << setw(3) << mv.MoveNum() << " Move " << mv.NCards();
+			cout << " from " << pilestring[from];
+			cout << " to " << pilestring[to];
+			if (mv.Flip()) cout << " (flip)";
+			cout << endl;
 		} else {
-			assert(stock+waste > 0);
-			unsigned nTalonMoves = mv.NMoves()-1;
-			unsigned stockMovesLeft = (stock+draw-1)/draw;
-			if (nTalonMoves > stockMovesLeft) {
-				// Draw all remaining cards from stock
-				cout << setw(3) << ++mvnum << " Move " << stock << " from ";
-				cout << pilestring[STOCK] << " to ";
-				cout << pilestring[WASTE] << endl;
-				mvnum += stockMovesLeft-1;
-				waste += stock;
-				stock = 0;
-				// Recycle the waste pile
-				cout << setw(3) << ++mvnum << " Move " << waste << " from ";
-				cout << pilestring[WASTE] << " to ";
-				cout << pilestring[STOCK] << endl;
-				stock = waste;
-				waste = 0;
-				nTalonMoves -= stockMovesLeft+1;
-			}
-			if (nTalonMoves > 0) {
-				unsigned nMoved = std::min<unsigned>(stock,nTalonMoves*draw);
-				cout << setw(3) << ++mvnum << " Draw " << nMoved << " from ";
-				cout << pilestring[STOCK] << endl;
-				assert (stock >= nMoved && waste+nMoved <= 24);
-				assert(stock >= nMoved);
-				stock -= nMoved;
-				waste += nMoved;
-				assert(waste <= 24);
-				mvnum += nTalonMoves-1;
-			}
-			cout << setw(3) << ++mvnum << " Move 1 from " << pilestring[WASTE];
-			cout << " to " << pilestring[mv.To()] << endl;
-			assert(waste >= 1);
-			waste -= 1;
+			cout << setw(3) << mv.MoveNum() << " Draw " << mv.NCards() << endl;
 		}
 	}
-	assert(stock==0 && waste==0);
 }
 
 bool operator==(const Pile&a, const Pile&b)
@@ -307,10 +270,12 @@ int main()
 			"s3","s4","s5","s6","s7","s8","s9","st","sj","sq",
 			"sk","ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"};
 		{
-			PrintGame(Game(Cards(quick)));
-			auto out = KSolve(Cards(quick),1,77,3000000); 
+			Game game(Cards(quick),1);
+			PrintGame(game);
+			auto out = KSolve(game); 
 			auto& outcome(out.first);
 			Moves& solution(out.second);
+			PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
 			assert(outcome == SOLVED);
 			assert(MoveCount(solution) == 76);
 		}
@@ -381,8 +346,9 @@ int main()
 		}
 	}
 	{
-		PrintGame(Game(deck));
-		auto outcome = KSolve(deck,1); 
-		PrintOutcome(outcome.first, 1, outcome.second);
+		Game game(Cards(deal3));
+		PrintGame(game);
+		auto outcome = KSolve(game,512,8'000'000); 
+		PrintOutcome(outcome.first, MakeXMoves(outcome.second, game.Draw()));
 	}
 }

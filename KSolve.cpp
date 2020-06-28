@@ -1,6 +1,6 @@
-#include <KSolve.hpp>
+#include "KSolve.hpp"
 #include <stack>
-#include <robin_hood.h>     // for unordered_map
+#include "robin_hood.h"     // for unordered_map
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -20,22 +20,21 @@ public:
 struct State {
 	std::vector<HistoryStack> _histories;
 	robin_hood::unordered_flat_map<GameStateType,unsigned,Hasher> _previousStates;
-	Game _game;
+	Game &_game;
 	Moves _movesMade;
 	Moves & _minSolution;
 	unsigned _minSolutionCount;
 	unsigned _stateWins;
 	unsigned _skippableWins;
 
-	State(const std::vector<Card> & deck, 
+	State(  Game & gm, 
 			Moves& solution, 
-			unsigned draw, 
 			unsigned maxMoves, 
 			unsigned maxStates)
-		: _histories(maxMoves*5/3,HistoryStack())
-		, _previousStates(maxStates,Hasher())
+		: _histories(maxMoves,HistoryStack())
+		, _previousStates(maxStates*5/3,Hasher())
 		, _minSolution(solution)
-		, _game(deck,draw)
+		, _game(gm)
 		, _minSolutionCount(maxMoves)
 		, _stateWins(0)
 		, _skippableWins(0)
@@ -54,13 +53,12 @@ struct State {
 
 
 std::pair<KSolveResult,Moves> KSolve(
-		const std::vector<Card> & deck,
-		unsigned draw,
+		Game& game,
 		unsigned maxMoves,
 		unsigned maxStates)
 {
 	Moves solution;
-	State state(deck,solution,draw,maxMoves,maxStates);
+	State state(game,solution,maxMoves,maxStates);
 
 	Moves avail = state.MakeAutoMoves();
 

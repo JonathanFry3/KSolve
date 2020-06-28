@@ -2,7 +2,7 @@
 	Implements Game.hpp.
 */
 
-#include <Game.hpp>
+#include "Game.hpp"
 #include <cassert>
 
 const std::string suits("cdsh");
@@ -116,6 +116,7 @@ unsigned MoveCount(const Moves& moves)
 	}
 	return result;
 }
+
 Game::Game(const std::vector<Card> &deck,unsigned draw)
 	: _deck(deck)
 	, _waste(WASTE)
@@ -195,6 +196,24 @@ void  Game::UnMakeMove(const Move & mv)
 			fromPile.IncrUpCount(n);
 		}
 		toPile.IncrUpCount(-n);
+	}
+}
+
+void Game::MakeMove(const XMove & xmv)
+{
+	auto from = xmv.From();
+	auto to = xmv.To();
+	unsigned n = xmv.NCards();
+	Pile& toPile = *_allPiles[to];
+	Pile& fromPile = *_allPiles[from];
+	if (from == STOCK || to == STOCK)
+		toPile.Push(fromPile.Draw(n));
+	else
+		toPile.Push(fromPile.Pop(n));
+	toPile.IncrUpCount(n);
+	fromPile.IncrUpCount(-n);
+	if (xmv.Flip()){
+		fromPile.SetUpCount(1);    // flip the top card
 	}
 }
 
@@ -441,6 +460,83 @@ unsigned Game::FoundationCardCount() const
 	unsigned result = 0;
 	for (const Pile& f : _foundation) {
 		result += f.Size();
+	}
+	return result;
+}
+
+static bool IsTableau(unsigned pile)
+{
+	return TABLEAU <= pile && pile < TABLEAU+7;
+}
+// Enumerate the moves in a vector of XMoves.
+std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
+{
+	unsigned stock = 24;
+	unsigned waste = 0;
+	unsigned mvnum = 0;
+	std::array<unsigned char,7> upCount {1,1,1,1,1,1,1};
+	std::array<unsigned char,7> tCount {1,2,3,4,5,6,7};
+	std::vector<XMove> result;
+
+	for (auto mv : solution){
+		unsigned from = mv.From();
+		unsigned to = mv.To();
+		if (from != STOCK){
+			unsigned n = mv.N();
+			bool flip = false;
+			if (IsTableau(from)) {
+				assert(tCount[from-TABLEAU] >= n);
+				assert(upCount[from-TABLEAU] >= n);
+				tCount[from-TABLEAU] -= n;
+				upCount[from-TABLEAU] -= n;
+				if (tCount[from-TABLEAU] && !upCount[from-TABLEAU]){
+					flip = true;
+					upCount[from-TABLEAU] = 1;
+				}
+			}
+			if (IsTableau(to)) {
+				tCount[to-TABLEAU] += n;
+				upCount[to-TABLEAU] += n;
+			}
+			result.push_back(XMove(++mvnum,from, to, n,flip));
+			if (mv.From() == WASTE){
+				assert (waste >= 1);
+				waste -= 1;
+			}
+		} else {
+			assert(stock+waste > 0);
+			unsigned nTalonMoves = mv.NMoves()-1;
+			unsigned stockMovesLeft = (stock+draw-1)/draw;
+			if (nTalonMoves > stockMovesLeft) {
+				// Draw all remaining cards from stock
+				result.push_back(XMove(++mvnum,STOCK,WASTE,stock,false));
+				mvnum += stockMovesLeft-1;
+				waste += stock;
+				stock = 0;
+				// Recycle the waste pile
+				result.push_back(XMove(++mvnum,WASTE,STOCK,waste,false));
+				stock = waste;
+				waste = 0;
+				nTalonMoves -= stockMovesLeft+1;
+			}
+			if (nTalonMoves > 0) {
+				unsigned nMoved = std::min<unsigned>(stock,nTalonMoves*draw);
+				result.push_back(XMove(++mvnum,STOCK,WASTE,nMoved,false));
+				assert (stock >= nMoved && waste+nMoved <= 24);
+				assert(stock >= nMoved);
+				stock -= nMoved;
+				waste += nMoved;
+				assert(waste <= 24);
+				mvnum += nTalonMoves-1;
+			}
+			result.push_back(XMove(++mvnum,WASTE,to,1,false));
+			assert(waste >= 1);
+			waste -= 1;
+			if (IsTableau(to)) {
+				tCount[to-TABLEAU] += 1;
+				upCount[to-TABLEAU] += 1;
+			}
+		}
 	}
 	return result;
 }

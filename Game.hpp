@@ -34,7 +34,7 @@ enum Rank_t : unsigned char
 	QUEEN,
 	KING
 };
-enum Suit_t : char {
+enum Suit_t : unsigned char {
 	CLUBS = 0,
 	DIAMONDS,
 	SPADES,
@@ -53,7 +53,7 @@ private:
 public:
 	Card(){}
 
-	Card(Suit_t suit,unsigned char rank) : 
+	Card(unsigned char suit,unsigned char rank) : 
 		_suit(suit),
 		_rank(rank),
 		_isMajor(suit>>1),
@@ -246,6 +246,52 @@ typedef std::vector<Move> Moves;
 // Returns the number of actual moves implied by a series of Moves.
 unsigned MoveCount(const Moves & moves);
 
+// A vector of Moves is not very useful for enumerating the moves
+// required to solve a game.  What's wanted for that is
+// a vector of XMoves - objects that can simply be listed in
+// various formats.
+//
+// Moves are numbered from 1.  The numbers will often not be
+// consecutive, as drawing multiple cards from the stock pile
+// is represented as a single XMove.
+//
+// Pile numbers are given by the enum PileCode.
+//
+// Flips of tableau cards are not counted as moves, but they
+// are flagged on the move from the pile of the flip.
+
+class XMove
+{
+	unsigned _moveNum;
+	unsigned _from;
+	unsigned _to;
+	unsigned char _nCards;
+	unsigned char _flip;		// tableau flip?
+public:
+	XMove()
+		: _nCards(0)
+		{}
+	XMove(    unsigned moveNum
+			, unsigned from
+			, unsigned to
+			, unsigned nCards
+			, bool flip)
+		: _moveNum(moveNum)
+		, _from(from)
+		, _to(to)
+		, _nCards(nCards)
+		, _flip(flip)
+		{}
+	unsigned  MoveNum() const		{return _moveNum;}
+	unsigned  From() const			{return _from;}
+	unsigned  To() const			{return _to;}
+	unsigned  NCards() const		{return _nCards;}
+	bool 	  Flip() const			{return _flip;}
+};
+
+typedef std::vector<XMove> XMoves;
+XMoves MakeXMoves(const Moves & moves, unsigned draw);
+
 class Game
 {
 	Pile _waste;
@@ -280,5 +326,6 @@ public:
 								&& _foundation[1].Size() == 13 
 								&& _foundation[2].Size() == 13
 								&& _foundation[3].Size() == 13;}
+	void MakeMove(const XMove& xmv);
 };
 #endif

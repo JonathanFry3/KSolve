@@ -2,7 +2,7 @@
 #define KSOLVE_HPP
 // Solver.hpp declares a Klondike Solitaire solver function and auxiliaries
 
-#include <Game.hpp>
+#include "Game.hpp"
 #include <cstdint>		// for std::uint32_t
 #include <utility>		// for std::pair
 
@@ -14,11 +14,10 @@
 // Otherwise, it will be empty.
 enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
 std::pair<KSolveResult,Moves> KSolve(
-		const std::vector<Card> & deck, // The deck to be played
-		unsigned draw=1,				// number of cards to draw from stock at a time
-		unsigned maxMoves=512,			// give up if the minimum possible number
+		Game& gm, 						// The game to be played
+		unsigned maxMoves=512,			// Give up if the minimum possible number
 										// of moves in any solution exceeds this.
-		unsigned maxStates=10000000);	// Give up is the number of unique game states
+		unsigned maxStates=5000000);	// Give up if the number of unique game states
 										// examined exceeds this.
 
 
