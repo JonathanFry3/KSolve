@@ -60,20 +60,22 @@ std::pair<KSolveResult,Moves> KSolve(
 	Moves solution;
 	State state(game,solution,maxMoves,maxStates);
 
-	Moves avail = state.MakeAutoMoves();
+	{
+		Moves avail = state.MakeAutoMoves();
 
-	if (avail.size() == 0) {
-		solution = state._movesMade;
-		KSolveResult rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
-		return std::pair<KSolveResult,Moves>(rc,solution);
+		if (avail.size() == 0) {
+			solution = state._movesMade;
+			KSolveResult rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
+			return std::pair<KSolveResult,Moves>(rc,solution);
+		}
+		assert(avail.size() > 1);
 	}
-	assert(avail.size() > 1);
 
 	unsigned startMoves = state.MinimumMoves();
 	state._histories[startMoves].push(state._movesMade);
 
 	unsigned ih;
-	for  (ih= startMoves; ih <= state._minSolutionCount
+	for  (ih= startMoves; ih < state._minSolutionCount
 			 && state._previousStates.size() <maxStates; ++ih) {
 		auto &h = state._histories[ih];
 		// scan histories from shortest to longest
@@ -180,13 +182,13 @@ bool State::SkippableMove(const Move& trial)
 	move has changed pile C.
 	*/
 	auto B = trial.From();
-	if (B == STOCK || B == WASTE) return false;
+	if (B == STOCK || B == WASTE) return false; 
 	auto C = trial.To();
 	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
 		Move mv = *imv;
 		if (mv.To() == B){
 			// candidate T0 move
-			return  mv.N() == trial.N();
+			return  mv.NCards() == trial.NCards();
 		} else {
 			// intervening move
 			if (mv.To() == C || mv.From() == C)

@@ -24,7 +24,6 @@
                 }
             ]
         }
-        */
         {
             "name": "Test Game, KSolve, GameStateType",
             "type": "cppdbg",
@@ -44,7 +43,7 @@
                 }
             ]
         }
-        /*
+        */
         {
             "name": "Test KlondikeSolver",
             "type": "cppdbg",
@@ -67,6 +66,5 @@
                 }
             ]
         }
-        */
     ]
 }

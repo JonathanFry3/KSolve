@@ -21,7 +21,7 @@ vector<Card> Cards(const std::vector<std::string>& strings)
 	}
 	return result;
 }
-string PileNames[] 
+static string PileNames[] 
 {
 	"waste",
 	"tableau 1",
@@ -255,6 +255,21 @@ int main()
 		assert (sol.FoundationCardCount() == 0);
 	}
 	{
+		// Test Peek functions
+		Move a(TABLEAU3,6,-4);
+		Move b(WASTE,FOUNDATION2D,1,0);
+		Move c(TABLEAU1,TABLEAU6,4,1);
+		string peeka = Peek(a);
+		string peekb = Peek(b);
+		string peekc = Peek(c);
+		assert(peeka == "+6d-4>t3");
+		assert(peekb == "wa>di");
+		assert(peekc == "t1>t6x4u1");
+		Moves mvs({a,b,c});
+		string peekmvs = Peek(mvs);
+		assert (peekmvs == "(+6d-4>t3,wa>di,t1>t6x4u1)");
+	}
+	{
 		// trivial is a trivial deal - all automatic moves
 		vector<string> trivial{
 			"ca","h2","d4","s5","s6","d7","h7","da","c3","s4","h5","h6",
@@ -348,7 +363,7 @@ int main()
 	{
 		Game game(Cards(deal3));
 		PrintGame(game);
-		auto outcome = KSolve(game,512,8'000'000); 
+		auto outcome = KSolve(game,512,9'600'000); 
 		PrintOutcome(outcome.first, MakeXMoves(outcome.second, game.Draw()));
 	}
 }

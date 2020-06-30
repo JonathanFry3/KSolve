@@ -4,6 +4,7 @@
 
 #include "Game.hpp"
 #include <cassert>
+#include <sstream> 		// for stringstream
 
 const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
@@ -162,7 +163,7 @@ void Game::MakeMove(const Move & mv)
 		_waste.SetUpCount(_waste.Size());
 		_stock.SetUpCount(_stock.Size());
 	} else {
-		auto n = mv.N();
+		auto n = mv.NCards();
 		Pile& fromPile = *_allPiles[from];
 		toPile.Push(fromPile.Pop(n));
 		// For tableau piles, UpCount counts face-up cards.  
@@ -187,7 +188,7 @@ void  Game::UnMakeMove(const Move & mv)
 		_waste.SetUpCount(_waste.Size());
 		_stock.SetUpCount(_stock.Size());
 	} else {
-		auto n = mv.N();
+		auto n = mv.NCards();
 		Pile & fromPile = *_allPiles[from];
 		fromPile.Push(toPile.Pop(n));
 		if (fromPile.IsTableau()) {
@@ -230,9 +231,10 @@ static unsigned ShortFndLen(const Game& gm){
 	return shortLen;
 }
 
-// Look for a move to the shortest foundaton pile.  For the same reason 
-// that putting an ace on its foundation pile is always right, these are, too.
-// Returns a Moves vector that may be empty or contain one such move.
+// Look for a move to the shortest foundation pile or one one card higher.  
+// For the same reason that putting an ace or deuce on its foundation pile 
+// is always right, these are, too. Returns a Moves vector that may be empty 
+// or contain one such move.
 static Moves ShortFoundationMove(const Game & gm, unsigned shortLen)
 {
 	Moves result;
@@ -243,8 +245,8 @@ static Moves ShortFoundationMove(const Game & gm, unsigned shortLen)
 		if (pile.Size()) {
 			const Card& card = pile.Back();
 			unsigned suit = card.Suit();
-			if (card.Rank() == shortLen) {
-				if (fnd[suit].Size() == shortLen) {
+			if (card.Rank() <= shortLen+1) {
+				if (fnd[suit].Size() == card.Rank()) {
 					unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
 					result.push_back(Move(iPile,FOUNDATION+suit,1,up));
 				}
@@ -268,7 +270,7 @@ struct TalonFuture {
 
 // Return a vector of all the cards that can be played
 // from the talon (the stock and waste piles), along
-// with the number of moves requied to reach each one
+// with the number of moves required to reach each one
 // and the number of cards that must be drawn (or undrawn)
 // to reach each one.
 static std::vector<TalonFuture> TalonMoves(const Game & game)
@@ -393,8 +395,11 @@ Moves Game::AvailableMoves() const
 				int moveCount = cardToCover.Rank() -  fromTip.Rank();
 				assert(0 < moveCount && moveCount <= up);
 				if (moveCount == up){
-					if (needEmptyColumn) {
-						// move all the up cards on the from pile.
+					if ((needEmptyColumn&&fromBase.Rank()!=KING) || up < fromPile.Size())
+					{
+						// This move will expose a face-down card or
+						// clear a column to which a king may be moved.
+						// Move all the up cards on the from pile.
 						assert(fromPile.Top().Covers(cardToCover));
 						result.push_back(Move(fromPile.Code(),toPile.Code(),up,up));
 					}
@@ -413,19 +418,25 @@ Moves Game::AvailableMoves() const
 	// after one or more draws.  
 	std::vector<TalonFuture> talon(TalonMoves(*this));
 	for (const TalonFuture & mv : talon){
-		if (mv._card.Rank() == _foundation[mv._card.Suit()].Size()){
-			unsigned pileNo = FOUNDATION+mv._card.Suit();
+		unsigned cardSuit = mv._card.Suit();
+		unsigned cardRank = mv._card.Rank();
+		if (cardRank == _foundation[cardSuit].Size()){
+			unsigned pileNo = FOUNDATION+cardSuit;
 			result.push_back(Move(pileNo,mv._nMoves+1,mv._draw));
-			if (_foundation[mv._card.Suit()].Size() == shortLen)
-				break;
+			if (cardRank <= shortLen+1){
+				if (_draw == 1)
+					break;		// This is best next move from among the remaining talon cards
+				else
+					continue;  	// This is best move for this card.  A card further on might be a better move.
+			}
 		}
-		bool kingToMove = mv._card.Rank() == KING;
+			
 		for (const Pile& tab : _tableau) {
 			if ((tab.Size() > 0)) {
 				if (mv._card.Covers(tab.Back())) {
 					result.push_back(Move(tab.Code(),mv._nMoves+1,mv._draw));
 				}
-			} else if (kingToMove) {
+			} else if (cardRank == KING) {
 				result.push_back(Move(tab.Code(),mv._nMoves+1,mv._draw));
 				break;  // move that king to just one empty pile
 			}
@@ -482,7 +493,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		unsigned from = mv.From();
 		unsigned to = mv.To();
 		if (from != STOCK){
-			unsigned n = mv.N();
+			unsigned n = mv.NCards();
 			bool flip = false;
 			if (IsTableau(from)) {
 				assert(tCount[from-TABLEAU] >= n);
@@ -509,10 +520,12 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 			unsigned stockMovesLeft = (stock+draw-1)/draw;
 			if (nTalonMoves > stockMovesLeft) {
 				// Draw all remaining cards from stock
-				result.push_back(XMove(++mvnum,STOCK,WASTE,stock,false));
-				mvnum += stockMovesLeft-1;
-				waste += stock;
-				stock = 0;
+				if (stock) {
+					result.push_back(XMove(++mvnum,STOCK,WASTE,stock,false));
+					mvnum += stockMovesLeft-1;
+					waste += stock;
+					stock = 0;
+				}
 				// Recycle the waste pile
 				result.push_back(XMove(++mvnum,WASTE,STOCK,waste,false));
 				stock = waste;
@@ -539,4 +552,64 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		}
 	}
 	return result;
+}
+
+static std::string PileNames[] 
+{
+	"wa",
+	"t1",
+	"t2",
+	"t3",
+	"t4",
+	"t5",
+	"t6",
+	"t7",
+	"st",
+	"cb",
+	"di",
+	"sp",
+	"ht"
+};
+
+std::string Peek(const Pile& pile) 
+{
+	std::stringstream outStr;
+	outStr << PileNames[pile.Code()] << ":";
+	for (auto ip = pile.Cards().begin(); ip < pile.Cards().end(); ++ip)
+	{
+		char sep(' ');
+		if (pile.IsTableau())
+		{
+			if (ip == pile.Cards().end()-pile.UpCount()) {sep = '|';}
+		}
+		outStr << sep << ip->AsString();
+	}
+	return outStr.str();
+}
+
+std::string Peek(const Move & mv)
+{
+	std::stringstream outStr;
+	if (mv.From() == STOCK){
+		outStr << "+" << mv.NMoves() << "d" << mv.Draw() << ">" << PileNames[mv.To()];
+	} else {
+		outStr << PileNames[mv.From()] << ">" << PileNames[mv.To()];
+		unsigned n = mv.NCards();
+		if (n != 1) outStr << "x" << n;
+		if (mv.FromUpCount()) outStr << "u" << mv.FromUpCount();
+	}
+	return outStr.str();
+}
+
+std::string Peek(const Moves & mvs)
+{
+	std::stringstream outStr;
+	outStr << "(";
+	if (mvs.size()) {
+		outStr << Peek(mvs[0]);
+		for (unsigned imv = 1; imv < mvs.size(); ++imv)
+			outStr << "," <<  Peek(mvs[imv]);
+	}
+	outStr << ")";
+	return outStr.str();
 }

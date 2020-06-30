@@ -97,9 +97,6 @@ class CardVec {
 
 public:
 	CardVec() : _size(0), _cds(){}
-	CardVec(const CardVec& orig)
-				: _size(orig._size)
-				{std::copy(orig._cds,orig._cds+orig._size,_cds);}
 	Card & operator[](unsigned i)					{return _cds[i];}
 	const Card& operator[](unsigned i) const		{return _cds[i];}
 	Card* begin()									{return _cds;}
@@ -190,6 +187,9 @@ public:
 	void Draw(Pile & from, int nCards);
 };
 
+// Returns a string to visualize a pile in a debugger.
+std::string Peek(const Pile& pile);
+
 // Directions for a move.  Game::AvailableMoves() creates these.
 // Game::UnMakeMove() cannot infer the value of the from tableau pile's
 // up count before the move (because of flips), so Game::AvailableMoves() 
@@ -236,7 +236,7 @@ public:
 
 	unsigned From() const 			{return _from;}
 	unsigned To()   const			{return _to;}
-	unsigned N()    const 			{return _n;}     // an N of 0 means do nothing
+	unsigned NCards()    const 		{return (_from == STOCK) ? 1 : _n;}     
 	unsigned FromUpCount() const 	{return _fromUpCount;}
 	unsigned NMoves() const			{return _nMoves;}
 	int Draw() const				{return _draw;}
@@ -245,6 +245,12 @@ typedef std::vector<Move> Moves;
 
 // Returns the number of actual moves implied by a series of Moves.
 unsigned MoveCount(const Moves & moves);
+
+// Return a string to visualize a move in a debugger
+std::string Peek(const Move& mv);
+
+// Return a string to visualize a Moves vector
+std::string Peek(const Moves & mvs);
 
 // A vector of Moves is not very useful for enumerating the moves
 // required to solve a game.  What's wanted for that is
