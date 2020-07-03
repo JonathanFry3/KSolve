@@ -14,6 +14,7 @@ vector<Card> SolitaireDeck(const string& s);
 string GameDiagram(const Game& game);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
+string MovesMade(const XMoves & xmoves);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
@@ -170,7 +171,6 @@ int main(int argc, char * argv[]) {
 			cout << "Unknown.";
 		}
 		cout << "\n Took " << (clock() - clock0)/1e6 << " sec.\n";
-		int movesToMake = MoveCount(moves);
 		if (outputMethod < 2 && replay && canReplay) {
 			game.Deal();
 			XMoves xmoves(MakeXMoves(moves,game.Draw()));
@@ -189,7 +189,13 @@ int main(int argc, char * argv[]) {
 				}
 			}
 		}
-		cout << "\n";
+		if (showMoves && canReplay) {
+			XMoves xmoves(MakeXMoves(moves,game.Draw()));
+			cout << MovesMade(xmoves) << "\n\n";
+		} else if (showMoves) {
+			cout << "\n";
+		}
+
 	} while (fileContents.size() > fileIndex);
 
 	return 0;
@@ -390,6 +396,7 @@ string GameDiagram(const Game& game) {
 		}
 		ss << '\n';
 	}
+	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft();
 	return ss.str();
 }
 
@@ -478,5 +485,22 @@ string GetMoveInfo(XMove move, const Game& game) {
 			}
 			ss << ".";
 		}
+	return ss.str();
+}
+
+string MovesMade(const XMoves& moves)
+{
+	stringstream ss;
+	char PileNames[] {"W1234567?CDSH"};
+	for (XMove mv: moves) {
+		if (mv.To() == STOCK) ss << "NEW ";
+		else if (mv.From() == STOCK) ss << "DR" << mv.NCards() << " ";
+		else {
+			ss << PileNames[mv.From()] << PileNames[mv.To()];
+			if (mv.NCards() > 1) ss << "-" << mv.NCards();
+			ss << " ";
+			if (mv.Flip()) ss << "F" << PileNames[mv.From()] << " ";
+		}
+	}
 	return ss.str();
 }

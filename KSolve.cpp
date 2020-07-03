@@ -118,6 +118,10 @@ std::pair<KSolveResult,Moves> KSolve(
 					unsigned db2_min = state._game.MinimumMovesLeft();
 					unsigned minMoveCount = db2_mvs+db2_min;
 					if (minMoveCount < state._minSolutionCount){
+						if (ih > minMoveCount) {
+							std::cout << Peek(state._game) << "\n";
+							std::cout << "Moves Made: " << Peek(state._movesMade) << "\n";
+						}
 						assert(ih <= minMoveCount);
 						state.RecordState(minMoveCount);
 					}

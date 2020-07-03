@@ -340,6 +340,6 @@ public:
 
 
 // Return a string to visualize the state of a game
-std::string DebugInfo (const Game&, const Moves&avail);
+std::string Peek (const Game& game);
 
 #endif

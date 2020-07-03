@@ -508,8 +508,10 @@ unsigned Game::MinimumMovesLeft() const
 			unsigned suit = cd.Suit();
 			unsigned rank = cd.Rank();
 			for (char r: ranksBelow[suit]){
-				if (r < rank) 
+				if (r < rank) {
 					result += 1;
+					break;
+				}
 			}
 			ranksBelow[suit].push_back(rank);
 		}
@@ -666,13 +668,12 @@ std::string Peek(const Moves & mvs)
 	return outStr.str();
 }
 
-std::string DebugInfo (const Game&game, const Moves&avail)
+std::string Peek (const Game&game)
 {
 	std::stringstream out;
 	const auto & piles = game.AllPiles();
 	for (const Pile* pile: piles){
 		out << Peek(*pile) << "\n";
 	} 
-	out << "Avail: " << Peek(avail) << "\n";
 	return out.str();
 }
