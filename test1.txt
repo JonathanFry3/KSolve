@@ -1,0 +1,2 @@
+#1 = 130 moves (1,059,298 states), 3 = 123 moves (796,333 states)
+Game: 37547

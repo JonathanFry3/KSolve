@@ -176,7 +176,7 @@ int main(int argc, char * argv[]) {
 			XMoves xmoves(MakeXMoves(moves,game.Draw()));
 			cout << "----------------------------------------\n";
 			for (XMove xmove: xmoves) {
-				bool isTalonMove = xmove.From() == WASTE || xmove.To() == WASTE;
+				bool isTalonMove = xmove.To() == STOCK || xmove.To() == WASTE;
 				cout << GetMoveInfo(xmove,game) << "\n";
 				game.MakeMove(xmove);
 				if (!isTalonMove){
@@ -189,11 +189,7 @@ int main(int argc, char * argv[]) {
 				}
 			}
 		}
-		if (showMoves && canReplay) {
-			cout << movesToMake << "\n\n";
-		} else if (showMoves) {
-			cout << "\n";
-		}
+		cout << "\n";
 	} while (fileContents.size() > fileIndex);
 
 	return 0;
@@ -464,11 +460,11 @@ string GetMoveInfo(XMove move, const Game& game) {
 		} else if (xto == WASTE) {
 			ss << "Draw ";
 			if (xnum == 1) {
-				ss << game.Waste().Back().AsString();
+				ss << game.Stock().Back().AsString();
 			} else {
 				ss << xnum << " cards";
 			}
-			ss << "from the stock pile.";
+			ss << " from the stock pile.";
 		} else {
 			ss << "Move ";
 			if (xnum == 1) {

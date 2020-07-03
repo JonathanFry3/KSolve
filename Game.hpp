@@ -61,8 +61,8 @@ public:
 		{}
 
 	Card(unsigned int value):
-		_suit(value%4),
-		_rank(value/4),
+		_suit(value/13),
+		_rank(value%13),
 		_isMajor(_suit>>1),
 		_parity((_rank&1)^(_suit&1))
 		{}
@@ -72,7 +72,7 @@ public:
 	unsigned char Rank() const 			{return _rank;}
 	bool IsMajor() const				{return _isMajor;}
 	bool OddRed() const 				{return _parity;}  // true for card that fits on stacks where odd cards are red
-	unsigned Value() const				{return 4*_rank+_suit;}
+	unsigned Value() const				{return 13*_suit+_rank;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
 	bool Covers(const Card & other) const // can other be moved onto this card on a tableau pile?
 		{return _parity == other._parity && _rank+1 == other._rank;}
@@ -187,7 +187,7 @@ public:
 	void Draw(Pile & from, int nCards);
 };
 
-// Returns a string to visualize a pile in a debugger.
+// Returns a string to visualize a pile for debugging.
 std::string Peek(const Pile& pile);
 
 // Directions for a move.  Game::AvailableMoves() creates these.
@@ -241,16 +241,18 @@ public:
 	unsigned NMoves() const			{return _nMoves;}
 	int Draw() const				{return _draw;}
 };
+
 typedef std::vector<Move> Moves;
 
-// Returns the number of actual moves implied by a series of Moves.
-unsigned MoveCount(const Moves & moves);
+// Return the number of actual moves implied by a vector of Moves.
+unsigned MoveCount(const Moves& moves);
 
-// Return a string to visualize a move in a debugger
+// Return a string to visualize a move for debugging
 std::string Peek(const Move& mv);
 
 // Return a string to visualize a Moves vector
 std::string Peek(const Moves & mvs);
+
 
 // A vector of Moves is not very useful for enumerating the moves
 // required to solve a game.  What's wanted for that is
@@ -328,10 +330,16 @@ public:
 	void  MakeMove(const Move & mv);
 	void  UnMakeMove(const Move & mv);
 	unsigned FoundationCardCount() const;
+	unsigned MinimumMovesLeft() const;
 	bool  GameOver() const {return _foundation[0].Size() == 13
 								&& _foundation[1].Size() == 13 
 								&& _foundation[2].Size() == 13
 								&& _foundation[3].Size() == 13;}
 	void MakeMove(const XMove& xmv);
 };
+
+
+// Return a string to visualize the state of a game
+std::string DebugInfo (const Game&, const Moves&avail);
+
 #endif

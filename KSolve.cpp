@@ -1,6 +1,7 @@
 #include "KSolve.hpp"
 #include <stack>
 #include "robin_hood.h"     // for unordered_map
+#include <iostream>
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -46,9 +47,9 @@ struct State {
 	Moves MakeAutoMoves();
 	void CheckForMinSolution();
 	void RecordState(unsigned minMoveCount);
-	unsigned MinimumMoves();
 	bool SkippableMove(const Move& mv);
 	Moves FilteredAvailableMoves();
+	unsigned MinimumMoves();
 };
 
 
@@ -71,7 +72,11 @@ std::pair<KSolveResult,Moves> KSolve(
 		assert(avail.size() > 1);
 	}
 
-	unsigned startMoves = state.MinimumMoves();
+	//unsigned startMoves =state.MinimumMoves();
+	unsigned db0_mvs = MoveCount(state._movesMade);
+	unsigned db0_min = state._game.MinimumMovesLeft();
+	unsigned startMoves = db0_mvs+db0_min;
+
 	state._histories[startMoves].push(state._movesMade);
 
 	unsigned ih;
@@ -96,14 +101,22 @@ std::pair<KSolveResult,Moves> KSolve(
 				if (ih == MoveCount(state._movesMade))
 					break;
 			}
-			unsigned minMoveCount = state.MinimumMoves();
+			
+			//unsigned minMoveCount = state.MinimumMoves();
+			unsigned db1_mvs = MoveCount(state._movesMade);
+			unsigned db1_min = state._game.MinimumMovesLeft();
+			unsigned minMoveCount = db1_mvs+db1_min;
+
 			if (minMoveCount < state._minSolutionCount)	{
 				// There is still hope for this one.
 				// Save the result of each of the possible next moves.
 				for (auto mv: avail){
 					state._movesMade.push_back(mv);
 					state._game.MakeMove(mv);
-					minMoveCount = state.MinimumMoves();
+					//minMoveCount = state.MinimumMoves();
+					unsigned db2_mvs = MoveCount(state._movesMade);
+					unsigned db2_min = state._game.MinimumMovesLeft();
+					unsigned minMoveCount = db2_mvs+db2_min;
 					if (minMoveCount < state._minSolutionCount){
 						assert(ih <= minMoveCount);
 						state.RecordState(minMoveCount);
@@ -121,17 +134,6 @@ std::pair<KSolveResult,Moves> KSolve(
 		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
 	}
 	return std::pair<KSolveResult,Moves>(outcome,solution);
-}
-
-// Return a lower bound on the total number of moves required to complete
-// a game that begins as this one has begun.
-unsigned State::MinimumMoves()
-{
-	unsigned result = 52 - _game.FoundationCardCount() + MoveCount(_movesMade);
-	unsigned draw = _game.Draw();
-	unsigned draws = _game.Stock().Size();
-	result += (draw == 1) ? draws : (draws+draw-1)/draw;
-	return result;
 }
 Moves State::MakeAutoMoves()
 {
@@ -209,6 +211,13 @@ void State::CheckForMinSolution(){
 		_minSolution = _movesMade;
 		_minSolutionCount = nmv;
 	}
+}
+
+// Returns the minimum number of moves in a game that has
+// started as this one has.
+unsigned State::MinimumMoves()
+{
+	return MoveCount(_movesMade) + _game.MinimumMovesLeft();
 }
 
 void State::RecordState(unsigned minMoveCount)
