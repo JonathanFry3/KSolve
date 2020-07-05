@@ -17,6 +17,7 @@
 #include <vector>
 #include <array>
 #include <cassert>
+#include "fixed_capacity_vector.hpp"
 
 enum Rank_t : unsigned char
  {
@@ -91,42 +92,7 @@ public:
 
 // CardVec is a very specialized vector.  Its capacity is always 24
 // and it does not check for overfilling.
-class CardVec {
-	std::uint32_t _size;
-	Card _cds[24];
-
-public:
-	CardVec() : _size(0), _cds(){}
-	Card & operator[](unsigned i)					{return _cds[i];}
-	const Card& operator[](unsigned i) const		{return _cds[i];}
-	Card* begin()									{return _cds;}
-	const Card* begin() const						{return _cds;}
-	size_t size() const								{return _size;}
-	Card* end()										{return _cds+_size;}
-	const Card* end() const							{return _cds+_size;}
-	Card & back()									{return *(_cds+_size-1);}
-	const Card& back() const						{return *(_cds+_size-1);}
-	void pop_back()									{_size -= 1;}
-	void pop_back(unsigned n)						{_size -= n;}
-	void push_back(const Card& cd)					{_cds[_size] = cd; _size += 1;}
-	void append(const Card* begin, const Card* end)	
-					{for (auto i=begin;i<end;++i){_cds[_size++]=*i;}}
-	void clear()									{_size = 0;}
-	bool operator==(const CardVec& other) const
-					{	
-						if (_size != other._size) return false;
-						for(unsigned i = 0; i < _size; ++i){
-							if ((*this)[i] != other[i]) return false;
-						}
-						return true;
-					}
-	CardVec& operator=(const CardVec& other) 
-					{
-						std::copy(other._cds,other._cds+other._size,_cds);
-						_size = other._size;
-						return *this;
-					}
-};	// end class CardVec
+typedef fixed_capacity_vector<Card,24> CardVec;
 
 enum PileCode {
 	WASTE = 0,

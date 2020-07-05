@@ -20,7 +20,7 @@ public:
 
 struct State {
 	std::vector<HistoryStack> _histories;
-	robin_hood::unordered_flat_map<GameStateType,unsigned,Hasher> _previousStates;
+	robin_hood::unordered_node_map<GameStateType,unsigned,Hasher> _previousStates;
 	Game &_game;
 	Moves _movesMade;
 	Moves & _minSolution;
@@ -33,7 +33,7 @@ struct State {
 			unsigned maxMoves, 
 			unsigned maxStates)
 		: _histories(maxMoves,HistoryStack())
-		, _previousStates(maxStates*5/3,Hasher())
+		, _previousStates()
 		, _minSolution(solution)
 		, _game(gm)
 		, _minSolutionCount(maxMoves)
@@ -41,6 +41,7 @@ struct State {
 		, _skippableWins(0)
 		{
 			_movesMade.reserve(maxMoves);
+			_previousStates.reserve(maxStates);
 			_minSolution.clear();
 		}
 
@@ -98,7 +99,7 @@ std::pair<KSolveResult,Moves> KSolve(
 				// We have a solution.  See if it is a new champion
 				state.CheckForMinSolution();
 				// See if it the final winner.
-				if (ih == MoveCount(state._movesMade))
+				if (ih == state._minSolutionCount)
 					break;
 			}
 			
@@ -211,7 +212,7 @@ bool State::SkippableMove(const Move& trial)
 void State::CheckForMinSolution(){
 	unsigned x = _minSolution.size();
 	unsigned nmv = MoveCount(_movesMade);
-	if (x == 0 || nmv < x) {
+	if (x == 0 || nmv < _minSolutionCount) {
 		_minSolution = _movesMade;
 		_minSolutionCount = nmv;
 	}

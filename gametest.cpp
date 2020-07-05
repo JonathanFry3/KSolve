@@ -185,7 +185,7 @@ int main()
 	tcard = pair.second;
 	assert(tcard.AsString() == "d7");
 	assert(tcard.OddRed());
-	assert(tcard.Value() == 25);
+	assert(tcard.Value() == 19);
 	assert(!tcard.IsMajor());
 
 	std::vector<std::string> sdeck({

@@ -339,9 +339,6 @@ Moves Game::AvailableMoves() const
 		}
 	}
 
-	// Do we need more empty columns?
-	bool needEmptyColumn = NeedEmptyColumn(_tableau);
-
 	// Look for moves between tableau piles.  These may involve
 	// multiple cards.
 	for (const Pile& fromPile: _tableau) {
@@ -388,7 +385,9 @@ Moves Game::AvailableMoves() const
 				int moveCount = cardToCover.Rank() -  fromTip.Rank();
 				assert(0 < moveCount && moveCount <= up);
 				if (moveCount == up){
-					if ((needEmptyColumn&&fromBase.Rank()!=KING) || up < fromPile.Size())
+
+					if (up < fromPile.Size() || 
+						(fromBase.Rank()!=KING && NeedEmptyColumn(_tableau)))
 					{
 						// This move will expose a face-down card or
 						// clear a column to which a king may be moved.
@@ -468,7 +467,8 @@ unsigned MoveCount(const Moves& moves)
 }
 
 // Return a lower bound on the number of moves required to complete
-// this game.
+// this game.  This function must return a result that does not 
+// decrease by more than one after any single Move.
 unsigned Game::MinimumMovesLeft() const
 {
 	// In the best possible case, the number of moves remaining is the
@@ -476,30 +476,32 @@ unsigned Game::MinimumMovesLeft() const
 	// from stock required to expose the stock cards.
 	unsigned result = 52 - FoundationCardCount();
 	unsigned draw = Draw();
-	unsigned wasteSize = _waste.Size();
 	result += (_stock.Size()+draw-1)/draw;
+	unsigned wasteSize = _waste.Size();
 
 	// We can improve the result by counting the cases in the waste where
 	// a card must be moved to a tableau pile before it can go to the 
 	// foundation because a lower card of the same suit appears lower in 
 	// the waste pile.
-	for (int iw = wasteSize-1; iw > 0; --iw){
-		Card cdi = _waste[iw];
-		for (int jw = iw-1; jw >= 0; --jw){
-			Card cdj = _waste[jw];
-			if (cdi.Suit() == cdj.Suit() && cdj.Rank() < cdi.Rank()) {
-				result += 1;
-				break;
+	if (draw == 1){
+		for (int iw = wasteSize-1; iw > 0; --iw){
+			Card cdi = _waste[iw];
+			for (int jw = iw-1; jw >= 0; --jw){
+				Card cdj = _waste[jw];
+				if (cdi.Suit() == cdj.Suit() && cdj.Rank() < cdi.Rank()) {
+					result += 1;
+					break;
+				}
 			}
 		}
 	}
 
 	// Here, we count the number of tableau cards that sit atop 
 	// cards in their same suit that must be moved to the foundation
-	// before them.
+	// before them. Only the face-down cards and the top face-up
+	// card on each pile are examined.
 
-	std::array<std::vector<char>,4> ranksBelow;
-	for (auto& r: ranksBelow) r.reserve(7);
+	std::array<fixed_capacity_vector<char,7>,4> ranksBelow;
 	for (const Pile & tpile: _tableau) {
 		unsigned downCount = tpile.Size()-tpile.UpCount();
 		for (auto& r: ranksBelow) r.clear();

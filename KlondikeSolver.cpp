@@ -15,6 +15,7 @@ string GameDiagram(const Game& game);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
 string MovesMade(const XMoves & xmoves);
+unsigned AdjustedMoveCount(const Moves & mvs, unsigned drawCount);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
@@ -158,12 +159,13 @@ int main(int argc, char * argv[]) {
 		pair<KSolveResult,Moves> outcome = KSolve(game, 512, maxClosedCount);
 		KSolveResult & result(outcome.first);
 		Moves & moves(outcome.second);
+		unsigned moveCount = AdjustedMoveCount(moves,game.Draw());
 		bool canReplay = false;
 		if (result == SOLVED) {
-			cout << "Minimal solution in " << MoveCount(moves) << " moves.";
+			cout << "Minimal solution in " << moveCount << " moves.";
 			canReplay = true;
 		} else if (result == GAVEUP_SOLVED) {
-			cout << "Solved in " << MoveCount(moves) << " moves.";
+			cout << "Solved in " << moveCount << " moves.";
 			canReplay = true;
 		} else if (result == IMPOSSIBLE) {
 			cout << "Impossible.";
@@ -438,7 +440,6 @@ string GameDiagramPysol(const Game& game) {
 				ss << ' ' << UpCaseString(p[j]);
 		}
 	}
-
 	return ss.str();
 }
 string GetMoveInfo(XMove move, const Game& game) {
@@ -503,4 +504,27 @@ string MovesMade(const XMoves& moves)
 		}
 	}
 	return ss.str();
+}
+
+// Return the move count as @shootme does it - count flips,
+// don't count recycles.
+unsigned AdjustedMoveCount(const Moves & mvs, unsigned drawCt)
+{
+	if (mvs.size() == 0) return 0;
+
+	// MakeXMoves will figure out where recycles occurred.
+	XMoves xmvs(MakeXMoves(mvs,drawCt));
+	// Last move number is the number of moves as KSolve counts.
+	int result = xmvs.back().MoveNum();
+	// Adjust:
+	for (XMove xm: xmvs){
+		if (xm.To() == STOCK) {
+			// This move is a recycle
+			result -= 1;
+		} else {
+			// This move is followed by a flip
+			if (xm.Flip()) result += 1;
+		}
+	}
+	return result;
 }

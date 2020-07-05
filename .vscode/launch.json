@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/KlondikeSolver",
             "args": [
-                "test1.txt"
+                "-mvs"
+                ,"-s","15000000"
+                ,"test2.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
