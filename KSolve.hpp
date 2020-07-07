@@ -9,16 +9,20 @@
 
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code and a Moves vector.  The vector contains
-// the minimum solution if the code retured is SOLVED. It will contain
+// the minimum solution if the code returned is SOLVED. It will contain
 // a solution that may not be minimal if the code is GAVEUP_SOLVED.
 // Otherwise, it will be empty.
+//
+// This function uses an unpredictable amount of main memory. You can
+// control this behavior to some degree by specifying maxStates.
 enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
 std::pair<KSolveResult,Moves> KSolve(
 		Game& gm, 						// The game to be played
-		unsigned maxMoves=512,			// Give up if the minimum possible number
-										// of moves in any solution exceeds this.
-		unsigned maxStates=5000000);	// Give up if the number of unique game states
+		unsigned maxStates=5000000,		// Give up if the number of unique game states
 										// examined exceeds this.
+		unsigned maxMoves=512)			// Give up if the minimum possible number
+										// of moves in any solution exceeds this.
+		noexcept(false);				// Known to throw std::bad_alloc.
 
 
 // A compact representation of the current game state.

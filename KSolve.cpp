@@ -1,7 +1,6 @@
 #include "KSolve.hpp"
 #include <stack>
 #include "robin_hood.h"     // for unordered_map
-#include <iostream>
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -18,30 +17,32 @@ public:
   }
 };
 
-struct State {
-	std::vector<HistoryStack> _histories;
-	robin_hood::unordered_node_map<GameStateType,unsigned,Hasher> _previousStates;
+struct KSolveState {
+	std::vector<HistoryStack> _open_histories;
+	robin_hood::unordered_node_map<GameStateType,unsigned,Hasher> _closed_previousStates;
 	Game &_game;
 	Moves _movesMade;
 	Moves & _minSolution;
 	unsigned _minSolutionCount;
 	unsigned _stateWins;
+	unsigned _closedStates;
 	unsigned _skippableWins;
 
-	State(  Game & gm, 
+	KSolveState(  Game & gm, 
 			Moves& solution, 
 			unsigned maxMoves, 
 			unsigned maxStates)
-		: _histories(maxMoves,HistoryStack())
-		, _previousStates()
+		: _open_histories(maxMoves,HistoryStack())
+		, _closed_previousStates()
 		, _minSolution(solution)
 		, _game(gm)
 		, _minSolutionCount(maxMoves)
 		, _stateWins(0)
 		, _skippableWins(0)
+		, _closedStates(0)
 		{
 			_movesMade.reserve(maxMoves);
-			_previousStates.reserve(maxStates);
+			_closed_previousStates.reserve(maxStates);
 			_minSolution.clear();
 		}
 
@@ -50,17 +51,16 @@ struct State {
 	void RecordState(unsigned minMoveCount);
 	bool SkippableMove(const Move& mv);
 	Moves FilteredAvailableMoves();
-	unsigned MinimumMoves();
 };
 
 
 std::pair<KSolveResult,Moves> KSolve(
 		Game& game,
-		unsigned maxMoves,
-		unsigned maxStates)
+		unsigned maxStates,
+		unsigned maxMoves)
 {
 	Moves solution;
-	State state(game,solution,maxMoves,maxStates);
+	KSolveState state(game,solution,maxMoves,maxStates);
 
 	{
 		Moves avail = state.MakeAutoMoves();
@@ -73,19 +73,17 @@ std::pair<KSolveResult,Moves> KSolve(
 		assert(avail.size() > 1);
 	}
 
-	//unsigned startMoves =state.MinimumMoves();
-	unsigned db0_mvs = MoveCount(state._movesMade);
-	unsigned db0_min = state._game.MinimumMovesLeft();
-	unsigned startMoves = db0_mvs+db0_min;
+	unsigned startMoves = MoveCount(state._movesMade)
+					 + state._game.MinimumMovesLeft();
 
-	state._histories[startMoves].push(state._movesMade);
+	state._open_histories[startMoves].push(state._movesMade);
 
 	unsigned ih;
 	for  (ih= startMoves; ih < state._minSolutionCount
-			 && state._previousStates.size() <maxStates; ++ih) {
-		auto &h = state._histories[ih];
+			 && state._closed_previousStates.size() <maxStates; ++ih) {
+		auto &h = state._open_histories[ih];
 		// scan histories from shortest to longest
-		while (h.size() && state._previousStates.size() <maxStates) {
+		while (h.size() && state._closed_previousStates.size() <maxStates) {
 			state._game.Deal();
 			state._movesMade = h.top();	
 			h.pop();
@@ -103,27 +101,19 @@ std::pair<KSolveResult,Moves> KSolve(
 					break;
 			}
 			
-			//unsigned minMoveCount = state.MinimumMoves();
-			unsigned db1_mvs = MoveCount(state._movesMade);
-			unsigned db1_min = state._game.MinimumMovesLeft();
-			unsigned minMoveCount = db1_mvs+db1_min;
+			unsigned movesMadeCount = MoveCount(state._movesMade);
+			unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
 
 			if (minMoveCount < state._minSolutionCount)	{
-				// There is still hope for this one.
+				// There is still hope for this subtree.
 				// Save the result of each of the possible next moves.
 				for (auto mv: avail){
 					state._movesMade.push_back(mv);
 					state._game.MakeMove(mv);
-					//minMoveCount = state.MinimumMoves();
-					unsigned db2_mvs = MoveCount(state._movesMade);
-					unsigned db2_min = state._game.MinimumMovesLeft();
-					unsigned minMoveCount = db2_mvs+db2_min;
+					unsigned minMoveCount = movesMadeCount + mv.NMoves()
+											+ state._game.MinimumMovesLeft();
 					if (minMoveCount < state._minSolutionCount){
-						if (ih > minMoveCount) {
-							std::cout << Peek(state._game) << "\n";
-							std::cout << "Moves Made: " << Peek(state._movesMade) << "\n";
-						}
-						assert(ih <= minMoveCount);
+					assert(ih <= minMoveCount);
 						state.RecordState(minMoveCount);
 					}
 					state._game.UnMakeMove(mv);
@@ -133,14 +123,14 @@ std::pair<KSolveResult,Moves> KSolve(
 		}
 	}
 	KSolveResult outcome;
-	if (ih > maxMoves || state._previousStates.size() >= maxStates){
+	if (ih > maxMoves || state._closed_previousStates.size() >= maxStates){
 		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
 	} else {
 		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
 	}
 	return std::pair<KSolveResult,Moves>(outcome,solution);
 }
-Moves State::MakeAutoMoves()
+Moves KSolveState::MakeAutoMoves()
 {
 	Moves avail;
 	unsigned mvCount = MoveCount(_movesMade);
@@ -155,7 +145,7 @@ Moves State::MakeAutoMoves()
 }
 
 // Return a vector of the available moves that pass the SkippableMove filter
-Moves State::FilteredAvailableMoves()
+Moves KSolveState::FilteredAvailableMoves()
 {
 	Moves avail = _game.AvailableMoves();
 	for (auto i = avail.begin(); i < avail.end(); ++i){
@@ -169,7 +159,7 @@ Moves State::FilteredAvailableMoves()
 
 
 // Return true if this move cannot be in a minimum solution.
-bool State::SkippableMove(const Move& trial)
+bool KSolveState::SkippableMove(const Move& trial)
 {
 	/* 
 	Consider a move at time T0 from A to B and the next move
@@ -209,7 +199,7 @@ bool State::SkippableMove(const Move& trial)
 
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
-void State::CheckForMinSolution(){
+void KSolveState::CheckForMinSolution(){
 	unsigned x = _minSolution.size();
 	unsigned nmv = MoveCount(_movesMade);
 	if (x == 0 || nmv < _minSolutionCount) {
@@ -218,20 +208,14 @@ void State::CheckForMinSolution(){
 	}
 }
 
-// Returns the minimum number of moves in a game that has
-// started as this one has.
-unsigned State::MinimumMoves()
-{
-	return MoveCount(_movesMade) + _game.MinimumMovesLeft();
-}
-
-void State::RecordState(unsigned minMoveCount)
+void KSolveState::RecordState(unsigned minMoveCount)
 {
 	GameStateType pState(_game);
-	unsigned & storedMinimumCount = _previousStates[pState];
+	unsigned & storedMinimumCount = _closed_previousStates[pState];
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
-		_histories[minMoveCount].push(_movesMade);
+		_open_histories[minMoveCount].push(_movesMade);
+		++_closedStates;
 	} else ++_stateWins;
 }
 
@@ -252,7 +236,7 @@ GameStateType::GameStateType(const Game& game)
 		const Pile& tp = game.Tableau()[i];
 		unsigned upCount = tp.UpCount();
 		p._upCount = upCount;
-		if (p._upCount > 0) {
+		if (upCount > 0) {
 			const CardVec & cards = tp.Cards();
 			const Card& topCard = *(cards.end()-upCount);
 			p._topSuit = topCard.Suit();
