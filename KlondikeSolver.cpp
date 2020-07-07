@@ -2,8 +2,9 @@
 #include<fstream>
 #include<sstream>		// for stringstream
 #include<ctime>
-#include<cstring>
 #include"KSolve.hpp"
+
+#include<cstring>
 #define _stricmp strcasecmp
 
 using namespace std;
@@ -156,7 +157,7 @@ int main(int argc, char * argv[]) {
 		}
 
 		clock_t clock0 = clock();
-		pair<KSolveResult,Moves> outcome = KSolve(game, 512, maxClosedCount);
+		pair<KSolveResult,Moves> outcome = KSolve(game, maxClosedCount);
 		KSolveResult & result(outcome.first);
 		Moves & moves(outcome.second);
 		unsigned moveCount = AdjustedMoveCount(moves,game.Draw());
@@ -398,7 +399,7 @@ string GameDiagram(const Game& game) {
 		}
 		ss << '\n';
 	}
-	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft();
+	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft()+21;
 	return ss.str();
 }
 
