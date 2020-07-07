@@ -8,7 +8,8 @@
 			"args": [
 				"-g",
 			//	"-m32",
-				"-O3",
+			//	"-pg",
+			//	"-O3",
 				"Game.cpp",
 				"KSolve.cpp",
 				"KlondikeSolver.cpp",

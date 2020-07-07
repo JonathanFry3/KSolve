@@ -11,8 +11,8 @@
             "program": "${workspaceFolder}/KlondikeSolver",
             "args": [
                 "-mvs"
-                ,"-s","15000000"
-                ,"test2.txt"
+                ,"-draw", "3"
+                ,"TestDeals.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
