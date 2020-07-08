@@ -1,6 +1,7 @@
 #include "KSolve.hpp"
 #include <stack>
-#include "robin_hood.h"     // for unordered_map
+#include <algorithm>        // for sort
+#include "robin_hood.h"     // for unordered_node_map
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -113,7 +114,7 @@ std::pair<KSolveResult,Moves> KSolve(
 					unsigned minMoveCount = movesMadeCount + mv.NMoves()
 											+ state._game.MinimumMovesLeft();
 					if (minMoveCount < state._minSolutionCount){
-					assert(ih <= minMoveCount);
+						assert(ih <= minMoveCount);
 						state.RecordState(minMoveCount);
 					}
 					state._game.UnMakeMove(mv);
@@ -251,6 +252,9 @@ GameStateType::GameStateType(const Game& game)
 		}
 		_psts[i] = p.asUnsigned;
 	}
+
+	std::sort(_psts.begin(),_psts.end());
+
 	for (unsigned i = 0; i < 4; ++i) {
 		p.asUnsigned = _psts[i+2];
 		p._other = game.Foundation()[i].Size();
