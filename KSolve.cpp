@@ -9,11 +9,8 @@ class Hasher
 public:
   size_t operator() (const GameStateType & gs) const
   {
-	size_t result = robin_hood::hash<std::uint32_t>()(gs._psts[0]);
-	for (unsigned i = 1; i < 7; ++i) {
-		result ^= robin_hood::hash<std::uint32_t>()(gs._psts[i]);
-	}
-	return result;
+	robin_hood::hash<std::uint64_t> hshr;
+	return 	hshr(gs._long1)^hshr(gs._long2)^hshr(gs._short);
   }
 };
 
@@ -221,53 +218,39 @@ void KSolveState::RecordState(unsigned minMoveCount)
 
 GameStateType::GameStateType(const Game& game)
 {
-	union {
-		struct {
-			unsigned _upCount:4;
-			unsigned _topRank:4;
-			unsigned _topSuit:2;
-			unsigned _isMajor:12;
-			unsigned int _other : 10;
-		};
-		uint32_t asUnsigned;
-	} p;
-	for (unsigned i = 0; i<7; ++i){
-		p.asUnsigned = 0;	// clear all bits
-		const Pile& tp = game.Tableau()[i];
-		unsigned upCount = tp.UpCount();
-		p._upCount = upCount;
-		if (upCount > 0) {
-			const CardVec & cards = tp.Cards();
-			const Card& topCard = *(cards.end()-upCount);
-			p._topSuit = topCard.Suit();
-			p._topRank = topCard.Rank();
-
-			unsigned isMajorBits = 0;
-			for (auto icd = cards.end()-upCount+1; icd < cards.end(); ++icd) {
-				isMajorBits <<= 1;
-				isMajorBits |= icd->IsMajor();
-			}
-			p._isMajor = isMajorBits;
+	auto & tableau = game.Tableau();
+	std::uint64_t pileStates [7];
+	for (unsigned iPile = 0; iPile < 7; ++iPile){
+		const Pile& tPile(tableau[iPile]);
+		unsigned upCount = tPile.UpCount();
+		assert(upCount <= 12);
+		unsigned size = tPile.Size();
+		unsigned downCount = size-upCount;
+		// Since the base face-up card was dealt to this pile,
+		// the downCount implies what it is.
+		unsigned isMajor = 0;
+		for (unsigned i = downCount+1; i < size; ++i){
+			isMajor <<= 1;
+			isMajor |= tPile[i].IsMajor();
 		}
-		_psts[i] = p.asUnsigned;
+		pileStates[iPile] = isMajor<<7 | upCount<<3 | downCount; // 18 bits max
 	}
-	for (unsigned i = 0; i < 4; ++i) {
-		p.asUnsigned = _psts[i+2];
-		p._other = game.Foundation()[i].Size();
-		_psts[i+2] = p.asUnsigned;
-	}
-	p.asUnsigned = _psts[6];
-	p._other = game.Stock().Size();
-	_psts[6] = p.asUnsigned;
+	auto& foundation(game.Foundation());
+	_long1 = foundation[0].Size()|foundation[1].Size()<<4 |
+			 pileStates[0]<<8 |
+			 pileStates[1]<<(8+18) |
+			 pileStates[2]<<(8+18+18);
+	_long2 = foundation[2].Size()|foundation[3].Size()<<4 |
+			 pileStates[3]<<8 |
+			 pileStates[4]<<(8+18) |
+			 pileStates[5]<<(8+18+18);
+	_short = game.Waste().Size() |
+			 pileStates[6]<<5;
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
 {
-	return _psts[0] == other._psts[0]
-	    && _psts[1] == other._psts[1]
-	    && _psts[2] == other._psts[2]
-	    && _psts[3] == other._psts[3]
-	    && _psts[4] == other._psts[4]
-	    && _psts[5] == other._psts[5]
-	    && _psts[6] == other._psts[6];
+	return _long1 == other._long1
+		&& _long2 == other._long2
+		&& _short == other._short;
 }

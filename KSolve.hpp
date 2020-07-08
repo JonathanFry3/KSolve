@@ -30,16 +30,17 @@ std::pair<KSolveResult,Moves> KSolve(
 // game state from one of these and the original deck.
 //
 // This is an implementation detail, but one sufficiently 
-// complex that it needs unit tests.  The basic requirements
+// complex that it needs unit testing.  The basic requirements
 // for GameStateType are:
 // 1.  Any difference in the foundation piles, the face-up cards
 //     in the tableau piles, or in the stock pile length
 //     should be reflected in the GameStateType.
 // 2.  It should be quite compact, as we will usually be storing
 //     millions to tens of millions of instances.
-typedef std::uint32_t PileState;
 struct GameStateType {
-	std::array<PileState,7> _psts;
+	std::uint64_t _long1;
+	std::uint64_t _long2;
+	std::uint32_t _short;
 	GameStateType(const Game& game);
 	bool operator==(const GameStateType& other) const;
 };

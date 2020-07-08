@@ -8,3 +8,4 @@ robin_hood flat hash-map 64	86	28.6719
 -O3 64	86	21.2969
 -O3 tableau move optimization 64	86	11.8438
 -O3 talon look-ahead 64	86	5.90625
+-O3 node hash-map 64	86	7.31344

@@ -53,11 +53,12 @@ int main()
 		exit(100);
 	}
 	int nRuns = 5;
-	string trialName = "-O3 talon look-ahead 64";
+	string trialName = "-O3 shorter GameStateType 64";
 	std::vector<Card> deck(Cards(deal3));
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();
-		auto outcome = KSolve(deck,3);
+		Game game(deck,3);
+		auto outcome = KSolve(game);
 		clock_t t1 = clock();
 		assert(outcome.first==SOLVED);
 		out << trialName << '\t' 

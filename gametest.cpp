@@ -269,6 +269,70 @@ int main()
 		string peekmvs = Peek(mvs);
 		assert (peekmvs == "(+6d-4>t3,wa>di,t1>t6x4u1)");
 	}
+
+	vector<string> deal102 {
+		"ct","s7","ck","d6","h3","dt","sk","h9","d2","s8","dq","c9","st",
+		"da","s9","ht","d5","hj","hq","s6","cj","h5","d7","c5","sq","c8",
+		"cq","s2","c6","s3","c4","h4","h7","c2","sa","c3","hk","d3","h2",
+		"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
+	};
+	{
+		// Test GameStateType creation.
+		Game game(Cards(deal102));
+		unsigned nMoves = 100;
+		std::vector<GameStateType> states;
+		states.reserve(nMoves);
+		std::vector<Game> prevGames;
+		Moves movesMade;
+		prevGames.reserve(nMoves);
+		for (unsigned rep = 0; rep < 1000; ++rep){
+			states.clear();
+			prevGames.clear();
+			game.Deal();
+			movesMade.clear();
+			for (unsigned imv = 0; imv <nMoves; ++imv){
+				Moves avail = game.AvailableMoves();
+				if (avail.size()) {
+					Move move = avail[rand()%avail.size()];
+					game.MakeMove(move);
+					movesMade.push_back(move);
+					Validate(game);
+					GameStateType state(game);
+					auto pMatch = find(states.begin(),states.end(),state);
+					if (pMatch!=states.end()){
+						// state matches a previous GameStateType.  See if 
+						// game matches the corresponding Game.
+						unsigned which = pMatch - states.begin();
+						if (game != prevGames[which]) {
+							cerr << "Current game [" << prevGames.size() << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(game) << endl;
+							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(prevGames[which]) << endl;
+							cerr << "Moves made<<<<<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(movesMade) << endl;
+							assert(game == prevGames[which]);
+						}
+					}
+					prevGames.push_back(game);
+					states.push_back(state);
+				} else {
+					// We hit a dead end.  If we're not too close to the end
+					// of a game, back up and try a different random
+					// branch.
+					if (game.FoundationCardCount() > 40)
+						break;
+					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
+					{
+						game.UnMakeMove(movesMade.back());
+						movesMade.pop_back();
+						states.pop_back();
+						prevGames.pop_back();
+						Validate(game);
+					}
+				}
+			}
+		}
+	}
 	{
 		// trivial is a trivial deal - all automatic moves
 		vector<string> trivial{
@@ -277,7 +341,6 @@ int main()
 			"d5","d2","c4","s2","c8","d8","s8","h8","c9","d9","s9","h9",
 			"ct","dt","st","ht","cj","dj","sj","hj","cq","dq","sq","hq",
 			"ck","dk","sk","hk"};
-		// Another 76-move quicky
 		vector<string> quick
 			 {"ca","c8","da","d6","dt","dk","s2","c2","c9","d2","d7","dj",
 			"sa","c3","ct","d3","d8","dq","c4","cj","d4","d9","c5","cq","d5",
@@ -310,56 +373,6 @@ int main()
 	"c5","d3","d6","dt","s8","d5","dk","s6","h7","s4","sk","c9","ct",
 	"s7","h6","cj","hj","c4","s3","hk","h9","da","ca","d8","c2","st",
 	"dq","h5","s2","sa","hq","sq","ht","s9","sj","d2","c6","ha","cq","h4"};
-
-	vector<string> deal102 {
-		"ct","s7","ck","d6","h3","dt","sk","h9","d2","s8","dq","c9","st",
-		"da","s9","ht","d5","hj","hq","s6","cj","h5","d7","c5","sq","c8",
-		"cq","s2","c6","s3","c4","h4","h7","c2","sa","c3","hk","d3","h2",
-		"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
-	};
-	{
-		// Test GameStateType creation.
-		Game game(Cards(deal102));
-		unsigned nMoves = 100;
-		std::vector<GameStateType> states;
-		states.reserve(nMoves);
-		std::vector<Game> prevGames;
-		Moves movesMade;
-		prevGames.reserve(nMoves);
-		for (unsigned rep = 0; rep < 1000; ++rep){
-			states.clear();
-			prevGames.clear();
-			game.Deal();
-			for (unsigned imv = 0; imv <nMoves; ++imv){
-				Moves avail = game.AvailableMoves();
-				if (avail.size()) {
-					Move move = avail[rand()%avail.size()];
-					game.MakeMove(move);
-					movesMade.push_back(move);
-					Validate(game);
-					GameStateType state(game);
-					auto pMatch = find(states.begin(),states.end(),state);
-					if (pMatch!=states.end()){
-						// state matches a previous GameStateType.  See if 
-						// game matches the corresponding Game.
-						unsigned which = pMatch - states.begin();
-						assert(game == prevGames[which]);
-					}
-					prevGames.push_back(game);
-					states.push_back(state);
-				} else {
-					// We hit a dead end.  Back up and try a different random
-					// branch.
-					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
-					{
-						game.UnMakeMove(movesMade.back());
-						movesMade.pop_back();
-						Validate(game);
-					}
-				}
-			}
-		}
-	}
 	{
 		Game game(Cards(deal3));
 		PrintGame(game);
