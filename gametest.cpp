@@ -376,7 +376,7 @@ int main()
 	{
 		Game game(Cards(deal3));
 		PrintGame(game);
-		auto outcome = KSolve(game,512,9'600'000); 
+		auto outcome = KSolve(game,9'600'000); 
 		PrintOutcome(outcome.first, MakeXMoves(outcome.second, game.Draw()));
 	}
 }
