@@ -95,16 +95,16 @@ public:
 typedef fixed_capacity_vector<Card,24> CardVec;
 
 enum PileCode {
-	WASTE = 0,
-	TABLEAU = 1,
-	TABLEAU1 = 1,
+	STOCK = 0,
+	WASTE,
+	TABLEAU = 2,
+	TABLEAU1 = 2,
 	TABLEAU2,
 	TABLEAU3,
 	TABLEAU4,
 	TABLEAU5,
 	TABLEAU6,
 	TABLEAU7,
-	STOCK = 8,
 	FOUNDATION = 9,
 	FOUNDATION1C = 9,
 	FOUNDATION2D,

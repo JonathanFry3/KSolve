@@ -604,6 +604,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 
 static std::string PileNames[] 
 {
+	"st",
 	"wa",
 	"t1",
 	"t2",
@@ -612,7 +613,6 @@ static std::string PileNames[]
 	"t5",
 	"t6",
 	"t7",
-	"st",
 	"cb",
 	"di",
 	"sp",

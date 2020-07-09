@@ -23,6 +23,7 @@ vector<Card> Cards(const std::vector<std::string>& strings)
 }
 static string PileNames[] 
 {
+	"stock",
 	"waste",
 	"tableau 1",
 	"tableau 2",
@@ -31,7 +32,6 @@ static string PileNames[]
 	"tableau 5",
 	"tableau 6",
 	"tableau 7",
-	"stock",
 	"foundation c",
 	"foundation d",
 	"foundation s",
@@ -113,6 +113,7 @@ static void Validate(const Game & game)
 void PrintOutcome(KSolveResult outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
+		"stock    ",
 		"waste    ",
 		"tableau 1",
 		"tableau 2",
@@ -121,7 +122,6 @@ void PrintOutcome(KSolveResult outcome, const vector<XMove>& moves)
 		"tableau 5",
 		"tableau 6",
 		"tableau 7",
-		"stock    ",
 		"clubs    ",
 		"diamonds ",
 		"spades   ",

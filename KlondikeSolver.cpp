@@ -446,6 +446,7 @@ string GameDiagramPysol(const Game& game) {
 string GetMoveInfo(XMove move, const Game& game) {
 	stringstream ss;
 	string pileNames[] {
+		"stock",
 		"waste",
 		"tableau 1",
 		"tableau 2",
@@ -454,7 +455,6 @@ string GetMoveInfo(XMove move, const Game& game) {
 		"tableau 5",
 		"tableau 6",
 		"tableau 7",
-		"stock",
 		"clubs",
 		"diamonds",
 		"spades",
@@ -493,7 +493,7 @@ string GetMoveInfo(XMove move, const Game& game) {
 string MovesMade(const XMoves& moves)
 {
 	stringstream ss;
-	char PileNames[] {"W1234567?CDSH"};
+	char PileNames[] {"?W1234567CDSH"};
 	for (XMove mv: moves) {
 		if (mv.To() == STOCK) ss << "NEW ";
 		else if (mv.From() == STOCK) ss << "DR" << mv.NCards() << " ";
