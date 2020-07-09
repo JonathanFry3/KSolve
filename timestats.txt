@@ -10,3 +10,6 @@ robin_hood flat hash-map 64	86	28.6719
 -O3 talon look-ahead 64	86	5.90625
 -O3 back to node hash-map 64	86	7.62717
 -O3 sorted GameStateType 64	86	6.47508
+-O3 Before TableauDither test 64	86	6.58376
+-O3 After TableauCover test 64	86	6.69895
+-O3 After TableauCover test 32	86	7.17612

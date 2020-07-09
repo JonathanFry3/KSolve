@@ -330,6 +330,7 @@ int main()
 			states.clear();
 			prevGames.clear();
 			game.Deal();
+			movesMade.clear();
 			for (unsigned imv = 0; imv <nMoves; ++imv){
 				Moves avail = game.AvailableMoves();
 				if (avail.size()) {
@@ -343,17 +344,30 @@ int main()
 						// state matches a previous GameStateType.  See if 
 						// game matches the corresponding Game.
 						unsigned which = pMatch - states.begin();
-						assert(game == prevGames[which]);
+						if (game != prevGames[which]) {
+							cerr << "Current game [" << prevGames.size() << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(game) << endl;
+							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(prevGames[which]) << endl;
+							cerr << "Moves made<<<<<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(movesMade) << endl;
+							assert(game == prevGames[which]);
+						}
 					}
 					prevGames.push_back(game);
 					states.push_back(state);
 				} else {
-					// We hit a dead end.  Back up and try a different random
+					// We hit a dead end.  If we're not too close to the end
+					// of a game, back up and try a different random
 					// branch.
+					if (game.FoundationCardCount() > 40)
+						break;
 					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
 					{
 						game.UnMakeMove(movesMade.back());
 						movesMade.pop_back();
+						states.pop_back();
+						prevGames.pop_back();
 						Validate(game);
 					}
 				}
@@ -363,7 +377,7 @@ int main()
 	{
 		Game game(Cards(deal3));
 		PrintGame(game);
-		auto outcome = KSolve(game,512,9'600'000); 
+		auto outcome = KSolve(game,9'600'000); 
 		PrintOutcome(outcome.first, MakeXMoves(outcome.second, game.Draw()));
 	}
 }

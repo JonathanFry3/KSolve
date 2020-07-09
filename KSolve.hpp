@@ -3,7 +3,7 @@
 // Solver.hpp declares a Klondike Solitaire solver function and auxiliaries
 
 #include "Game.hpp"
-#include <cstdint>		// for std::uint32_t
+#include <cstdint>		// for std::uint32_t, uint64_t
 #include <utility>		// for std::pair
 
 

@@ -527,11 +527,6 @@ unsigned Game::FoundationCardCount() const
 	}
 	return result;
 }
-
-static bool IsTableau(unsigned pile)
-{
-	return TABLEAU <= pile && pile < TABLEAU+7;
-}
 // Enumerate the moves in a vector of XMoves.
 std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 {

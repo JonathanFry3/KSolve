@@ -153,6 +153,12 @@ public:
 	void Draw(Pile & from, int nCards);
 };
 
+static bool IsTableau(unsigned pile)
+{
+	return TABLEAU <= pile && pile < TABLEAU+7;
+}
+
+
 // Returns a string to visualize a pile for debugging.
 std::string Peek(const Pile& pile);
 

@@ -2,6 +2,9 @@
 #include <stack>
 #include <algorithm>        // for sort
 #include "robin_hood.h"     // for unordered_node_map
+#ifdef KSOLVE_TRACE
+#include <iostream>			// for cout
+#endif  //KSOLVE_TRACE
 
 typedef std::stack<Moves> HistoryStack;
 
@@ -94,7 +97,7 @@ std::pair<KSolveResult,Moves> KSolve(
 			}
 			Moves avail = state.MakeAutoMoves();
 
-			if (state._game.GameOver()) {
+			if (avail.size() == 0 && state._game.GameOver()) {
 				// We have a solution.  See if it is a new champion
 				state.CheckForMinSolution();
 				// See if it the final winner.
@@ -134,13 +137,10 @@ std::pair<KSolveResult,Moves> KSolve(
 Moves KSolveState::MakeAutoMoves()
 {
 	Moves avail;
-	unsigned mvCount = MoveCount(_movesMade);
-	while (mvCount < _minSolutionCount && 
-			(avail = FilteredAvailableMoves()).size() == 1)
+	while ((avail = FilteredAvailableMoves()).size() == 1)
 	{
 		_movesMade.push_back(avail[0]);
 		_game.MakeMove(avail[0]);
-		mvCount += avail[0].NMoves();
 	}
 	return avail;
 }
@@ -217,6 +217,19 @@ void KSolveState::RecordState(unsigned minMoveCount)
 		storedMinimumCount = minMoveCount;
 		_open_histories[minMoveCount].push(_movesMade);
 		++_closedStates;
+#ifdef KSOLVE_TRACE
+		if (_closedStates%1000000 == 999999){
+			std::cout << "Stage " << _closedStates;
+			std::cout << " improvements = " << _closedStates - _closed_previousStates.size();
+			std::cout << " minMoveCount = " << minMoveCount;
+			std::cout << " _stateWins = " << _stateWins;
+			std::cout << " _skippableWins = " << _skippableWins;
+			std::cout << std::endl;
+			std::cout << Peek(_game);
+			std::cout << Peek(_movesMade) << std::endl << std::endl;
+			std::cout << std::flush;
+		}
+#endif // KSOLVE_TRACE
 	} else ++_stateWins;
 }
 
