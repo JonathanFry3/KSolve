@@ -108,6 +108,14 @@ void Pile::Draw(Pile& other, int n)
 	for (unsigned i = 0; i < nm; ++i)
 		to.Draw(fm);
 }
+static void SetAllPiles(Game& game)
+{
+	auto & allPiles = game.AllPiles();
+	allPiles[WASTE] = &game.Waste();
+	allPiles[STOCK] = &game.Stock();
+	for (int ip = 0; ip < 4; ++ip) allPiles[FOUNDATION+ip] = &game.Foundation()[ip];
+	for (int ip = 0; ip < 7; ++ip) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
+}
 
 Game::Game(const std::vector<Card> &deck,unsigned draw)
 	: _deck(deck)
@@ -117,12 +125,19 @@ Game::Game(const std::vector<Card> &deck,unsigned draw)
 	, _foundation{FOUNDATION1C,FOUNDATION2D,FOUNDATION3S,FOUNDATION4H}
 	, _tableau{TABLEAU1,TABLEAU2,TABLEAU3,TABLEAU4,TABLEAU5,TABLEAU6,TABLEAU7}
 {
-	_allPiles[WASTE] = &_waste;
-	_allPiles[STOCK] = &_stock;
-	for (int ip = 0; ip < 4; ++ip) _allPiles[FOUNDATION+ip] = &_foundation[ip];
-	for (int ip = 0; ip < 7; ++ip) _allPiles[TABLEAU+ip] = &_tableau[ip];
+	SetAllPiles(*this);
 	Deal();
 }
+Game::Game(const Game& orig)
+	:_deck(orig._deck)
+	, _waste(orig._waste)
+	, _stock(orig._stock)
+	, _draw(orig._draw)
+	, _foundation(orig._foundation)
+	, _tableau(orig._tableau)
+	{
+		SetAllPiles(*this);
+	}
 
 // Deal the cards for Klondike Solitaire.
 void Game::Deal()

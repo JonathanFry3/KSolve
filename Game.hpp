@@ -284,6 +284,7 @@ class Game
 
 public:
 	Game(const std::vector<Card>& deck,unsigned draw=1);
+	Game(const Game&);
 
 	Pile& Waste()       							{return _waste;}
 	Pile& Stock()       							{return _stock;}
