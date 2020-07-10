@@ -6,6 +6,7 @@
 #include <iomanip>	  // for setw()
 #include <cstdlib>
 #include <algorithm>  // for find()
+#include <random>
 
 using namespace std;
 
@@ -164,10 +165,22 @@ bool operator==(const Game& a, const Game& b)
 	if (a.Stock() != b.Stock()) return false;
 	if (a.Waste() != b.Waste()) return false;
 	if (a.Foundation() != b.Foundation()) return false;
-	if (a.Tableau() != b.Tableau()) return false;
+	auto& taba = a.Tableau();
+	auto& tabb = b.Tableau();
+	for (unsigned i = 0; i < 7; ++i){
+		// Tableaus of two games are equivalent if their
+		// piles' cards are equal after rearrangement.
+		bool found = false;
+		for (unsigned j = 0; !found && j < 7; ++j) {
+			if (taba[i].Cards() == tabb[j].Cards()) found = true;
+		}
+		if (!found) return false;
+	}
 	return true;
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
+
+std::minstd_rand rng;
 
 int main()
 {
@@ -286,11 +299,11 @@ int main()
 			"sk","ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"};
 		{
 			Game game(Cards(quick),1);
-			PrintGame(game);
+			// PrintGame(game);
 			auto out = KSolve(game); 
 			auto& outcome(out.first);
 			Moves& solution(out.second);
-			PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
+			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
 			assert(outcome == SOLVED);
 			assert(MoveCount(solution) == 76);
 		}
@@ -319,6 +332,7 @@ int main()
 	};
 	{
 		// Test GameStateType creation.
+		rng.seed(12345);
 		Game game(Cards(deal102));
 		unsigned nMoves = 100;
 		std::vector<GameStateType> states;
@@ -334,7 +348,7 @@ int main()
 			for (unsigned imv = 0; imv <nMoves; ++imv){
 				Moves avail = game.AvailableMoves();
 				if (avail.size()) {
-					Move move = avail[rand()%avail.size()];
+					Move move = avail[rng()%avail.size()];
 					game.MakeMove(move);
 					movesMade.push_back(move);
 					Validate(game);
@@ -376,8 +390,9 @@ int main()
 	}
 	{
 		Game game(Cards(deal3));
-		PrintGame(game);
+		// PrintGame(game);
 		auto outcome = KSolve(game,9'600'000); 
-		PrintOutcome(outcome.first, MakeXMoves(outcome.second, game.Draw()));
+		assert(outcome.first == SOLVED);
+		assert(MoveCount(outcome.second) == 100);
 	}
 }
