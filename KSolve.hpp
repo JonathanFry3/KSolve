@@ -14,15 +14,28 @@
 // Otherwise, it will be empty.
 //
 // This function uses an unpredictable amount of main memory. You can
-// control this behavior to some degree by specifying maxStates.
-enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-std::pair<KSolveResult,Moves> KSolve(
+// control this behavior to some degree by specifying maxStates. The number
+// of unique game states examinined is return in _stateCount
+enum KSolveCode {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE, MEMORY_EXCEEDED};
+struct KSolveResult
+{
+	KSolveCode _code;
+	unsigned _stateCount;
+	Moves _solution;
+
+	KSolveResult(KSolveCode code, unsigned stateCount, const Moves& moves)
+		: _code(code)
+		, _stateCount(stateCount)
+		, _solution(moves)
+		{}
+};
+KSolveResult KSolve(
 		Game& gm, 						// The game to be played
 		unsigned maxStates=5000000,		// Give up if the number of unique game states
 										// examined exceeds this.
-		unsigned maxMoves=512)			// Give up if the minimum possible number
+		unsigned maxMoves=512);			// Give up if the minimum possible number
 										// of moves in any solution exceeds this.
-		noexcept(false);				// Known to throw std::bad_alloc.
+
 
 
 // A compact representation of the current game state.

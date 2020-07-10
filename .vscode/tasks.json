@@ -9,7 +9,7 @@
 				"-g",
 			//	"-m32",
 			//	"-pg",
-			//	"-O3",
+				"-O3",
 				"Game.cpp",
 				"KSolve.cpp",
 				"KlondikeSolver.cpp",
@@ -57,6 +57,7 @@
 			"args": [
 				"-g",
 				"-O3",
+				"-m32",
 				"-DNDEBUG",
 				"Game.cpp",
 				"KSolve.cpp",

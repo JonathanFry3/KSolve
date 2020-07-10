@@ -60,9 +60,9 @@ int main()
 		Game game(deck,3);
 		auto outcome = KSolve(game);
 		clock_t t1 = clock();
-		assert(outcome.first==SOLVED);
+		assert(outcome._code==SOLVED);
 		out << trialName << '\t' 
-			<< MoveCount(outcome.second) << '\t' 
+			<< MoveCount(outcome._solution) << '\t' 
 			<<float(t1-t0)/CLOCKS_PER_SEC << endl;
 	}
 }

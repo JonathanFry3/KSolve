@@ -58,81 +58,87 @@ struct KSolveState {
 };
 
 
-std::pair<KSolveResult,Moves> KSolve(
+KSolveResult KSolve(
 		Game& game,
 		unsigned maxStates,
 		unsigned maxMoves)
 {
 	Moves solution;
 	KSolveState state(game,solution,maxMoves,maxStates);
+	try	{
 
-	{
-		Moves avail = state.MakeAutoMoves();
-
-		if (avail.size() == 0) {
-			solution = state._movesMade;
-			KSolveResult rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
-			return std::pair<KSolveResult,Moves>(rc,solution);
-		}
-		assert(avail.size() > 1);
-	}
-
-	unsigned startMoves = MoveCount(state._movesMade)
-					 + state._game.MinimumMovesLeft();
-
-	state._open_histories[startMoves].push(state._movesMade);
-
-	unsigned ih;
-	for  (ih= startMoves; ih < state._minSolutionCount
-			 && state._closed_previousStates.size() <maxStates; ++ih) {
-		auto &h = state._open_histories[ih];
-		// scan histories from shortest to longest
-		while (h.size() && state._closed_previousStates.size() <maxStates) {
-			state._game.Deal();
-			state._movesMade = h.top();	
-			h.pop();
-			
-			for (const auto& mv: state._movesMade){
-				state._game.MakeMove(mv);
-			}
+		{
 			Moves avail = state.MakeAutoMoves();
 
-			if (avail.size() == 0 && state._game.GameOver()) {
-				// We have a solution.  See if it is a new champion
-				state.CheckForMinSolution();
-				// See if it the final winner.
-				if (ih == state._minSolutionCount)
-					break;
+			if (avail.size() == 0) {
+				solution = state._movesMade;
+				KSolveCode rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
+				return KSolveResult(rc,state._closed_previousStates.size(), solution);
 			}
-			
-			unsigned movesMadeCount = MoveCount(state._movesMade);
-			unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
+			assert(avail.size() > 1);
+		}
 
-			if (minMoveCount < state._minSolutionCount)	{
-				// There is still hope for this subtree.
-				// Save the result of each of the possible next moves.
-				for (auto mv: avail){
-					state._movesMade.push_back(mv);
+		unsigned startMoves = MoveCount(state._movesMade)
+						+ state._game.MinimumMovesLeft();
+
+		state._open_histories[startMoves].push(state._movesMade);
+
+		unsigned ih;
+		for  (ih= startMoves; ih < state._minSolutionCount
+				&& state._closed_previousStates.size() <maxStates; ++ih) {
+			auto &h = state._open_histories[ih];
+			// scan histories from shortest to longest
+			while (h.size() && state._closed_previousStates.size() <maxStates) {
+				state._game.Deal();
+				state._movesMade = h.top();	
+				h.pop();
+				
+				for (const auto& mv: state._movesMade){
 					state._game.MakeMove(mv);
-					unsigned minMoveCount = movesMadeCount + mv.NMoves()
-											+ state._game.MinimumMovesLeft();
-					if (minMoveCount < state._minSolutionCount){
-						assert(ih <= minMoveCount);
-						state.RecordState(minMoveCount);
+				}
+				Moves avail = state.MakeAutoMoves();
+
+				if (avail.size() == 0 && state._game.GameOver()) {
+					// We have a solution.  See if it is a new champion
+					state.CheckForMinSolution();
+					// See if it the final winner.
+					if (ih == state._minSolutionCount)
+						break;
+				}
+				
+				unsigned movesMadeCount = MoveCount(state._movesMade);
+				unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
+
+				if (minMoveCount < state._minSolutionCount)	{
+					// There is still hope for this subtree.
+					// Save the result of each of the possible next moves.
+					for (auto mv: avail){
+						state._movesMade.push_back(mv);
+						state._game.MakeMove(mv);
+						unsigned minMoveCount = movesMadeCount + mv.NMoves()
+												+ state._game.MinimumMovesLeft();
+						if (minMoveCount < state._minSolutionCount){
+							assert(ih <= minMoveCount);
+							state.RecordState(minMoveCount);
+						}
+						state._game.UnMakeMove(mv);
+						state._movesMade.pop_back();
 					}
-					state._game.UnMakeMove(mv);
-					state._movesMade.pop_back();
 				}
 			}
 		}
+		KSolveCode outcome;
+		if (ih > maxMoves || state._closed_previousStates.size() >= maxStates){
+			outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
+		} else {
+			outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
+		}
+		return KSolveResult(outcome,state._closed_previousStates.size(),solution);
+	} catch(std::bad_alloc) {
+		unsigned nStates = state._closed_previousStates.size();
+		state._closed_previousStates.clear();
+		return KSolveResult(MEMORY_EXCEEDED,nStates,Moves());
 	}
-	KSolveResult outcome;
-	if (ih > maxMoves || state._closed_previousStates.size() >= maxStates){
-		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
-	} else {
-		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
-	}
-	return std::pair<KSolveResult,Moves>(outcome,solution);
 }
 Moves KSolveState::MakeAutoMoves()
 {

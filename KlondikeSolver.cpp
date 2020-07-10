@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<sstream>		// for stringstream
+#include<iomanip>		// for setprecision
 #include<ctime>
 #include"KSolve.hpp"
 
@@ -157,9 +158,9 @@ int main(int argc, char * argv[]) {
 		}
 
 		clock_t clock0 = clock();
-		pair<KSolveResult,Moves> outcome = KSolve(game, maxClosedCount);
-		KSolveResult & result(outcome.first);
-		Moves & moves(outcome.second);
+		KSolveResult outcome = KSolve(game, maxClosedCount);
+		auto & result(outcome._code);
+		Moves & moves(outcome._solution);
 		unsigned moveCount = AdjustedMoveCount(moves,game.Draw());
 		bool canReplay = false;
 		if (result == SOLVED) {
@@ -173,7 +174,8 @@ int main(int argc, char * argv[]) {
 		} else if (result == GAVEUP_UNSOLVED) {
 			cout << "Unknown.";
 		}
-		cout << "\n Took " << (clock() - clock0)/1e6 << " sec.\n";
+		cout << "\nTook " << float(clock() - clock0)/CLOCKS_PER_SEC << " sec. ";
+		cout << std::setprecision(3) << outcome._stateCount/1e6 << " million unique states.\n";
 		if (outputMethod < 2 && replay && canReplay) {
 			game.Deal();
 			XMoves xmoves(MakeXMoves(moves,game.Draw()));

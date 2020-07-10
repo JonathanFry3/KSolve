@@ -111,7 +111,7 @@ static void Validate(const Game & game)
 }
 
 // enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-void PrintOutcome(KSolveResult outcome, const vector<XMove>& moves)
+void PrintOutcome(KSolveCode outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
 		"stock    ",
@@ -129,7 +129,7 @@ void PrintOutcome(KSolveResult outcome, const vector<XMove>& moves)
 		"hearts   "
 	};
 	vector<string> outcomeWords{"Minimal Solution","Solution may not be minimal",
-									"Gave up without solving", "Impossible"};
+									"Gave up without solving", "Impossible", "Exception thrown"};
 	cout << "Outcome: " << outcomeWords[outcome];
 	if (moves.size()){
 		cout << " in " << moves.back().MoveNum() << " moves";
@@ -301,8 +301,8 @@ int main()
 			Game game(Cards(quick),1);
 			// PrintGame(game);
 			auto out = KSolve(game); 
-			auto& outcome(out.first);
-			Moves& solution(out.second);
+			auto& outcome(out._code);
+			Moves& solution(out._solution);
 			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
 			assert(outcome == SOLVED);
 			assert(MoveCount(solution) == 76);
@@ -392,7 +392,7 @@ int main()
 		Game game(Cards(deal3));
 		// PrintGame(game);
 		auto outcome = KSolve(game,9'600'000); 
-		assert(outcome.first == SOLVED);
-		assert(MoveCount(outcome.second) == 100);
+		assert(outcome._code == SOLVED);
+		assert(MoveCount(outcome._solution) == 100);
 	}
 }

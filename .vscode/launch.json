@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/KlondikeSolver",
             "args": [
                 "-mvs"
-                ,"-draw", "3"
+                ,"-s","18500000"
                 ,"TestDeals.txt"
             ],
             "stopAtEntry": false,
@@ -47,34 +47,13 @@
                 }
             ]
         }
+        /*
         {
             "name": "Test Game, KSolve, GameStateType",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/gametest",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        }
-        {
-            "name": "Test KlondikeSolver",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/KlondikeSolver",
-            "args": [
-                "-mvs",
-                "./TestDeals.txt"
-            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
