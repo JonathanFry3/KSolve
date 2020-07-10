@@ -155,11 +155,13 @@ Moves KSolveState::MakeAutoMoves()
 Moves KSolveState::FilteredAvailableMoves()
 {
 	Moves avail = _game.AvailableMoves();
-	for (auto i = avail.begin(); i < avail.end(); ++i){
+	for (auto i = avail.begin(); i < avail.end(); ){
 		if (SkippableMove(*i)) {
 			avail.erase(i);
 			++_skippableWins;
-		}	
+		} else {
+			i += 1;
+		}
 	}
 	return avail;
 }
