@@ -428,8 +428,12 @@ Moves Game::AvailableMoves() const
 			unsigned pileNo = FOUNDATION+cardSuit;
 			result.emplace_back(pileNo,mv._nMoves+1,mv._draw);
 			if (cardRank <= minFoundationSize+1){
-				if (this->_draw == 1)
+				if (this->_draw == 1) {
+					// This is a short-foundation move that ShortFoundationMove()
+					// can't find.
+					if (result.size() == 1) return result;
 					break;		// This is best next move from among the remaining talon cards
+				}
 				else
 					continue;  	// This is best move for this card.  A card further on might be a better move.
 			}
