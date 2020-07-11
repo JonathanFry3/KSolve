@@ -1,0 +1,85 @@
+ 0: KC 2D TS AS 6D 3D TC AC AH 3H 5H 2C JD 6H 9D 8D KS 3S 7D 5S 8H 6S 2H QD 
+ 1: 
+ 2: 4D 
+ 3: AD -4C
+ 4: 5D -QS-4H
+ 5: 6C -5C-8C-QH
+ 6: 4S -9C-QC-TH-2S
+ 7: KH -7C-8S-9H-9S-7S
+ 8: JH -JS-KD-TD-7H-3C-JC
+ 9: 
+10: 
+11: 
+12: 
+Minimum Moves Needed: 88
+
+Minimal solution in 109 moves.
+Took 5.16318 sec. 1.02 million unique states.
+ 0: 3D 5H TC 4C TS KD KC 2D 5S 4D AS 2C TD 8H TH 7H JD 8D 8S 9D 5C QS KH 3C 
+ 1: 
+ 2: AH 
+ 3: 4H -7D
+ 4: QH -AC-2H
+ 5: JC -6D-8C-9S
+ 6: 6H -7S-KS-AD-2S
+ 7: 6S -3S-6C-QC-9H-JH
+ 8: 7C -9C-3H-QD-JS-5D-4S
+ 9: 
+10: 
+11: 
+12: 
+Minimum Moves Needed: 88
+
+Minimal solution in 123 moves.
+Took 9.8 sec. 2.01 million unique states.
+ 0: 8H 6H QH 3C KS 8D 9D 4D 9C QC 2H 7S KC JC 7H 2D 2C 5C JD KD 5D QD 7C TC 
+ 1: 
+ 2: 3S 
+ 3: 3H -TS
+ 4: TH -3D-KH
+ 5: TD -8S-9H-7D
+ 6: 6C -AS-5S-8C-QS
+ 7: AD -JH-9S-4C-4H-6D
+ 8: 6S -2S-AC-5H-JS-4S-AH
+ 9: 
+10: 
+11: 
+12: 
+Minimum Moves Needed: 86
+
+Impossible.
+Took 0.0179 sec. 0.000809 million unique states.
+ 0: 4D AS 9C TH 3D TC JS 6D 2D TS 5D 3H 2C KD AD 7H JD JC QS AC 5S 2H 8C AH 
+ 1: 
+ 2: 4C 
+ 3: JH -2S
+ 4: 9D -6S-KH
+ 5: QD -KC-7D-QH
+ 6: 6C -8S-4S-3C-KS
+ 7: 9H -5C-8H-8D-3S-7C
+ 8: 7S -5H-9S-6H-4H-QC-TD
+ 9: 
+10: 
+11: 
+12: 
+Minimum Moves Needed: 87
+
+Minimal solution in 117 moves.
+Took 22.6 sec. 3.6 million unique states.
+ 0: TC TS AD 4D QS 3H 3S JH TD KC 8H 8S 4S 4H KS 6D 8D 7C JD 9D 2H QD 3D AS 
+ 1: 
+ 2: 5C 
+ 3: 9H -7H
+ 4: AC -9S-2D
+ 5: 8C -5S-QH-5D
+ 6: 7D -3C-JS-2C-QC
+ 7: 6S -JC-9C-KD-7S-5H
+ 8: KH -TH-6H-6C-2S-AH-4C
+ 9: 
+10: 
+11: 
+12: 
+Minimum Moves Needed: 88
+
+Minimal solution in 121 moves.
+Took 15.6 sec. 2.45 million unique states.
