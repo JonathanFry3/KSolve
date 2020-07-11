@@ -482,57 +482,45 @@ unsigned MoveCount(const Moves& moves)
 	return result;
 }
 
+// Counts the number of times a card is higher in the stack
+// than a lower card of the same suit.  Remember that the 
+// stack tops are at the back.
+static unsigned MisorderCount(const Card *begin, const Card *end)
+{
+	unsigned char mins[4] {14,14,14,14};
+	unsigned result = 0;
+	for (auto i = begin; i != end; ++i){
+		Card cd = *i;
+		auto rank = cd.Rank();
+		auto suit = cd.Suit();
+		if (rank < mins[suit])
+			mins[suit] = rank;
+		else
+			result += 1;
+	}
+	return result;
+}
+
 // Return a lower bound on the number of moves required to complete
 // this game.  This function must return a result that does not 
 // decrease by more than one after any single Move.
 unsigned Game::MinimumMovesLeft() const
 {
-	// In the best possible case, the number of moves remaining is the
-	// number of cards not yet on the foundation plus the number of draws
-	// from stock required to expose the stock cards.
-	unsigned result = 52 - FoundationCardCount();
 	unsigned draw = Draw();
-	result += (_stock.Size()+draw-1)/draw;
-	unsigned wasteSize = _waste.Size();
+	const CardVec& waste = _waste.Cards();
+	const CardVec& stock = _stock.Cards();
+	unsigned talonCount = waste.size() + stock.size();
 
-	// We can improve the result by counting the cases in the waste where
-	// a card must be moved to a tableau pile before it can go to the 
-	// foundation because a lower card of the same suit appears lower in 
-	// the waste pile.
-	if (draw == 1){
-		for (int iw = wasteSize-1; iw > 0; --iw){
-			Card cdi = _waste[iw];
-			for (int jw = iw-1; jw >= 0; --jw){
-				Card cdj = _waste[jw];
-				if (cdi.Suit() == cdj.Suit() && cdj.Rank() < cdi.Rank()) {
-					result += 1;
-					break;
-				}
-			}
-		}
+	unsigned result = talonCount + (stock.size()+draw-1)/draw;
+
+	if (draw == 1) {
+		result += MisorderCount(waste.begin(), waste.end());
 	}
 
-	// Here, we count the number of tableau cards that sit atop 
-	// cards in their same suit that must be moved to the foundation
-	// before them. Only the face-down cards and the top face-up
-	// card on each pile are examined.
-
-	std::array<fixed_capacity_vector<char,7>,4> ranksBelow;
 	for (const Pile & tpile: _tableau) {
-		unsigned downCount = tpile.Size()-tpile.UpCount();
-		for (auto& r: ranksBelow) r.clear();
-		for (unsigned i = 0; i <= downCount; ++i){
-			Card cd = tpile[i];
-			unsigned suit = cd.Suit();
-			unsigned rank = cd.Rank();
-			for (char r: ranksBelow[suit]){
-				if (r < rank) {
-					result += 1;
-					break;
-				}
-			}
-			ranksBelow[suit].push_back(rank);
-		}
+		auto begin = tpile.Cards().begin();
+		unsigned downCount = tpile.Size() - tpile.UpCount();
+		result += tpile.Size() + MisorderCount(begin, begin+downCount+1);
 	}
 	return result;
 }

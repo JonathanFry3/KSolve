@@ -150,8 +150,6 @@ int main(int argc, char * argv[]) {
 
 		Game game(deck,drawCount);
 		if (outputMethod == 0) {
-			cout << GameDiagram(Game(deck)) << "\n\n";
-		} else if (outputMethod == 1) {
 			cout << GameDiagram(game) << "\n\n";
 		} else if (outputMethod == 1) {
 			cout << GameDiagramPysol(game) << "\n\n";
