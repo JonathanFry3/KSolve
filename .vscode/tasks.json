@@ -29,15 +29,15 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build gametest",
+			"label": "C/C++:  g++ build unittests",
 			"command": "g++",
 			"args": [
 				"-g",
 				"Game.cpp",
 				"KSolve.cpp",
-				"gametest.cpp",
+				"unittests.cpp",
 				"-o",
-				"${workspaceFolder}/gametest"
+				"${workspaceFolder}/unittests"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
