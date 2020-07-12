@@ -57,10 +57,8 @@ struct KSolveResult
 };
 KSolveResult KSolve(
 		Game& gm, 						// The game to be played
-		unsigned maxStates=10000000,	// Give up if the number of unique game states
+		unsigned maxStates=10000000);	// Give up if the number of unique game states
 										// examined exceeds this.
-		unsigned maxMoves=512);			// Give up if the minimum possible number
-										// of moves in any solution exceeds this.
 
 
 

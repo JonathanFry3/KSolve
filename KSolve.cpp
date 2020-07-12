@@ -60,10 +60,10 @@ struct KSolveState {
 
 KSolveResult KSolve(
 		Game& game,
-		unsigned maxStates,
-		unsigned maxMoves)
+		unsigned maxStates)
 {
 	Moves solution;
+	enum {maxMoves = 512};
 	KSolveState state(game,solution,maxMoves,maxStates);
 	try	{
 

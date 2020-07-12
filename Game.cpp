@@ -10,6 +10,11 @@ const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
 
 
+static unsigned RoundUpQuotient(unsigned numerator, unsigned denominator)
+{
+	return (numerator+denominator-1)/denominator;
+}
+
 // Returns a string composed only of the characters in input that also appear in filter
 static std::string Filtered(std::string input, std::string filter)
 {
@@ -490,7 +495,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 	unsigned char mins[4] {14,14,14,14};
 	unsigned result = 0;
 	for (auto i = begin; i != end; ++i){
-		Card cd = *i;
+		const Card& cd = *i;
 		auto rank = cd.Rank();
 		auto suit = cd.Suit();
 		if (rank < mins[suit])
@@ -503,7 +508,10 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 
 // Return a lower bound on the number of moves required to complete
 // this game.  This function must return a result that does not 
-// decrease by more than one after any single Move.
+// decrease by more than one after any single Move.  The sum of 
+// this result plus the number of moves made (from MoveCount())
+// must never decrease when a new move is made (monotonicity).
+// If it does, we won't know when to stop.
 unsigned Game::MinimumMovesLeft() const
 {
 	unsigned draw = Draw();
@@ -511,9 +519,10 @@ unsigned Game::MinimumMovesLeft() const
 	const CardVec& stock = _stock.Cards();
 	unsigned talonCount = waste.size() + stock.size();
 
-	unsigned result = talonCount + (stock.size()+draw-1)/draw;
+	unsigned result = talonCount + RoundUpQuotient(stock.size(),draw);
 
 	if (draw == 1) {
+		// This can fail the monotonicity test for draw > 1.
 		result += MisorderCount(waste.begin(), waste.end());
 	}
 
@@ -572,7 +581,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		} else {
 			assert(stockSize+wasteSize > 0);
 			unsigned nTalonMoves = mv.NMoves()-1;
-			unsigned stockMovesLeft = (stockSize+draw-1)/draw;
+			unsigned stockMovesLeft = RoundUpQuotient(stockSize,draw);
 			if (nTalonMoves > stockMovesLeft) {
 				// Draw all remaining cards from stock
 				if (stockSize) {
