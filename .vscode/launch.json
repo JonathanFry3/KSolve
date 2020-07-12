@@ -9,7 +9,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/KlondikeSolver",
+            "program": "${workspaceFolder}/KSolver",
             "args": [
                 "-mvs"
                 ,"-s","18500000"

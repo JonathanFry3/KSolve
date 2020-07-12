@@ -127,7 +127,7 @@ int main(int argc, char * argv[]) {
 		}
 	}
 
-	if (maxClosedCount == 0) { maxClosedCount = 5000000; }
+	if (maxClosedCount == 0) { maxClosedCount = 10000000; }
 
 	unsigned int fileIndex = 0;
 	do {

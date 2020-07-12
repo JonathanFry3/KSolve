@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build KlondikeSolver",
+			"label": "C/C++:  g++ build KSolver",
 			"command": "g++",
 			"args": [
 				"-g",
@@ -12,9 +12,9 @@
 				"-O3",
 				"Game.cpp",
 				"KSolve.cpp",
-				"KlondikeSolver.cpp",
+				"KSolver.cpp",
 				"-o",
-				"${workspaceFolder}/KlondikeSolver"
+				"${workspaceFolder}/KSolver"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
