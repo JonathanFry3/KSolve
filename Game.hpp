@@ -2,8 +2,8 @@
 #define SOL_GAME_H
 
 /*
-	This file defines the interfaces for the Klondike Solitaire game.  It defines such things
-	as a Card, a Pile, and a Move.  It defines the Game containing several piles:
+	This file defines the interfaces for the Klondike Solitaire card game.  It defines such
+	 things as a Card, a Pile, and a Move.  It defines the Game containing several piles:
 	stock       the pile from which a player draws
 	waste       the pile on which to lay a drawn card if it is not played elsewhere
 	foundation  the four piles, one for each suit, to which one wishes to move all the cards
@@ -17,7 +17,53 @@
 #include <vector>
 #include <array>
 #include <cassert>
-#include "fixed_capacity_vector.hpp"
+
+// Template class fixed_capacity_vector
+//
+// One of these has much of the API of a std::vector,
+// but has a fixed capacity.  It cannot be extended past that.
+// It is safe to use only where the problem limits the size needed,
+// as it does not check for overfilling.  It is designed for speed,
+// so it does not check subscripts.
+#include <cstdint> 		// for uint32_t
+#include <algorithm>	// for std::copy()
+
+template <class T, unsigned Capacity>
+class fixed_capacity_vector{
+	uint32_t _size;
+	T _elem[Capacity];
+public:
+	fixed_capacity_vector() : _size(0){}
+	T & operator[](unsigned i)						{return _elem[i];}
+	const T& operator[](unsigned i) const			{return _elem[i];}
+	T* begin()										{return _elem;}
+	const T* begin() const							{return _elem;}
+	size_t size() const								{return _size;}
+	T* end()										{return _elem+_size;}
+	const T* end() const							{return _elem+_size;}
+	T & back()										{return _elem[_size-1];}
+	const T& back() const							{return _elem[_size-1];}
+	void pop_back()									{_size -= 1;}
+	void pop_back(unsigned n)						{_size -= n;}
+	void push_back(const T& cd)						{_elem[_size] = cd; _size += 1;}
+	void clear()									{_size = 0;}
+	void append(const T* begin, const T* end)	
+					{for (auto i=begin;i<end;++i){_elem[_size++]=*i;}}
+	bool operator==(const fixed_capacity_vector<T,Capacity>& other) const
+					{	
+						if (_size != other._size) return false;
+						for(unsigned i = 0; i < _size; ++i){
+							if ((*this)[i] != other[i]) return false;
+						}
+						return true;
+					}
+	fixed_capacity_vector<T,Capacity>& operator=(const fixed_capacity_vector& other) 
+					{
+						std::copy(other._elem,other._elem+other._size,_elem);
+						_size = other._size;
+						return *this;
+					}
+};
 
 enum Rank_t : unsigned char
  {
@@ -89,9 +135,7 @@ public:
 	static std::pair<bool,Card> FromString(const std::string& s);
 };
 
-
-// CardVec is a very specialized vector.  Its capacity is always 24
-// and it does not check for overfilling.
+// Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
 typedef fixed_capacity_vector<Card,24> CardVec;
 
 enum PileCode {
@@ -195,7 +239,8 @@ public:
 		, _nMoves(nMoves)
 		, _draw(draw)
 		{}
-	// Construct a non-talon move
+	// Construct a non-talon move.  UnMakeMove() can't infer the count
+	// of face-up cards in a tableau pile, so AvailableMoves() saves it.
 	Move(unsigned from, unsigned to, unsigned n, unsigned fromUpCount)
 		: _from(from)
 		, _to(to)
@@ -242,9 +287,9 @@ std::string Peek(const Moves & mvs);
 
 class XMove
 {
-	unsigned _moveNum;
-	unsigned _from;
-	unsigned _to;
+	unsigned short _moveNum;
+	unsigned char _from;
+	unsigned char _to;
 	unsigned char _nCards;
 	unsigned char _flip;		// tableau flip?
 public:
@@ -280,7 +325,7 @@ class Game
 	std::array<Pile,4> _foundation;
 	std::vector<Card> _deck;
 	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
-	std::array<Pile *,13> _allPiles;
+	std::array<Pile *,13> _allPiles; // pile numbers from enum PileCode
 
 public:
 	Game(const std::vector<Card>& deck,unsigned draw=1);
@@ -311,8 +356,7 @@ public:
 	void MakeMove(const XMove& xmv);
 };
 
-
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
 
-#endif
+#endif      // SOL_GAME_H

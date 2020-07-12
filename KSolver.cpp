@@ -94,37 +94,26 @@ int main(int argc, char * argv[]) {
 			maxClosedCount = atoi(argv[i + 1]);
 			if (maxClosedCount < 0) { cerr << "You must specify a valid max number of states.\n"; return 100; }
 			i++;
-		} else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "/fast") == 0 || _stricmp(argv[i], "-f") == 0 || _stricmp(argv[i], "/f") == 0) {
-			fastMode = true;
 			if (maxClosedCount == 0) { maxClosedCount = 200000; }
-		} else if (_stricmp(argv[i], "-m") == 0 || _stricmp(argv[i], "/m") == 0 || _stricmp(argv[i], "-multi") == 0 || _stricmp(argv[i], "/multi") == 0) {
-			if (i + 1 >= argc) { cerr << "You must specify number of threads.\n"; return 100; }
-			multiThreaded = atoi(argv[i + 1]);
-			if (multiThreaded < 1 || multiThreaded > 99) { cerr << "You must specify a valid number of threads.\n"; return 100; }
-			i++;
 		} else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "/mvs") == 0 || _stricmp(argv[i], "-moves") == 0 || _stricmp(argv[i], "/moves") == 0) {
 			showMoves = true;
 		} else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
 			replay = true;
 		} else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
-			cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally or a faster best try.\n\n";
-			cout << "KlondikeSolver [-dc] [-d] [-g] [-o] [-m] [-s] [-f] [-r] [-mvs] [Path]\n\n";
+			cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
+			cout << "KSolver [-dc] [-d] [-g] [-o] [-s] [-r] [-mvs] [Path]\n\n";
 			cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
 			cout << "  -deck str [-d str]    Loads the deck specified by the string.\n\n";
 			cout << "  -game # [-g #]        Loads a random game with seed #.\n\n";
 			cout << "  Path                  Solves deals specified in the file.\n\n";
 			cout << "  -r                    Replays solution to output if one is found.\n\n";
-			cout << "  -multi # [-m #]       Uses # threads to solve deals.\n";
-			cout << "                        Only works when solving minimally.\n\n";
 			cout << "  -out # [-o #]         Sets the output method of the solver.\n";
 			cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n";
 			cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
 			cout << "                        solution is found.";
 			cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
 			cout << "                        before terminating. Defaults to 5,000,000.\n\n";
-			cout << "  -fast [-f]            Run the solver in a best attempt mode, which is\n";
-			cout << "                        faster, but not guaranteed to give minimal solution.\n";
-			return 100;
+			return 0;
 		} else {
 			if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
 			commandLoaded = true;

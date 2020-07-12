@@ -1,11 +1,33 @@
+// KSolve.hpp declares a Klondike Solitaire solver function and auxiliaries
+
+// MIT License
+
+// Copyright (c) 2020 Jonathan B. Fry (@JonathanFry3)
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef KSOLVE_HPP
 #define KSOLVE_HPP
-// Solver.hpp declares a Klondike Solitaire solver function and auxiliaries
 
-#include "Game.hpp"
-#include <cstdint>		// for std::uint32_t, uint64_t
-#include <utility>		// for std::pair
-
+#include "Game.hpp"		// for Game
+#include <cstdint>		// for std::uint32_t
+#include <array>
 
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code and a Moves vector.  The vector contains
@@ -15,7 +37,11 @@
 //
 // This function uses an unpredictable amount of main memory. You can
 // control this behavior to some degree by specifying maxStates. The number
-// of unique game states examinined is return in _stateCount
+// of unique game states stored is returned in _stateCount.
+//
+// Although there is code to catch std::bad_alloc exceptions and return
+// the MEMORY_EXCEEDED code, if memory is exceeded, the process will probably 
+// just die.
 enum KSolveCode {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE, MEMORY_EXCEEDED};
 struct KSolveResult
 {

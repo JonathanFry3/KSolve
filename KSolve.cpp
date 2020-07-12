@@ -170,23 +170,24 @@ Moves KSolveState::FilteredAvailableMoves()
 // Return true if this move cannot be in a minimum solution.
 bool KSolveState::SkippableMove(const Move& trial)
 {
-	/* 
-	Consider a move at time T0 from A to B and the next move
-	from B, which goes to C at time Tn.  The move at Tn is
-	skippable if the same result could have been achieved 
-	at T0 by moving the same cards directly from A to C.
+	// Consider a move at time T0 from A to B and the next move
+	// from B, which goes to C at time Tn.  The move at Tn is
+	// skippable if the same result could have been achieved 
+	// at T0 by moving the same cards directly from A to C.
 
-	We are now at Tn looking back for a T0 move.  B is our from pile
-	and C is our to pile.  A candidate T0 move is one that moves
-	to our from pile (pile B).
+	// We are now at Tn looking back for a T0 move.  B is our from pile
+	// and C is our to pile.  A candidate T0 move is one that moves
+	// to our from pile (pile B).
 
-	Do those two moves move the same set of cards?.  Yes if
-	no intervening move has changed pile B and the two moves
-	move the same number of cards.
+	// Do those two moves move the same set of cards?.  Yes if
+	// no intervening move has changed pile B and the two moves
+	// move the same number of cards.
 
-	Was the move from A to C possible at T0? Yes if no intervening
-	move has changed pile C.
-	*/
+	// Was the move from A to C possible at T0? Yes if no intervening
+	// move has changed pile C.
+
+	// Since nothing says A cannot equal C, this test catches 
+	// moves that exactly reverse previous moves.
 	auto B = trial.From();
 	if (B == STOCK || B == WASTE) return false; 
 	auto C = trial.To();
@@ -204,6 +205,16 @@ bool KSolveState::SkippableMove(const Move& trial)
 		}
 	}
 	return false;
+
+	// If you find another profitable way to filter available moves, you could
+	// call this one ABC_Move. 
+	//
+	// AvailableMoves() generates moves among tableau files for only two purposes:
+	// to move all the face-up cards, or to expose a card that can be moved to the 
+	// foundation.  I have tried filtering out later moves that would re-cover a 
+	// card that had been exposed in that fashion.  That did not break anything, but
+	// cost more time than it saved.
+	// Jonathan Fry 7/12/2020
 }
 
 // A solution has been found.  If it's the first, or shorter than
