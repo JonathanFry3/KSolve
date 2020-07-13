@@ -53,7 +53,7 @@ int main()
 		exit(100);
 	}
 	int nRuns = 5;
-	string trialName = "-O3 After TableauCover test 64";
+	string trialName = "tweaked hash 64";
 	std::vector<Card> deck(Cards(deal3));
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();

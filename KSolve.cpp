@@ -14,8 +14,9 @@ public:
   size_t operator() (const GameStateType & gs) const
   {
 	size_t result = robin_hood::hash<std::uint32_t>()(gs._psts[0]);
-	for (unsigned i = 1; i < 7; ++i) {
+	for (unsigned i = 1; i < 7; i+=2) {
 		result ^= robin_hood::hash<std::uint32_t>()(gs._psts[i]);
+		result += robin_hood::hash<std::uint32_t>()(gs._psts[i+1]);
 	}
 	return result;
   }

@@ -13,3 +13,4 @@ robin_hood flat hash-map 64	86	28.6719
 -O3 Before TableauCover test 64	86	6.58376
 -O3 After TableauCover test 64	86	6.69895
 -O3 After TableauCover test 32	86	7.17612
+tweaked hash 64	86	6.40096
