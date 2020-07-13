@@ -11,6 +11,8 @@
 using namespace std;
 
 vector<Card> PysolDeck(const string& s);
+vector<Card> ReversedPysolDeck(const string& s);
+vector<Card> DeckLoader(string const& cardSet, const int order[52]);
 vector<Card> Shuffle1(int &seed);
 vector<Card> SolitaireDeck(const string& s);
 string GameDiagram(const Game& game);
@@ -32,12 +34,15 @@ vector<Card> LoadDeck(string const& f, unsigned int & index) {
 	if (f[index] == '#') {
 		while (index < f.size() && f[index++] != '\n') {}
 		return deck;
-	} else if (f[index] == 'T' || f[index] == 't') {
+	} else if (f[index] == 'T' || f[index] == 't' || f[index] == 'n') {
+		bool reversed = f[index] == 'n';// Prefix is "Talon" for Pysol, "nolat" for reversed
 		int lineCount = 0;
 		while (index < f.size() && lineCount < 8) {
 			if (f[index++] == '\n') { lineCount++; }
 		}
-		deck = PysolDeck(f.substr(startIndex, index - startIndex));
+		deck = reversed 
+			?ReversedPysolDeck(f.substr(startIndex, index - startIndex))
+			:PysolDeck(f.substr(startIndex, index - startIndex));
 	} else if (f[index] == 'G' || f[index] == 'g') {
 		while (index < f.size() && f[index++] != ' ') {}
 		startIndex = index;
@@ -226,12 +231,10 @@ pair<bool,Card> CardFromString(const string& str)
 	return result;
 }
 
-vector<Card> PysolDeck(string const& cardSet) {
-	vector<Card> result(52,Card());
-	vector<Card> empty;
-	DuplicateCardChecker dupchk;
-	string eyeCandy{"<> \t\n\r:"};
-	unsigned int j = 7;  // skips "Talon: "
+vector<Card> PysolDeck(string const& cardSet)
+{
+	// Pysol expects the cards within each pile to be in the 
+	// order they were dealt.
 	const int order[52] = { 
 		28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
 		42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
@@ -242,6 +245,32 @@ vector<Card> PysolDeck(string const& cardSet) {
 		4, 10, 15, 19, 22, 
 		5, 11, 16, 20, 23, 25, 
 		6, 12, 17, 21, 24, 26, 27 };
+	return DeckLoader(cardSet, order);
+}
+
+vector<Card> ReversedPysolDeck(string const& cardSet)
+{
+	// In ReversePysol, the cards in each pile are in the order
+	// in which the player would discover them while playing.
+	const int order[52] = { 
+		51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 
+		37, 36, 35, 34, 33, 32, 31, 30, 29, 28,
+		 0, 
+		 7,  1, 
+		13,  8,  2,
+		18, 14,  9,  3,
+		22, 19, 15, 10,  4,
+		25, 23, 20, 16, 11,  5,
+		27, 26, 24, 21, 17, 12, 6 };
+	return DeckLoader(cardSet, order);
+}
+
+vector<Card> DeckLoader(string const& cardSet, const int order[52]) {
+	vector<Card> result(52,Card());
+	vector<Card> empty;
+	DuplicateCardChecker dupchk;
+	string eyeCandy{"<> \t\n\r:-"};
+	unsigned int j = 7;  // skips "Talon: " or "nolaT: "
 
 	int i;
 	for (i = 0; i < 52 && j < cardSet.size(); i++) {
@@ -258,7 +287,7 @@ vector<Card> PysolDeck(string const& cardSet) {
 		j += 2;
 	}
 	if (i < 52) {
-		cerr << "Only " << i << " cards found in Pysol string" << endl;
+		cerr << "Only " << i << " cards found in input string" << endl;
 		return empty;
 	}
 	return result;
