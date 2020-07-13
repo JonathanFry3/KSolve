@@ -11,15 +11,16 @@ typedef std::stack<Moves> HistoryStack;
 class Hasher
 {
 public:
-  size_t operator() (const GameStateType & gs) const
-  {
-	size_t result = robin_hood::hash<std::uint32_t>()(gs._psts[0]);
-	for (unsigned i = 1; i < 7; i+=2) {
-		result ^= robin_hood::hash<std::uint32_t>()(gs._psts[i]);
-		result += robin_hood::hash<std::uint32_t>()(gs._psts[i+1]);
+	size_t operator() (const GameStateType & gs) const
+	{
+		robin_hood::hash<std::uint32_t> robin_hood_hash;
+		size_t result = robin_hood_hash(gs._psts[0]);
+		for (unsigned i = 1; i < 7; i+=2) {
+			result ^= robin_hood_hash(gs._psts[i]);
+			result += robin_hood_hash(gs._psts[i+1]);
+		}
+		return result;
 	}
-	return result;
-  }
 };
 
 struct KSolveState {
