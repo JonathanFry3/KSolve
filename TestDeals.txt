@@ -1,5 +1,5 @@
 #Except for the first two lines, this file is a copy of one in @ShootMe's Klondike-Solver repository.
-#The statistics are from that code, not this.
+#The results and statistics are from that code, not this.
 #Draw count 1 = 125 moves (476,081 states), 3 = 109 moves (579,168 states)
 042041044124023073111012123081104093031052051121094074061091083102043071132134113114131022103013062032101011014034054021112064092082133033072053084063024122
 #Random deal
