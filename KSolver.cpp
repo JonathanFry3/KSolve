@@ -188,7 +188,8 @@ int main(int argc, char * argv[]) {
 		}
 		if (showMoves && canReplay) {
 			XMoves xmoves(MakeXMoves(moves,game.Draw()));
-			cout << MovesMade(xmoves) << "\n\n";
+			string out = MovesMade(xmoves);
+			cout << out << "\n\n";
 		} else if (showMoves) {
 			cout << "\n";
 		}
@@ -253,8 +254,8 @@ vector<Card> ReversedPysolDeck(string const& cardSet)
 	// In ReversePysol, the cards in each pile are in the order
 	// in which the player would discover them while playing.
 	const int order[52] = { 
-		51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 
-		37, 36, 35, 34, 33, 32, 31, 30, 29, 28,
+		28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
+		42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
 		 0, 
 		 7,  1, 
 		13,  8,  2,
