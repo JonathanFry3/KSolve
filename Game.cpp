@@ -426,6 +426,12 @@ Moves Game::AvailableMoves() const
 	// after one or more draws.  
 	std::vector<TalonFuture> talon(TalonMoves(*this));
 	for (const TalonFuture & mv : talon){
+
+		// Stop generating talon moves if they require too many moves
+		// and there are alternative moves.  The ungenerated moves will get
+		// their chances later if we get that far before we find a minimum.
+		if (result.size() > 1 && mv._nMoves > 3) break;
+
 		unsigned cardSuit = mv._card.Suit();
 		unsigned cardRank = mv._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()){

@@ -52,8 +52,8 @@ int main()
 	if (!out.is_open()){
 		exit(100);
 	}
-	int nRuns = 5;
-	string trialName = "tweaked hash 64";
+	int nRuns = 9;
+	string trialName = "3-move(2) talon look-ahead";
 	std::vector<Card> deck(Cards(deal3));
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();
