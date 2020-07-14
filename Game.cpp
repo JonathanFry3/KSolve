@@ -394,31 +394,30 @@ Moves Game::AvailableMoves() const
 				Card fromBase = fromPile.Top();
 				Card fromTip = fromPile.Back();
 				unsigned toRank = cardToCover.Rank();
-				if (!(fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
-						&& (fromTip.OddRed() == cardToCover.OddRed())))
-					continue;
-				// Some face-up card in the from pile covers the top card
-				// in the to pile, so a move is possible.
-				int moveCount = cardToCover.Rank() -  fromTip.Rank();
-				assert(0 < moveCount && moveCount <= up);
-				if (moveCount == up){
-
-					if (up < fromPile.Size() || 
-						(fromBase.Rank()!=KING && NeedEmptyColumn(_tableau)))
-					{
-						// This move will expose a face-down card or
-						// clear a column to which a king may be moved.
-						// Move all the face-up cards on the from pile.
-						assert(fromPile.Top().Covers(cardToCover));
-						result.emplace_back(fromPile.Code(),toPile.Code(),up,up);
+				if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
+						&& (fromTip.OddRed() == cardToCover.OddRed())){
+					// Some face-up card in the from pile covers the top card
+					// in the to pile, so a move is possible.
+					int moveCount = cardToCover.Rank() -  fromTip.Rank();
+					assert(0 < moveCount && moveCount <= up);
+					if (moveCount == up){
+						if (up < fromPile.Size() || 
+							(fromBase.Rank()!=KING && NeedEmptyColumn(_tableau))){
+							// This move will expose a face-down card or
+							// clear a column to which a king may be moved.
+							// Move all the face-up cards on the from pile.
+							assert(fromPile.Top().Covers(cardToCover));
+							result.emplace_back(fromPile.Code(),toPile.Code(),up,up);
+						}
+					} else {
+						Card exposed = *(fromCds.end()-moveCount-1);
+						if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
+							// This move will expose a card that can be moved to 
+							// its foundation pile.
+							assert((fromCds.end()-moveCount)->Covers(cardToCover));
+							result.emplace_back(fromPile.Code(),toPile.Code(),moveCount,up);
+						}
 					}
-					continue;
-				}
-				Card exposed = *(fromCds.end()-moveCount-1);
-				if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
-					// This move will expose a card that can be moved to its foundation pile.
-					assert((fromCds.end()-moveCount)->Covers(cardToCover));
-					result.emplace_back(fromPile.Code(),toPile.Code(),moveCount,up);
 				}
 			}
 		}
