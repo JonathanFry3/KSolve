@@ -429,8 +429,9 @@ Moves Game::AvailableMoves() const
 
 		// Stop generating talon moves if they require too many moves
 		// and there are alternative moves.  The ungenerated moves will get
-		// their chances later if we get that far before we find a minimum.
-		if (result.size() > 1 && mv._nMoves > 3) break;
+		// their chances later if we get that far before we find a minimum,
+		// although that may require an extra move or more.
+		if (result.size() > 1 && mv._nMoves > 24) break;
 
 		unsigned cardSuit = mv._card.Suit();
 		unsigned cardRank = mv._card.Rank();
