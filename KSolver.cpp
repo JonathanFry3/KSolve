@@ -3,6 +3,7 @@
 #include<sstream>		// for stringstream
 #include<iomanip>		// for setprecision
 #include<ctime>
+#include<cmath>			// for ceil
 #include"KSolve.hpp"
 
 #include<cstring>
@@ -68,6 +69,7 @@ int main(int argc, char * argv[]) {
 	bool showMoves = false;
 	vector<Card> deck;
 	int drawCount = 1;
+	unsigned fastOption = 9;
 
 	for (int i = 1; i < argc; i++) {
 		if (_stricmp(argv[i], "-draw") == 0 || _stricmp(argv[i], "/draw") == 0 || _stricmp(argv[i], "-dc") == 0 || _stricmp(argv[i], "/dc") == 0) {
@@ -104,7 +106,12 @@ int main(int argc, char * argv[]) {
 			showMoves = true;
 		} else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
 			replay = true;
-		} else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
+		} else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "/fast") == 0 || _stricmp(argv[i], "-f") == 0 || _stricmp(argv[i], "/f") == 0) {
+			if (i + 1 >= argc) { cerr << "-FAST option requires a number from 0 to 9.\n"; return 100; }
+			fastOption = atoi(argv[i + 1]);
+			if (outputMethod < 0 || outputMethod > 9) { cerr << "-FAST option requires a number from 0 to 9\n"; return 100; }
+			i++;
+	} else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
 			cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
 			cout << "KSolver [-dc] [-d] [-g] [-o] [-s] [-r] [-mvs] [Path]\n\n";
 			cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
@@ -117,7 +124,10 @@ int main(int argc, char * argv[]) {
 			cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
 			cout << "                        solution is found.";
 			cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
-			cout << "                        before terminating. Defaults to 5,000,000.\n\n";
+			cout << "                        before terminating. Defaults to 5,000,000.\n";
+			cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 0 to 9.  0 is fastest,\n";
+			cout << "                        and most likely to give a non-minimal result or even\n";
+			cout << "                        no result for a solvable deal.\n\n";
 			return 0;
 		} else {
 			if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
@@ -141,8 +151,8 @@ int main(int argc, char * argv[]) {
 				continue;
 			}
 		}
-
-		Game game(deck,drawCount);
+		unsigned talonLookAheadLimit = 2+ceil(fastOption*fastOption*24.0/(drawCount*81));
+		Game game(deck,drawCount,talonLookAheadLimit);
 		if (outputMethod == 0) {
 			cout << GameDiagram(game) << "\n\n";
 		} else if (outputMethod == 1) {

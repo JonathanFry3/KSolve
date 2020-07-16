@@ -325,10 +325,11 @@ class Game
 	std::array<Pile,4> _foundation;
 	std::vector<Card> _deck;
 	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
+	unsigned _talonLookAheadLimit;
 	std::array<Pile *,13> _allPiles; // pile numbers from enum PileCode
 
 public:
-	Game(const std::vector<Card>& deck,unsigned draw=1);
+	Game(const std::vector<Card>& deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
 	Game(const Game&);
 
 	Pile& Waste()       							{return _waste;}

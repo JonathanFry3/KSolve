@@ -122,11 +122,12 @@ static void SetAllPiles(Game& game)
 	for (int ip = 0; ip < 7; ++ip) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
 }
 
-Game::Game(const std::vector<Card> &deck,unsigned draw)
+Game::Game(const std::vector<Card> &deck,unsigned draw,unsigned talonLookAheadLimit)
 	: _deck(deck)
 	, _waste(WASTE)
 	, _stock(STOCK)
 	, _draw(draw)
+	, _talonLookAheadLimit(talonLookAheadLimit)
 	, _foundation{FOUNDATION1C,FOUNDATION2D,FOUNDATION3S,FOUNDATION4H}
 	, _tableau{TABLEAU1,TABLEAU2,TABLEAU3,TABLEAU4,TABLEAU5,TABLEAU6,TABLEAU7}
 {
@@ -431,7 +432,7 @@ Moves Game::AvailableMoves() const
 		// and there are alternative moves.  The ungenerated moves will get
 		// their chances later if we get that far before we find a minimum,
 		// although that may require an extra move or more.
-		if (result.size() > 1 && mv._nMoves > 24) break;
+		if (result.size() > 1 && mv._nMoves > _talonLookAheadLimit) break;
 
 		unsigned cardSuit = mv._card.Suit();
 		unsigned cardRank = mv._card.Rank();

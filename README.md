@@ -22,6 +22,9 @@ FilePath - Solves deals specified in the file.
 
 -STATES # [-S #] - Sets the maximum number of game states to evaluate before terminating. Defaults to 5,000,000.
 
+-FAST # [-F #] - Fast mode, which limits talon look-ahead.  Enter a number from 0 to 9. 9 will act like -F was
+not used, 0 will be very fast but may give a non-minimal result or even no result for a solvable game.
+
 ========================
 NOTES:
 
@@ -43,7 +46,6 @@ When using the -MOVES command, the program will produce the moves neccesary such
 
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the repository Klondike-Solver
 by @ShootMe. Their copyright follows:
-
 
 Copyright (c) 2013 ShootMe
 
