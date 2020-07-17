@@ -434,9 +434,9 @@ string GameDiagram(const Game& game) {
 
 string UpCaseString(Card cd)
 {
-	string result = cd.AsString();
-	result[0] = toupper(result[0]);
-	result[1] = toupper(result[1]);
+	string result;
+	result.push_back("A23456789TJQK"[cd.Rank()]);
+	result.push_back("CDSH"[cd.Suit()]);
 	return result;
 }
 string GameDiagramPysol(const Game& game) {
@@ -450,14 +450,12 @@ string GameDiagramPysol(const Game& game) {
 	for (int j = size - 1; j >= 0; j--) {
 		ss << UpCaseString(waste[j]) << ' ';
 	}
-	ss << "==> ";
 
 	const Pile & stock = game.Stock();
 	size = stock.Size();
 	for (int j = size - 1; j >= 0; j--) {
 		ss << UpCaseString(stock[j]) << ' ';
 	}
-	ss << "<==";
 
 	for (const Pile& p: game.Tableau()) {
 		ss << "\n:";
