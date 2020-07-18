@@ -439,10 +439,20 @@ string UpCaseString(Card cd)
 	result.push_back("CDSH"[cd.Suit()]);
 	return result;
 }
+
+char PFndString(const Game& game, unsigned suit)
+{
+	unsigned n = game.Foundation()[suit].Size();
+	if (n == 0) return '0';
+	else return RANKS[n-1];
+}
 string GameDiagramPysol(const Game& game) {
 	stringstream ss;
 	auto piles(game.AllPiles());
-	ss << "Foundations: H-" << RANKS[piles[FOUNDATION4H]->Size()] << " C-" << RANKS[piles[FOUNDATION1C]->Size()] << " D-" << RANKS[piles[FOUNDATION2D]->Size()] << " S-" << RANKS[piles[FOUNDATION3S]->Size()];
+	ss <<  "Foundations: H-" << PFndString(game,FOUNDATION4H) 
+					<< " C-" << PFndString(game,FOUNDATION1C) 
+					<< " D-" << PFndString(game,FOUNDATION2D) 
+					<< " S-" << PFndString(game,FOUNDATION3S);
 	ss << "\nTalon: ";
 
 	const Pile & waste = game.Waste();
