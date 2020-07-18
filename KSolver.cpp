@@ -410,11 +410,23 @@ vector<Card> SolitaireDeck(string const& cardSet) {
 }
 string GameDiagram(const Game& game) {
 	stringstream ss;
+	vector<string> pilestring{
+		"STOCK    ",
+		"WASTE    ",
+		"TABLEAU 1",
+		"TABLEAU 2",
+		"TABLEAU 3",
+		"TABLEAU 4",
+		"TABLEAU 5",
+		"TABLEAU 6",
+		"TABLEAU 7",
+		"CLUBS    ",
+		"DIAMONDS ",
+		"SPADES   ",
+		"HEARTS   "
+	};
 	for (int i = 0; i < 13; i++) {
-		if (i < 10) {
-			ss << ' ';
-		}
-		ss << i << ": ";
+		ss << pilestring[i] << ": ";
 		Pile & p = *(game.AllPiles()[i]);
 		int downsize = p.Size() - p.UpCount();
 		for (int j = p.Size() - 1; j >= 0; j--) {
@@ -435,8 +447,8 @@ string GameDiagram(const Game& game) {
 string UpCaseString(Card cd)
 {
 	string result;
-	result.push_back("A23456789TJQK"[cd.Rank()]);
-	result.push_back("CDSH"[cd.Suit()]);
+	result.push_back(RANKS[cd.Rank()]);
+	result.push_back(SUITS[cd.Suit()]);
 	return result;
 }
 
@@ -449,10 +461,10 @@ char PFndString(const Game& game, unsigned suit)
 string GameDiagramPysol(const Game& game) {
 	stringstream ss;
 	auto piles(game.AllPiles());
-	ss <<  "Foundations: H-" << PFndString(game,FOUNDATION4H) 
-					<< " C-" << PFndString(game,FOUNDATION1C) 
-					<< " D-" << PFndString(game,FOUNDATION2D) 
-					<< " S-" << PFndString(game,FOUNDATION3S);
+	ss <<  "Foundations: H-" << PFndString(game,HEARTS) 
+					<< " C-" << PFndString(game,CLUBS) 
+					<< " D-" << PFndString(game,DIAMONDS) 
+					<< " S-" << PFndString(game,SPADES);
 	ss << "\nTalon: ";
 
 	const Pile & waste = game.Waste();
