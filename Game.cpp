@@ -319,21 +319,6 @@ static std::vector<TalonFuture> TalonMoves(const Game & game)
 	return result;
 }
 
-// See if we need any more empty tableau columns.  We don't if
-// the number of empty columns plus the number with a king at
-// the top and no face-down cards is at least four.
-static bool NeedEmptyColumn(const std::array<Pile,7>& tableau)
-{
-	unsigned nEmpty = 0;
-	for (const Pile& pile : tableau){
-		unsigned size = pile.Size();
-		nEmpty +=  (size == 0) ||
-			(size == pile.UpCount() && pile[0].Rank() == KING);
-		if (nEmpty == 4) return false;
-	}
-	return true;
-}
-
 // If any short-foundation moves exist, returns one of those.
 // Otherwise, returns a list of moves that are legal and not
 // known to be wasted.  Rather than generate individual draws from
@@ -402,14 +387,11 @@ Moves Game::AvailableMoves() const
 					int moveCount = cardToCover.Rank() -  fromTip.Rank();
 					assert(0 < moveCount && moveCount <= up);
 					if (moveCount == up){
-						if (up < fromPile.Size() || 
-							(fromBase.Rank()!=KING && NeedEmptyColumn(_tableau))){
-							// This move will expose a face-down card or
-							// clear a column to which a king may be moved.
-							// Move all the face-up cards on the from pile.
-							assert(fromPile.Top().Covers(cardToCover));
-							result.emplace_back(fromPile.Code(),toPile.Code(),up,up);
-						}
+						// This move will expose a face-down card or
+						// clear a column.
+						// Move all the face-up cards on the from pile.
+						assert(fromPile.Top().Covers(cardToCover));
+						result.emplace_back(fromPile.Code(),toPile.Code(),up,up);
 					} else {
 						Card exposed = *(fromCds.end()-moveCount-1);
 						if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
