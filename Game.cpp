@@ -19,7 +19,7 @@ static unsigned RoundUpQuotient(unsigned numerator, unsigned denominator)
 static std::string Filtered(std::string input, std::string filter)
 {
 	std::string result;
-	for (auto ic = input.begin(); ic<input.end(); ++ic)	{
+	for (auto ic = input.begin(); ic<input.end(); ic+=1)	{
 		if (filter.find(*ic) != std::string::npos) {
 			result += *ic;
 		}
@@ -31,7 +31,7 @@ static std::string LowerCase(const std::string & in)
 {
 	std::string result;
 	result.reserve(in.length());
-	for (auto ich = in.begin(); ich < in.end(); ++ich)	{
+	for (auto ich = in.begin(); ich < in.end(); ich+=1)	{
 		result.push_back(std::tolower(*ich));
 	}
 	return result;
@@ -96,7 +96,7 @@ CardVec Pile::Pop(unsigned n)
 CardVec Pile::Draw(unsigned n)
 {
 	CardVec result;
-	for (unsigned i = 0; i < n; ++i)
+	for (unsigned i = 0; i < n; i+=1)
 	{
 		result.push_back(_cards.back());
 		_cards.pop_back();
@@ -110,7 +110,7 @@ void Pile::Draw(Pile& other, int n)
 	Pile & fm = (n>0) ? other : *this;
 	unsigned nm = (n>0) ? n : -n;
 	assert(nm <= fm.Size());
-	for (unsigned i = 0; i < nm; ++i)
+	for (unsigned i = 0; i < nm; i+=1)
 		to.Draw(fm);
 }
 static void SetAllPiles(Game& game)
@@ -118,8 +118,8 @@ static void SetAllPiles(Game& game)
 	auto & allPiles = game.AllPiles();
 	allPiles[WASTE] = &game.Waste();
 	allPiles[STOCK] = &game.Stock();
-	for (int ip = 0; ip < 4; ++ip) allPiles[FOUNDATION+ip] = &game.Foundation()[ip];
-	for (int ip = 0; ip < 7; ++ip) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
+	for (int ip = 0; ip < 4; ip+=1) allPiles[FOUNDATION+ip] = &game.Foundation()[ip];
+	for (int ip = 0; ip < 7; ip+=1) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
 }
 
 Game::Game(const std::vector<Card> &deck,unsigned draw,unsigned talonLookAheadLimit)
@@ -152,9 +152,10 @@ void Game::Deal()
 		pile->ClearCards();
 	}
 	unsigned ideck = 0;
-	for (unsigned i = 0; i<7; ++i) {
-		for (unsigned icd = i; icd < 7; ++icd)	{
-			_tableau[icd].Push(_deck[ideck++]);
+	for (unsigned i = 0; i<7; i+=1) {
+		for (unsigned icd = i; icd < 7; icd+=1)	{
+			_tableau[icd].Push(_deck[ideck]);
+			ideck += 1;
 		}
 		_tableau[i].IncrUpCount(1);      // turn up the top card
 	}
@@ -234,7 +235,7 @@ void Game::MakeMove(const XMove & xmv)
 static unsigned ShortFndLen(const Game& gm){
 	const auto& fnd = gm.Foundation();
 	int minFoundationSize = fnd[0].Size();
-	for (int ifnd = 1; ifnd < 4; ++ifnd) {
+	for (int ifnd = 1; ifnd < 4; ifnd+=1) {
 		unsigned sz = fnd[ifnd].Size();
 		if (sz < minFoundationSize) { 
 			minFoundationSize = sz;
@@ -253,7 +254,7 @@ static Moves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 	result.reserve(20);  // a favor for AvailableMoves
 	const auto & fnd = gm.Foundation();
 	const auto & allPiles = gm.AllPiles();
-	for (int iPile = WASTE; iPile<TABLEAU+7 && result.size() == 0; ++iPile) {
+	for (int iPile = WASTE; iPile<TABLEAU+7 && result.size() == 0; iPile+=1) {
 		const Pile &pile = *allPiles[iPile] ;
 		if (pile.Size()) {
 			const Card& card = pile.Back();
@@ -479,7 +480,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 {
 	unsigned char mins[4] {14,14,14,14};
 	unsigned result = 0;
-	for (auto i = begin; i != end; ++i){
+	for (auto i = begin; i != end; i+=1){
 		const Card& cd = *i;
 		auto rank = cd.Rank();
 		auto suit = cd.Suit();
@@ -558,7 +559,8 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 				totalCount[to-TABLEAU] += n;
 				upCount[to-TABLEAU] += n;
 			}
-			result.emplace_back(++mvnum,from, to, n,flip);
+			mvnum += 1;
+			result.emplace_back(mvnum,from, to, n,flip);
 			if (mv.From() == WASTE){
 				assert (wasteSize >= 1);
 				wasteSize -= 1;
@@ -570,20 +572,23 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 			if (nTalonMoves > stockMovesLeft) {
 				// Draw all remaining cards from stock
 				if (stockSize) {
-					result.emplace_back(++mvnum,STOCK,WASTE,stockSize,false);
+					mvnum += 1;
+					result.emplace_back(mvnum,STOCK,WASTE,stockSize,false);
 					mvnum += stockMovesLeft-1;
 					wasteSize += stockSize;
 					stockSize = 0;
 				}
 				// Recycle the waste pile
-				result.emplace_back(++mvnum,WASTE,STOCK,wasteSize,false);
+				mvnum += 1;
+				result.emplace_back(mvnum,WASTE,STOCK,wasteSize,false);
 				stockSize = wasteSize;
 				wasteSize = 0;
 				nTalonMoves -= stockMovesLeft+1;
 			}
 			if (nTalonMoves > 0) {
 				unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
-				result.emplace_back(++mvnum,STOCK,WASTE,nMoved,false);
+				mvnum += 1;
+				result.emplace_back(mvnum,STOCK,WASTE,nMoved,false);
 				assert (stockSize >= nMoved && wasteSize+nMoved <= 24);
 				assert(stockSize >= nMoved);
 				stockSize -= nMoved;
@@ -591,7 +596,8 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 				assert(wasteSize <= 24);
 				mvnum += nTalonMoves-1;
 			}
-			result.emplace_back(++mvnum,WASTE,to,1,false);
+			mvnum += 1;
+			result.emplace_back(mvnum,WASTE,to,1,false);
 			assert(wasteSize >= 1);
 			wasteSize -= 1;
 			if (IsTableau(to)) {
@@ -624,7 +630,7 @@ std::string Peek(const Pile& pile)
 {
 	std::stringstream outStr;
 	outStr << PileNames[pile.Code()] << ":";
-	for (auto ip = pile.Cards().begin(); ip < pile.Cards().end(); ++ip)
+	for (auto ip = pile.Cards().begin(); ip < pile.Cards().end(); ip+=1)
 	{
 		char sep(' ');
 		if (pile.IsTableau())
@@ -656,7 +662,7 @@ std::string Peek(const Moves & mvs)
 	outStr << "(";
 	if (mvs.size()) {
 		outStr << Peek(mvs[0]);
-		for (unsigned imv = 1; imv < mvs.size(); ++imv)
+		for (unsigned imv = 1; imv < mvs.size(); imv+=1)
 			outStr << "," <<  Peek(mvs[imv]);
 	}
 	outStr << ")";
@@ -685,7 +691,7 @@ GameStateType::GameStateType(const Game& game)
 		};
 		uint32_t asUnsigned;
 	} p;
-	for (unsigned i = 0; i<7; ++i){
+	for (unsigned i = 0; i<7; i+=1){
 		p.asUnsigned = 0;	// clear all bits
 		const Pile& tp = game.Tableau()[i];
 		unsigned upCount = tp.UpCount();
@@ -697,7 +703,7 @@ GameStateType::GameStateType(const Game& game)
 			p._topRank = topCard.Rank();
 
 			unsigned isMajorBits = 0;
-			for (auto icd = cards.end()-upCount+1; icd < cards.end(); ++icd) {
+			for (auto icd = cards.end()-upCount+1; icd < cards.end(); icd+=1) {
 				isMajorBits <<= 1;
 				isMajorBits |= icd->IsMajor();
 			}
@@ -708,7 +714,7 @@ GameStateType::GameStateType(const Game& game)
 
 	std::sort(_psts.begin(),_psts.end());
 
-	for (unsigned i = 0; i < 4; ++i) {
+	for (unsigned i = 0; i < 4; i+=1) {
 		p.asUnsigned = _psts[i+2];
 		p._other = game.Foundation()[i].Size();
 		_psts[i+2] = p.asUnsigned;

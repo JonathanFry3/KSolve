@@ -14,7 +14,7 @@ HEARTS   :
 Minimum Moves Needed: 104
 
 Minimal solution in 122 moves.
-Took 5.07856 sec. 1.03 million unique states.
+Took 4.86964 sec. 1.03 million unique states.
 STOCK    : 3D 5H TC 4C TS KD KC 2D 5S 4D AS 2C TD 8H TH 7H JD 8D 8S 9D 5C QS KH 3C 
 WASTE    : 
 TABLEAU 1: AH 
@@ -31,7 +31,7 @@ HEARTS   :
 Minimum Moves Needed: 104
 
 Minimal solution in 130 moves.
-Took 6.03 sec. 1.88 million unique states.
+Took 5.73 sec. 1.88 million unique states.
 STOCK    : 8H 6H QH 3C KS 8D 9D 4D 9C QC 2H 7S KC JC 7H 2D 2C 5C JD KD 5D QD 7C TC 
 WASTE    : 
 TABLEAU 1: 3S 
@@ -48,7 +48,7 @@ HEARTS   :
 Minimum Moves Needed: 102
 
 Minimal solution in 191 moves.
-Took 0.784 sec. 0.136 million unique states.
+Took 0.781 sec. 0.136 million unique states.
 STOCK    : 4D AS 9C TH 3D TC JS 6D 2D TS 5D 3H 2C KD AD 7H JD JC QS AC 5S 2H 8C AH 
 WASTE    : 
 TABLEAU 1: 4C 
@@ -65,7 +65,7 @@ HEARTS   :
 Minimum Moves Needed: 103
 
 Minimal solution in 132 moves.
-Took 6.52 sec. 1.48 million unique states.
+Took 6.39 sec. 1.48 million unique states.
 STOCK    : TC TS AD 4D QS 3H 3S JH TD KC 8H 8S 4S 4H KS 6D 8D 7C JD 9D 2H QD 3D AS 
 WASTE    : 
 TABLEAU 1: 5C 
@@ -82,4 +82,4 @@ HEARTS   :
 Minimum Moves Needed: 104
 
 Unknown.
-Took 40.1 sec. 10 million unique states.
+Took 38.7 sec. 10 million unique states.

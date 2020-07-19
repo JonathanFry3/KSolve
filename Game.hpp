@@ -48,11 +48,11 @@ public:
 	void push_back(const T& cd)						{_elem[_size] = cd; _size += 1;}
 	void clear()									{_size = 0;}
 	void append(const T* begin, const T* end)	
-					{for (auto i=begin;i<end;++i){_elem[_size++]=*i;}}
+					{for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	bool operator==(const fixed_capacity_vector<T,Capacity>& other) const
 					{	
 						if (_size != other._size) return false;
-						for(unsigned i = 0; i < _size; ++i){
+						for(unsigned i = 0; i < _size; i+=1){
 							if ((*this)[i] != other[i]) return false;
 						}
 						return true;

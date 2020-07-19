@@ -87,7 +87,7 @@ KSolveResult KSolve(
 
 		unsigned ih;
 		for  (ih= startMoves; ih < state._minSolutionCount
-				&& state._closed_previousStates.size() <maxStates; ++ih) {
+				&& state._closed_previousStates.size() <maxStates; ih+=1) {
 			auto &h = state._open_histories[ih];
 			// scan histories from shortest to longest
 			while (h.size() && state._closed_previousStates.size() <maxStates) {
@@ -160,7 +160,7 @@ Moves KSolveState::FilteredAvailableMoves()
 	for (auto i = avail.begin(); i < avail.end(); ){
 		if (SkippableMove(*i)) {
 			avail.erase(i);
-			++_skippableWins;
+			_skippableWins+=1;
 		} else {
 			i += 1;
 		}
@@ -193,7 +193,7 @@ bool KSolveState::SkippableMove(const Move& trial)
 	auto B = trial.From();
 	if (B == STOCK || B == WASTE) return false; 
 	auto C = trial.To();
-	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); ++imv){
+	for (auto imv = _movesMade.crbegin(); imv != _movesMade.crend(); imv+=1){
 		Move mv = *imv;
 		if (mv.To() == B){
 			// candidate T0 move
@@ -237,7 +237,7 @@ void KSolveState::RecordState(unsigned minMoveCount)
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
 		_open_histories[minMoveCount].push(_movesMade);
-		++_closedStates;
+		_closedStates+=1;
 #ifdef KSOLVE_TRACE
 		if (_closedStates%1000000 == 999999){
 			std::cout << "Stage " << _closedStates;
@@ -251,5 +251,5 @@ void KSolveState::RecordState(unsigned minMoveCount)
 			std::cout << std::flush;
 		}
 #endif // KSOLVE_TRACE
-	} else ++_stateWins;
+	} else _stateWins+=1;
 }
