@@ -43,6 +43,8 @@ When using the -MOVES command, the program will produce the moves neccesary such
 		X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
 		Y will be 1 through 7 or the foundation suit character.
 	XY-# is the same as above except you are moving # number of cards from X to Y.
+	
+This program counts flips (turning tableau cards face up) and does not count recycles of the stock pile.
 
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the repository Klondike-Solver
 by @ShootMe. Their copyright follows:
