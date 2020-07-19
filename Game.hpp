@@ -360,4 +360,22 @@ public:
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
 
+// A compact representation of the current game state.
+// It is possible, although tedious, to reconstruct the
+// game state from one of these and the original deck.
+//
+// The basic requirements for GameStateType are:
+// 1.  Any difference in the foundation piles, the face-up cards
+//     in the tableau piles, or in the stock pile length
+//     should be reflected in the GameStateType.
+// 2.  It should be quite compact, as we will usually be storing
+//     millions or tens of millions of instances.
+typedef std::uint32_t PileState;
+struct GameStateType {
+	std::array<PileState,7> _psts;
+	GameStateType(const Game& game);
+	bool operator==(const GameStateType& other) const;
+};
+
+
 #endif      // SOL_GAME_H
