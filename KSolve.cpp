@@ -13,12 +13,10 @@ class Hasher
 public:
 	size_t operator() (const GameStateType & gs) const
 	{
-		robin_hood::hash<std::uint32_t> robin_hood_hash;
-		size_t result = robin_hood_hash(gs._psts[0]);
-		for (unsigned i = 1; i < 7; i+=2) {
-			result ^= robin_hood_hash(gs._psts[i]);
-			result += robin_hood_hash(gs._psts[i+1]);
-		}
+		robin_hood::hash<std::uint64_t> hash;
+		size_t result = hash(gs._psts[0])
+					  ^ hash(gs._psts[1])
+					  + hash(gs._psts[2]);
 		return result;
 	}
 };

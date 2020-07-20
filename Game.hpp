@@ -370,9 +370,9 @@ std::string Peek (const Game& game);
 //     should be reflected in the GameStateType.
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
-typedef std::uint32_t PileState;
+typedef std::uint64_t PileState;
 struct GameStateType {
-	std::array<PileState,7> _psts;
+	std::array<PileState,3> _psts;
 	GameStateType(const Game& game);
 	bool operator==(const GameStateType& other) const;
 };

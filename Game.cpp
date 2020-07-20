@@ -681,56 +681,39 @@ std::string Peek (const Game&game)
 
 GameStateType::GameStateType(const Game& game)
 {
-	union {
-		struct {
-			unsigned _upCount:4;
-			unsigned _topRank:4;
-			unsigned _topSuit:2;
-			unsigned _isMajor:12;
-			unsigned int _other : 10;
-		};
-		uint32_t asUnsigned;
-	} p;
-	for (unsigned i = 0; i<7; i+=1){
-		p.asUnsigned = 0;	// clear all bits
-		const Pile& tp = game.Tableau()[i];
-		unsigned upCount = tp.UpCount();
-		p._upCount = upCount;
-		if (upCount > 0) {
-			const CardVec & cards = tp.Cards();
-			const Card& topCard = *(cards.end()-upCount);
-			p._topSuit = topCard.Suit();
-			p._topRank = topCard.Rank();
-
-			unsigned isMajorBits = 0;
-			for (auto icd = cards.end()-upCount+1; icd < cards.end(); icd+=1) {
-				isMajorBits <<= 1;
-				isMajorBits |= icd->IsMajor();
+	std::array<uint64_t,7> tabstates;
+	const auto& tableau = game.Tableau();
+	for (unsigned i = 0; i<7; i+=1) {
+		const auto& pile = tableau[i];
+		unsigned upCount = pile.UpCount();
+		if (upCount == 0) {
+			tabstates[i] = 0;
+		} else {
+			const auto& cards = pile.Cards();
+			unsigned isMajor = 0;
+			for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
+				isMajor <<= 1;
+				isMajor |= j->IsMajor();
 			}
-			p._isMajor = isMajorBits;
+			Card top = pile.Top();
+			tabstates[i] = (upCount<<17) | (top.Rank()<<13) | (top.Suit()<<11) | isMajor;
 		}
-		_psts[i] = p.asUnsigned;
 	}
+	std::sort(tabstates.begin(),tabstates.end());
 
-	std::sort(_psts.begin(),_psts.end());
-
-	for (unsigned i = 0; i < 4; i+=1) {
-		p.asUnsigned = _psts[i+2];
-		p._other = game.Foundation()[i].Size();
-		_psts[i+2] = p.asUnsigned;
+	_psts[0] = (tabstates[0]<<42) | (tabstates[1]<<21) | tabstates[2];
+	_psts[1] = (tabstates[3]<<42) | (tabstates[4]<<21) | tabstates[5];
+	_psts[2] = (tabstates[6]<<5) | game.Stock().Size();
+	const auto& fnd = game.Foundation();
+	for (auto& pile: fnd){
+		_psts[2] <<= 4;
+		_psts[2] |= pile.Size();
 	}
-	p.asUnsigned = _psts[6];
-	p._other = game.Stock().Size();
-	_psts[6] = p.asUnsigned;
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
 {
 	return _psts[0] == other._psts[0]
 	    && _psts[1] == other._psts[1]
-	    && _psts[2] == other._psts[2]
-	    && _psts[3] == other._psts[3]
-	    && _psts[4] == other._psts[4]
-	    && _psts[5] == other._psts[5]
-	    && _psts[6] == other._psts[6];
+	    && _psts[2] == other._psts[2];
 }

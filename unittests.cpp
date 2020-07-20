@@ -169,12 +169,13 @@ bool operator==(const Game& a, const Game& b)
 	auto& tabb = b.Tableau();
 	for (unsigned i = 0; i < 7; ++i){
 		// Tableaus of two games are equivalent if their
-		// piles' cards are equal after rearrangement.
-		bool found = false;
-		for (unsigned j = 0; !found && j < 7; ++j) {
-			if (taba[i].Cards() == tabb[j].Cards()) found = true;
+		// piles' cards and up counts are equal after rearrangement.
+		int found = -1;
+		for (unsigned j = 0; found == -1 && j < 7; ++j) {
+			if (taba[i].Cards() == tabb[j].Cards()) found = j;
 		}
-		if (!found) return false;
+		if (found == -1 || taba[i].UpCount() != tabb[found].UpCount()) 
+			return false;
 	}
 	return true;
 }
@@ -366,6 +367,26 @@ int main()
 							cerr << "Moves made<<<<<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(movesMade) << endl;
 							assert(game == prevGames[which]);
+						}
+					} else {
+						auto gMatch = find(prevGames.begin(), prevGames.end(), game);
+						if (gMatch != prevGames.end()){
+							unsigned which = gMatch - prevGames.begin();
+							cerr << "Current game [" << prevGames.size() << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(game) << endl;
+							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
+							cerr << Peek(prevGames[which]) << endl;
+							cerr << "Current GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							for (auto w : state._psts){
+								cerr << oct << w << ' ';
+							}
+							cerr << endl;
+							cerr << "Previous GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							for (auto w : states[which]._psts){
+								cerr << oct << w << ' ';
+							}
+							cerr << endl << dec;
+							assert (state == states[which]);
 						}
 					}
 					prevGames.push_back(game);
