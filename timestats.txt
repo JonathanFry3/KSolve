@@ -19,3 +19,4 @@ unlimited talon look-ahead	86	5.81
 5-move talon look-ahead	86	3.40036
 5-move(2) talon look-ahead	86	3.37828
 3-move(2) talon look-ahead	86	1.51461
+3x64 GameStateType	86	6.0909
