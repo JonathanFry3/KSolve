@@ -262,7 +262,14 @@ public:
 typedef std::vector<Move> Moves;
 
 // Return the number of actual moves implied by a vector of Moves.
-unsigned MoveCount(const Moves& moves);
+template <class SeqType>
+unsigned MoveCount(const SeqType& moves)
+{
+	unsigned result = 0;
+	for (auto & move: moves)
+		result += move.NMoves();
+	return result;
+}
 
 // Return a string to visualize a move for debugging
 std::string Peek(const Move& mv);
