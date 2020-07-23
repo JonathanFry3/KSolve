@@ -312,7 +312,6 @@ static std::vector<TalonFuture> TalonCards(const Game & game)
 			waste.Draw(stock, std::min<unsigned>(draw,stock.Size()));
 		} else {
 			// Recycle the waste pile
-			nMoves += 1;
 			nRecycles += 1;
 			stock.Draw(waste, waste.Size());
 		}
@@ -569,25 +568,24 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 			assert(stockSize+wasteSize > 0);
 			unsigned nTalonMoves = mv.NMoves()-1;
 			unsigned stockMovesLeft = RoundUpQuotient(stockSize,draw);
-			if (nTalonMoves > stockMovesLeft) {
+			if (nTalonMoves > stockMovesLeft && stockSize) {
 				// Draw all remaining cards from stock
-				if (stockSize) {
-					mvnum += 1;
-					result.emplace_back(mvnum,STOCK,WASTE,stockSize,false);
-					mvnum += stockMovesLeft-1;
-					wasteSize += stockSize;
-					stockSize = 0;
-				}
-				// Recycle the waste pile
 				mvnum += 1;
-				result.emplace_back(mvnum,WASTE,STOCK,wasteSize,false);
-				stockSize = wasteSize;
-				wasteSize = 0;
-				nTalonMoves -= stockMovesLeft+1;
+				result.emplace_back(mvnum,STOCK,WASTE,stockSize,false);
+				mvnum += stockMovesLeft-1;
+				wasteSize += stockSize;
+				stockSize = 0;
+				nTalonMoves -= stockMovesLeft;
 			}
 			if (nTalonMoves > 0) {
-				unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
 				mvnum += 1;
+				if (stockSize == 0) {
+					// Recycle the waste pile
+					result.emplace_back(mvnum,WASTE,STOCK,wasteSize,false);
+					stockSize = wasteSize;
+					wasteSize = 0;
+				}
+				unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
 				result.emplace_back(mvnum,STOCK,WASTE,nMoved,false);
 				assert (stockSize >= nMoved && wasteSize+nMoved <= 24);
 				assert(stockSize >= nMoved);

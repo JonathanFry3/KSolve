@@ -20,7 +20,6 @@ string GameDiagram(const Game& game);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
 string MovesMade(const XMoves & xmoves);
-unsigned AdjustedMoveCount(const Moves & mvs, unsigned drawCount);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
@@ -163,7 +162,7 @@ int main(int argc, char * argv[]) {
 		KSolveResult outcome = KSolve(game, maxClosedCount);
 		auto & result(outcome._code);
 		Moves & moves(outcome._solution);
-		unsigned moveCount = AdjustedMoveCount(moves,game.Draw());
+		unsigned moveCount = MoveCount(moves)+21;
 		bool canReplay = false;
 		if (result == SOLVED) {
 			cout << "Minimal solution in " << moveCount << " moves.";
@@ -408,6 +407,16 @@ vector<Card> SolitaireDeck(string const& cardSet) {
 	}
 	return result;
 }
+// Return the number of face-down cards in the tableau
+static unsigned DownCount(const Game&game)
+{
+	auto& tableau = game.Tableau();
+	unsigned result = 0;
+	for (auto& pile : tableau){
+		result += pile.Size() - pile.UpCount();
+	}
+	return result;
+}
 string GameDiagram(const Game& game) {
 	stringstream ss;
 	vector<string> pilestring{
@@ -440,7 +449,7 @@ string GameDiagram(const Game& game) {
 		}
 		ss << '\n';
 	}
-	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft()+21;
+	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft()+DownCount(game);
 	return ss.str();
 }
 
@@ -492,6 +501,10 @@ string GameDiagramPysol(const Game& game) {
 	}
 	return ss.str();
 }
+string CardString(Card cd)
+{
+	return string(1,RANKS[cd.Rank()]) + SUITS[cd.Suit()];
+}
 string GetMoveInfo(XMove move, const Game& game) {
 	stringstream ss;
 	string pileNames[] {
@@ -518,7 +531,7 @@ string GetMoveInfo(XMove move, const Game& game) {
 		} else if (xto == WASTE) {
 			ss << "Draw ";
 			if (xnum == 1) {
-				ss << game.Stock().Back().AsString();
+				ss << CardString(game.Stock().Back());
 			} else {
 				ss << xnum << " cards";
 			}
@@ -526,7 +539,7 @@ string GetMoveInfo(XMove move, const Game& game) {
 		} else {
 			ss << "Move ";
 			if (xnum == 1) {
-				ss << (*game.AllPiles()[xfrom]).Back().AsString();
+				ss << CardString((*game.AllPiles()[xfrom]).Back());
 			} else {
 				ss << xnum << " cards";
 			}
@@ -554,27 +567,4 @@ string MovesMade(const XMoves& moves)
 		}
 	}
 	return ss.str();
-}
-
-// Return the move count as @shootme does it - count flips,
-// don't count recycles.
-unsigned AdjustedMoveCount(const Moves & mvs, unsigned drawCt)
-{
-	if (mvs.size() == 0) return 0;
-
-	// MakeXMoves will figure out where recycles occurred.
-	XMoves xmvs(MakeXMoves(mvs,drawCt));
-	// Last move number is the number of moves as KSolve counts.
-	int result = xmvs.back().MoveNum();
-	// Adjust:
-	for (XMove xm: xmvs){
-		if (xm.To() == STOCK) {
-			// This move is a recycle
-			result -= 1;
-		} else {
-			// This move is followed by a flip
-			if (xm.Flip()) result += 1;
-		}
-	}
-	return result;
 }

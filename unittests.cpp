@@ -414,6 +414,7 @@ int main()
 		// PrintGame(game);
 		auto outcome = KSolve(game,9'600'000); 
 		assert(outcome._code == SOLVED);
-		assert(MoveCount(outcome._solution) == 100);
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
+		assert(MoveCount(outcome._solution) == 99);
 	}
 }
