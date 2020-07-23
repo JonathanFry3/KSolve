@@ -1,5 +1,6 @@
 #include "KSolve.hpp"
 #include <stack>
+#include <deque>
 #include <algorithm>        // for sort
 #include "robin_hood.h"     // for unordered_node_map
 #ifdef KSOLVE_TRACE
@@ -19,12 +20,24 @@ public:
 	}
 };
 
-typedef Moves MoveSequenceType;
+typedef std::deque<Move> MoveSequenceType;
 class MoveStorage
 {
-	typedef std::stack<MoveSequenceType> HistoryStack;
+	typedef std::uint32_t index_t;
+	struct MoveNode
+	{
+		Move _move;
+		index_t _prevNode;
+		MoveNode(const Move& mv, index_t prevNode)
+			: _move(mv)
+			, _prevNode(prevNode)
+			{}
+	};
+	typedef std::stack<index_t> HistoryStack;
+	std::deque<MoveNode> _moveSoup;
 	std::vector<HistoryStack> _stackVector;
 	MoveSequenceType _moveSequence;
+	index_t _seqIndex;
 	unsigned _startIndex;
 	unsigned _maxIndex;
 public:
@@ -156,14 +169,20 @@ KSolveResult KSolve(
 
 MoveStorage::MoveStorage(unsigned maxIndex)
 	: _maxIndex(maxIndex)
+	, _seqIndex(-1)
+	, _startIndex(maxIndex+1)
 {}
 void MoveStorage::Push(const Move& move)
 {
 	_moveSequence.push_back(move);
+	index_t ind = _moveSoup.size();
+	_moveSoup.emplace_back(move, _seqIndex);
+	_seqIndex = ind;
 }
 void MoveStorage::Pop()
 {
 	_moveSequence.pop_back();
+	_seqIndex = _moveSoup.at(_seqIndex)._prevNode;
 }
 void MoveStorage::File(unsigned index)
 {
@@ -175,14 +194,20 @@ void MoveStorage::File(unsigned index)
 		for (unsigned i = 0; i < cap; ++i)
 			_stackVector.push_back(emptyStack);
 	}
-	_stackVector[index-_startIndex].push(_moveSequence);
+	assert(_startIndex <= index);
+	_stackVector[index-_startIndex].push(_seqIndex);
 }
 bool MoveStorage::FetchMoveSequence(unsigned index)
 {
+	assert(_startIndex <= _maxIndex);
 	HistoryStack & stack =  _stackVector[index-_startIndex];
 	bool result = stack.size() != 0;
 	if (result) {
-		_moveSequence = stack.top();
+		_moveSequence.clear();
+		_seqIndex = stack.top();
+		for (index_t soup = _seqIndex; soup != -1; soup = _moveSoup[soup]._prevNode){
+			_moveSequence.push_front(_moveSoup[soup]._move);
+		}
 		stack.pop();
 	}
 	return result;
@@ -195,16 +220,23 @@ void MoveStorage::MakeSequenceMoves(Game&game)
 }
 unsigned MoveStorage::CountOfMoves() const
 {
-	return MoveCount(_moveSequence);
+	unsigned result = 0;
+	for (auto &move: _moveSequence){
+		result += move.NMoves();
+	}
+	return result;
 }
 Moves MoveStorage::MovesVector() const
 {
-	return _moveSequence;
+	Moves result(_moveSequence.begin(), _moveSequence.end());
+	return result;
 }
 const MoveSequenceType& MoveStorage::MoveSequence() const
 {
 	return _moveSequence;
 }
+
+
 Moves KSolveState::MakeAutoMoves()
 {
 	Moves avail;
