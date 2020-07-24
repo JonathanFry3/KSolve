@@ -10,12 +10,12 @@
 class Hasher
 {
 public:
-	size_t operator() (const GameStateType & gs) const
+	size_t operator() (const GameStateType & gs) const 
 	{
 		robin_hood::hash<std::uint64_t> hash;
-		size_t result = hash(gs._psts[0])
-					  ^ hash(gs._psts[1])
-					  + hash(gs._psts[2]);
+		size_t result = hash(gs._psts[0]
+					  	   ^ gs._psts[1]
+						   ^ gs._psts[2]);
 		return result;
 	}
 };
@@ -129,11 +129,11 @@ KSolveResult KSolve(
 
 		state._open.File(startMoves);
 
-		unsigned ih;
-		for  (ih= startMoves; ih < state._minSolutionCount
-				&& state._closed.size() <maxStates; ih+=1) {
-			while (state._open.FetchMoveSequence(ih)
-				 && state._closed.size() <maxStates) {
+		unsigned iOpen;
+		for  (iOpen= startMoves; iOpen < state._minSolutionCount
+				&& state._closed.size() <maxStates; iOpen+=1) {
+			while (state._closed.size() <maxStates
+				 && state._open.FetchMoveSequence(iOpen)) {
 				state._game.Deal();
 				state._open.MakeSequenceMoves(state._game);
 
@@ -143,7 +143,7 @@ KSolveResult KSolve(
 					// We have a solution.  See if it is a new champion
 					state.CheckForMinSolution();
 					// See if it the final winner.
-					if (ih == state._minSolutionCount)
+					if (iOpen == state._minSolutionCount)
 						break;
 				}
 				
@@ -158,7 +158,7 @@ KSolveResult KSolve(
 						unsigned minMoveCount = movesMadeCount + mv.NMoves()
 												+ state._game.MinimumMovesLeft();
 						if (minMoveCount < state._minSolutionCount){
-							assert(ih <= minMoveCount);
+							assert(iOpen <= minMoveCount);
 							state._open.Push(mv);
 							state.RecordState(minMoveCount);
 							state._open.Pop();
@@ -169,7 +169,7 @@ KSolveResult KSolve(
 			}
 		}
 		KSolveCode outcome;
-		if (ih > maxMoves || state._closed.size() >= maxStates){
+		if (iOpen > maxMoves || state._closed.size() >= maxStates){
 			outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
 		} else {
 			outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
@@ -205,7 +205,7 @@ void MoveStorage::File(unsigned index)
 		_startStackIndex = index;
 		unsigned cap = _maxStackIndex-_startStackIndex+1;
 		_files.reserve(cap);
-		HistoryStack emptyStack;
+		static HistoryStack emptyStack;
 		for (unsigned i = 0; i < cap; ++i)
 			_files.push_back(emptyStack);
 	}
@@ -214,7 +214,8 @@ void MoveStorage::File(unsigned index)
 }
 bool MoveStorage::FetchMoveSequence(unsigned index)
 {
-	assert(_startStackIndex <= _maxStackIndex);
+	if (_startStackIndex > _maxStackIndex) return false;
+	assert(_startStackIndex <= index && index <= _maxStackIndex);
 	HistoryStack & stack =  _files[index-_startStackIndex];
 	bool result = stack.size() != 0;
 	if (result) {
