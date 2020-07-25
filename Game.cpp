@@ -690,22 +690,20 @@ GameStateType::GameStateType(const Game& game)
 			const auto& cards = pile.Cards();
 			unsigned isMajor = 0;
 			for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
-				isMajor <<= 1;
-				isMajor |= j->IsMajor();
+				isMajor = isMajor<<1 | j->IsMajor();
 			}
 			Card top = pile.Top();
-			tabstates[i] = (upCount<<17) | (top.Rank()<<13) | (top.Suit()<<11) | isMajor;
+			tabstates[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
 		}
 	}
 	std::sort(tabstates.begin(),tabstates.end());
 
-	_psts[0] = (tabstates[0]<<42) | (tabstates[1]<<21) | tabstates[2];
-	_psts[1] = (tabstates[3]<<42) | (tabstates[4]<<21) | tabstates[5];
+	_psts[0] = ((tabstates[0]<<21| tabstates[1])<<21) | tabstates[2];
+	_psts[1] = ((tabstates[3]<<21| tabstates[4])<<21) | tabstates[5];
 	_psts[2] = (tabstates[6]<<5) | game.Stock().Size();
 	const auto& fnd = game.Foundation();
 	for (auto& pile: fnd){
-		_psts[2] <<= 4;
-		_psts[2] |= pile.Size();
+		_psts[2] =_psts[2]<<4 | pile.Size();
 	}
 }
 
