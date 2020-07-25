@@ -698,18 +698,18 @@ GameStateType::GameStateType(const Game& game)
 	}
 	std::sort(tabstates.begin(),tabstates.end());
 
-	_psts[0] = ((tabstates[0]<<21| tabstates[1])<<21) | tabstates[2];
-	_psts[1] = ((tabstates[3]<<21| tabstates[4])<<21) | tabstates[5];
-	_psts[2] = (tabstates[6]<<5) | game.Stock().Size();
+	_part[0] = ((tabstates[0]<<21| tabstates[1])<<21) | tabstates[2];
+	_part[1] = ((tabstates[3]<<21| tabstates[4])<<21) | tabstates[5];
+	_part[2] = (tabstates[6]<<5) | game.Stock().Size();
 	const auto& fnd = game.Foundation();
 	for (auto& pile: fnd){
-		_psts[2] =_psts[2]<<4 | pile.Size();
+		_part[2] =_part[2]<<4 | pile.Size();
 	}
 }
 
 bool GameStateType::operator==(const GameStateType& other) const
 {
-	return _psts[0] == other._psts[0]
-	    && _psts[1] == other._psts[1]
-	    && _psts[2] == other._psts[2];
+	return _part[0] == other._part[0]
+	    && _part[1] == other._part[1]
+	    && _part[2] == other._part[2];
 }

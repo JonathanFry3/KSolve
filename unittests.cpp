@@ -377,12 +377,12 @@ int main()
 							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(prevGames[which]) << endl;
 							cerr << "Current GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-							for (auto w : state._psts){
+							for (auto w : state._part){
 								cerr << oct << w << ' ';
 							}
 							cerr << endl;
 							cerr << "Previous GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-							for (auto w : states[which]._psts){
+							for (auto w : states[which]._part){
 								cerr << oct << w << ' ';
 							}
 							cerr << endl << dec;
