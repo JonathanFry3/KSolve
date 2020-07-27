@@ -1,0 +1,11 @@
+# Random test deals
+game: 49
+game: 50
+game: 51
+game: 52
+game: 53
+game: 54
+game: 55
+game: 56
+game: 57
+game: 58
