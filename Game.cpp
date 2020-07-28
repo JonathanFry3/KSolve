@@ -287,6 +287,9 @@ struct TalonFuture {
 // with the number of moves required to reach each one
 // and the number of cards that must be drawn (or undrawn)
 // to reach each one.
+//
+// Although it may be tempting to try to optimize this function,
+// it takes only about 3% of the run time.
 static std::vector<TalonFuture> TalonCards(const Game & game)
 {
 	std::vector<TalonFuture> result;
