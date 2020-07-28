@@ -164,7 +164,7 @@ void Game::Deal()
 	_stock.SetUpCount(24);
 }
 
-void Game::MakeMove(const Move & mv)
+void Game::MakeMove(Move mv)
 {
 	auto from = mv.From();
 	auto to = mv.To();
@@ -189,7 +189,7 @@ void Game::MakeMove(const Move & mv)
 	}
 }
 
-void  Game::UnMakeMove(const Move & mv)
+void  Game::UnMakeMove(Move mv)
 {
 	auto from = mv.From();
 	auto to = mv.To();
@@ -676,7 +676,7 @@ static void InsertionSort(std::array<uint64_t,7>& array) {
 	for(int i = 1; i<7; i++) {
 		auto key = array[i];//take value
 		j = i;
-		while(j > 0 && array[j-1]<key) {	// descending
+		while(j > 0 && array[j-1]<key) {	// des
 			array[j] = array[j-1];
 			j--;
 		}
@@ -713,11 +713,4 @@ GameStateType::GameStateType(const Game& game)
 	for (auto& pile: fnd){
 		_part[2] =_part[2]<<4 | pile.Size();
 	}
-}
-
-bool GameStateType::operator==(const GameStateType& other) const
-{
-	return _part[0] == other._part[0]
-	    && _part[1] == other._part[1]
-	    && _part[2] == other._part[2];
 }

@@ -121,10 +121,10 @@ public:
 	bool OddRed() const 				{return _parity;}  // true for card that fits on stacks where odd cards are red
 	unsigned Value() const				{return 13*_suit+_rank;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(const Card & other) const // can other be moved onto this card on a tableau pile?
+	bool Covers(Card other) const 		// can other be moved onto this card on a tableau pile?
 		{return _parity == other._parity && _rank+1 == other._rank;}
-	bool operator==(const Card& other) const {return _suit==other._suit && _rank==other._rank;}
-	bool operator!=(const Card& other) const {return ! (other == *this);}
+	bool operator==(Card other) const {return _suit==other._suit && _rank==other._rank;}
+	bool operator!=(Card other) const {return ! (other == *this);}
 
 	// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
 	// Ignores characters that cannot appear in a valid card string.
@@ -184,7 +184,7 @@ public:
 	const Card & operator[](unsigned which) const   {return _cards[which];}
 	const CardVec& Cards() const 					{return _cards;}
 	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
-	void Push(const Card & c)              			{_cards.push_back(c);}
+	void Push(Card c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
 	CardVec Draw(unsigned n);         // like Pop(), but reverses order of cards drawn
 	void Push(const Card* begin, const Card* end)
@@ -353,8 +353,8 @@ public:
 
 	void Deal();
 	Moves AvailableMoves() const;
-	void  MakeMove(const Move & mv);
-	void  UnMakeMove(const Move & mv);
+	void  MakeMove(Move mv);
+	void  UnMakeMove(Move mv);
 	unsigned FoundationCardCount() const;
 	unsigned MinimumMovesLeft() const;
 	bool  GameOver() const {return _foundation[0].Size() == 13
@@ -381,8 +381,12 @@ struct GameStateType {
 	typedef std::uint64_t PartType;
 	std::array<PartType,3> _part;
 	GameStateType(const Game& game);
-	bool operator==(const GameStateType& other) const;
+	bool operator==(const GameStateType& other) const
+	{
+		return _part[0] == other._part[0]
+			&& _part[1] == other._part[1]
+			&& _part[2] == other._part[2];
+	}
 };
-
 
 #endif      // SOL_GAME_H
