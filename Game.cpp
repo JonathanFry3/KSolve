@@ -159,8 +159,8 @@ void Game::Deal()
 		}
 		_tableau[i].IncrUpCount(1);      // turn up the top card
 	}
-	_waste.Push(_deck.data()+28,_deck.data()+_deck.size());
-	_stock.Draw(_waste,24);
+	for (unsigned ic = 51; ic >= 28; ic-=1)
+		_stock.Push(_deck[ic]);
 	_stock.SetUpCount(24);
 }
 
@@ -466,15 +466,6 @@ Moves Game::AvailableMoves() const
 	return result;
 }
 
-unsigned MoveCount(const Moves& moves)
-{
-	unsigned result = 0;
-	for (const auto & mv: moves){
-		result += mv.NMoves();
-	}
-	return result;
-}
-
 // Counts the number of times a card is higher in the stack
 // than a lower card of the same suit.  Remember that the 
 // stack tops are at the back.
@@ -680,15 +671,29 @@ std::string Peek (const Game&game)
 	return out.str();
 }
 
+static void InsertionSort(std::array<uint64_t,7>& array) {
+	int j;
+	for(int i = 1; i<7; i++) {
+		auto key = array[i];//take value
+		j = i;
+		while(j > 0 && array[j-1]<key) {	// descending
+			array[j] = array[j-1];
+			j--;
+		}
+		array[j] = key;   //insert in right place
+	}
+}
+
+
 GameStateType::GameStateType(const Game& game)
 {
-	std::array<uint64_t,7> tabstates;
+	std::array<uint64_t,7> tableauState;
 	const auto& tableau = game.Tableau();
 	for (unsigned i = 0; i<7; i+=1) {
 		const auto& pile = tableau[i];
 		unsigned upCount = pile.UpCount();
 		if (upCount == 0) {
-			tabstates[i] = 0;
+			tableauState[i] = 0;
 		} else {
 			const auto& cards = pile.Cards();
 			unsigned isMajor = 0;
@@ -696,14 +701,14 @@ GameStateType::GameStateType(const Game& game)
 				isMajor = isMajor<<1 | j->IsMajor();
 			}
 			Card top = pile.Top();
-			tabstates[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
+			tableauState[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
 		}
 	}
-	std::sort(tabstates.begin(),tabstates.end());
+	InsertionSort(tableauState);
 
-	_part[0] = ((tabstates[0]<<21| tabstates[1])<<21) | tabstates[2];
-	_part[1] = ((tabstates[3]<<21| tabstates[4])<<21) | tabstates[5];
-	_part[2] = (tabstates[6]<<5) | game.Stock().Size();
+	_part[0] = ((tableauState[0]<<21| tableauState[1])<<21) | tableauState[2];
+	_part[1] = ((tableauState[3]<<21| tableauState[4])<<21) | tableauState[5];
+	_part[2] = (tableauState[6]<<5) | game.Stock().Size();
 	const auto& fnd = game.Foundation();
 	for (auto& pile: fnd){
 		_part[2] =_part[2]<<4 | pile.Size();
