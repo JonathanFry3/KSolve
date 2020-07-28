@@ -46,7 +46,7 @@ public:
 	// Constructor.  maxIndex is the maximum size for a File argument.
 	MoveStorage(unsigned maxIndex);
 	// Push the given move to the back of the current sequence of moves.
-	void Push(const Move& move);
+	void Push(Move move);
 	// Remove the last move from the current move sequence.
 	void Pop();
 	// File the current move sequence under the given index number.
@@ -97,7 +97,7 @@ struct KSolveState {
 	Moves MakeAutoMoves();
 	void CheckForMinSolution();
 	void RecordState(unsigned minMoveCount);
-	bool SkippableMove(const Move& mv);
+	bool SkippableMove(Move mv);
 	Moves FilteredAvailableMoves();
 };
 
@@ -187,7 +187,7 @@ MoveStorage::MoveStorage(unsigned maxIndex)
 	, _leafIndex(-1)
 	, _startStackIndex(maxIndex+1)
 {}
-void MoveStorage::Push(const Move& move)
+void MoveStorage::Push(Move move)
 {
 	_currentSequence.push_back(move);
 	index_t ind = _moveTree.size();
@@ -273,7 +273,7 @@ Moves KSolveState::FilteredAvailableMoves()
 
 
 // Return true if this move cannot be in a minimum solution.
-bool KSolveState::SkippableMove(const Move& trial)
+bool KSolveState::SkippableMove(Move trial)
 {
 	// Consider a move at time T0 from A to B and the next move
 	// from B, which goes to C at time Tn.  The move at Tn is
