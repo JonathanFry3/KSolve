@@ -186,13 +186,13 @@ public:
 	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(Card c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
-	CardVec Draw(unsigned n);         // like Pop(), but reverses order of cards drawn
 	void Push(const Card* begin, const Card* end)
 											{_cards.append(begin,end);}
 	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
 	Card Top() const                        {return *(_cards.end()-_upCount);}
 	Card Back() const                       {return _cards.back();}
 	void ClearCards()                       {_cards.clear(); _upCount = 0;}
+	CardVec Draw(unsigned n);         		// like Pop(), but reverses order of cards drawn
 	void Draw(Pile & from)					{_cards.push_back(from._cards.back()); from._cards.pop_back();}
 	void Draw(Pile & from, int nCards);
 };

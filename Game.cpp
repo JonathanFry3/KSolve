@@ -106,12 +106,22 @@ CardVec Pile::Draw(unsigned n)
 
 void Pile::Draw(Pile& other, int n)
 {
-	Pile & to = (n>0) ? *this : other;
+	/*Pile & to = (n>0) ? *this : other;
 	Pile & fm = (n>0) ? other : *this;
 	unsigned nm = (n>0) ? n : -n;
 	assert(nm <= fm.Size());
 	for (unsigned i = 0; i < nm; i+=1)
 		to.Draw(fm);
+	*/
+	if (n < 0) {
+		assert(-n <= Size());
+		for (unsigned i = 0; i < -n; ++i)
+			other.Draw(*this);
+	} else {
+		assert(n <= other.Size());
+		for (unsigned i = 0; i < n; ++i)
+			Draw(other);
+	}
 }
 static void SetAllPiles(Game& game)
 {
@@ -234,7 +244,7 @@ void Game::MakeMove(const XMove & xmv)
 // Return the height of the shortest foundation pile
 static unsigned ShortFndLen(const Game& gm){
 	const auto& fnd = gm.Foundation();
-	int minFoundationSize = fnd[0].Size();
+	unsigned minFoundationSize = fnd[0].Size();
 	for (int ifnd = 1; ifnd < 4; ifnd+=1) {
 		unsigned sz = fnd[ifnd].Size();
 		if (sz < minFoundationSize) { 
@@ -272,8 +282,8 @@ static Moves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 
 struct TalonFuture {
 	Card _card;
-	unsigned char _nMoves;
-	signed char _draw;
+	unsigned short _nMoves;
+	signed short _draw;
 
 	TalonFuture(const Card& card, unsigned nMoves, int draw)
 		: _card(card)
@@ -522,7 +532,7 @@ unsigned Game::FoundationCardCount() const
 	}
 	return result;
 }
-// Enumerate the moves in a vector of XMoves.
+// Enumerate the moves in a vector of Moves.
 std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 {
 	unsigned stockSize = 24;
@@ -535,6 +545,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 	for (auto mv : solution){
 		unsigned from = mv.From();
 		unsigned to = mv.To();
+		
 		if (from != STOCK){
 			unsigned n = mv.NCards();
 			bool flip = false;
