@@ -49,6 +49,8 @@ public:
 	void clear()									{_size = 0;}
 	void append(const T* begin, const T* end)	
 					{for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
+	void erase(T* x)
+					{for (T* y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	bool operator==(const fixed_capacity_vector<T,Capacity>& other) const
 					{	
 						if (_size != other._size) return false;
@@ -230,6 +232,7 @@ private:
 	};
 
 public:
+	Move() {}
 	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
 	// from stock. One card is then moved from the waste pile to the "to" pile.
@@ -321,6 +324,9 @@ public:
 	bool 	  Flip() const			{return _flip;}
 };
 
+// A limited-size Moves type for AvailableMoves to return
+typedef fixed_capacity_vector<Move,74> QMoves; 
+
 typedef std::vector<XMove> XMoves;
 XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
@@ -352,7 +358,7 @@ public:
 	unsigned Draw() const            				{return _draw;}
 
 	void Deal();
-	Moves AvailableMoves() const;
+	QMoves AvailableMoves() const;
 	void  MakeMove(Move mv);
 	void  UnMakeMove(Move mv);
 	unsigned FoundationCardCount() const;

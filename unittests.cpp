@@ -252,7 +252,7 @@ int main()
 		unsigned nreps = 20;
 		Moves movesMade;
 		for (unsigned rep=0; rep<nreps; ++rep) {
-			Moves moves = sol.AvailableMoves();
+			QMoves moves = sol.AvailableMoves();
 			movesMade.push_back(moves[0]);
 			sol.MakeMove(moves[0]);
 			Validate(sol);
@@ -347,7 +347,7 @@ int main()
 			game.Deal();
 			movesMade.clear();
 			for (unsigned imv = 0; imv <nMoves; ++imv){
-				Moves avail = game.AvailableMoves();
+				QMoves avail = game.AvailableMoves();
 				if (avail.size()) {
 					Move move = avail[rng()%avail.size()];
 					game.MakeMove(move);

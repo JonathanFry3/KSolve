@@ -258,10 +258,9 @@ static unsigned ShortFndLen(const Game& gm){
 // For the same reason that putting an ace or deuce on its foundation pile 
 // is always right, these are, too. Returns a Moves vector that may be empty 
 // or contain one such move.
-static Moves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
+static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 {
-	Moves result;
-	result.reserve(20);  // a favor for AvailableMoves
+	QMoves result;
 	const auto & fnd = gm.Foundation();
 	const auto & allPiles = gm.AllPiles();
 	for (int iPile = WASTE; iPile<TABLEAU+7 && result.size() == 0; iPile+=1) {
@@ -272,7 +271,7 @@ static Moves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 			if (card.Rank() <= minFoundationSize+1) {
 				if (fnd[suit].Size() == card.Rank()) {
 					unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
-					result.emplace_back(iPile,FOUNDATION+suit,1,up);
+					result.push_back(Move(iPile,FOUNDATION+suit,1,up));
 				}
 			}
 		}
@@ -337,9 +336,9 @@ static std::vector<TalonFuture> TalonCards(const Game & game)
 // known to be wasted.  Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-Moves Game::AvailableMoves() const 
+QMoves Game::AvailableMoves() const 
 {
-	Moves result;
+	QMoves result;
 	if (GameOver()) return result;
 
 	unsigned minFoundationSize = ShortFndLen(*this);
@@ -357,7 +356,7 @@ Moves Game::AvailableMoves() const
 		// look for moves from tableau to foundation
 		const Pile& foundation = _foundation[fromTip.Suit()];
 		if (foundation.Size() == fromTip.Rank()) {
-			result.emplace_back(fromPile.Code(),foundation.Code(),1,upCount);
+			result.push_back(Move(fromPile.Code(),foundation.Code(),1,upCount));
 		}
 
 		// Look for moves between tableau piles.  These may involve
@@ -372,7 +371,7 @@ Moves Game::AvailableMoves() const
 						&& fromPile.Size() > upCount) {
 					// toPile is empty, a king sits atop fromPile's face-up
 					// cards, and it is covering at least one face-down card.
-					result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
+					result.push_back(Move(fromPile.Code(),toPile.Code(),upCount,upCount));
 					kingMoved = true;
 				}
 			} else {
@@ -400,14 +399,14 @@ Moves Game::AvailableMoves() const
 						// clear a column.
 						// Move all the face-up cards on the from pile.
 						assert(fromPile.Top().Covers(cardToCover));
-						result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
+						result.push_back(Move(fromPile.Code(),toPile.Code(),upCount,upCount));
 					} else {
 						Card exposed = *(fromCds.end()-moveCount-1);
 						if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
 							// This move will expose a card that can be moved to 
 							// its foundation pile.
 							assert((fromCds.end()-moveCount)->Covers(cardToCover));
-							result.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
+							result.push_back(Move(fromPile.Code(),toPile.Code(),moveCount,upCount));
 						}
 					}
 				}
@@ -429,7 +428,7 @@ Moves Game::AvailableMoves() const
 		unsigned cardRank = talonCard._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()){
 			unsigned pileNo = FOUNDATION+cardSuit;
-			result.emplace_back(pileNo,talonCard._nMoves+1,talonCard._draw);
+			result.push_back(Move(pileNo,talonCard._nMoves+1,talonCard._draw));
 			if (cardRank <= minFoundationSize+1){
 				if (this->_draw == 1) {
 					// This is a short-foundation move that ShortFoundationMove()
@@ -445,10 +444,10 @@ Moves Game::AvailableMoves() const
 		for (const Pile& tPile : _tableau) {
 			if ((tPile.Size() > 0)) {
 				if (talonCard._card.Covers(tPile.Back())) {
-					result.emplace_back(tPile.Code(),talonCard._nMoves+1,talonCard._draw);
+					result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._draw));
 				}
 			} else if (cardRank == KING) {
-				result.emplace_back(tPile.Code(),talonCard._nMoves+1,talonCard._draw);
+				result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._draw));
 				break;  // move that king to just one empty pile
 			}
 		}
@@ -462,11 +461,11 @@ Moves Game::AvailableMoves() const
 			for (const Pile& tPile: _tableau) {
 				if (tPile.Size() > 0) {
 					if (top.Covers(tPile.Back())) {
-						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
+						result.push_back(Move(fPile.Code(),tPile.Code(),1,0));
 					}
 				} else {
 					if (top.Rank() == KING) {
-						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
+						result.push_back(Move(fPile.Code(),tPile.Code(),1,0));
 						break;  // don't move same king to another tableau pile
 					}
 				}

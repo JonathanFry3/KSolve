@@ -94,11 +94,11 @@ struct KSolveState {
 			_minSolution.clear();
 		}
 
-	Moves MakeAutoMoves();
+	QMoves MakeAutoMoves();
 	void CheckForMinSolution();
 	void RecordState(unsigned minMoveCount);
 	bool SkippableMove(Move mv);
-	Moves FilteredAvailableMoves();
+	QMoves FilteredAvailableMoves();
 };
 
 
@@ -112,7 +112,7 @@ KSolveResult KSolve(
 	try	{
 
 		{
-			Moves avail = state.MakeAutoMoves();
+			QMoves avail = state.MakeAutoMoves();
 
 			if (avail.size() == 0) {
 				KSolveCode rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
@@ -137,7 +137,7 @@ KSolveResult KSolve(
 				state._game.Deal();
 				state._open.MakeSequenceMoves(state._game);
 
-				Moves avail = state.MakeAutoMoves();
+				QMoves avail = state.MakeAutoMoves();
 
 				if (avail.size() == 0 && state._game.GameOver()) {
 					// We have a solution.  See if it is a new champion
@@ -245,9 +245,9 @@ const MoveSequenceType& MoveStorage::MoveSequence() const
 }
 
 
-Moves KSolveState::MakeAutoMoves()
+QMoves KSolveState::MakeAutoMoves()
 {
-	Moves avail;
+	QMoves avail;
 	while ((avail = FilteredAvailableMoves()).size() == 1)
 	{
 		_open.Push(avail[0]);
@@ -257,9 +257,9 @@ Moves KSolveState::MakeAutoMoves()
 }
 
 // Return a vector of the available moves that pass the SkippableMove filter
-Moves KSolveState::FilteredAvailableMoves()
+QMoves KSolveState::FilteredAvailableMoves()
 {
-	Moves avail = _game.AvailableMoves();
+	QMoves avail = _game.AvailableMoves();
 	for (auto i = avail.begin(); i < avail.end(); ){
 		if (SkippableMove(*i)) {
 			avail.erase(i);
