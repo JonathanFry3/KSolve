@@ -51,18 +51,21 @@ public:
 					{for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	void erase(T* x)
 					{for (T* y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
-	bool operator==(const fixed_capacity_vector<T,Capacity>& other) const
+	template <class V>
+	bool operator==(const V& other) const
 					{	
-						if (_size != other._size) return false;
-						for(unsigned i = 0; i < _size; i+=1){
-							if ((*this)[i] != other[i]) return false;
+						if (_size != other.size()) return false;
+						auto iv = other.begin();
+						for(const T* ic=begin();ic!=end();ic+=1,iv+=1){
+							if (*ic != *iv) return false;
 						}
 						return true;
 					}
-	fixed_capacity_vector<T,Capacity>& operator=(const fixed_capacity_vector& other) 
+	template <class V>
+	fixed_capacity_vector<T,Capacity>& operator=(const V& other) 
 					{
-						std::copy(other._elem,other._elem+other._size,_elem);
-						_size = other._size;
+						_size = other.size();
+						std::copy(other.begin(),other.end(),begin());
 						return *this;
 					}
 };
