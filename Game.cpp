@@ -10,7 +10,7 @@ const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
 
 
-static unsigned RoundUpQuotient(unsigned numerator, unsigned denominator)
+static unsigned QuitientRoundedUp(unsigned numerator, unsigned denominator)
 {
 	return (numerator+denominator-1)/denominator;
 }
@@ -507,7 +507,7 @@ unsigned Game::MinimumMovesLeft() const
 	const CardVec& stock = _stock.Cards();
 	unsigned talonCount = waste.size() + stock.size();
 
-	unsigned result = talonCount + RoundUpQuotient(stock.size(),draw);
+	unsigned result = talonCount + QuitientRoundedUp(stock.size(),draw);
 
 	if (draw == 1) {
 		// This can fail the monotonicity test for draw > 1.
@@ -571,7 +571,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		} else {
 			assert(stockSize+wasteSize > 0);
 			unsigned nTalonMoves = mv.NMoves()-1;
-			unsigned stockMovesLeft = RoundUpQuotient(stockSize,draw);
+			unsigned stockMovesLeft = QuitientRoundedUp(stockSize,draw);
 			if (nTalonMoves > stockMovesLeft && stockSize) {
 				// Draw all remaining cards from stock
 				mvnum += 1;
