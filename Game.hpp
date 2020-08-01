@@ -262,7 +262,7 @@ public:
 	unsigned NCards()    const 		{return (_from == STOCK) ? 1 : _n;}     
 	unsigned FromUpCount() const 	{return _fromUpCount;}
 	unsigned NMoves() const			{return _nMoves;}
-	int Draw() const				{return _draw;}
+	int DrawCount() const			{return _draw;}
 };
 
 typedef std::vector<Move> Moves;
@@ -358,7 +358,7 @@ public:
 	const std::array<Pile,4>& Foundation() const   	{return _foundation;}
 	const std::array<Pile,7>& Tableau() const      	{return _tableau;}
 	const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
-	unsigned Draw() const            				{return _draw;}
+	unsigned DrawSetting() const            		{return _draw;}
 
 	void Deal();
 	QMoves AvailableMoves() const;

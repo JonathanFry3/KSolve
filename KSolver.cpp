@@ -179,7 +179,7 @@ int main(int argc, char * argv[]) {
 		cout << std::setprecision(3) << outcome._stateCount/1e6 << " million unique states.\n";
 		if (outputMethod < 2 && replay && canReplay) {
 			game.Deal();
-			XMoves xmoves(MakeXMoves(moves,game.Draw()));
+			XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
 			cout << "----------------------------------------\n";
 			for (XMove xmove: xmoves) {
 				bool isTalonMove = xmove.To() == STOCK || xmove.To() == WASTE;
@@ -196,7 +196,7 @@ int main(int argc, char * argv[]) {
 			}
 		}
 		if (showMoves && canReplay) {
-			XMoves xmoves(MakeXMoves(moves,game.Draw()));
+			XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
 			string out = MovesMade(xmoves);
 			cout << out << "\n\n";
 		} else if (showMoves) {

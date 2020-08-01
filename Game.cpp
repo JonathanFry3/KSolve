@@ -180,7 +180,7 @@ void Game::MakeMove(Move mv)
 	auto to = mv.To();
 	Pile& toPile = *_allPiles[to];
 	if (from == STOCK) {
-		_waste.Draw(_stock,mv.Draw());
+		_waste.Draw(_stock,mv.DrawCount());
 		toPile.Push(_waste.Pop());
 		toPile.IncrUpCount(1);
 		_waste.SetUpCount(_waste.Size());
@@ -207,7 +207,7 @@ void  Game::UnMakeMove(Move mv)
 	if (from == STOCK) {
 		_waste.Push(toPile.Pop());
 		toPile.IncrUpCount(-1);
-		_waste.Draw(_stock,-mv.Draw());
+		_waste.Draw(_stock,-mv.DrawCount());
 		_waste.SetUpCount(_waste.Size());
 		_stock.SetUpCount(_stock.Size());
 	} else {
@@ -311,7 +311,7 @@ static std::vector<TalonFuture> TalonCards(const Game & game)
 	unsigned nMoves = 0;
 	unsigned nRecycles = 0;
 	unsigned originalWasteSize = waste.Size();
-	unsigned draw = game.Draw();
+	unsigned draw = game.DrawSetting();
 
 	do {
 		if (waste.Size()) {
@@ -502,7 +502,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 // If it does, we won't know when to stop.
 unsigned Game::MinimumMovesLeft() const
 {
-	unsigned draw = Draw();
+	unsigned draw = DrawSetting();
 	const CardVec& waste = _waste.Cards();
 	const CardVec& stock = _stock.Cards();
 	unsigned talonCount = waste.size() + stock.size();
@@ -648,7 +648,7 @@ std::string Peek(const Move & mv)
 {
 	std::stringstream outStr;
 	if (mv.From() == STOCK){
-		outStr << "+" << mv.NMoves() << "d" << mv.Draw() << ">" << PileNames[mv.To()];
+		outStr << "+" << mv.NMoves() << "d" << mv.DrawCount() << ">" << PileNames[mv.To()];
 	} else {
 		outStr << PileNames[mv.From()] << ">" << PileNames[mv.To()];
 		unsigned n = mv.NCards();
