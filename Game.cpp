@@ -171,7 +171,6 @@ void Game::Deal()
 	}
 	for (unsigned ic = 51; ic >= 28; ic-=1)
 		_stock.Push(_deck[ic]);
-	_stock.SetUpCount(24);
 }
 
 void Game::MakeMove(Move mv)
@@ -183,14 +182,12 @@ void Game::MakeMove(Move mv)
 		_waste.Draw(_stock,mv.DrawCount());
 		toPile.Push(_waste.Pop());
 		toPile.IncrUpCount(1);
-		_waste.SetUpCount(_waste.Size());
-		_stock.SetUpCount(_stock.Size());
 	} else {
 		auto n = mv.NCards();
 		Pile& fromPile = *_allPiles[from];
 		toPile.Push(fromPile.Pop(n));
 		// For tableau piles, UpCount counts face-up cards.  
-		// For other piles, it counts cards.
+		// For other piles, it is undefined.
 		toPile.IncrUpCount(n);
 		fromPile.IncrUpCount(-n);
 		if (fromPile.UpCount() == 0 && fromPile.Size()!= 0){
@@ -208,8 +205,6 @@ void  Game::UnMakeMove(Move mv)
 		_waste.Push(toPile.Pop());
 		toPile.IncrUpCount(-1);
 		_waste.Draw(_stock,-mv.DrawCount());
-		_waste.SetUpCount(_waste.Size());
-		_stock.SetUpCount(_stock.Size());
 	} else {
 		auto n = mv.NCards();
 		Pile & fromPile = *_allPiles[from];
