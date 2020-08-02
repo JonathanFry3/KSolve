@@ -1,5 +1,5 @@
-#ifndef SOL_GAME_H
-#define SOL_GAME_H
+#ifndef GAME_HPP
+#define GAME_HPP
 
 /*
 	This file defines the interfaces for the Klondike Solitaire card game.  It defines such
@@ -354,9 +354,9 @@ class Game
 	std::array<Pile,7> _tableau;
 	std::array<Pile,4> _foundation;
 	std::vector<Card> _deck;
-	unsigned _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
+	unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
 	unsigned _talonLookAheadLimit;
-	std::array<Pile *,13> _allPiles; // pile numbers from enum PileCode
+	std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
 public:
 	Game(const std::vector<Card>& deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
@@ -412,4 +412,4 @@ struct GameStateType {
 	}
 };
 
-#endif      // SOL_GAME_H
+#endif      // GAME_HPP
