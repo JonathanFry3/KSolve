@@ -373,7 +373,7 @@ QMoves Game::AvailableMoves() const
 				// We move from one tableau pile to another only to 
 				// (a) move all the face-up cards on the from pile to 
 				//		(1) expose a face-down card, or
-				//		(2) make an empty column if we still need any, or
+				//		(2) make an empty column, or
 				// (b) expose a card on the from pile that can be moved to a foundation
 				// 	   pile.
 				Card cardToCover = toPile.Back();
@@ -422,9 +422,9 @@ QMoves Game::AvailableMoves() const
 		unsigned cardRank = talonCard._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()){
 			unsigned pileNo = FOUNDATION+cardSuit;
-			result.push_back(Move(pileNo,talonCard._nMoves+1,talonCard._drawCount));
+			result.push_back(Move::Talon(pileNo,talonCard._nMoves+1,talonCard._drawCount));
 			if (cardRank <= minFoundationSize+1){
-				if (this->_drawSetting == 1) {
+				if (_drawSetting == 1) {
 					// This is a short-foundation move that ShortFoundationMove()
 					// can't find.
 					if (result.size() == 1) return result;
@@ -438,10 +438,10 @@ QMoves Game::AvailableMoves() const
 		for (const Pile& tPile : _tableau) {
 			if ((tPile.Size() > 0)) {
 				if (talonCard._card.Covers(tPile.Back())) {
-					result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
+					result.push_back(Move::Talon(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
 				}
 			} else if (cardRank == KING) {
-				result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
+				result.push_back(Move::Talon(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
 				break;  // move that king to just one empty pile
 			}
 		}
@@ -490,7 +490,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 
 // Return a lower bound on the number of moves required to complete
 // this game.  This function must return a result that does not 
-// decrease by more than one after any single Move.  The sum of 
+// decrease by more than one after any single move.  The sum of 
 // this result plus the number of moves made (from MoveCount())
 // must never decrease when a new move is made (monotonicity).
 // If it does, we won't know when to stop.
@@ -504,14 +504,16 @@ unsigned Game::MinimumMovesLeft() const
 	unsigned result = talonCount + QuotientRoundedUp(stock.size(),draw);
 
 	if (draw == 1) {
-		// This can fail the monotonicity test for draw > 1.
+		// This can fail the monotonicity test for draw setting > 1.
 		result += MisorderCount(waste.begin(), waste.end());
 	}
 
 	for (const Pile & tpile: _tableau) {
-		auto begin = tpile.Cards().begin();
-		unsigned downCount = tpile.Size() - tpile.UpCount();
-		result += tpile.Size() + MisorderCount(begin, begin+downCount+1);
+		if (tpile.Size()) {
+			auto begin = tpile.Cards().begin();
+			unsigned downCount = tpile.Size() - tpile.UpCount();
+			result += tpile.Size() + MisorderCount(begin, begin+downCount+1);
+		}
 	}
 	return result;
 }
@@ -674,7 +676,6 @@ static void InsertionSort(std::array<uint64_t,7>& array) {
 		array[j] = key;   //insert in right place
 	}
 }
-
 
 GameStateType::GameStateType(const Game& game)
 {
