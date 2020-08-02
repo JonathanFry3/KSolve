@@ -265,7 +265,7 @@ static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 			if (card.Rank() <= minFoundationSize+1) {
 				if (fnd[suit].Size() == card.Rank()) {
 					unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
-					result.push_back(Move(iPile,FOUNDATION+suit,1,up));
+					result.emplace_back(iPile,FOUNDATION+suit,1,up);
 				}
 			}
 		}
@@ -325,6 +325,15 @@ static std::vector<TalonFuture> TalonCards(const Game & game)
 	return result;
 }
 
+// Push a talon move onto a sequence.
+// This is to visually distinguish talon Move construction from
+// non-talon Move construction in AvailableMoves().
+// One hopes the compiler will inline it.
+static void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves& qm)
+{
+	qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
+}
+
 // If any short-foundation moves exist, returns one of those.
 // Otherwise, returns a list of moves that are legal and not
 // known to be wasted.  Rather than generate individual draws from
@@ -350,7 +359,7 @@ QMoves Game::AvailableMoves() const
 		// look for moves from tableau to foundation
 		const Pile& foundation = _foundation[fromTip.Suit()];
 		if (foundation.Size() == fromTip.Rank()) {
-			result.push_back(Move(fromPile.Code(),foundation.Code(),1,upCount));
+			result.emplace_back(fromPile.Code(),foundation.Code(),1,upCount);
 		}
 
 		// Look for moves between tableau piles.  These may involve
@@ -365,7 +374,7 @@ QMoves Game::AvailableMoves() const
 						&& fromPile.Size() > upCount) {
 					// toPile is empty, a king sits atop fromPile's face-up
 					// cards, and it is covering at least one face-down card.
-					result.push_back(Move(fromPile.Code(),toPile.Code(),upCount,upCount));
+					result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
 					kingMoved = true;
 				}
 			} else {
@@ -393,14 +402,14 @@ QMoves Game::AvailableMoves() const
 						// clear a column.
 						// Move all the face-up cards on the from pile.
 						assert(fromPile.Top().Covers(cardToCover));
-						result.push_back(Move(fromPile.Code(),toPile.Code(),upCount,upCount));
+						result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
 					} else {
 						Card exposed = *(fromCds.end()-moveCount-1);
 						if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
 							// This move will expose a card that can be moved to 
 							// its foundation pile.
 							assert((fromCds.end()-moveCount)->Covers(cardToCover));
-							result.push_back(Move(fromPile.Code(),toPile.Code(),moveCount,upCount));
+							result.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
 						}
 					}
 				}
@@ -420,9 +429,9 @@ QMoves Game::AvailableMoves() const
 
 		unsigned cardSuit = talonCard._card.Suit();
 		unsigned cardRank = talonCard._card.Rank();
-		if (cardRank == _foundation[cardSuit].Size()){
+		if (cardRank == _foundation[cardSuit].Size()) {
 			unsigned pileNo = FOUNDATION+cardSuit;
-			result.push_back(Move::Talon(pileNo,talonCard._nMoves+1,talonCard._drawCount));
+			PushTalonMove(talonCard, pileNo, result);
 			if (cardRank <= minFoundationSize+1){
 				if (_drawSetting == 1) {
 					// This is a short-foundation move that ShortFoundationMove()
@@ -438,10 +447,10 @@ QMoves Game::AvailableMoves() const
 		for (const Pile& tPile : _tableau) {
 			if ((tPile.Size() > 0)) {
 				if (talonCard._card.Covers(tPile.Back())) {
-					result.push_back(Move::Talon(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
+					PushTalonMove(talonCard, tPile.Code(), result);
 				}
 			} else if (cardRank == KING) {
-				result.push_back(Move::Talon(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
+				PushTalonMove(talonCard, tPile.Code(), result);
 				break;  // move that king to just one empty pile
 			}
 		}
@@ -455,11 +464,11 @@ QMoves Game::AvailableMoves() const
 			for (const Pile& tPile: _tableau) {
 				if (tPile.Size() > 0) {
 					if (top.Covers(tPile.Back())) {
-						result.push_back(Move(fPile.Code(),tPile.Code(),1,0));
+						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
 					}
 				} else {
 					if (top.Rank() == KING) {
-						result.push_back(Move(fPile.Code(),tPile.Code(),1,0));
+						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
 						break;  // don't move same king to another tableau pile
 					}
 				}

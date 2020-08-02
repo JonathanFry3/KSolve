@@ -71,6 +71,12 @@ public:
 						std::copy(other.begin(),other.end(),begin());
 						return *this;
 					}
+	template <class ... Args>
+	void emplace_back(Args ... args)
+					{
+						(::new((void*) end()) T(args...));
+						_size += 1;
+					}
 };
 
 enum Rank_t : unsigned char
