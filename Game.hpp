@@ -231,7 +231,7 @@ private:
 			unsigned char _n:4;
 			unsigned char _fromUpCount:4;
 		};
-		signed char _draw;			// draw this many cards (may be negative)
+		signed char _drawCount;			// draw this many cards (may be negative)
 	};
 
 public:
@@ -243,7 +243,7 @@ public:
 		: _from(STOCK)
 		, _to(to)
 		, _nMoves(nMoves)
-		, _draw(draw)
+		, _drawCount(draw)
 		{}
 	// Construct a non-talon move.  UnMakeMove() can't infer the count
 	// of face-up cards in a tableau pile, so AvailableMoves() saves it.
@@ -262,10 +262,13 @@ public:
 	unsigned NCards()    const 		{return (_from == STOCK) ? 1 : _n;}     
 	unsigned FromUpCount() const 	{return _fromUpCount;}
 	unsigned NMoves() const			{return _nMoves;}
-	int DrawCount() const			{return _draw;}
+	int DrawCount() const			{return _drawCount;}
 };
 
 typedef std::vector<Move> Moves;
+
+// A limited-size Moves type for AvailableMoves to return
+typedef fixed_capacity_vector<Move,74> QMoves; 
 
 // Return the number of actual moves implied by a vector of Moves.
 template <class SeqType>
@@ -327,9 +330,6 @@ public:
 	bool 	  Flip() const			{return _flip;}
 };
 
-// A limited-size Moves type for AvailableMoves to return
-typedef fixed_capacity_vector<Move,74> QMoves; 
-
 typedef std::vector<XMove> XMoves;
 XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
@@ -340,7 +340,7 @@ class Game
 	std::array<Pile,7> _tableau;
 	std::array<Pile,4> _foundation;
 	std::vector<Card> _deck;
-	unsigned _draw;             // number of cards to draw from stock (usually 1 or 3)
+	unsigned _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
 	unsigned _talonLookAheadLimit;
 	std::array<Pile *,13> _allPiles; // pile numbers from enum PileCode
 
@@ -358,7 +358,7 @@ public:
 	const std::array<Pile,4>& Foundation() const   	{return _foundation;}
 	const std::array<Pile,7>& Tableau() const      	{return _tableau;}
 	const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
-	unsigned DrawSetting() const            		{return _draw;}
+	unsigned DrawSetting() const            		{return _drawSetting;}
 
 	void Deal();
 	QMoves AvailableMoves() const;

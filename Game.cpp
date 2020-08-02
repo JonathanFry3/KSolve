@@ -10,7 +10,7 @@ const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
 
 
-static unsigned QuitientRoundedUp(unsigned numerator, unsigned denominator)
+static unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
 {
 	return (numerator+denominator-1)/denominator;
 }
@@ -136,7 +136,7 @@ Game::Game(const std::vector<Card> &deck,unsigned draw,unsigned talonLookAheadLi
 	: _deck(deck)
 	, _waste(WASTE)
 	, _stock(STOCK)
-	, _draw(draw)
+	, _drawSetting(draw)
 	, _talonLookAheadLimit(talonLookAheadLimit)
 	, _foundation{FOUNDATION1C,FOUNDATION2D,FOUNDATION3S,FOUNDATION4H}
 	, _tableau{TABLEAU1,TABLEAU2,TABLEAU3,TABLEAU4,TABLEAU5,TABLEAU6,TABLEAU7}
@@ -148,7 +148,7 @@ Game::Game(const Game& orig)
 	:_deck(orig._deck)
 	, _waste(orig._waste)
 	, _stock(orig._stock)
-	, _draw(orig._draw)
+	, _drawSetting(orig._drawSetting)
 	, _foundation(orig._foundation)
 	, _tableau(orig._tableau)
 	{
@@ -277,12 +277,12 @@ static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 struct TalonFuture {
 	Card _card;
 	unsigned short _nMoves;
-	signed short _draw;
+	signed short _drawCount;
 
 	TalonFuture(const Card& card, unsigned nMoves, int draw)
 		: _card(card)
 		, _nMoves(nMoves)
-		, _draw(draw)
+		, _drawCount(draw)
 		{}
 };
 
@@ -423,9 +423,9 @@ QMoves Game::AvailableMoves() const
 		unsigned cardRank = talonCard._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()){
 			unsigned pileNo = FOUNDATION+cardSuit;
-			result.push_back(Move(pileNo,talonCard._nMoves+1,talonCard._draw));
+			result.push_back(Move(pileNo,talonCard._nMoves+1,talonCard._drawCount));
 			if (cardRank <= minFoundationSize+1){
-				if (this->_draw == 1) {
+				if (this->_drawSetting == 1) {
 					// This is a short-foundation move that ShortFoundationMove()
 					// can't find.
 					if (result.size() == 1) return result;
@@ -439,10 +439,10 @@ QMoves Game::AvailableMoves() const
 		for (const Pile& tPile : _tableau) {
 			if ((tPile.Size() > 0)) {
 				if (talonCard._card.Covers(tPile.Back())) {
-					result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._draw));
+					result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
 				}
 			} else if (cardRank == KING) {
-				result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._draw));
+				result.push_back(Move(tPile.Code(),talonCard._nMoves+1,talonCard._drawCount));
 				break;  // move that king to just one empty pile
 			}
 		}
@@ -502,7 +502,7 @@ unsigned Game::MinimumMovesLeft() const
 	const CardVec& stock = _stock.Cards();
 	unsigned talonCount = waste.size() + stock.size();
 
-	unsigned result = talonCount + QuitientRoundedUp(stock.size(),draw);
+	unsigned result = talonCount + QuotientRoundedUp(stock.size(),draw);
 
 	if (draw == 1) {
 		// This can fail the monotonicity test for draw > 1.
@@ -566,7 +566,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		} else {
 			assert(stockSize+wasteSize > 0);
 			unsigned nTalonMoves = mv.NMoves()-1;
-			unsigned stockMovesLeft = QuitientRoundedUp(stockSize,draw);
+			unsigned stockMovesLeft = QuotientRoundedUp(stockSize,draw);
 			if (nTalonMoves > stockMovesLeft && stockSize) {
 				// Draw all remaining cards from stock
 				mvnum += 1;
