@@ -4,7 +4,6 @@
 
 #include "Game.hpp"
 #include <cassert>
-#include <sstream> 		// for stringstream
 
 const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
@@ -650,19 +649,6 @@ std::string Peek(const Move & mv)
 		if (n != 1) outStr << "x" << n;
 		if (mv.FromUpCount()) outStr << "u" << mv.FromUpCount();
 	}
-	return outStr.str();
-}
-
-std::string Peek(const Moves & mvs)
-{
-	std::stringstream outStr;
-	outStr << "(";
-	if (mvs.size()) {
-		outStr << Peek(mvs[0]);
-		for (unsigned imv = 1; imv < mvs.size(); imv+=1)
-			outStr << "," <<  Peek(mvs[imv]);
-	}
-	outStr << ")";
 	return outStr.str();
 }
 

@@ -3,7 +3,7 @@
 
 /*
 	This file defines the interfaces for the Klondike Solitaire card game.  It defines such
-	 things as a Card, a Pile, and a Move.  It defines the Game containing several piles:
+	things as a Card, a Pile, and a Move.  It defines the Game containing several piles:
 	stock       the pile from which a player draws
 	waste       the pile on which to lay a drawn card if it is not played elsewhere
 	foundation  the four piles, one for each suit, to which one wishes to move all the cards
@@ -17,6 +17,7 @@
 #include <vector>
 #include <array>
 #include <cassert>
+#include <sstream> 		// for stringstream
 
 // Template class fixed_capacity_vector
 //
@@ -25,7 +26,7 @@
 // It is safe to use only where the problem limits the size needed,
 // as it does not check for overfilling.  It is designed for speed,
 // so it does not check subscripts.
-#include <cstdint> 		// for uint32_t
+#include <cstdint> 		// for uint32_t, uint64_t
 #include <algorithm>	// for std::copy()
 
 template <class T, unsigned Capacity>
@@ -33,30 +34,32 @@ class fixed_capacity_vector{
 	uint32_t _size;
 	T _elem[Capacity];
 public:
+	typedef T* iterator;
+	typedef const T* const_iterator;
 	fixed_capacity_vector() : _size(0){}
 	T & operator[](unsigned i)						{return _elem[i];}
 	const T& operator[](unsigned i) const			{return _elem[i];}
-	T* begin()										{return _elem;}
-	const T* begin() const							{return _elem;}
+	iterator begin()								{return _elem;}
+	const_iterator begin() const					{return _elem;}
 	size_t size() const								{return _size;}
-	T* end()										{return _elem+_size;}
-	const T* end() const							{return _elem+_size;}
+	iterator end()									{return _elem+_size;}
+	const_iterator end() const						{return _elem+_size;}
 	T & back()										{return _elem[_size-1];}
 	const T& back() const							{return _elem[_size-1];}
 	void pop_back()									{_size -= 1;}
 	void pop_back(unsigned n)						{_size -= n;}
 	void push_back(const T& cd)						{_elem[_size] = cd; _size += 1;}
 	void clear()									{_size = 0;}
-	void append(const T* begin, const T* end)	
+	void append(const_iterator begin, const_iterator end)	
 					{for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
-	void erase(T* x)
-					{for (T* y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
+	void erase(iterator x)
+					{for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
 	bool operator==(const V& other) const
 					{	
 						if (_size != other.size()) return false;
 						auto iv = other.begin();
-						for(const T* ic=begin();ic!=end();ic+=1,iv+=1){
+						for(auto ic=begin();ic!=end();ic+=1,iv+=1){
 							if (*ic != *iv) return false;
 						}
 						return true;
@@ -191,7 +194,7 @@ public:
 	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(Card c)              			{_cards.push_back(c);}
 	CardVec Pop(unsigned n);
-	void Push(const Card* begin, const Card* end)
+	void Push(CardVec::const_iterator begin, CardVec::const_iterator end)
 											{_cards.append(begin,end);}
 	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
 	Card Top() const                        {return *(_cards.end()-_upCount);}
@@ -283,9 +286,20 @@ unsigned MoveCount(const SeqType& moves)
 // Return a string to visualize a move for debugging
 std::string Peek(const Move& mv);
 
-// Return a string to visualize a Moves vector
-std::string Peek(const Moves & mvs);
-
+// Return a string to visualize a sequence of Moves
+template <class Moves_t>
+std::string Peek(const Moves_t & mvs)
+{
+	std::stringstream outStr;
+	outStr << "(";
+	if (mvs.size()) {
+		outStr << Peek(mvs[0]);
+		for (unsigned imv = 1; imv < mvs.size(); imv+=1)
+			outStr << "," <<  Peek(mvs[imv]);
+	}
+	outStr << ")";
+	return outStr.str();
+}
 
 // A vector of Moves is not very useful for enumerating the moves
 // required to solve a game.  What's wanted for that is
