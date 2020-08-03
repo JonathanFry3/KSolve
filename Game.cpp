@@ -307,7 +307,7 @@ static TalonFutureVec TalonCards(const Game & game)
 	unsigned nMoves = 0;
 	unsigned nRecycles = 0;
 	unsigned originalWasteSize = waste.Size();
-	unsigned draw = game.DrawSetting();
+	unsigned drawSetting = game.DrawSetting();
 
 	do {
 		if (waste.Size()) {
@@ -317,7 +317,7 @@ static TalonFutureVec TalonCards(const Game & game)
 		if (stock.Size()) {
 			// Draw from the stock pile
 			nMoves += 1;
-			waste.Draw(stock, std::min<unsigned>(draw,stock.Size()));
+			waste.Draw(stock, std::min<unsigned>(drawSetting,stock.Size()));
 		} else {
 			// Recycle the waste pile
 			nRecycles += 1;
