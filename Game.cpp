@@ -278,6 +278,7 @@ struct TalonFuture {
 	unsigned short _nMoves;
 	signed short _drawCount;
 
+	TalonFuture() {};
 	TalonFuture(const Card& card, unsigned nMoves, int draw)
 		: _card(card)
 		, _nMoves(nMoves)
@@ -293,13 +294,14 @@ struct TalonFuture {
 //
 // Although it may be tempting to try to optimize this function,
 // it takes only about 3% of the run time.
-static std::vector<TalonFuture> TalonCards(const Game & game)
+typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
+static TalonFutureVec TalonCards(const Game & game)
 {
-	std::vector<TalonFuture> result;
+	TalonFutureVec result;
 	unsigned talonSize = game.Waste().Size() + game.Stock().Size();
 	if (talonSize == 0) return result;
 
-	result.reserve(talonSize);
+	// Make copies of waste and stock piles.
 	Pile waste = game.Waste();
 	Pile stock = game.Stock();
 	unsigned nMoves = 0;
@@ -418,7 +420,7 @@ QMoves Game::AvailableMoves() const
 	}
 	// Look for move from waste to tableau or foundation, including moves that become available 
 	// after one or more draws.  
-	std::vector<TalonFuture> talon(TalonCards(*this));
+	TalonFutureVec talon(TalonCards(*this));
 	for (const TalonFuture & talonCard : talon){
 
 		// Stop generating talon moves if they require too many moves
