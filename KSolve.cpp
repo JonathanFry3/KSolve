@@ -36,7 +36,8 @@ class MoveStorage
 	std::deque<MoveNode> _moveTree;
 	// Stack of indexes to leaf nodes in _moveTree
 	typedef std::stack<index_t> HistoryStack;
-	// The filing system
+	// The filing system.  HistoryStacks are filed by the minimum number
+	// of moves required at the stored leaf node.
 	std::vector<HistoryStack> _files;
 	MoveSequenceType _currentSequence;
 	index_t _leafIndex;			// index of current sequence's leaf node in _moveTree
@@ -62,7 +63,7 @@ public:
 	Moves MovesVector() const;
 	// Return a const reference to the current move sequence in its
 	// native type.
-	const MoveSequenceType& MoveSequence() const;
+	const MoveSequenceType& MoveSequence() const {return _currentSequence;}
 };
 
 struct KSolveState {
@@ -183,7 +184,7 @@ KSolveResult KSolve(
 }
 
 MoveStorage::MoveStorage(unsigned maxIndex)
-	: _maxStackIndex(maxIndex)
+	: _maxStackIndex(maxIndex+1)
 	, _leafIndex(-1)
 	, _startStackIndex(maxIndex+1)
 {}
@@ -238,10 +239,6 @@ Moves MoveStorage::MovesVector() const
 {
 	Moves result(_currentSequence.begin(), _currentSequence.end());
 	return result;
-}
-const MoveSequenceType& MoveStorage::MoveSequence() const
-{
-	return _currentSequence;
 }
 
 
