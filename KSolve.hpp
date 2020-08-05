@@ -26,8 +26,6 @@
 #define KSOLVE_HPP
 
 #include "Game.hpp"		// for Game
-#include <cstdint>		// for std::uint32_t
-#include <array>
 
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code and a Moves vector.  The vector contains
@@ -39,9 +37,8 @@
 // control this behavior to some degree by specifying maxStates. The number
 // of unique game states stored is returned in _stateCount.
 //
-// Although there is code to catch std::bad_alloc exceptions and return
-// the MEMORY_EXCEEDED code, if memory is exceeded, the process will probably 
-// just die.
+// For some insight into how it works, look up the A* algorithm.
+
 enum KSolveCode {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE, MEMORY_EXCEEDED};
 struct KSolveResult
 {
