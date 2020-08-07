@@ -159,7 +159,7 @@ bool operator==(const Pile&a, const Pile&b)
 }
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
-// Returns true iff GameStateType(a) should equal GameStateType(b).
+// Returns true iff GameState(a) should equal GameState(b).
 bool operator==(const Game& a, const Game& b) 
 {
 	if (a.Stock() != b.Stock()) return false;
@@ -332,11 +332,11 @@ int main()
 		"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
 	};
 	{
-		// Test GameStateType creation.
+		// Test GameState creation.
 		rng.seed(12345);
 		Game game(Cards(deal102));
 		unsigned nMoves = 100;
-		std::vector<GameStateType> states;
+		std::vector<GameState> states;
 		states.reserve(nMoves);
 		std::vector<Game> prevGames;
 		Moves movesMade;
@@ -353,10 +353,10 @@ int main()
 					game.MakeMove(move);
 					movesMade.push_back(move);
 					Validate(game);
-					GameStateType state(game);
+					GameState state(game);
 					auto pMatch = find(states.begin(),states.end(),state);
 					if (pMatch!=states.end()){
-						// state matches a previous GameStateType.  See if 
+						// state matches a previous GameState.  See if 
 						// game matches the corresponding Game.
 						unsigned which = pMatch - states.begin();
 						if (game != prevGames[which]) {
@@ -376,12 +376,12 @@ int main()
 							cerr << Peek(game) << endl;
 							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(prevGames[which]) << endl;
-							cerr << "Current GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							cerr << "Current GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 							for (auto w : state._part){
 								cerr << oct << w << ' ';
 							}
 							cerr << endl;
-							cerr << "Previous GameStateType <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							cerr << "Previous GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 							for (auto w : states[which]._part){
 								cerr << oct << w << ' ';
 							}

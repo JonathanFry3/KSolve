@@ -688,7 +688,7 @@ static void InsertionSort(std::array<uint64_t,7>& array) {
 	}
 }
 
-GameStateType::GameStateType(const Game& game)
+GameState::GameState(const Game& game)
 {
 	std::array<uint64_t,7> tableauState;
 	const auto& tableau = game.Tableau();

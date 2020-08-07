@@ -400,17 +400,17 @@ std::string Peek (const Game& game);
 // It is possible, although tedious, to reconstruct the
 // game state from one of these and the original deck.
 //
-// The basic requirements for GameStateType are:
+// The basic requirements for GameState are:
 // 1.  Any difference in the foundation piles, the face-up cards
 //     in the tableau piles, or in the stock pile length
-//     should be reflected in the GameStateType.
+//     should be reflected in the GameState.
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
-struct GameStateType {
+struct GameState {
 	typedef std::uint64_t PartType;
 	std::array<PartType,3> _part;
-	GameStateType(const Game& game);
-	bool operator==(const GameStateType& other) const
+	GameState(const Game& game);
+	bool operator==(const GameState& other) const
 	{
 		return _part[0] == other._part[0]
 			&& _part[1] == other._part[1]

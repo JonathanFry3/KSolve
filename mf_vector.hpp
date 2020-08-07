@@ -6,6 +6,10 @@
 // Since it does not have to support changes at the front, it is faster
 // than a deque.
 //
+// In a std::vector, looping though members using [] is about as fast
+// as using an iterator.  With an mf_vector (or a std::deque), 
+// an iterator is faster.
+//
 // This has only enough of the vector functionality to satisfy KSolve.
 
 #include <vector>
@@ -28,7 +32,7 @@ template <class T> class mf_vector
 	std::vector<T*> _blocks;
 	size_t _size;
 	static const unsigned _block_size = 
-			(std::max<size_t>(4096,sizeof(T)*16))/sizeof(T);
+			std::max<size_t>(4096/sizeof(T), 16);
 	loc_data _end;
 
 	loc_data get_loc_data(size_t index) const {

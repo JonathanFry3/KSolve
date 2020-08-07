@@ -53,7 +53,7 @@ int main()
 		exit(100);
 	}
 	int nRuns = 9;
-	string trialName = "3x64 GameStateType";
+	string trialName = "3x64 GameState";
 	std::vector<Card> deck(Cards(deal3));
 	for (unsigned i = 0; i < nRuns; ++i){
 		clock_t t0 = clock();
