@@ -3,6 +3,7 @@
 #include <deque>
 #include <algorithm>        // for sort
 #include "robin_hood.h"     // for unordered_node_map
+#include "mf_vector.hpp"
 #ifdef KSOLVE_TRACE
 #include <iostream>			// for cout
 #endif  //KSOLVE_TRACE
@@ -33,9 +34,9 @@ class MoveStorage
 			, _prevNode(prevNode)
 			{}
 	};
-	std::deque<MoveNode> _moveTree;
+	mf_vector<MoveNode> _moveTree;
 	// Stack of indexes to leaf nodes in _moveTree
-	typedef std::stack<index_t> HistoryStack;
+	typedef std::stack<index_t, mf_vector<index_t> > HistoryStack;
 	// The filing system.  HistoryStacks are filed by the minimum number
 	// of moves required at the stored leaf node.
 	std::vector<HistoryStack> _files;
