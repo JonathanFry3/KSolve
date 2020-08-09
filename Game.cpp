@@ -234,16 +234,16 @@ void Game::MakeMove(const XMove & xmv)
 }
 
 // Return the height of the shortest foundation pile
-static unsigned ShortFndLen(const Game& gm){
+unsigned MinFoundationPileSize(const Game& gm){
 	const auto& fnd = gm.Foundation();
-	unsigned minFoundationSize = fnd[0].Size();
+	unsigned result = fnd[0].Size();
 	for (int ifnd = 1; ifnd < 4; ifnd+=1) {
 		unsigned sz = fnd[ifnd].Size();
-		if (sz < minFoundationSize) { 
-			minFoundationSize = sz;
+		if (sz < result) { 
+			result = sz;
 		}
 	}
-	return minFoundationSize;
+	return result;
 }
 
 // Look for a move to the shortest foundation pile or one one card higher.  
@@ -343,7 +343,7 @@ QMoves Game::AvailableMoves() const
 {
 	QMoves result;
 
-	unsigned minFoundationSize = ShortFndLen(*this);
+	unsigned minFoundationSize = MinFoundationPileSize(*this);
 	if (minFoundationSize == 13) return result;		// game over
 	result = ShortFoundationMove(*this,minFoundationSize);
 	if (result.size()) return result;

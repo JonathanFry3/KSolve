@@ -128,7 +128,7 @@ KSolveResult KSolve(
 			QMoves avail = state.MakeAutoMoves();
 
 			if (avail.size() == 0) {
-				KSolveCode rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
+				KSolveCode rc = MinFoundationPileSize(state._game) == 13 ? SOLVED : IMPOSSIBLE;
 				if (rc == SOLVED) 
 					solution = state._moveTree.MovesVector();
 
@@ -153,7 +153,7 @@ KSolveResult KSolve(
 
 				QMoves avail = state.MakeAutoMoves();
 
-				if (avail.size() == 0 && state._game.GameOver()) {
+				if (avail.size() == 0 && MinFoundationPileSize(state._game) == 13) {
 					// We have a solution.  See if it is a new champion
 					state.CheckForMinSolution();
 					// See if it the final winner.

@@ -385,12 +385,12 @@ public:
 	void  MakeMove(Move mv);
 	void  UnMakeMove(Move mv);
 	unsigned MinimumMovesLeft() const;
-	bool  GameOver() const {return _foundation[0].Size() == 13
-								&& _foundation[1].Size() == 13 
-								&& _foundation[2].Size() == 13
-								&& _foundation[3].Size() == 13;}
 	void MakeMove(const XMove& xmv);
 };
+
+// Return the size of the shortest foundation pile
+unsigned MinFoundationPileSize(const Game& gm);
+
 
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
