@@ -110,6 +110,17 @@ static void Validate(const Game & game)
 	}
 }
 
+// Return the number of cards on the foundaton
+static unsigned FoundationCardCount(const Game& game)
+{
+	unsigned result = 0;
+	for (const Pile& fPile : game.Foundation()) {
+		result += fPile.Size();
+	}
+	return result;
+}
+
+
 // enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
 void PrintOutcome(KSolveCode outcome, const vector<XMove>& moves)
 {
@@ -153,9 +164,8 @@ void PrintOutcome(KSolveCode outcome, const vector<XMove>& moves)
 
 bool operator==(const Pile&a, const Pile&b)
 {
-	return    (a.Code()==b.Code() 
-			&& a.Cards()==b.Cards() 
-			&& a.UpCount()==b.UpCount());
+	return     (a.Code()==b.Code() 
+			&& a.Cards()==b.Cards());
 }
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
@@ -266,7 +276,7 @@ int main()
 		for (unsigned p = 0; p<7; ++p) {
 			assert(sol.Tableau()[p].Cards() == svtableau[p]);
 		}
-		assert (sol.FoundationCardCount() == 0);
+		assert (FoundationCardCount(sol) == 0);
 	}
 	{
 		// Test Peek functions
@@ -395,7 +405,7 @@ int main()
 					// We hit a dead end.  If we're not too close to the end
 					// of a game, back up and try a different random
 					// branch.
-					if (game.FoundationCardCount() > 40)
+					if (FoundationCardCount(game) > 40)
 						break;
 					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
 					{

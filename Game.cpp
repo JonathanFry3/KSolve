@@ -144,7 +144,7 @@ Game::Game(const std::vector<Card> &deck,unsigned draw,unsigned talonLookAheadLi
 	Deal();
 }
 Game::Game(const Game& orig)
-	:_deck(orig._deck)
+	: _deck(orig._deck)
 	, _waste(orig._waste)
 	, _stock(orig._stock)
 	, _drawSetting(orig._drawSetting)
@@ -210,8 +210,6 @@ void  Game::UnMakeMove(Move mv)
 		fromPile.Push(toPile.Pop(n));
 		if (fromPile.IsTableau()) {
 			fromPile.SetUpCount(mv.FromUpCount());
-		} else {
-			fromPile.IncrUpCount(n);
 		}
 		toPile.IncrUpCount(-n);
 	}
@@ -344,9 +342,9 @@ static void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves& qm)
 QMoves Game::AvailableMoves() const 
 {
 	QMoves result;
-	if (GameOver()) return result;
 
 	unsigned minFoundationSize = ShortFndLen(*this);
+	if (minFoundationSize == 13) return result;		// game over
 	result = ShortFoundationMove(*this,minFoundationSize);
 	if (result.size()) return result;
 
@@ -356,6 +354,7 @@ QMoves Game::AvailableMoves() const
 		if (fromPile.Size() == 0) continue;
 
 		Card fromTip = fromPile.Back();
+		Card fromBase = fromPile.Top();
 		auto upCount = fromPile.UpCount();
 
 		// look for moves from tableau to foundation
@@ -372,7 +371,7 @@ QMoves Game::AvailableMoves() const
 
 			if (toPile.Size() == 0) { 
 				if (!kingMoved 
-						&& fromPile.Top().Rank() == KING 
+						&& fromBase.Rank() == KING 
 						&& fromPile.Size() > upCount) {
 					// toPile is empty, a king sits atop fromPile's face-up
 					// cards, and it is covering at least one face-down card.
@@ -391,7 +390,6 @@ QMoves Game::AvailableMoves() const
 				const auto& fromCds = fromPile.Cards();
 				// See whether any of the from pile's up cards can be moved
 				// to the to pile.
-				Card fromBase = fromPile.Top();
 				unsigned toRank = cardToCover.Rank();
 				if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
 						&& (fromTip.OddRed() == cardToCover.OddRed())){
@@ -403,7 +401,7 @@ QMoves Game::AvailableMoves() const
 						// This move will expose a face-down card or
 						// clear a column.
 						// Move all the face-up cards on the from pile.
-						assert(fromPile.Top().Covers(cardToCover));
+						assert(fromBase.Covers(cardToCover));
 						result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
 					} else {
 						Card exposed = *(fromCds.end()-moveCount-1);
@@ -421,7 +419,7 @@ QMoves Game::AvailableMoves() const
 	// Look for move from waste to tableau or foundation, including moves that become available 
 	// after one or more draws.  
 	TalonFutureVec talon(TalonCards(*this));
-	for (const TalonFuture & talonCard : talon){
+	for (TalonFuture talonCard : talon){
 
 		// Stop generating talon moves if they require too many moves
 		// and there are alternative moves.  The ungenerated moves will get
@@ -529,15 +527,6 @@ unsigned Game::MinimumMovesLeft() const
 	return result;
 }
 
-// Return the number of cards on the foundaton
-unsigned Game::FoundationCardCount() const
-{
-	unsigned result = 0;
-	for (const Pile& fPile : _foundation) {
-		result += fPile.Size();
-	}
-	return result;
-}
 // Enumerate the moves in a vector of Moves.
 std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 {

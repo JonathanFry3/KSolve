@@ -384,7 +384,6 @@ public:
 	QMoves AvailableMoves() const;
 	void  MakeMove(Move mv);
 	void  UnMakeMove(Move mv);
-	unsigned FoundationCardCount() const;
 	unsigned MinimumMovesLeft() const;
 	bool  GameOver() const {return _foundation[0].Size() == 13
 								&& _foundation[1].Size() == 13 
