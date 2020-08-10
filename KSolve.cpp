@@ -147,13 +147,13 @@ KSolveResult KSolve(
 		for  (minMoves0 = startMoves; minMoves0 < state._minSolutionCount
 				&& state._game_state_memory.size() <maxStates; minMoves0+=1) {
 			while (state._game_state_memory.size() <maxStates
-				 && state._moveTree.FetchMoveSequence(minMoves0)) {
+				 && state._moveTree.FetchMoveSequence(minMoves0)) {     // <- side effect
 				state._game.Deal();
 				state._moveTree.MakeSequenceMoves(state._game);
 
-				QMoves avail = state.MakeAutoMoves();
-				
-				if (avail.size() == 0 && state._game.GameOver()) {
+				QMoves availableMoves = state.MakeAutoMoves();
+
+				if (availableMoves.size() == 0 && state._game.GameOver()) {
 					// We have a solution.  See if it is a new champion
 					state.CheckForMinSolution();
 					// See if it the final winner.
@@ -167,7 +167,7 @@ KSolveResult KSolve(
 				if (minMoveCount < state._minSolutionCount)	{
 					// There is still hope for this subtree.
 					// Save the result of each of the possible next moves.
-					for (auto mv: avail){
+					for (auto mv: availableMoves){
 						state._game.MakeMove(mv);
 						unsigned minMoveCount = movesMadeCount + mv.NMoves()
 												+ state._game.MinimumMovesLeft();
@@ -257,28 +257,28 @@ Moves MoveStorage::MovesVector() const
 
 QMoves KSolveState::MakeAutoMoves()
 {
-	QMoves avail;
-	while ((avail = FilteredAvailableMoves()).size() == 1)
+	QMoves availableMoves;
+	while ((availableMoves = FilteredAvailableMoves()).size() == 1)
 	{
-		_moveTree.Push(avail[0]);
-		_game.MakeMove(avail[0]);
+		_moveTree.Push(availableMoves[0]);
+		_game.MakeMove(availableMoves[0]);
 	}
-	return avail;
+	return availableMoves;
 }
 
 // Return a vector of the available moves that pass the SkippableMove filter
 QMoves KSolveState::FilteredAvailableMoves()
 {
-	QMoves avail = _game.AvailableMoves();
-	for (auto i = avail.begin(); i < avail.end(); ){
+	QMoves availableMoves = _game.AvailableMoves();
+	for (auto i = availableMoves.begin(); i < availableMoves.end(); ){
 		if (SkippableMove(*i)) {
-			avail.erase(i);
+			availableMoves.erase(i);
 			_skippableWins+=1;
 		} else {
 			i += 1;
 		}
 	}
-	return avail;
+	return availableMoves;
 }
 
 
