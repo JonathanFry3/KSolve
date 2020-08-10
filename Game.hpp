@@ -386,6 +386,7 @@ public:
 	void  UnMakeMove(Move mv);
 	unsigned MinimumMovesLeft() const;
 	void MakeMove(const XMove& xmv);
+	bool GameOver() const;
 };
 
 // Return the size of the shortest foundation pile

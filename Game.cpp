@@ -233,8 +233,14 @@ void Game::MakeMove(const XMove & xmv)
 	}
 }
 
+bool Game::GameOver() const 
+{
+	return MinFoundationPileSize(*this) == 13;
+}
+
 // Return the height of the shortest foundation pile
-unsigned MinFoundationPileSize(const Game& gm){
+unsigned MinFoundationPileSize(const Game& gm)
+{
 	const auto& fnd = gm.Foundation();
 	unsigned result = fnd[0].Size();
 	for (int ifnd = 1; ifnd < 4; ifnd+=1) {
