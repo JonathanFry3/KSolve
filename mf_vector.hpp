@@ -109,6 +109,9 @@ public:
 	size_t size() const{
 		return _size;
 	}
+	bool empty() const {
+		return size() == 0;
+	}
 	void push_back(const T& t){
 		if (_end._offset == _block_size)
 			alloc();
