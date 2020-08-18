@@ -11,9 +11,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/KSolver",
             "args": [
-                "-mvs"
-                ,"-s","18500000"
-                ,"TestDeals.txt"
+                "-out", "2"
+                ,"-mvs"
+                ,"7.17.20.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -48,7 +48,7 @@
                 }
             ]
         }
-        /*/
+        */
         {
             "name": "Test Game, KSolve, GameStateType",
             "type": "cppdbg",
@@ -68,5 +68,6 @@
                 }
             ]
         }
+        //
     ]
 }
