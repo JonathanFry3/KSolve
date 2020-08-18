@@ -106,6 +106,13 @@ public:
 			dealloc_back();
 		}
 	}
+	void clear() {
+		while (_blocks.size()) {
+			dealloc_back();
+		}
+		_size = 0;
+		_end = loc_data(nullptr,_block_size);
+	}
 	size_t size() const{
 		return _size;
 	}
