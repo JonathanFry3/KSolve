@@ -150,6 +150,7 @@ Game::Game(const Game& orig)
 	, _drawSetting(orig._drawSetting)
 	, _foundation(orig._foundation)
 	, _tableau(orig._tableau)
+	, _talonLookAheadLimit(orig._talonLookAheadLimit)
 	{
 		SetAllPiles(*this);
 	}
@@ -166,7 +167,7 @@ void Game::Deal()
 			_tableau[icd].Push(_deck[ideck]);
 			ideck += 1;
 		}
-		_tableau[i].IncrUpCount(1);      // turn up the top card
+		_tableau[i].SetUpCount(1);      // turn up the top card
 	}
 	for (unsigned ic = 51; ic >= 28; ic-=1)
 		_stock.Push(_deck[ic]);
@@ -315,6 +316,7 @@ static TalonFutureVec TalonCards(const Game & game)
 
 	do {
 		if (waste.Size()) {
+			assert(result.size() < 24);
 			result.emplace_back(waste.Back(), nMoves, 
 				waste.Size()-originalWasteSize);
 		}	
