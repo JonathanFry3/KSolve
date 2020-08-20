@@ -94,12 +94,12 @@ public:
 SharedMoveStorage MoveStorage::k_shared;
 
 struct KSolveState {
-	// _moveTree stores the portion of the move tree that has been generated.
+	// _moveStorage stores the portion of the move tree that has been generated.
 	// Each node has a move and a reference to the node with
 	// the move before it.  The leaves are indexed by the minimum number of 
 	// moves possible in any finished game that might grow from that leaf.
-	// _moveTree also stores the sequence of moves we are currently working on.
-	MoveStorage _moveTree;
+	// _moveStorage also stores the sequence of moves we are currently working on.
+	MoveStorage _moveStorage;
 	// k_game_state_memory remembers the minimum move count at each game state we have
 	// already visited.  If we get to that state again, we look at the current minimum
 	// move count. If it is lower than the stored count, we keep our current node and store
@@ -122,11 +122,11 @@ struct KSolveState {
 			k_game_state_memory.clear();
 			k_game_state_memory.reserve(maxStates);
 			_minSolution.clear();
-			_moveTree.Clear();
+			_moveStorage.Clear();
 			k_minSolutionCount = -1;
 		}
 	KSolveState(const KSolveState& orig)
-		: _moveTree()
+		: _moveStorage()
 		, _game(orig._game)
 		, _minSolution(orig._minSolution)
 		, _maxStates(orig._maxStates)
@@ -156,16 +156,16 @@ KSolveResult KSolve(
 	if (avail.size() == 0) {
 		KSolveCode rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
 		if (rc == SOLVED) 
-			solution = state._moveTree.MovesVector();
+			solution = state._moveStorage.MovesVector();
 
 		return KSolveResult(rc,state.k_game_state_memory.size(), solution);
 	}
 	assert(avail.size() > 1);
 
-	unsigned startMoves = MoveCount(state._moveTree.MoveSequence())
+	unsigned startMoves = MoveCount(state._moveStorage.MoveSequence())
 					+ state._game.MinimumMovesLeft();
 
-	state._moveTree.File(startMoves);
+	state._moveStorage.File(startMoves);
 	try	{
 		KSolveWorker(state);
 
@@ -193,9 +193,9 @@ void KSolveWorker(
 	// Main loop
 	unsigned minMoves0;
 	while (state.k_game_state_memory.size() <state._maxStates
-			&& (minMoves0 = state._moveTree.FetchMoveSequence())) {     // <- side effect
+			&& (minMoves0 = state._moveStorage.FetchMoveSequence())) {     // <- side effect
 		state._game.Deal();
-		state._moveTree.MakeSequenceMoves(state._game);
+		state._moveStorage.MakeSequenceMoves(state._game);
 
 		QMoves availableMoves = state.MakeAutoMoves();
 
@@ -207,7 +207,7 @@ void KSolveWorker(
 				break;
 		}
 		
-		unsigned movesMadeCount = MoveCount(state._moveTree.MoveSequence());
+		unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
 		unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
 
 		if (minMoveCount < state.k_minSolutionCount){
@@ -219,9 +219,9 @@ void KSolveWorker(
 										+ state._game.MinimumMovesLeft();
 				if (minMoveCount < state.k_minSolutionCount){
 					assert(minMoves0 <= minMoveCount);
-					state._moveTree.Push(mv);
+					state._moveStorage.Push(mv);
 					state.RecordState(minMoveCount);
-					state._moveTree.Pop();
+					state._moveStorage.Pop();
 				}
 				state._game.UnMakeMove(mv);
 			}
@@ -294,7 +294,7 @@ QMoves KSolveState::MakeAutoMoves()
 	QMoves availableMoves;
 	while ((availableMoves = FilteredAvailableMoves()).size() == 1)
 	{
-		_moveTree.Push(availableMoves[0]);
+		_moveStorage.Push(availableMoves[0]);
 		_game.MakeMove(availableMoves[0]);
 	}
 	return availableMoves;
@@ -339,7 +339,7 @@ bool KSolveState::SkippableMove(Move trial)
 	auto B = trial.From();
 	if (B == STOCK || B == WASTE) return false; 
 	auto C = trial.To();
-	auto &movesMade = _moveTree.MoveSequence();
+	auto &movesMade = _moveStorage.MoveSequence();
 	for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); imv+=1){
 		Move mv = *imv;
 		if (mv.To() == B){
@@ -370,9 +370,9 @@ bool KSolveState::SkippableMove(Move trial)
 // the current champion, we have a new champion
 void KSolveState::CheckForMinSolution(){
 	unsigned x = _minSolution.size();
-	unsigned nmv = MoveCount(_moveTree.MoveSequence());
+	unsigned nmv = MoveCount(_moveStorage.MoveSequence());
 	if (x == 0 || nmv < k_minSolutionCount) {
-		_minSolution = _moveTree.MovesVector();
+		_minSolution = _moveStorage.MovesVector();
 		k_minSolutionCount = nmv;
 	}
 }
@@ -383,6 +383,6 @@ void KSolveState::RecordState(unsigned minMoveCount)
 	auto & storedMinimumCount = k_game_state_memory[pState];
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
-		_moveTree.File(minMoveCount);
+		_moveStorage.File(minMoveCount);
 	}
 }
