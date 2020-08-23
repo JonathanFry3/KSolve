@@ -2,14 +2,17 @@
 #include <stack>
 #include <deque>
 #include <algorithm>        // for sort
+#include <mutex>          	// for std::mutex, std::lock_guard
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h"     // for 
 #include "mf_vector.hpp"
+#include <thread>
 #ifdef KSOLVE_TRACE
 #include <iostream>			// for cout
 #endif  //KSOLVE_TRACE
 
-typedef phmap::NullMutex Mutex;
+typedef std::mutex Mutex;
+typedef std::lock_guard<Mutex> Guard;
 
 class Hasher
 {
@@ -38,13 +41,15 @@ class SharedMoveStorage
 			{}
 	};
 	mf_vector<MoveNode> _moveTree;
+	Mutex _moveTreeMutex;
 	// Stack of indexes to leaf nodes in _moveTree
 	typedef std::stack<index_t, mf_vector<index_t> > LeafNodeStack;
 	// The leaf nodes waiting to grow new branches.  Each LeafNodeStack
 	// stores nodes with the same minimum number of moves in any
-	// completed game that can grow from them.  The client accesses them
-	// using that minimum number of moves.
+	// completed game that can grow from them.  MoveStorage uses it
+	// to implement a priority queue ordered by the minimum move count.
 	std::vector<LeafNodeStack> _fringe;
+	Mutex _fringeMutex;
 	unsigned _startStackIndex;
 	SharedMoveStorage() 
 	: _startStackIndex(-1)
@@ -105,14 +110,18 @@ struct KSolveState {
 	// move count. If it is lower than the stored count, we keep our current node and store
 	// its move count here.  If not, we forget the current node - we already have a
 	// way to get to the same state that is at least as short.
-	typedef phmap::parallel_flat_hash_map<GameState, unsigned short, Hasher> MapType;
+	typedef phmap::parallel_flat_hash_map<GameState, unsigned short, Hasher,phmap::priv::hash_default_eq<GameState>,
+		 phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 4U, Mutex> 
+		 MapType;
 	static MapType k_game_state_memory;
 	Game _game;
-	Moves & _minSolution;
 	unsigned _maxStates;
-	static unsigned k_minSolutionCount;
 
-	KSolveState(  Game & gm, 
+	Moves & _minSolution;
+	static unsigned k_minSolutionCount;
+	Mutex _minSolutionMutex;
+
+	explicit KSolveState(  Game & gm, 
 			Moves& solution,
 			unsigned maxStates)
 		: _minSolution(solution)
@@ -125,7 +134,7 @@ struct KSolveState {
 			_moveStorage.Clear();
 			k_minSolutionCount = -1;
 		}
-	KSolveState(const KSolveState& orig)
+	explicit KSolveState(const KSolveState& orig)
 		: _moveStorage()
 		, _game(orig._game)
 		, _minSolution(orig._minSolution)
@@ -142,7 +151,7 @@ KSolveState::MapType KSolveState::k_game_state_memory; // initializers
 unsigned KSolveState::k_minSolutionCount(-1);
 
 void KSolveWorker(
-		KSolveState& masterState);
+		KSolveState* pMasterState);
 
 KSolveResult KSolve(
 		Game& game,
@@ -167,7 +176,18 @@ KSolveResult KSolve(
 
 	state._moveStorage.File(startMoves);
 	try	{
-		KSolveWorker(state);
+#ifndef NTHREADS
+#define NTHREADS 1
+#endif
+		const unsigned nthreads = NTHREADS;
+		std::vector<std::thread> threads;
+		for (unsigned ithread = 0; ithread < nthreads; ++ithread) {
+			threads.emplace_back(&KSolveWorker, &state);
+			std::this_thread::sleep_for(std::chrono::milliseconds(23));
+		}
+		//KSolveWorker(&state);
+		for (auto& thread: threads) 
+			thread.join();
 
 		KSolveCode outcome;
 		if (state.k_game_state_memory.size() >= maxStates){
@@ -186,9 +206,9 @@ KSolveResult KSolve(
 }
 
 void KSolveWorker(
-		KSolveState& masterState)
+		KSolveState* pMasterState)
 {
-	KSolveState state(masterState);
+	KSolveState state(*pMasterState);
 
 	// Main loop
 	unsigned minMoves0;
@@ -209,6 +229,7 @@ void KSolveWorker(
 		
 		unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
 		unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
+		assert(((minMoves0 <= minMoveCount),"first"));
 
 		if (minMoveCount < state.k_minSolutionCount){
 			// There is still hope for this subtree.
@@ -218,7 +239,7 @@ void KSolveWorker(
 				unsigned minMoveCount = movesMadeCount + mv.NMoves()
 										+ state._game.MinimumMovesLeft();
 				if (minMoveCount < state.k_minSolutionCount){
-					assert(minMoves0 <= minMoveCount);
+					assert(((minMoves0 <= minMoveCount),"second"));
 					state._moveStorage.Push(mv);
 					state.RecordState(minMoveCount);
 					state._moveStorage.Pop();
@@ -238,8 +259,12 @@ void MoveStorage::Clear(){
 void MoveStorage::Push(Move move)
 {
 	_currentSequence.push_back(move);
-	index_t ind = k_shared._moveTree.size();
-	k_shared._moveTree.emplace_back(move, _leafIndex);
+	index_t ind;
+	{
+		Guard( k_shared._moveTreeMutex);
+		ind = k_shared._moveTree.size();
+		k_shared._moveTree.emplace_back(move, _leafIndex);
+	}
 	_leafIndex = ind;
 }
 void MoveStorage::Pop()
@@ -255,20 +280,28 @@ void MoveStorage::File(unsigned index)
 	assert(k_shared._startStackIndex <= index);
 	unsigned offset = index - k_shared._startStackIndex;
 	static LeafNodeStack emptyStack;
-	for (unsigned i = k_shared._fringe.size(); i <= offset; i+=1) 
-		k_shared._fringe.push_back(emptyStack);
-	k_shared._fringe[offset].push(_leafIndex);
+	{
+		Guard(k_shared._fringeMutex);
+		for (unsigned i = k_shared._fringe.size(); i <= offset; i+=1) 
+			k_shared._fringe.push_back(emptyStack);
+		k_shared._fringe[offset].push(_leafIndex);
+	}
 }
 unsigned MoveStorage::FetchMoveSequence()
 {
-	unsigned offset;
-	for (offset = 0; offset < k_shared._fringe.size() && k_shared._fringe[offset].empty(); offset += 1) {}
-	if (offset < k_shared._fringe.size()) {
-		LeafNodeStack & stack =  k_shared._fringe[offset];
-		_leafIndex = stack.top();
-		stack.pop();
+	unsigned offset, size;
+	{
+		Guard(k_shared._fringeMutex);
+		size = k_shared._fringe.size();
+		for (offset = 0; offset < size && k_shared._fringe[offset].empty(); offset += 1) {}
+		if (offset < size) {
+			LeafNodeStack & stack =  k_shared._fringe[offset];
+			_leafIndex = stack.top();
+			stack.pop();
+		}
 	}
-	if (offset >= k_shared._fringe.size()) return (0);
+	if (offset >= size) 
+		return (0);
 
 	_currentSequence.clear();
 	for (index_t node = _leafIndex; node != -1; node = k_shared._moveTree[node]._prevNode){
@@ -369,20 +402,38 @@ bool KSolveState::SkippableMove(Move trial)
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
 void KSolveState::CheckForMinSolution(){
-	unsigned x = _minSolution.size();
 	unsigned nmv = MoveCount(_moveStorage.MoveSequence());
-	if (x == 0 || nmv < k_minSolutionCount) {
-		_minSolution = _moveStorage.MovesVector();
-		k_minSolutionCount = nmv;
+	{
+		Guard(this->_minSolutionMutex);
+		unsigned x = _minSolution.size();
+		if (x == 0 || nmv < k_minSolutionCount) {
+			_minSolution = _moveStorage.MovesVector();
+			k_minSolutionCount = nmv;
+		}
 	}
 }
 
 void KSolveState::RecordState(unsigned minMoveCount)
 {
 	GameState pState(_game);
+	/*
 	auto & storedMinimumCount = k_game_state_memory[pState];
 	if (storedMinimumCount == 0 || minMoveCount < storedMinimumCount) {
 		storedMinimumCount = minMoveCount;
-		_moveStorage.File(minMoveCount);
+		_moveStorage.File(minMoveCount); 
 	}
+	*/
+	bool valueChanged{false};
+	bool newKey = k_game_state_memory.try_emplace_l(
+		pState,						// key
+		[&](auto& mapped_value) {	// run behind lock when key found
+			valueChanged = minMoveCount < mapped_value;
+			if (valueChanged) 
+				mapped_value = minMoveCount;
+		},
+		minMoveCount 				// c'tor run behind lock when key not found
+	);
+	if (newKey || valueChanged) 
+		_moveStorage.File(minMoveCount); 
 }
+  

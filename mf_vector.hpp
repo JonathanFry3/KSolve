@@ -47,8 +47,8 @@ template <class T> class mf_vector
 	}
 	void alloc() {
 		_end._block = reinterpret_cast<T*>(malloc(sizeof(T)*_block_size));
-		_blocks.push_back(_end._block);
 		_end._offset = 0;
+		_blocks.push_back(_end._block);
 	}
 	void dealloc_back(){
 		assert(_blocks.size());
@@ -100,18 +100,15 @@ public:
 		: _size(0)
 		, _end(nullptr,_block_size)
 		{}
-	~mf_vector() {
-		// no provision for T requiring destuction	
-		while (_blocks.size()) {
-			dealloc_back();
-		}
-	}
 	void clear() {
 		while (_blocks.size()) {
 			dealloc_back();
 		}
 		_size = 0;
-		_end = loc_data(nullptr,_block_size);
+	}
+	~mf_vector() {
+		// no provision for T requiring destuction	
+		clear();
 	}
 	size_t size() const{
 		return _size;
