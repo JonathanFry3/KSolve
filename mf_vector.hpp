@@ -116,13 +116,6 @@ public:
 	bool empty() const {
 		return size() == 0;
 	}
-	void push_back(const T& t){
-		if (_end._offset == _block_size)
-			alloc();
-		new(_end._block+_end._offset) T(t);
-		_end._offset += 1;
-		_size += 1;
-	}
 	template <class ... Args>
 	void emplace_back(Args...args){
 		if (_end._offset == _block_size)
@@ -130,6 +123,9 @@ public:
 		new(_end._block+_end._offset) T(args...);
 		_end._offset += 1;
 		_size += 1;
+	}
+	void push_back(const T& t){
+		emplace_back(t);
 	}
 	void pop_back(){
 		assert(_size);

@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/KSolver",
             "args": [
                 "-out", "2"
-                ,"-mvs"
+            //    ,"-mvs"
                 ,"7.17.20.txt"
             ],
             "stopAtEntry": false,
@@ -28,7 +28,7 @@
                 }
             ]
         },
-        /*
+        //
         {
             "name": "Test speeder",
             "type": "cppdbg",
