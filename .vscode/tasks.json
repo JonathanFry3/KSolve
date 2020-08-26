@@ -14,7 +14,7 @@
 				"-pthread",
 				"Game.cpp",
 				"KSolve.cpp",
-				"KSolver.cpp",
+				"KSolver.cpp", 
 				"-o",
 				"${workspaceFolder}/KSolver"
 			],
@@ -36,7 +36,7 @@
 			"args": [
 				"-g",
 				"-pthread",
-				"-DNTHREADS=2",
+			//	"-DNTHREADS=1",
 				"Game.cpp",
 				"KSolve.cpp",
 				"unittests.cpp",

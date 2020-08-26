@@ -2,6 +2,7 @@
 #include <deque>
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
+#include <shared_mutex>		// for std::shared_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h"     // for 
 #include "mf_vector.hpp"
@@ -11,7 +12,10 @@
 #endif  //KSOLVE_TRACE
 
 typedef std::mutex Mutex;
+typedef std::shared_timed_mutex SharedMutex;
 typedef std::lock_guard<Mutex> Guard;
+typedef std::shared_lock<SharedMutex> SharedGuard;
+typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 
 class Hasher
 {
@@ -49,28 +53,16 @@ class SharedMoveStorage
 	// completed game that can grow from them.  MoveStorage uses it
 	// to implement a priority queue ordered by the minimum move count.
 	mf_vector<LeafNodeStack> _fringe;
-	fixed_capacity_vector<Mutex,maxMoves> _fringeMutexes;
+	SharedMutex _fringeMutex;
+	mf_vector<Mutex> _fringeStackMutexes;
 	unsigned _startStackIndex;
 	bool _firstTime;
-	void Clear()
-	{
-		_firstTime = true;
-		_startStackIndex = -1;
-		_moveTree.clear();
-		for (auto& f: _fringe) 
-			f.clear();
-	}
 	friend class MoveStorage;
 public:
 	SharedMoveStorage() 
 		: _firstTime(true)
 		, _startStackIndex(-1)
 	{
-		unsigned cap = maxMoves;
-		for (unsigned i = 0; i<cap; i+= 1){
-			_fringeMutexes.emplace_back();
-			_fringe.emplace_back();
-		}
 	}
 };
 class MoveStorage
@@ -104,8 +96,6 @@ public:
 	// Return a const reference to the current move sequence in its
 	// native type.
 	const MoveSequenceType& MoveSequence() const {return _currentSequence;}
-	// Resets to initial state
-	void Clear();
 };
 
 struct KSolveState {
@@ -278,10 +268,6 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared)
 	: _leafIndex(-1)
 	, _shared(shared)
 	{}
-void MoveStorage::Clear(){
-	_leafIndex = -1;
-	_shared.Clear();
-}
 void MoveStorage::Push(Move move)
 {
 	_currentSequence.push_back(move);
@@ -306,41 +292,53 @@ void MoveStorage::File(unsigned index)
 	}
 	assert(_shared._startStackIndex <= index);
 	unsigned offset = index - _shared._startStackIndex;
+	if (!(offset < _shared._fringe.size())) {
+		ExclusiveGuard freddie(_shared._fringeMutex);
+		while (!(offset < _shared._fringe.size())){
+			_shared._fringeStackMutexes.emplace_back();
+			_shared._fringe.emplace_back();
+		}
+	}
 	assert(offset < _shared._fringe.size());
 	{
-		Guard clyde(_shared._fringeMutexes[offset]);
+		Guard clyde(_shared._fringeStackMutexes[offset]);
 		_shared._fringe[offset].push_back(_leafIndex);
 	}
 }
 unsigned MoveStorage::FetchMoveSequence()
 {
 	unsigned offset;
-	unsigned size = _shared._fringe.size();
+	unsigned size;
 	unsigned nTries;
+	unsigned result = 0;
 	_leafIndex = -1;
 	for (nTries = 0; _leafIndex==-1 && nTries < 5; nTries+=1) {
-		for (offset = 0; offset < size && _shared._fringe[offset].empty(); offset += 1) {}
+		{
+			SharedGuard marylin(_shared._fringeMutex);
+			size = _shared._fringe.size();
+			for (offset = 0; offset < size && _shared._fringe[offset].empty(); offset += 1) {}
+		}
 		if (offset < size) {
-			Guard methuselah(_shared._fringeMutexes[offset]);
+			Guard methuselah(_shared._fringeStackMutexes[offset]);
 			auto & stack = _shared._fringe[offset];
 			if (stack.size()) {
 				_leafIndex = stack.back();
 				stack.pop_back();
+				result = offset+_shared._startStackIndex;
 			}
 		} 
-		if (_leafIndex == -1) {
+		if (!result) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
-	if (_leafIndex == -1)
-		return (0);
-
-	_currentSequence.clear();
-	for (index_t node = _leafIndex; node != -1; node = _shared._moveTree[node]._prevNode){
-		Move mv = _shared._moveTree[node]._move;
-		_currentSequence.push_front(mv);
+	if (result) {
+		_currentSequence.clear();
+		for (index_t node = _leafIndex; node != -1; node = _shared._moveTree[node]._prevNode){
+			Move mv = _shared._moveTree[node]._move;
+			_currentSequence.push_front(mv);
+		}
 	}
-	return offset+_shared._startStackIndex;
+	return result;
 }
 void MoveStorage::MakeSequenceMoves(Game&game)
 {
