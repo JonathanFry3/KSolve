@@ -101,13 +101,13 @@ public:
 		, _end(nullptr,_block_size)
 		{}
 	void clear() {
+		for (auto&m:*this) m.~T();	//destruct all
 		while (_blocks.size()) {
 			dealloc_back();
 		}
 		_size = 0;
 	}
 	~mf_vector() {
-		// no provision for T requiring destuction	
 		clear();
 	}
 	size_t size() const{
@@ -129,6 +129,7 @@ public:
 	}
 	void pop_back(){
 		assert(_size);
+		back().~T();  //destruct
 		_size -= 1;
 		if (_end._offset == 1) {
 			dealloc_back();
@@ -138,14 +139,22 @@ public:
 	}
 	T& back() {
 		assert(_end._offset > 0);
+		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
 	const T& back() const {
 		assert(_end._offset > 0);
+		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
 
 	T& operator[](size_t index){
+		assert(index < _size);
+		loc_data d(get_loc_data(index));
+		return d._block[d._offset];
+	}
+	const T& operator[](size_t index) const{
+		assert(index < _size);
 		loc_data d(get_loc_data(index));
 		return d._block[d._offset];
 	}
