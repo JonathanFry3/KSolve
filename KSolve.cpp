@@ -169,21 +169,10 @@ KSolveResult KSolve(
 	SharedMoveStorage sharedMoveStorage;
 	KSolveState::MapType map;
 	KSolveState state(game,solution,sharedMoveStorage,map,maxStates);
-	QMoves avail = state.MakeAutoMoves();
 
-	if (avail.size() == 0) {
-		KSolveCode rc = state._game.GameOver() ? SOLVED : IMPOSSIBLE;
-		if (rc == SOLVED) 
-			solution = state._moveStorage.MovesVector();
+	unsigned startMoves = state._game.MinimumMovesLeft();
 
-		return KSolveResult(rc,state._game_state_memory.size(), solution);
-	}
-	assert(avail.size() > 1);
-
-	unsigned startMoves = MoveCount(state._moveStorage.MoveSequence())
-					+ state._game.MinimumMovesLeft();
-
-	state._moveStorage.File(startMoves);
+	state._moveStorage.File(startMoves);	// pump priming
 	try	{
 #ifdef NTHREADS
 		const unsigned nthreads = NTHREADS;
@@ -312,7 +301,7 @@ unsigned MoveStorage::FetchMoveSequence()
 	unsigned nTries;
 	unsigned result = 0;
 	_leafIndex = -1;
-	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
+	for (nTries = 0; result == 0 && nTries < 10; nTries+=1) {
 		{
 			SharedGuard marylin(_shared._fringeMutex);
 			size = _shared._fringe.size();
@@ -328,7 +317,7 @@ unsigned MoveStorage::FetchMoveSequence()
 			}
 		} 
 		if (result == 0) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		}
 	}
 	if (result) {

@@ -3,6 +3,7 @@
 #include<sstream>		// for stringstream
 #include<iomanip>		// for setprecision
 #include<ctime>
+#include <chrono>
 #include<cmath>			// for ceil
 #include"KSolve.hpp"
 
@@ -10,6 +11,7 @@
 #define _stricmp strcasecmp
 
 using namespace std;
+using namespace std::chrono;
 
 vector<Card> PysolDeck(const string& s);
 vector<Card> ReversedPysolDeck(const string& s);
@@ -158,7 +160,7 @@ int main(int argc, char * argv[]) {
 			cout << GameDiagramPysol(game) << "\n\n";
 		}
 
-		clock_t clock0 = clock();
+		auto startTime = steady_clock::now();
 		KSolveResult outcome = KSolve(game, maxClosedCount);
 		auto & result(outcome._code);
 		Moves & moves(outcome._solution);
@@ -175,12 +177,13 @@ int main(int argc, char * argv[]) {
 		} else if (result == GAVEUP_UNSOLVED) {
 			cout << "Unknown.";
 		}
-		cout << "\nTook " << float(clock() - clock0)/CLOCKS_PER_SEC << " sec. ";
-		cout << std::setprecision(3) << outcome._stateCount/1e6 << " million unique states.\n";
+		duration<float, std::milli> elapsed = steady_clock::now() - startTime;
+		cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
+		cout << setprecision(4) << outcome._stateCount/1e6 << " million unique states.\n";
 		if (outputMethod < 2 && replay && canReplay) {
 			game.Deal();
 			XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
-			cout << "----------------------------------------\n";
+			cout << "----------------------------------------\n"; 
 			for (XMove xmove: xmoves) {
 				bool isTalonMove = xmove.To() == STOCK || xmove.To() == WASTE;
 				cout << GetMoveInfo(xmove,game) << "\n";
