@@ -312,7 +312,7 @@ unsigned MoveStorage::FetchMoveSequence()
 	unsigned nTries;
 	unsigned result = 0;
 	_leafIndex = -1;
-	for (nTries = 0; _leafIndex==-1 && nTries < 5; nTries+=1) {
+	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
 		{
 			SharedGuard marylin(_shared._fringeMutex);
 			size = _shared._fringe.size();
@@ -327,7 +327,7 @@ unsigned MoveStorage::FetchMoveSequence()
 				result = offset+_shared._startStackIndex;
 			}
 		} 
-		if (!result) {
+		if (result == 0) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
