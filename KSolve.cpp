@@ -216,8 +216,9 @@ void KSolveWorker(
 
 	// Main loop
 	unsigned minMoves0;
-	while (state._game_state_memory.size() <state._maxStates
-			&& (minMoves0 = state._moveStorage.FetchMoveSequence())) {     // <- side effect
+	while (state._game_state_memory.size() < state._maxStates
+			&& (minMoves0 = state._moveStorage.FetchMoveSequence())    // <- side effect
+			&& minMoves0 < state.k_minSolutionCount) { 
 		state._game.Deal();
 		state._moveStorage.MakeSequenceMoves(state._game);
 
@@ -301,7 +302,7 @@ unsigned MoveStorage::FetchMoveSequence()
 	unsigned nTries;
 	unsigned result = 0;
 	_leafIndex = -1;
-	for (nTries = 0; result == 0 && nTries < 10; nTries+=1) {
+	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
 		{
 			SharedGuard marylin(_shared._fringeMutex);
 			size = _shared._fringe.size();
@@ -317,7 +318,7 @@ unsigned MoveStorage::FetchMoveSequence()
 			}
 		} 
 		if (result == 0) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 	if (result) {
