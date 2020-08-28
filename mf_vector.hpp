@@ -47,8 +47,8 @@ template <class T> class mf_vector
 	}
 	void alloc() {
 		_end._block = reinterpret_cast<T*>(malloc(sizeof(T)*_block_size));
-		_blocks.push_back(_end._block);
 		_end._offset = 0;
+		_blocks.push_back(_end._block);
 	}
 	void dealloc_back(){
 		assert(_blocks.size());
@@ -100,21 +100,21 @@ public:
 		: _size(0)
 		, _end(nullptr,_block_size)
 		{}
-	~mf_vector() {
-		// no provision for T requiring destuction	
+	void clear() {
+		for (auto&m:*this) m.~T();	//destruct all
 		while (_blocks.size()) {
 			dealloc_back();
 		}
+		_size = 0;
+	}
+	~mf_vector() {
+		clear();
 	}
 	size_t size() const{
 		return _size;
 	}
-	void push_back(const T& t){
-		if (_end._offset == _block_size)
-			alloc();
-		new(_end._block+_end._offset) T(t);
-		_end._offset += 1;
-		_size += 1;
+	bool empty() const {
+		return size() == 0;
 	}
 	template <class ... Args>
 	void emplace_back(Args...args){
@@ -124,8 +124,12 @@ public:
 		_end._offset += 1;
 		_size += 1;
 	}
+	void push_back(const T& t){
+		emplace_back(t);
+	}
 	void pop_back(){
 		assert(_size);
+		back().~T();  //destruct
 		_size -= 1;
 		if (_end._offset == 1) {
 			dealloc_back();
@@ -135,14 +139,22 @@ public:
 	}
 	T& back() {
 		assert(_end._offset > 0);
+		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
 	const T& back() const {
 		assert(_end._offset > 0);
+		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
 
 	T& operator[](size_t index){
+		assert(index < _size);
+		loc_data d(get_loc_data(index));
+		return d._block[d._offset];
+	}
+	const T& operator[](size_t index) const{
+		assert(index < _size);
 		loc_data d(get_loc_data(index));
 		return d._block[d._offset];
 	}
