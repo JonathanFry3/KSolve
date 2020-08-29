@@ -291,14 +291,53 @@ struct TalonFuture {
 		{}
 };
 
+// Class to simulate draws and recycles of the talon and
+// return the top card of the simulated waste pile.
+class TalonSim{
+	const CardVec& _waste;
+	const CardVec& _stock;
+	unsigned _wSize;
+	unsigned _sSize;
+public:
+	TalonSim(const Game& game)
+		: _waste(game.Waste().Cards())
+		, _stock(game.Stock().Cards())
+		, _wSize(game.Waste().Size())
+		, _sSize(game.Stock().Size())
+		{}
+	unsigned WasteSize() const
+	{
+		return _wSize;
+	}
+	unsigned StockSize() const
+	{
+		return _sSize;
+	}
+	void Cycle()
+	{
+		_sSize += _wSize;
+		_wSize = 0;
+	}
+	void Draw(unsigned n)
+	{
+		_wSize += n;
+		_sSize -= n;
+	}
+	Card TopCard() const
+	{
+		if (_wSize <= _waste.size()){
+			return _waste[_wSize-1];
+		} else {
+			return *(_stock.end()-(_wSize-_waste.size()) );
+		}
+	}
+};
+
 // Return a vector of all the cards that can be played
 // from the talon (the stock and waste piles), along
 // with the number of moves required to reach each one
 // and the number of cards that must be drawn (or undrawn)
 // to reach each one.
-//
-// Although it may be tempting to try to optimize this function,
-// it takes only about 3% of the run time.
 typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
@@ -306,30 +345,28 @@ static TalonFutureVec TalonCards(const Game & game)
 	unsigned talonSize = game.Waste().Size() + game.Stock().Size();
 	if (talonSize == 0) return result;
 
-	// Make copies of waste and stock piles.
-	Pile waste = game.Waste();
-	Pile stock = game.Stock();
+	TalonSim talon(game);
 	unsigned nMoves = 0;
 	unsigned nRecycles = 0;
-	unsigned originalWasteSize = waste.Size();
+	unsigned originalWasteSize = talon.WasteSize();
 	unsigned drawSetting = game.DrawSetting();
 
 	do {
-		if (waste.Size()) {
+		if (talon.WasteSize()) {
 			assert(result.size() < 24);
-			result.emplace_back(waste.Back(), nMoves, 
-				waste.Size()-originalWasteSize);
+			result.emplace_back(talon.TopCard(), nMoves, 
+				talon.WasteSize()-originalWasteSize);
 		}	
-		if (stock.Size()) {
+		if (talon.StockSize()) {
 			// Draw from the stock pile
 			nMoves += 1;
-			waste.Draw(stock, std::min<unsigned>(drawSetting,stock.Size()));
+			talon.Draw( std::min<unsigned>(drawSetting,talon.StockSize()));
 		} else {
 			// Recycle the waste pile
 			nRecycles += 1;
-			stock.Draw(waste, waste.Size());
+			talon.Cycle();
 		}
-	} while (waste.Size() != originalWasteSize && nRecycles < 2);
+	} while (talon.WasteSize() != originalWasteSize && nRecycles < 2);
 	return result;
 }
 
