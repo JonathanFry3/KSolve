@@ -125,7 +125,7 @@ struct KSolveState {
 
 	Moves & _minSolution;
 	static unsigned k_minSolutionCount;
-	Mutex _minSolutionMutex;
+	static Mutex k_minSolutionMutex;
 
 	explicit KSolveState(  Game & gm, 
 			Moves& solution,
@@ -157,6 +157,7 @@ struct KSolveState {
 	QMoves FilteredAvailableMoves();
 };
 unsigned KSolveState::k_minSolutionCount(-1);
+Mutex KSolveState::k_minSolutionMutex;
 
 void KSolveWorker(
 		KSolveState* pMasterState);
@@ -180,18 +181,15 @@ KSolveResult KSolve(
 		unsigned nthreads = std::thread::hardware_concurrency();
 		if (nthreads == 0) nthreads = 2;
 #endif
-		if (nthreads == 1) {
-			KSolveWorker(&state);
-		} else {
-			std::vector<std::thread> threads;
-			threads.reserve(nthreads);
-			for (unsigned ithread = 0; ithread < nthreads; ++ithread) {
-				threads.emplace_back(&KSolveWorker, &state);
-				std::this_thread::sleep_for(std::chrono::milliseconds(23));
-			}
-			for (auto& thread: threads) 
-				thread.join();
+		std::vector<std::thread> threads;
+		threads.reserve(nthreads-1);
+		for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
+			threads.emplace_back(&KSolveWorker, &state);
+			std::this_thread::sleep_for(std::chrono::milliseconds(23));
 		}
+		KSolveWorker(&state);
+		for (auto& thread: threads) 
+			thread.join();
 
 		KSolveCode outcome;
 		if (state._game_state_memory.size() >= maxStates){
@@ -425,7 +423,7 @@ bool KSolveState::SkippableMove(Move trial)
 void KSolveState::CheckForMinSolution(){
 	unsigned nmv = MoveCount(_moveStorage.MoveSequence());
 	{
-		Guard karen(this->_minSolutionMutex);
+		Guard karen(k_minSolutionMutex);
 		unsigned x = _minSolution.size();
 		if (x == 0 || nmv < k_minSolutionCount) {
 			_minSolution = _moveStorage.MovesVector();

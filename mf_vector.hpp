@@ -36,7 +36,8 @@ template <class T> class mf_vector
 	loc_data _end;
 
 	loc_data get_loc_data(size_t index) const {
-		if (index >= _size) {
+		assert(index <= _size);
+		if (index == _size) {
 			return _end;
 		} else {
 			size_t which_block = index/_block_size;
