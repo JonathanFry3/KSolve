@@ -32,28 +32,30 @@ template <class T> class mf_vector
 	};
 	std::vector<T*> _blocks;
 	size_t _size;
-	static const unsigned _block_size = 
+	static const unsigned _blockSize = 
 			std::max<size_t>(4096/sizeof(T), 16);
+	// Invariant: on exit from any public function,
+	// 0 < end._offset <= _blockSize
 	loc_data _end;
 
-	loc_data get_loc_data(size_t index) const {
+	loc_data GetLocData(size_t index) const {
 		assert(index <= _size);
 		if (index == _size) {
 			return _end;
 		} else {
-			size_t which_block = index/_block_size;
+			size_t which_block = index/_blockSize;
 			T* block = _blocks[which_block];
-			unsigned offset = index%_block_size;
+			unsigned offset = index%_blockSize;
 			return loc_data(block,offset);
 		}
 	}
-	void alloc_back() {
-		_end._block = reinterpret_cast<T*>(malloc(sizeof(T)*_block_size));
+	void AllocBack() {
+		_end._block = reinterpret_cast<T*>(malloc(sizeof(T)*_blockSize));
 		if (!_end._block) throw std::bad_alloc();
 		_end._offset = 0;
 		_blocks.push_back(_end._block);
 	}
-	void dealloc_back(){
+	void DeallocBack(){
 		assert(_blocks.size());
 		T* block = _blocks.back();
 		free(block);
@@ -62,7 +64,7 @@ template <class T> class mf_vector
 			_end._block = _blocks.back();
 		else
 			_end._block = nullptr;
-		_end._offset = _block_size;
+		_end._offset = _blockSize;
 	}
 public:
 	typedef T value_type;
@@ -78,14 +80,14 @@ public:
 		explicit iterator(mf_vector* vector, size_t index)
 			: _vector(vector)
 			, _index(index)
-			, _location(vector->get_loc_data(index))
+			, _location(vector->GetLocData(index))
 			{}
 	public:
 		T& operator++(){		// prefix increment, as in ++iter;
 			_location._offset += 1;
 			_index += 1;
-			if (_location._offset == _block_size)
-				_location = _vector->get_loc_data(_index);
+			if (_location._offset == _blockSize)
+				_location = _vector->GetLocData(_index);
 			return _location._block[_location._offset];
 		}
 		bool operator==(const iterator& other){
@@ -101,12 +103,12 @@ public:
 	friend class iterator;
 	mf_vector()
 		: _size(0)
-		, _end(nullptr,_block_size)
+		, _end(nullptr,_blockSize)
 		{}
 	void clear() {
 		for (auto&m:*this) m.~T();	//destruct all
 		while (_blocks.size()) {
-			dealloc_back();
+			DeallocBack();
 		}
 		_size = 0;
 	}
@@ -121,8 +123,8 @@ public:
 	}
 	template <class ... Args>
 	void emplace_back(Args...args){
-		if (_end._offset == _block_size)
-			alloc_back();
+		if (_end._offset == _blockSize)
+			AllocBack();
 		new(_end._block+_end._offset) T(args...);
 		_end._offset += 1;
 		_size += 1;
@@ -135,7 +137,7 @@ public:
 		back().~T();  //destruct
 		_size -= 1;
 		if (_end._offset == 1) {
-			dealloc_back();
+			DeallocBack();
 		} else {
 			_end._offset -= 1;
 		}
@@ -153,12 +155,12 @@ public:
 
 	T& operator[](size_t index){
 		assert(index < _size);
-		loc_data d(get_loc_data(index));
+		loc_data d(GetLocData(index));
 		return d._block[d._offset];
 	}
 	const T& operator[](size_t index) const{
 		assert(index < _size);
-		loc_data d(get_loc_data(index));
+		loc_data d(GetLocData(index));
 		return d._block[d._offset];
 	}
 	iterator begin() {
