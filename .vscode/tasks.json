@@ -8,8 +8,9 @@
 			"args": [
 				"-g",
 			//	"-m32",
-			//	"-pg",
+				"-pg",
 				"-O3",
+				"-DNDEBUG",
 				"Game.cpp",
 				"KSolve.cpp",
 				"KSolver.cpp",

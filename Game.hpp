@@ -36,11 +36,11 @@ class fixed_capacity_vector{
 public:
 	typedef T* iterator;
 	typedef const T* const_iterator;
-	fixed_capacity_vector() : _size(0){}
-	~fixed_capacity_vector(){clear();}
-	size_t capacity() const {return Capacity;}
+	fixed_capacity_vector() 						: _size(0){}
+	~fixed_capacity_vector()						{clear();}
+	size_t capacity() const 						{return Capacity;}
 	T & operator[](unsigned i)						{assert(i<_size); return _elem[i];}
-	const T& operator[](unsigned i) const			{return _elem[i];}
+	const T& operator[](unsigned i) const			{assert(i<_size); return _elem[i];}
 	iterator begin()								{return _elem;}
 	const_iterator begin() const					{return _elem;}
 	size_t size() const								{return _size;}
@@ -50,10 +50,10 @@ public:
 	const T& back() const							{return _elem[_size-1];}
 	void pop_back()									{back().~T(); _size -= 1;}
 	void pop_back(unsigned n)						{for (unsigned i=0;i<n;++i) {pop_back();}}
-	void push_back(const T& cd)						{assert(_size<Capacity); _elem[_size] = cd; _size += 1;}
+	void push_back(const T& cd)						{emplace_back(cd);}
 	void clear()									{while (_size) pop_back();}
 	void append(const_iterator begin, const_iterator end)	
-					{for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
+					{assert(_size+(end-begin)<Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	void erase(iterator x)
 					{x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
@@ -76,6 +76,7 @@ public:
 	template <class ... Args>
 	void emplace_back(Args ... args)
 					{
+						assert(_size < Capacity);
 						new(end()) T(args...);
 						_size += 1;
 					}

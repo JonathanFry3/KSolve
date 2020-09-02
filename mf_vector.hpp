@@ -17,6 +17,7 @@
 #include <iterator>
 #include <cassert>
 #include <cstdlib>	// malloc, free
+#include <new>		// bad_alloc
 
 template <class T> class mf_vector
 {
@@ -36,7 +37,8 @@ template <class T> class mf_vector
 	loc_data _end;
 
 	loc_data get_loc_data(size_t index) const {
-		if (index >= _size) {
+		assert(index <= _size);
+		if (index == _size) {
 			return _end;
 		} else {
 			size_t which_block = index/_block_size;
@@ -45,8 +47,9 @@ template <class T> class mf_vector
 			return loc_data(block,offset);
 		}
 	}
-	void alloc() {
+	void alloc_back() {
 		_end._block = reinterpret_cast<T*>(malloc(sizeof(T)*_block_size));
+		if (!_end._block) throw std::bad_alloc();
 		_end._offset = 0;
 		_blocks.push_back(_end._block);
 	}
@@ -119,7 +122,7 @@ public:
 	template <class ... Args>
 	void emplace_back(Args...args){
 		if (_end._offset == _block_size)
-			alloc();
+			alloc_back();
 		new(_end._block+_end._offset) T(args...);
 		_end._offset += 1;
 		_size += 1;

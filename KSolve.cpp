@@ -38,9 +38,9 @@ class MoveStorage
 	typedef mf_vector<index_t> LeafNodeStack;
 	// The leaf nodes waiting to grow new branches.  Each LeafNodeStack
 	// stores nodes with the same minimum number of moves in any
-	// completed game that can grow from them.  The client accesses them
-	// using that minimum number of moves.
-	std::vector<LeafNodeStack> _fringe;
+	// completed game that can grow from them.  MoveStorage uses it
+	// to implement a priority queue ordered by the minimum move count.
+	mf_vector<LeafNodeStack> _fringe;
 	MoveSequenceType _currentSequence;
 	index_t _leafIndex;			// index of current sequence's leaf node in _moveTree
 	unsigned _startStackIndex;
@@ -208,8 +208,6 @@ void MoveStorage::File(unsigned index)
 	if (_firstTime) {
 		_firstTime = false;
 		_startStackIndex = index;
-		unsigned cap = _maxStackIndex-_startStackIndex+1;
-		_fringe.reserve(cap);
 	}
 	assert(_startStackIndex <= index);
 	unsigned offset = index-_startStackIndex;
