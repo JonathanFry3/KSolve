@@ -21,11 +21,11 @@
 
 template <class T> class mf_vector
 {
-	struct loc_data
+	struct Locater
 	{
 		T* _block;
 		unsigned _offset;
-		loc_data(T*block, unsigned offset)
+		Locater(T*block, unsigned offset)
 			: _block(block)
 			, _offset(offset)
 		{}
@@ -36,9 +36,9 @@ template <class T> class mf_vector
 			std::max<size_t>(4096/sizeof(T), 16);
 	// Invariant: on exit from any public function,
 	// 0 < end._offset <= _blockSize
-	loc_data _end;
+	Locater _end;
 
-	loc_data GetLocData(size_t index) const {
+	Locater GetLocation(size_t index) const {
 		assert(index <= _size);
 		if (index == _size) {
 			return _end;
@@ -46,7 +46,7 @@ template <class T> class mf_vector
 			size_t which_block = index/_blockSize;
 			T* block = _blocks[which_block];
 			unsigned offset = index%_blockSize;
-			return loc_data(block,offset);
+			return Locater(block,offset);
 		}
 	}
 	void AllocBack() {
@@ -76,28 +76,34 @@ public:
 		friend class mf_vector<T>;
 		mf_vector<T>* _vector;
 		size_t _index;
-		loc_data _location;
+		Locater _locater;
+		T* _location;
 		explicit iterator(mf_vector* vector, size_t index)
 			: _vector(vector)
 			, _index(index)
-			, _location(vector->GetLocData(index))
+			, _locater(vector->GetLocation(index))
+			, _location(_locater._block+_locater._offset)
 			{}
 	public:
 		T& operator++(){		// prefix increment, as in ++iter;
-			_location._offset += 1;
 			_index += 1;
-			if (_location._offset == _blockSize)
-				_location = _vector->GetLocData(_index);
-			return _location._block[_location._offset];
+			_locater._offset += 1;
+			if (_locater._offset == _blockSize){
+				_locater = _vector->GetLocation(_index);
+				_location = _locater._block;
+			} else {
+				_location += 1;
+			}
+			return *_location;
 		}
 		bool operator==(const iterator& other){
-			return _index == other._index;
+			return _location == other._location;
 		}
 		bool operator!=(const iterator& other){
 			return !(*this == other);
 		}
 		T& operator*() {
-			return _location._block[_location._offset];
+			return *_location;
 		}
 	};
 	friend class iterator;
@@ -155,12 +161,12 @@ public:
 
 	T& operator[](size_t index){
 		assert(index < _size);
-		loc_data d(GetLocData(index));
+		Locater d(GetLocation(index));
 		return d._block[d._offset];
 	}
 	const T& operator[](size_t index) const{
 		assert(index < _size);
-		loc_data d(GetLocData(index));
+		Locater d(GetLocation(index));
 		return d._block[d._offset];
 	}
 	iterator begin() {
