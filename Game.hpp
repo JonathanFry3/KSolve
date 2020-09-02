@@ -53,7 +53,7 @@ public:
 	void push_back(const T& cd)						{emplace_back(cd);}
 	void clear()									{while (_size) pop_back();}
 	void append(const_iterator begin, const_iterator end)	
-					{for (auto i=begin;i<end;i+=1){assert(_size<Capacity);_elem[_size]=*i;_size+=1;}}
+					{assert(_size+(end-begin)<Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	void erase(iterator x)
 					{x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
