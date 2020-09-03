@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
 	bool showMoves = false;
 	vector<Card> deck;
 	int drawCount = 1;
-	unsigned fastOption = 9;
+	unsigned fastOption = 24;
 
 	for (int i = 1; i < argc; i++) {
 		if (_stricmp(argv[i], "-draw") == 0 || _stricmp(argv[i], "/draw") == 0 || _stricmp(argv[i], "-dc") == 0 || _stricmp(argv[i], "/dc") == 0) {
@@ -108,9 +108,9 @@ int main(int argc, char * argv[]) {
 		} else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
 			replay = true;
 		} else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "/fast") == 0 || _stricmp(argv[i], "-f") == 0 || _stricmp(argv[i], "/f") == 0) {
-			if (i + 1 >= argc) { cerr << "-FAST option requires a number from 0 to 9.\n"; return 100; }
+			if (i + 1 >= argc) { cerr << "-FAST option requires a number from 1 to 24.\n"; return 100; }
 			fastOption = atoi(argv[i + 1]);
-			if (outputMethod < 0 || outputMethod > 9) { cerr << "-FAST option requires a number from 0 to 9\n"; return 100; }
+			if (fastOption < 1 || fastOption > 24) { cerr << "-FAST option requires a number from 1 to 24\n"; return 100; }
 			i++;
 	} else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
 			cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
@@ -152,8 +152,7 @@ int main(int argc, char * argv[]) {
 				continue;
 			}
 		}
-		unsigned talonLookAheadLimit = 2+ceil(fastOption*fastOption*24.0/(drawCount*81));
-		Game game(deck,drawCount,talonLookAheadLimit);
+		Game game(deck,drawCount,fastOption);
 		if (outputMethod == 0) {
 			cout << GameDiagram(game) << "\n\n";
 		} else if (outputMethod == 1) {
@@ -164,13 +163,13 @@ int main(int argc, char * argv[]) {
 		KSolveResult outcome = KSolve(game, maxClosedCount);
 		auto & result(outcome._code);
 		Moves & moves(outcome._solution);
-		unsigned moveCount = MoveCount(moves)+21;
+		unsigned moveCount = MoveCount(moves);
 		bool canReplay = false;
 		if (result == SOLVED) {
-			cout << "Minimal solution in " << moveCount << " moves.";
+			cout << "Minimal solution in " << moveCount << " moves + 21 flips.";
 			canReplay = true;
 		} else if (result == GAVEUP_SOLVED) {
-			cout << "Solved in " << moveCount << " moves.";
+			cout << "Solved in " << moveCount << " moves + 21 flips.";
 			canReplay = true;
 		} else if (result == IMPOSSIBLE) {
 			cout << "Impossible.";
