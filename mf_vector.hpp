@@ -38,7 +38,7 @@ template <class T> class mf_vector
 	// 0 < end._offset <= _blockSize
 	Locater _end;
 
-	Locater GetLocation(size_t index) const {
+	Locater GetLocater(size_t index) const {
 		assert(index <= _size);
 		if (index == _size) {
 			return _end;
@@ -81,7 +81,7 @@ public:
 		explicit iterator(mf_vector* vector, size_t index)
 			: _vector(vector)
 			, _index(index)
-			, _locater(vector->GetLocation(index))
+			, _locater(vector->GetLocater(index))
 			, _location(_locater._block+_locater._offset)
 			{}
 	public:
@@ -89,7 +89,7 @@ public:
 			_index += 1;
 			_locater._offset += 1;
 			if (_locater._offset == _blockSize){
-				_locater = _vector->GetLocation(_index);
+				_locater = _vector->GetLocater(_index);
 				_location = _locater._block;
 			} else {
 				_location += 1;
@@ -161,12 +161,12 @@ public:
 
 	T& operator[](size_t index){
 		assert(index < _size);
-		Locater d(GetLocation(index));
+		Locater d(GetLocater(index));
 		return d._block[d._offset];
 	}
 	const T& operator[](size_t index) const{
 		assert(index < _size);
-		Locater d(GetLocation(index));
+		Locater d(GetLocater(index));
 		return d._block[d._offset];
 	}
 	iterator begin() {
