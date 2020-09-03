@@ -2,6 +2,7 @@
 // writes a file of results, one line per deal.
 
 #include <fstream>
+#include <iostream>			// cerr
 #include <string>
 #include <algorithm>		// random_shuffle
 #include <random>
@@ -25,11 +26,11 @@ struct Specification
 Specification GetSpec()
 {
 	Specification spec;
-	spec._samples = 5;
-	spec._maxStates = 25'000'000;
-	spec._outputFile = "ran.out";
-	spec._seed0 = 924502;
-	spec._drawSpec = 1;
+	spec._samples = 1000;
+	spec._maxStates = 20'000'000;
+	spec._outputFile = "ran out.txt";
+	spec._seed0 = 391665557;
+	spec._drawSpec = 4;
 	return spec;
 }
 
@@ -37,7 +38,7 @@ int main()
 {
 	Specification spec = GetSpec();
 	ofstream out;
-	out.open(spec._outputFile);
+	out.open(spec._outputFile,_S_app);
 	if (!out.is_open()){
 		exit(100);
 	}
@@ -51,18 +52,19 @@ int main()
 		}
 		shuffle(deck.begin(),deck.end(),engine);
 		Game game(deck, spec._drawSpec);
+		out << sample << "\t"
+			<< seed << "\t"
+			<< spec._drawSpec << "\t" << flush;
 		auto startTime = steady_clock::now();
 		KSolveResult result = KSolve(game,spec._maxStates);
 		duration<float, std::milli> elapsed = steady_clock::now() - startTime;
 		unsigned nMoves = MoveCount(result._solution);
-		out << sample << "\t"
-			<< seed << "\t"
-			<< result._code << "\t"
+		out << result._code << "\t"
 			<< nMoves << "\t"
 			<< result._stateCount << "\t"
 			<< elapsed.count()/1000. 
-			<< endl << flush;
+			<< endl;
 		seed +=  283764;
 	}
-
+	cerr << "Done" << endl;
 }
