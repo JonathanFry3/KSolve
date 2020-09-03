@@ -10,16 +10,17 @@
 			//	"-m32",
 				"-pg",
 				"-O3",
-				"-DNDEBUG",
+				"-DNTHREADS=2",
+				"-pthread",
 				"Game.cpp",
 				"KSolve.cpp",
-				"KSolver.cpp",
+				"KSolver.cpp", 
 				"-o",
 				"${workspaceFolder}/KSolver"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
-			},
+			}, 
 			"problemMatcher": [
 				"$gcc"
 			],
@@ -34,6 +35,8 @@
 			"command": "g++",
 			"args": [
 				"-g",
+				"-pthread",
+			//	"-DNTHREADS=1",
 				"Game.cpp",
 				"KSolve.cpp",
 				"unittests.cpp",
@@ -59,6 +62,7 @@
 				"-g",
 				"-O3",
 				//"-m32",
+				"-pthread",
 				"-DNDEBUG",
 				"Game.cpp",
 				"KSolve.cpp",
