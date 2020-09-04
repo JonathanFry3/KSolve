@@ -87,7 +87,7 @@ public:
 	void File(unsigned index);
 	// Fetch a move sequence with the lowest available index, make it
 	// the current move sequence and unfile it.  
-	// Return its index number, or zero if no more sequence are available.
+	// Return its index number, or zero if no more sequences are available.
 	unsigned FetchMoveSequence(); 
 	// Make all the moves in the current sequence
 	void MakeSequenceMoves(Game&game);
@@ -127,6 +127,8 @@ struct KSolveState {
 	static unsigned k_minSolutionCount;
 	static Mutex k_minSolutionMutex;
 
+	static bool k_blewMemory;
+
 	explicit KSolveState(  Game & gm, 
 			Moves& solution,
 			SharedMoveStorage& sharedMoveStorage,
@@ -141,6 +143,7 @@ struct KSolveState {
 			_game_state_memory.reserve(maxStates);
 			_minSolution.clear();
 			k_minSolutionCount = -1;
+			k_blewMemory = false;
 		}
 	explicit KSolveState(const KSolveState& orig)
 		: _moveStorage(orig._moveStorage.Shared())
@@ -158,6 +161,7 @@ struct KSolveState {
 };
 unsigned KSolveState::k_minSolutionCount(-1);
 Mutex KSolveState::k_minSolutionMutex;
+bool KSolveState::k_blewMemory(false);
 
 void KSolveWorker(
 		KSolveState* pMasterState);
@@ -174,37 +178,31 @@ KSolveResult KSolve(
 	unsigned startMoves = state._game.MinimumMovesLeft();
 
 	state._moveStorage.File(startMoves);	// pump priming
-	try	{
 #ifdef NTHREADS
-		const unsigned nthreads = NTHREADS;
+	const unsigned nthreads = NTHREADS;
 #else
-		unsigned nthreads = std::thread::hardware_concurrency();
-		if (nthreads == 0) nthreads = 2;
+	unsigned nthreads = std::thread::hardware_concurrency();
+	if (nthreads == 0) nthreads = 2;
 #endif
-		std::vector<std::thread> threads;
-		threads.reserve(nthreads-1);
-		for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
-			threads.emplace_back(&KSolveWorker, &state);
-			std::this_thread::sleep_for(std::chrono::milliseconds(23));
-		}
-		KSolveWorker(&state);
-		for (auto& thread: threads) 
-			thread.join();
-
-		KSolveCode outcome;
-		if (state._game_state_memory.size() >= maxStates){
-			outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
-		} else {
-			outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
-		}
-		return KSolveResult(outcome,state._game_state_memory.size(),solution);
-	} 
-	
-	catch(std::bad_alloc) {
-		unsigned nStates = state._game_state_memory.size();
-		state._game_state_memory.clear();
-		return KSolveResult(MEMORY_EXCEEDED,nStates,Moves());
+	std::vector<std::thread> threads;
+	threads.reserve(nthreads-1);
+	for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
+		threads.emplace_back(&KSolveWorker, &state);
+		std::this_thread::sleep_for(std::chrono::milliseconds(23));
 	}
+	KSolveWorker(&state);
+	for (auto& thread: threads) 
+		thread.join();
+
+	KSolveCode outcome;
+	if (state.k_blewMemory) {
+		outcome = MEMORY_EXCEEDED;
+	} else if (state._game_state_memory.size() >= maxStates){
+		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
+	} else {
+		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
+	}
+	return KSolveResult(outcome,state._game_state_memory.size(),solution);
 }
 
 void KSolveWorker(
@@ -212,45 +210,52 @@ void KSolveWorker(
 {
 	KSolveState state(*pMasterState);
 
-	// Main loop
-	unsigned minMoves0;
-	while (state._game_state_memory.size() < state._maxStates
-			&& (minMoves0 = state._moveStorage.FetchMoveSequence())    // <- side effect
-			&& minMoves0 < state.k_minSolutionCount) { 
-		state._game.Deal();
-		state._moveStorage.MakeSequenceMoves(state._game);
+	try {
+		// Main loop
+		unsigned minMoves0;
+		while (state._game_state_memory.size() < state._maxStates
+				&& !state.k_blewMemory
+				&& (minMoves0 = state._moveStorage.FetchMoveSequence())    // <- side effect
+				&& minMoves0 < state.k_minSolutionCount) { 
+			state._game.Deal();
+			state._moveStorage.MakeSequenceMoves(state._game);
 
-		QMoves availableMoves = state.MakeAutoMoves();
+			QMoves availableMoves = state.MakeAutoMoves();
 
-		if (availableMoves.size() == 0 && state._game.GameOver()) {
-			// We have a solution.  See if it is a new champion
-			state.CheckForMinSolution();
-			// See if it the final winner.
-			if (minMoves0 == state.k_minSolutionCount)
-				break;
-		}
-		
-		unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
-		unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
-		assert(((minMoves0 <= minMoveCount),"first"));
+			if (availableMoves.size() == 0 && state._game.GameOver()) {
+				// We have a solution.  See if it is a new champion
+				state.CheckForMinSolution();
+				// See if it the final winner.
+				if (minMoves0 == state.k_minSolutionCount)
+					break;
+			}
+			
+			unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
+			unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
+			assert(((minMoves0 <= minMoveCount),"first"));
 
-		if (minMoveCount < state.k_minSolutionCount){
-			// There is still hope for this subtree.
-			// Save the result of each of the possible next moves.
-			for (auto mv: availableMoves){
-				state._game.MakeMove(mv);
-				unsigned minMoveCount = movesMadeCount + mv.NMoves()
-										+ state._game.MinimumMovesLeft();
-				if (minMoveCount < state.k_minSolutionCount){
-					assert(((minMoves0 <= minMoveCount),"second"));
-					state._moveStorage.Push(mv);
-					state.RecordState(minMoveCount);
-					state._moveStorage.Pop();
+			if (minMoveCount < state.k_minSolutionCount){
+				// There is still hope for this subtree.
+				// Save the result of each of the possible next moves.
+				for (auto mv: availableMoves){
+					state._game.MakeMove(mv);
+					unsigned minMoveCount = movesMadeCount + mv.NMoves()
+											+ state._game.MinimumMovesLeft();
+					if (minMoveCount < state.k_minSolutionCount){
+						assert(((minMoves0 <= minMoveCount),"second"));
+						state._moveStorage.Push(mv);
+						state.RecordState(minMoveCount);
+						state._moveStorage.Pop();
+					}
+					state._game.UnMakeMove(mv);
 				}
-				state._game.UnMakeMove(mv);
 			}
 		}
+	} 
+	catch(std::bad_alloc) {
+		state.k_blewMemory = true;
 	}
+	return;
 }
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
 	: _leafIndex(-1)
@@ -436,6 +441,9 @@ void KSolveState::RecordState(unsigned minMoveCount)
 {
 	GameState pState(_game);
 	bool valueChanged{false};
+	// for testing bad_alloc handling:
+	// if (_game_state_memory.size() >= 1'000'000) 
+	//  	throw std::bad_alloc();
 	bool newKey = _game_state_memory.try_emplace_l(
 		pState,						// key
 		[&](auto& mapped_value) {	// run behind lock when key found

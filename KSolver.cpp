@@ -175,6 +175,8 @@ int main(int argc, char * argv[]) {
 			cout << "Impossible.";
 		} else if (result == GAVEUP_UNSOLVED) {
 			cout << "Unknown.";
+		} else if (result == MEMORY_EXCEEDED) {
+			cout << "Memory exceeded.";
 		}
 		duration<float, std::milli> elapsed = steady_clock::now() - startTime;
 		cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
