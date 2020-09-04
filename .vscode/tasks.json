@@ -11,6 +11,7 @@
 				"-pg",
 				"-O3",
 				"-DNTHREADS=2",
+				"-DNDEBUG",
 				"-pthread",
 				"Game.cpp",
 				"KSolve.cpp",
@@ -42,6 +43,32 @@
 				"unittests.cpp",
 				"-o",
 				"${workspaceFolder}/unittests"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build ran",
+			"command": "g++",
+			"args": [
+				"-g",
+				"-pthread",
+				"-DNTHREADS=2",
+				"-O3",
+				"Game.cpp",
+				"KSolve.cpp",
+				"ran.cpp",
+				"-o",
+				"${workspaceFolder}/ran"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
