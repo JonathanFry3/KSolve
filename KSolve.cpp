@@ -4,7 +4,7 @@
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
-#include "parallel_hashmap/phmap_base.h"     // for 
+#include "parallel_hashmap/phmap_base.h" 
 #include "mf_vector.hpp"
 #include <thread>
 #ifdef KSOLVE_TRACE
@@ -84,8 +84,6 @@ public:
 	void Pop();
 	// File the current move sequence under the given index number.
 	// Calls after the first may not use an index less than the first.
-	// Calls after FetchMoveSequence has returned x may not use 
-	// an index less than x.
 	void File(unsigned index);
 	// Fetch a move sequence with the lowest available index, make it
 	// the current move sequence and unfile it.  
