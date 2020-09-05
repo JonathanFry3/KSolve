@@ -95,8 +95,7 @@ CardVec Pile::Pop(unsigned n)
 CardVec Pile::Draw(unsigned n)
 {
 	CardVec result;
-	for (unsigned i = 0; i < n; i+=1)
-	{
+	for (unsigned i = 0; i < n; i+=1) {
 		result.push_back(_cards.back());
 		_cards.pop_back();
 	}
@@ -105,13 +104,6 @@ CardVec Pile::Draw(unsigned n)
 
 void Pile::Draw(Pile& other, int n)
 {
-	/*Pile & to = (n>0) ? *this : other;
-	Pile & fm = (n>0) ? other : *this;
-	unsigned nm = (n>0) ? n : -n;
-	assert(nm <= fm.Size());
-	for (unsigned i = 0; i < nm; i+=1)
-		to.Draw(fm);
-	*/
 	if (n < 0) {
 		assert(-n <= Size());
 		for (unsigned i = 0; i < -n; ++i)
@@ -528,7 +520,7 @@ QMoves Game::AvailableMoves() const
 // stack tops are at the back.
 static unsigned MisorderCount(const Card *begin, const Card *end)
 {
-	unsigned char mins[4] {14,14,14,14};
+	unsigned  mins[4] {14,14,14,14};
 	unsigned result = 0;
 	for (auto i = begin; i != end; i+=1){
 		const Card& cd = *i;
@@ -714,7 +706,7 @@ static void InsertionSort(std::array<uint64_t,7>& array) {
 	for(int i = 1; i<7; i++) {
 		auto key = array[i];//take value
 		j = i;
-		while(j > 0 && array[j-1]<key) {	// des
+		while(j > 0 && array[j-1]<key) {
 			array[j] = array[j-1];
 			j--;
 		}
