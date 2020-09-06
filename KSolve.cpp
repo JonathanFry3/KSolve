@@ -1,11 +1,11 @@
 #include "KSolve.hpp"
-#include <deque>
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h" 
 #include "mf_vector.hpp"
+#include "fixed_capacity_deque.hpp"
 #include <thread>
 #ifdef KSOLVE_TRACE
 #include <iostream>			// for cout
@@ -29,8 +29,8 @@ public:
 	}
 };
 
-typedef std::deque<Move> MoveSequenceType;
 enum {maxMoves = 512};
+typedef fixed_capacity_deque<Move,maxMoves> MoveSequenceType;
 
 class SharedMoveStorage
 {
@@ -397,7 +397,7 @@ bool KSolveState::SkippableMove(Move trial)
 	if (B == STOCK || B == WASTE) return false; 
 	auto C = trial.To();
 	auto &movesMade = _moveStorage.MoveSequence();
-	for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); imv+=1){
+	for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){
 		Move mv = *imv;
 		if (mv.To() == B){
 			// candidate T0 move

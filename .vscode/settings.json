@@ -52,7 +52,8 @@
         "iostream": "cpp",
         "cstring": "cpp",
         "set": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "shared_mutex": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"

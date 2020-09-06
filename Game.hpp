@@ -23,15 +23,13 @@
 //
 // One of these has much of the API of a std::vector,
 // but has a fixed capacity.  It cannot be extended past that.
-// It is safe to use only where the problem limits the size needed,
-// as it does not check for overfilling.  It is designed for speed,
-// so it does not check subscripts.
-#include <cstdint> 		// for uint32_t, uint64_t
+// It is safe to use only where the problem limits the size needed.
+#include <cstdint> 		// for uint_fast32_t, uint_fast64_t
 #include <algorithm>	// for std::copy()
 
 template <class T, unsigned Capacity>
 class fixed_capacity_vector{
-	uint32_t _size;
+	uint_fast32_t _size;
 	T _elem[Capacity];
 public:
 	typedef T* iterator;
@@ -410,7 +408,7 @@ std::string Peek (const Game& game);
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
 struct GameState {
-	typedef std::uint64_t PartType;
+	typedef std::uint_fast64_t PartType;
 	std::array<PartType,3> _part;
 	GameState(const Game& game);
 	bool operator==(const GameState& other) const
