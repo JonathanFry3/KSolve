@@ -701,7 +701,8 @@ std::string Peek (const Game&game)
 	return out.str();
 }
 
-typedef std::array<uint64_t,7> TabStateT;
+typedef std::array<uint32_t,7> TabStateT;
+
 static void InsertionSort(TabStateT& array) {
 	int j;
 	for(int i = 1; i<7; i++) {
@@ -736,10 +737,12 @@ GameState::GameState(const Game& game)
 	}
 	InsertionSort(tableauState);
 
-	_part[0] = ((GameState::PartType(tableauState[0])<<21| tableauState[1])
-				<<21) | tableauState[2];
-	_part[1] = ((GameState::PartType(tableauState[3])<<21| tableauState[4])
-				<<21) | tableauState[5];
+	_part[0] = ((GameState::PartType(tableauState[0])<<21
+				| tableauState[1])<<21) 
+				| tableauState[2];
+	_part[1] = ((GameState::PartType(tableauState[3])<<21
+				| tableauState[4])<<21) 
+				| tableauState[5];
 	_part[2] = (tableauState[6]<<5) | game.Stock().Size();
 	const auto& fnd = game.Foundation();
 	for (auto& pile: fnd){
