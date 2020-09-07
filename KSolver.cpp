@@ -1,9 +1,25 @@
+/*
+Portions of this work are copied or modified from the Klondike-Solver github
+repository by @ShootMe.  Their copyright follows:
+
+Copyright (c) 2013 ShootMe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and-or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+*/
 #include<iostream>
 #include<fstream>
 #include<sstream>		// for stringstream
 #include<iomanip>		// for setprecision
 #include<ctime>
-#include <chrono>
+#include<chrono>
 #include<cmath>			// for ceil
 #include"KSolve.hpp"
 
@@ -411,16 +427,6 @@ vector<Card> SolitaireDeck(string const& cardSet) {
 	}
 	return result;
 }
-// Return the number of face-down cards in the tableau
-static unsigned DownCount(const Game&game)
-{
-	auto& tableau = game.Tableau();
-	unsigned result = 0;
-	for (auto& pile : tableau){
-		result += pile.Size() - pile.UpCount();
-	}
-	return result;
-}
 string GameDiagram(const Game& game) {
 	stringstream ss;
 	vector<string> pilestring{
@@ -453,7 +459,7 @@ string GameDiagram(const Game& game) {
 		}
 		ss << '\n';
 	}
-	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft()+DownCount(game);
+	ss << "Minimum Moves Needed: " << game.MinimumMovesLeft();
 	return ss.str();
 }
 

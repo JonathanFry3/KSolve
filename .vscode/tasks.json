@@ -80,35 +80,6 @@
 				"kind": "build",
 				"isDefault": true
 			}
-		},
-		{
-			"type": "shell",
-			"label": "C/C++:  g++ build speeder",
-			"command": "g++",
-			"args": [
-				"-g",
-				"-O3",
-				//"-m32",
-				"-pthread",
-				"-DNDEBUG",
-				"Game.cpp",
-				"KSolve.cpp",
-				"speeder.cpp",
-				"-I",
-				"${workspaceFolder}",
-				"-o",
-				"${workspaceFolder}/speeder"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
 		}
 	]
 }

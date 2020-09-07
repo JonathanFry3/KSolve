@@ -3,10 +3,13 @@
 The front end code KSolver.cpp is a direct edit of @ShootMe's KlondikeSolver.cpp.
 It implements a largely compatible interface to facilitate comparison or migration.
 
-The remaining code in this repository, aside from robin_hood.h, is original but its general outline 
-and its best ideas are all based on @ShootMe's work.
+The remaining code in this repository, aside from parallel_hashmap, is original 
+but its general outline 
+and its best ideas are all based on @ShootMe's work.  I lifted those ideas before 
+I became aware of their basis, the A* algorithm.
 
-robin_hood.h, the high-performance hash map that makes this code fast, is the work of
-Martin Ankerl \(@martinus\).
+parallel_hashmap, an unordered_map-like structure especially well adapted to 
+multi-threaded operation,
+is the work of Gregory Popovitch \(@greg7mdp on github\).
 
 Jonathan Fry \(@JonathanFry3\)

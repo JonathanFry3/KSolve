@@ -1,0 +1,28 @@
+#Some of this is copied from @ShootMe's Klondike-Solver file TestDeals.txt.
+#Draw count 1 = 101 moves (1,058,000 states), 3 = 88 moves (1,496,000 states)
+042041044124023073111012123081104093031052051121094074061091083102043071132134113114131022103013062032101011014034054021112064092082133033072053084063024122
+#Random deal
+#1 = 109 moves (1,058,000 states), 3 = 102 moves (2,470,000 states)
+Game: 37547
+#Interesting game at 170 moves for draw count of 1 (Impossible in draw 3)
+Game: 6330
+#Pysol game
+#1 = 111 moves (18,390,000 states), 3 = 93 moves (6,443,000 states)
+Talon: TC TS AD 4D QS 3H 3S JH TD KC 8H 8S 4S 4H KS 6D 8D 7C JD 9D 2H QD 3D AS
+5C
+<7H> 9H
+<9S> <2D> AC
+<5D> <QH> <5S> 8C
+<QC> <3C> <JS> <2C> 7D
+<5H> <7S> <KD> <9C> <JC> AH
+<4C> <6S> <2S> <6C> <6H> <TH> KH
+#Reverse-Pysol game
+#1 = 99 moves (42,540 states), 3 = 84 moves (1,345,000 states)
+nolaT: hj c4 s3 hk h9 da ca d8 c2 st dq h5 s2 sa hq sq ht s9 sj d2 c6 ha cq h4
+s5
+h2 h3
+d3 d4 c3
+dk d6 dj c7
+sk s6 dt h8 c8
+s7 c9 h7 s8 d7 d9
+cj h6 ct s4 d5 c5 ck
