@@ -44,8 +44,8 @@ template <class T> class mf_vector
 			return _end;
 		} else {
 			size_t which_block = index/_blockSize;
-			T* block = _blocks[which_block];
-			unsigned offset = index%_blockSize;
+			T* const block = _blocks[which_block];
+			const unsigned offset = index%_blockSize;
 			return Locater(block,offset);
 		}
 	}
@@ -57,8 +57,7 @@ template <class T> class mf_vector
 	}
 	void DeallocBack(){
 		assert(_blocks.size());
-		T* block = _blocks.back();
-		free(block);
+		free(_blocks.back());
 		_blocks.pop_back();
 		if (_blocks.size())
 			_end._block = _blocks.back();

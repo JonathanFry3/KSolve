@@ -39,14 +39,14 @@ static std::string LowerCase(const std::string & in)
 // Return a string like "d5" or "ca" given a Card
 std::string Card::AsString() const
 {
-	return suits.substr(_suit,1) + ranks[_rank];
+	return std::string(1,suits[_suit]) + ranks[_rank];
 }
 
 // Make a Card from a string like "ah" or "s8".
 // Returns true if it succeeds.
 std::pair<bool,Card> Card::FromString(const std::string& s0)    
 {
-	std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
+	const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
 	Suit_t suit;
 	Rank_t rank;
 	bool ok = s1.length() == 2 || s1.length() == 3;
@@ -167,15 +167,15 @@ void Game::Deal()
 
 void Game::MakeMove(Move mv)
 {
-	auto from = mv.From();
-	auto to = mv.To();
+	const auto from = mv.From();
+	const auto to = mv.To();
 	Pile& toPile = *_allPiles[to];
 	if (from == STOCK) {
 		_waste.Draw(_stock,mv.DrawCount());
 		toPile.Push(_waste.Pop());
 		toPile.IncrUpCount(1);
 	} else {
-		auto n = mv.NCards();
+		const auto n = mv.NCards();
 		Pile& fromPile = *_allPiles[from];
 		toPile.Push(fromPile.Pop(n));
 		// For tableau piles, UpCount counts face-up cards.  
@@ -190,15 +190,15 @@ void Game::MakeMove(Move mv)
 
 void  Game::UnMakeMove(Move mv)
 {
-	auto from = mv.From();
-	auto to = mv.To();
+	const auto from = mv.From();
+	const auto to = mv.To();
 	Pile & toPile = *_allPiles[to];
 	if (from == STOCK) {
 		_waste.Push(toPile.Pop());
 		toPile.IncrUpCount(-1);
 		_waste.Draw(_stock,-mv.DrawCount());
 	} else {
-		auto n = mv.NCards();
+		const auto n = mv.NCards();
 		Pile & fromPile = *_allPiles[from];
 		fromPile.Push(toPile.Pop(n));
 		if (fromPile.IsTableau()) {
@@ -210,13 +210,13 @@ void  Game::UnMakeMove(Move mv)
 
 void Game::MakeMove(const XMove & xmv)
 {
-	auto from = xmv.From();
-	auto to = xmv.To();
-	unsigned n = xmv.NCards();
+	const auto from = xmv.From();
+	const auto to = xmv.To();
+	const unsigned n = xmv.NCards();
 	Pile& toPile = *_allPiles[to];
 	Pile& fromPile = *_allPiles[from];
 	if (from == STOCK || to == STOCK)
-		toPile.Push(fromPile.Draw(n));
+		toPile.Draw(fromPile, n);
 	else
 		toPile.Push(fromPile.Pop(n));
 	toPile.IncrUpCount(n);
@@ -228,16 +228,16 @@ void Game::MakeMove(const XMove & xmv)
 
 bool Game::GameOver() const 
 {
-	return MinFoundationPileSize(*this) == 13;
+	return MinFoundationPileSize() == 13;
 }
 
 // Return the height of the shortest foundation pile
-unsigned MinFoundationPileSize(const Game& gm)
+unsigned Game::MinFoundationPileSize() const
 {
-	const auto& fnd = gm.Foundation();
+	const auto& fnd = _foundation;
 	unsigned result = fnd[0].Size();
 	for (int ifnd = 1; ifnd < 4; ifnd+=1) {
-		unsigned sz = fnd[ifnd].Size();
+		const unsigned sz = fnd[ifnd].Size();
 		if (sz < result) { 
 			result = sz;
 		}
@@ -258,10 +258,10 @@ static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 		const Pile &pile = *allPiles[iPile] ;
 		if (pile.Size()) {
 			const Card& card = pile.Back();
-			unsigned suit = card.Suit();
+			const unsigned suit = card.Suit();
 			if (card.Rank() <= minFoundationSize+1) {
 				if (fnd[suit].Size() == card.Rank()) {
-					unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
+					const unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
 					result.emplace_back(iPile,FOUNDATION+suit,1,up);
 				}
 			}
@@ -334,18 +334,17 @@ typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
 	TalonFutureVec result;
-	unsigned talonSize = game.Waste().Size() + game.Stock().Size();
+	const unsigned talonSize = game.Waste().Size() + game.Stock().Size();
 	if (talonSize == 0) return result;
 
 	TalonSim talon(game);
+	const unsigned originalWasteSize = talon.WasteSize();
+	const unsigned drawSetting = game.DrawSetting();
 	unsigned nMoves = 0;
 	unsigned nRecycles = 0;
-	unsigned originalWasteSize = talon.WasteSize();
-	unsigned drawSetting = game.DrawSetting();
 
 	do {
 		if (talon.WasteSize()) {
-			assert(result.size() < 24);
 			result.emplace_back(talon.TopCard(), nMoves, 
 				talon.WasteSize()-originalWasteSize);
 		}	
@@ -365,8 +364,7 @@ static TalonFutureVec TalonCards(const Game & game)
 // Push a talon move onto a sequence.
 // This is to visually distinguish talon Move construction from
 // non-talon Move construction in AvailableMoves().
-// One hopes the compiler will inline it.
-static void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves& qm)
+static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves& qm)
 {
 	qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
 }
@@ -380,7 +378,7 @@ QMoves Game::AvailableMoves() const
 {
 	QMoves result;
 
-	unsigned minFoundationSize = MinFoundationPileSize(*this);
+	const unsigned minFoundationSize = MinFoundationPileSize();
 	if (minFoundationSize == 13) return result;		// game over
 	result = ShortFoundationMove(*this,minFoundationSize);
 	if (result.size()) return result;
@@ -390,9 +388,9 @@ QMoves Game::AvailableMoves() const
 		// skip empty from piles
 		if (fromPile.Size() == 0) continue;
 
-		Card fromTip = fromPile.Back();
-		Card fromBase = fromPile.Top();
-		auto upCount = fromPile.UpCount();
+		const Card fromTip = fromPile.Back();
+		const Card fromBase = fromPile.Top();
+		const auto upCount = fromPile.UpCount();
 
 		// look for moves from tableau to foundation
 		const Pile& foundation = _foundation[fromTip.Suit()];
@@ -423,16 +421,16 @@ QMoves Game::AvailableMoves() const
 				//		(2) make an empty column, or
 				// (b) expose a card on the from pile that can be moved to a foundation
 				// 	   pile.
-				Card cardToCover = toPile.Back();
+				const Card cardToCover = toPile.Back();
 				const auto& fromCds = fromPile.Cards();
 				// See whether any of the from pile's up cards can be moved
 				// to the to pile.
-				unsigned toRank = cardToCover.Rank();
+				const unsigned toRank = cardToCover.Rank();
 				if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
 						&& (fromTip.OddRed() == cardToCover.OddRed())){
 					// Some face-up card in the from pile covers the top card
 					// in the to pile, so a move is possible.
-					int moveCount = cardToCover.Rank() -  fromTip.Rank();
+					const int moveCount = cardToCover.Rank() - fromTip.Rank();
 					assert(0 < moveCount && moveCount <= upCount);
 					if (moveCount == upCount){
 						// This move will expose a face-down card or
@@ -441,7 +439,7 @@ QMoves Game::AvailableMoves() const
 						assert(fromBase.Covers(cardToCover));
 						result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
 					} else {
-						Card exposed = *(fromCds.end()-moveCount-1);
+						const Card exposed = *(fromCds.end()-moveCount-1);
 						if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
 							// This move will expose a card that can be moved to 
 							// its foundation pile.
@@ -455,7 +453,7 @@ QMoves Game::AvailableMoves() const
 	}
 	// Look for move from waste to tableau or foundation, including moves that become available 
 	// after one or more draws.  
-	TalonFutureVec talon(TalonCards(*this));
+	const TalonFutureVec talon(TalonCards(*this));
 	for (TalonFuture talonCard : talon){
 
 		// Stop generating talon moves if they require too many moves
@@ -464,10 +462,10 @@ QMoves Game::AvailableMoves() const
 		// although that may require an extra move or more.
 		if (result.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
-		unsigned cardSuit = talonCard._card.Suit();
-		unsigned cardRank = talonCard._card.Rank();
+		const unsigned cardSuit = talonCard._card.Suit();
+		const unsigned cardRank = talonCard._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()) {
-			unsigned pileNo = FOUNDATION+cardSuit;
+			const unsigned pileNo = FOUNDATION+cardSuit;
 			PushTalonMove(talonCard, pileNo, result);
 			if (cardRank <= minFoundationSize+1){
 				if (_drawSetting == 1) {
@@ -523,9 +521,8 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 	unsigned  mins[4] {14,14,14,14};
 	unsigned result = 0;
 	for (auto i = begin; i != end; i+=1){
-		const Card& cd = *i;
-		auto rank = cd.Rank();
-		auto suit = cd.Suit();
+		const auto rank = i->Rank();
+		const auto suit = i->Suit();
 		if (rank < mins[suit])
 			mins[suit] = rank;
 		else
@@ -542,10 +539,10 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 // If it does, we won't know when to stop.
 unsigned Game::MinimumMovesLeft() const
 {
-	unsigned draw = DrawSetting();
+	const unsigned draw = DrawSetting();
 	const CardVec& waste = _waste.Cards();
 	const CardVec& stock = _stock.Cards();
-	unsigned talonCount = waste.size() + stock.size();
+	const unsigned talonCount = waste.size() + stock.size();
 
 	unsigned result = talonCount + QuotientRoundedUp(stock.size(),draw);
 
@@ -556,8 +553,8 @@ unsigned Game::MinimumMovesLeft() const
 
 	for (const Pile & tpile: _tableau) {
 		if (tpile.Size()) {
-			auto begin = tpile.Cards().begin();
-			unsigned downCount = tpile.Size() - tpile.UpCount();
+			const auto begin = tpile.Cards().begin();
+			const unsigned downCount = tpile.Size() - tpile.UpCount();
 			result += tpile.Size() + MisorderCount(begin, begin+downCount+1);
 		}
 	}
@@ -575,8 +572,8 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 	std::vector<XMove> result;
 
 	for (auto mv : solution){
-		unsigned from = mv.From();
-		unsigned to = mv.To();
+		const unsigned from = mv.From();
+		const unsigned to = mv.To();
 		
 		if (from != STOCK){
 			unsigned n = mv.NCards();
@@ -604,7 +601,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		} else {
 			assert(stockSize+wasteSize > 0);
 			unsigned nTalonMoves = mv.NMoves()-1;
-			unsigned stockMovesLeft = QuotientRoundedUp(stockSize,draw);
+			const unsigned stockMovesLeft = QuotientRoundedUp(stockSize,draw);
 			if (nTalonMoves > stockMovesLeft && stockSize) {
 				// Draw all remaining cards from stock
 				mvnum += 1;
@@ -622,7 +619,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 					stockSize = wasteSize;
 					wasteSize = 0;
 				}
-				unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
+				const unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
 				result.emplace_back(mvnum,STOCK,WASTE,nMoved,false);
 				assert (stockSize >= nMoved && wasteSize+nMoved <= 24);
 				assert(stockSize >= nMoved);
@@ -722,7 +719,7 @@ GameState::GameState(const Game& game)
 	const auto& tableau = game.Tableau();
 	for (unsigned i = 0; i<7; i+=1) {
 		const auto& pile = tableau[i];
-		unsigned upCount = pile.UpCount();
+		const unsigned upCount = pile.UpCount();
 		if (upCount == 0) {
 			tableauState[i] = 0;
 		} else {
@@ -731,7 +728,7 @@ GameState::GameState(const Game& game)
 			for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
 				isMajor = isMajor<<1 | j->IsMajor();
 			}
-			Card top = pile.Top();
+			const Card top = pile.Top();
 			tableauState[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
 		}
 	}
@@ -744,8 +741,7 @@ GameState::GameState(const Game& game)
 				| tableauState[4])<<21) 
 				| tableauState[5];
 	_part[2] = (tableauState[6]<<5) | game.Stock().Size();
-	const auto& fnd = game.Foundation();
-	for (auto& pile: fnd){
+	for (const auto& pile: game.Foundation()){
 		_part[2] =_part[2]<<4 | pile.Size();
 	}
 }

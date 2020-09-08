@@ -133,13 +133,14 @@ public:
 	unsigned char Suit() const 			{return _suit;}
 	unsigned char Rank() const 			{return _rank;}
 	bool IsMajor() const				{return _isMajor;}
-	bool OddRed() const 				{return _parity;}  // true for card that fits on stacks where odd cards are red
+	bool OddRed() const 				// true for card that fits on stacks where odd cards are red
+										{return _parity;}
 	unsigned Value() const				{return 13*_suit+_rank;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(Card other) const 		// can other be moved onto this card on a tableau pile?
-		{return _parity == other._parity && _rank+1 == other._rank;}
-	bool operator==(Card other) const {return _suit==other._suit && _rank==other._rank;}
-	bool operator!=(Card other) const {return ! (other == *this);}
+	bool Covers(Card c) const 			// can c be moved onto this card on a tableau pile?
+										{return _parity == c._parity && _rank+1 == c._rank;}
+	bool operator==(Card o) const 		{return _suit==o._suit && _rank==o._rank;}
+	bool operator!=(Card o) const 		{return ! (o == *this);}
 
 	// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
 	// Ignores characters that cannot appear in a valid card string.
@@ -387,12 +388,9 @@ public:
 	void  UnMakeMove(Move mv);
 	unsigned MinimumMovesLeft() const;
 	void MakeMove(const XMove& xmv);
+	unsigned MinFoundationPileSize() const;
 	bool GameOver() const;
 };
-
-// Return the size of the shortest foundation pile
-unsigned MinFoundationPileSize(const Game& gm);
-
 
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
