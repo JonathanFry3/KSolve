@@ -52,8 +52,8 @@ public:
 	}
 	void pop_front(){
         assert(_begin<_end);
-		_begin->~T();  //destruct
         _begin += 1;
+		(_begin-1)->~T();  //destruct
     }
 	template <class ... Args>
 	void emplace_back(Args...args){

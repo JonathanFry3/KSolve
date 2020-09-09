@@ -310,6 +310,9 @@ unsigned MoveStorage::FetchMoveSequence()
 	unsigned nTries;
 	unsigned result = 0;
 	_leafIndex = -1;
+	// Find the first non-empty leaf node stack, pop its top into _leafIndex.
+	//
+	// It's not quite that simple with more than one thread, but that's the idea.
 	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
 		{
 			SharedGuard marylin(_shared._fringeMutex);
@@ -330,6 +333,7 @@ unsigned MoveStorage::FetchMoveSequence()
 		}
 	}
 	if (result) {
+		// Follow the links to recover all of its preceding moves in reverse order.
 		_currentSequence.clear();
 		for (NodeX node = _leafIndex; node != -1; node = _shared._moveTree[node]._prevNode){
 			const Move mv = _shared._moveTree[node]._move;
