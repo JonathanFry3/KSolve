@@ -1,6 +1,6 @@
-#Klondike-Solver
-===============
-##Command Options
+# KSolver
+
+## Command Options
 
 Klondike (Patience) Solver that finds minimal length solutions.
 
@@ -27,7 +27,7 @@ FilePath - Solves deals specified in the file.
 not used, 1 will be very fast but may give a non-minimal result or even no result for a solvable game.  
 When alternative moves are available, the code will not look ahead in the talon more than this number of moves.
 
-###Notes:
+### Notes:
 
 Options may be written in upper or lower case and can be prefixed with a dash ("-") or a slash ("/").
 
@@ -45,14 +45,14 @@ When using the -MOVES command, the program will produce the moves neccesary such
 	XY-# is the same as above except you are moving # number of cards from X to Y.
 	
 This program counts does not count recycles of the stock pile in its move count.
-##Input File
+## Input File
 Problems can be entered four different ways in an input file.  The file SampleDeals.txt shows examples of each.
-###-DECK String
+### -DECK String
 The same kind of string of 156 digits as follows the -DECK command flag can be appear in the input file.
-###-GAME Number
+### -GAME Number
 Start a line with "Game: " and follow with a whole number to have the program generate a pseudo-random
 shuffle using your number as the seed.
-###Pysol Format
+### Pysol Format
 (Pysol is a program that can play a thousand solitaire games on a computer.  It can write game files
 in this format.)
 Start a line with "Talon: " and follow that with the talon cards (the ones left over after dealing
@@ -60,10 +60,10 @@ the seven piles) in the order in which they were dealt.  Represent a card with a
 Case does not matter, and the characters in "<>:-" plus tabs will be ignored.
 
 After the first line, enter a line for each tableau pile (the seven piles dealt first), starting with the one-card pile.  Enter the cards in the order they were dealt, so the one dealt face-up comes last.
-###Reverse Pysol Format
+### Reverse Pysol Format
 This is like the Pysol format explained above, except that the cards are in the order a player discovers them while playing the game rather than the order they were dealt.  Start the first line with "naloT: " and follow with the talon cards.  Those are in the same order as in Talon format, since the deal order is the same as the discovery order.  Follow with seven lines containing the tableau piles.  These are in the reverse of their order in a Pysol game - the card dealt face-up is first, since that's the one the player sees first.
 
-##What to Expect
+## What to Expect
 This program uses lots of memory.  Since one of the largest data structures contains representations of all the unique states the program has generated, you can limit or expand the space (and time) used by using the -STATES flag.  If that is set too high, the program will be unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
 
 There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 unique states). If you have a deal for which you really want a solution but for which you do'nt seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
