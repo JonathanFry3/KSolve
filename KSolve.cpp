@@ -235,10 +235,10 @@ void KSolveWorker(
 			}
 			
 			const unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
-			const unsigned minMoveCount = movesMadeCount+state._game.MinimumMovesLeft();
-			assert(((minMoves0 <= minMoveCount),"first"));
+			const unsigned minMoveCount0 = movesMadeCount+state._game.MinimumMovesLeft();
+			assert(((minMoves0 <= minMoveCount0),"first"));
 
-			if (minMoveCount < state.k_minSolutionCount){
+			if (minMoveCount0 < state.k_minSolutionCount){
 				// There is still hope for this subtree.
 				// Save the result of each of the possible next moves.
 				for (auto mv: availableMoves){
@@ -247,10 +247,11 @@ void KSolveWorker(
 											+ state._game.MinimumMovesLeft();
 					if (minMoveCount < state.k_minSolutionCount){
 						assert(((minMoves0 <= minMoveCount),"second"));
-						state._moveStorage.Push(mv);
-						if (state.IsShortPathToState(movesMadeCount+mv.NMoves())) 
+						if (state.IsShortPathToState(movesMadeCount+mv.NMoves())) {
+							state._moveStorage.Push(mv);
 							state._moveStorage.File(minMoveCount); 
-						state._moveStorage.Pop();
+							state._moveStorage.Pop();
+						}
 					}
 					state._game.UnMakeMove(mv);
 				}
@@ -291,6 +292,7 @@ void MoveStorage::File(unsigned index)
 	assert(_shared._startStackIndex <= index);
 	const unsigned offset = index - _shared._startStackIndex;
 	if (!(offset < _shared._fringe.size())) {
+		// Grow the fringe as needed.
 		ExclusiveGuard freddie(_shared._fringeMutex);
 		while (!(offset < _shared._fringe.size())){
 			_shared._fringeStackMutexes.emplace_back();
@@ -313,6 +315,7 @@ unsigned MoveStorage::FetchMoveSequence()
 	// Find the first non-empty leaf node stack, pop its top into _leafIndex.
 	//
 	// It's not quite that simple with more than one thread, but that's the idea.
+	// When we don't have a lock on it, any of the stacks may become empty or non-empty.
 	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
 		{
 			SharedGuard marylin(_shared._fringeMutex);
