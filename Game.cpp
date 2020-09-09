@@ -167,16 +167,15 @@ void Game::Deal()
 
 void Game::MakeMove(Move mv)
 {
-	const auto from = mv.From();
 	const auto to = mv.To();
 	Pile& toPile = *_allPiles[to];
-	if (from == STOCK) {
+	if (mv.IsTalonMove()) {
 		_waste.Draw(_stock,mv.DrawCount());
 		toPile.Push(_waste.Pop());
 		toPile.IncrUpCount(1);
 	} else {
 		const auto n = mv.NCards();
-		Pile& fromPile = *_allPiles[from];
+		Pile& fromPile = *_allPiles[mv.From()];
 		toPile.Push(fromPile.Pop(n));
 		// For tableau piles, UpCount counts face-up cards.  
 		// For other piles, it is undefined.
@@ -190,16 +189,15 @@ void Game::MakeMove(Move mv)
 
 void  Game::UnMakeMove(Move mv)
 {
-	const auto from = mv.From();
 	const auto to = mv.To();
 	Pile & toPile = *_allPiles[to];
-	if (from == STOCK) {
+	if (mv.IsTalonMove()) {
 		_waste.Push(toPile.Pop());
 		toPile.IncrUpCount(-1);
 		_waste.Draw(_stock,-mv.DrawCount());
 	} else {
 		const auto n = mv.NCards();
-		Pile & fromPile = *_allPiles[from];
+		Pile & fromPile = *_allPiles[mv.From()];
 		fromPile.Push(toPile.Pop(n));
 		if (fromPile.IsTableau()) {
 			fromPile.SetUpCount(mv.FromUpCount());
@@ -575,7 +573,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 		const unsigned from = mv.From();
 		const unsigned to = mv.To();
 		
-		if (from != STOCK){
+		if (!mv.IsTalonMove()){
 			unsigned n = mv.NCards();
 			bool flip = false;
 			if (IsTableau(from)) {
@@ -677,7 +675,7 @@ std::string Peek(const Pile& pile)
 std::string Peek(const Move & mv)
 {
 	std::stringstream outStr;
-	if (mv.From() == STOCK){
+	if (mv.IsTalonMove()){
 		outStr << "+" << mv.NMoves() << "d" << mv.DrawCount() << ">" << PileNames[mv.To()];
 	} else {
 		outStr << PileNames[mv.From()] << ">" << PileNames[mv.To()];

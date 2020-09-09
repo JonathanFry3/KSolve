@@ -446,17 +446,16 @@ void KSolveState::CheckForMinSolution(){
 // so far to the current game state.
 bool KSolveState::IsShortPathToState(unsigned moveCount)
 {
-	const GameState state(_game);
+	const GameState state{_game};
 	bool valueChanged{false};
-	const bool newKey = _game_state_memory.try_emplace_l(
+	const bool isNewKey = _game_state_memory.try_emplace_l(
 		state,						// key
 		[&](auto& mapped_value) {	// run behind lock when key found
 			valueChanged = moveCount < mapped_value;
 			if (valueChanged) 
 				mapped_value = moveCount;
 		},
-		moveCount 				// c'tor run behind lock when key not found
+		moveCount 					// c'tor run behind lock when key not found
 	);
-	return newKey || valueChanged;
+	return isNewKey || valueChanged;
 }
-  

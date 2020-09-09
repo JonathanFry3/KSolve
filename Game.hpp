@@ -250,6 +250,7 @@ public:
 	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
 	// from stock. One card is then moved from the waste pile to the "to" pile.
+	// All talon moves, and only talon moves, are from the stock pile.
 	Move(unsigned to, unsigned nMoves, int draw)
 		: _from(STOCK)
 		, _to(to)
@@ -268,6 +269,7 @@ public:
 			assert(from != STOCK);
 		}
 
+	bool IsTalonMove() const 		{return _from==STOCK;}
 	unsigned From() const 			{return _from;}
 	unsigned To()   const			{return _to;}
 	unsigned NCards()    const 		{return (_from == STOCK) ? 1 : _n;}     
