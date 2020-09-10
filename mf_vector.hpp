@@ -1,7 +1,7 @@
 // mf_vector.hpp - implements a malloc-friendly vector-like template class
 //
 // mf_vector<T> allocates blocks of memory whose size is the larger
-// of 16*sizeof(T) or 4096 bytes.  It keeps track of them in a std::vector.
+// of 16*sizeof(T) or 4096 bytes.  It keeps track of them in a std::deque.
 // Think of it a a vector implemented with the storage technique of a deque.
 // Since it does not have to support changes at the front, it is faster
 // than a deque.
@@ -12,7 +12,7 @@
 //
 // This has only enough of the vector functionality to satisfy KSolve.
 
-#include <vector>
+#include <deque>
 #include <utility>	// max
 #include <iterator>
 #include <cassert>
@@ -30,7 +30,7 @@ template <class T> class mf_vector
 			, _offset(offset)
 		{}
 	};
-	std::vector<T*> _blocks;
+	std::deque<T*> _blocks;
 	size_t _size;
 	static const unsigned _blockSize = 
 			std::max<size_t>(4096/sizeof(T), 16);
