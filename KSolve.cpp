@@ -84,11 +84,12 @@ public:
 	void Pop();
 	// File the current move sequence under the given index number.
 	// Calls after the first may not use an index less than the first.
-	void File(unsigned index);
+	// Expects index > 0.
+	void EnqueueMoveSequence(unsigned index);
 	// Fetch a move sequence with the lowest available index, make it
-	// the current move sequence and unfile it.  
+	// the current move sequence and remove it from the queue.  
 	// Return its index number, or zero if no more sequences are available.
-	unsigned FetchMoveSequence(); 
+	unsigned DequeueMoveSequence(); 
 	// Make all the moves in the current sequence
 	void MakeSequenceMoves(Game&game);
 	// Return the current move sequence in a vector.
@@ -177,7 +178,7 @@ KSolveResult KSolve(
 
 	const unsigned startMoves = state._game.MinimumMovesLeft();
 
-	state._moveStorage.File(startMoves);	// pump priming
+	state._moveStorage.EnqueueMoveSequence(startMoves);	// pump priming
 #ifdef NTHREADS
 	constexpr unsigned nthreads = NTHREADS;
 #else
@@ -219,8 +220,11 @@ void KSolveWorker(
 		unsigned minMoves0;
 		while (state._game_state_memory.size() < state._maxStates
 				&& !state.k_blewMemory
-				&& (minMoves0 = state._moveStorage.FetchMoveSequence())    // <- side effect
+				&& (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
 				&& minMoves0 < state.k_minSolutionCount) { 
+
+			// Restore state._game to the state it had when this move
+			// sequence was enqueued.
 			state._game.Deal();
 			state._moveStorage.MakeSequenceMoves(state._game);
 
@@ -244,7 +248,7 @@ void KSolveWorker(
 				assert(minMoves0 <= made+remaining);
 				if (state.IsShortPathToState(made)) {
 					state._moveStorage.Push(mv);
-					state._moveStorage.File(made+remaining); 
+					state._moveStorage.EnqueueMoveSequence(made+remaining); 
 					state._moveStorage.Pop();
 				}
 				state._game.UnMakeMove(mv);
@@ -276,7 +280,7 @@ void MoveStorage::Pop()
 	_currentSequence.pop_back();
 	_leafIndex = _shared._moveTree[_leafIndex]._prevNode;
 }
-void MoveStorage::File(unsigned index)
+void MoveStorage::EnqueueMoveSequence(unsigned index)
 {
 	if (_shared._firstTime) {
 		_shared._firstTime = false;
@@ -298,7 +302,7 @@ void MoveStorage::File(unsigned index)
 		_shared._fringe[offset].push_back(_leafIndex);
 	}
 }
-unsigned MoveStorage::FetchMoveSequence()
+unsigned MoveStorage::DequeueMoveSequence()
 {
 	unsigned offset;
 	unsigned size;
