@@ -179,7 +179,7 @@ KSolveResult KSolve(
 
 	state._moveStorage.File(startMoves);	// pump priming
 #ifdef NTHREADS
-	const unsigned nthreads = NTHREADS;
+	constexpr unsigned nthreads = NTHREADS;
 #else
 	const unsigned nthreads { []() ->unsigned 
 	{
@@ -229,32 +229,25 @@ void KSolveWorker(
 			if (availableMoves.size() == 0 && state._game.GameOver()) {
 				// We have a solution.  See if it is a new champion
 				state.CheckForMinSolution();
-				// See if it the final winner.
+				// See if it the final winner.  It nearly always is.
 				if (minMoves0 == state.k_minSolutionCount)
 					break;
 			}
 			
 			const unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
-			const unsigned minMoveCount0 = movesMadeCount+state._game.MinimumMovesLeft();
-			assert(((minMoves0 <= minMoveCount0),"first"));
 
-			if (minMoveCount0 < state.k_minSolutionCount){
-				// There is still hope for this subtree.
-				// Save the result of each of the possible next moves.
-				for (auto mv: availableMoves){
-					state._game.MakeMove(mv);
-					const unsigned minMoveCount = movesMadeCount + mv.NMoves()
-											+ state._game.MinimumMovesLeft();
-					if (minMoveCount < state.k_minSolutionCount){
-						assert(((minMoves0 <= minMoveCount),"second"));
-						if (state.IsShortPathToState(movesMadeCount+mv.NMoves())) {
-							state._moveStorage.Push(mv);
-							state._moveStorage.File(minMoveCount); 
-							state._moveStorage.Pop();
-						}
-					}
-					state._game.UnMakeMove(mv);
+			// Save the result of each of the possible next moves.
+			for (auto mv: availableMoves){
+				state._game.MakeMove(mv);
+				const unsigned made = movesMadeCount + mv.NMoves();
+				const unsigned remaining = state._game.MinimumMovesLeft();
+				assert(minMoves0 <= made+remaining);
+				if (state.IsShortPathToState(made)) {
+					state._moveStorage.Push(mv);
+					state._moveStorage.File(made+remaining); 
+					state._moveStorage.Pop();
 				}
+				state._game.UnMakeMove(mv);
 			}
 		}
 	} 
