@@ -12,7 +12,7 @@
 //
 // This has only enough of the vector functionality to satisfy KSolve.
 
-#include <deque>
+#include <vector>
 #include <utility>	// max
 #include <iterator>
 #include <cassert>
@@ -30,7 +30,7 @@ template <class T> class mf_vector
 			, _offset(offset)
 		{}
 	};
-	std::deque<T*> _blocks;
+	std::vector<T*> _blocks;
 	size_t _size;
 	static const unsigned _blockSize = 
 			std::max<size_t>(4096/sizeof(T), 16);
