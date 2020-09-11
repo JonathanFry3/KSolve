@@ -48,6 +48,7 @@ class MoveStorage
 	// to implement a priority queue ordered by the minimum move count.
 	mf_vector<LeafNodeStack> _fringe;
 	unsigned _startStackIndex;
+	unsigned _offset;		// offset of stack on last Dequeue
 	bool _firstTime;
 	MoveSequenceType _currentSequence;
 	NodeX _leafIndex;			// index of current sequence's leaf node in _moveTree
@@ -186,6 +187,9 @@ KSolveResult KSolve(
 }
 MoveStorage::MoveStorage()
 	: _leafIndex(-1)
+	, _startStackIndex(0)
+	, _offset(0)
+	, _firstTime(true)
 	{}
 void MoveStorage::Push(Move move)
 {
@@ -208,33 +212,27 @@ void MoveStorage::EnqueueMoveSequence(unsigned index)
 	}
 	assert(_startStackIndex <= index);
 	const unsigned offset = index - _startStackIndex;
-	if (!(offset < _fringe.size())) {
-		// Grow the fringe as needed.
-		while (!(offset < _fringe.size())){
-			_fringe.emplace_back();
-		}
+	assert(_offset <= offset);
+
+	// Grow the fringe as needed.
+	while (!(offset < _fringe.size())){
+		_fringe.emplace_back();
 	}
-	assert(offset < _fringe.size());
-	{
-		_fringe[offset].push_back(_leafIndex);
-	}
+	_fringe[offset].push_back(_leafIndex);
 }
 unsigned MoveStorage::DequeueMoveSequence()
 {
-	unsigned offset;
-	unsigned size;
-	unsigned nTries;
 	unsigned result = 0;
 	_leafIndex = -1;
 	// Find the first non-empty leaf node stack, pop its top into _leafIndex.
-	size = _fringe.size();
-	for (offset = 0; offset < size && _fringe[offset].empty(); offset += 1) {}
+	const unsigned size = _fringe.size();
+	for (; _offset < size && _fringe[_offset].empty(); _offset += 1) {}
 
-	if (offset < size) {
-		auto & stack = _fringe[offset];
+	if (_offset < size) {
+		auto & stack = _fringe[_offset];
 		_leafIndex = stack.back();
 		stack.pop_back();
-		result = offset+_startStackIndex;
+		result = _offset+_startStackIndex;
 	} 
 	// Follow the links to recover all of its preceding moves in reverse order.
 	_currentSequence.clear();
