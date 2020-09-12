@@ -44,7 +44,7 @@ int main()
 	}
 	std::mt19937 engine;
 	unsigned seed = spec._seed0;
-	for (unsigned sample = 68; sample < spec._samples; ++sample){
+	for (unsigned sample = 0; sample < spec._samples; ++sample){
 		engine.seed(seed);
 		vector<Card> deck;
 		for (unsigned i = 0; i < 52; ++i){
@@ -54,7 +54,6 @@ int main()
 		Game game(deck, spec._drawSpec);
 		out << sample << "\t"
 			<< seed << "\t"
-			<< NTHREADS	<< "\t"			 
 			<< spec._drawSpec << "\t" << flush;
 		auto startTime = steady_clock::now();
 		KSolveResult result = KSolve(game,spec._maxStates);

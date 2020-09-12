@@ -8,9 +8,8 @@
 			"args": [
 				"-g",
 			//	"-m32",
-			//	"-pg",
+				"-pg",
 				"-O3",
-				"-DNTHREADS=2",
 			//	"-DNDEBUG",
 				"-pthread",
 				"Game.cpp",

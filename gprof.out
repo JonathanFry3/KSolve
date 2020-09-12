@@ -2,39 +2,46 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls   s/call   s/call  name    
- 36.14      7.46     7.46 12098989     0.00     0.00  KSolveState::IsShortPathToState(unsigned int)
- 12.80     10.10     2.64  4036159     0.00     0.00  Game::AvailableMoves() const
-  9.65     12.09     1.99  2258666     0.00     0.00  MoveStorage::FetchMoveSequence()
-  8.97     13.94     1.85 13302321     0.00     0.00  GameState::GameState(Game const&)
-  8.97     15.79     1.85 14600630     0.00     0.00  Game::MinimumMovesLeft() const
-  7.81     17.40     1.61 74257428     0.00     0.00  Game::MakeMove(Move)
-  3.90     18.20     0.81 40697638     0.00     0.00  Pile::Draw(Pile&, int)
-  3.20     18.86     0.66        1     0.66    20.56  KSolveWorker(KSolveState*)
-  2.47     19.37     0.51  2521107     0.00     0.00  Game::Deal()
-  1.65     19.71     0.34  4023614     0.00     0.00  KSolveState::FilteredAvailableMoves()
-  1.33     19.99     0.28  5942378     0.00     0.00  MoveStorage::File(unsigned int)
-  1.12     20.22     0.23 12394054     0.00     0.00  Game::UnMakeMove(Move)
-  0.68     20.36     0.14 13218357     0.00     0.00  MoveStorage::Push(Move)
-  0.53     20.47     0.11  5664242     0.00     0.00  phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::prepare_insert(unsigned long)
-  0.39     20.55     0.08  2322813     0.00     0.00  KSolveState::MakeAutoMoves()
-  0.19     20.59     0.04        1     0.04     0.04  SharedMoveStorage::~SharedMoveStorage()
-  0.12     20.61     0.03                             Pile::Draw(unsigned int)
-  0.05     20.62     0.01   413272     0.00     0.00  Game::GameOver() const
-  0.05     20.63     0.01                             Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int)
-  0.00     20.63     0.00      274     0.00     0.00  void std::vector<unsigned int*, std::allocator<unsigned int*> >::_M_realloc_insert<unsigned int* const&>(__gnu_cxx::__normal_iterator<unsigned int**, std::vector<unsigned int*, std::allocator<unsigned int*> > >, unsigned int* const&)
-  0.00     20.63     0.00       52     0.00     0.00  Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
-  0.00     20.63     0.00       16     0.00     0.00  phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::resize(unsigned long)
-  0.00     20.63     0.00       16     0.00     0.00  void std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> >::_M_realloc_insert<SharedMoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<SharedMoveStorage::MoveNode**, std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> > >, SharedMoveStorage::MoveNode* const&)
-  0.00     20.63     0.00        3     0.00     0.00  Game::Game(Game const&)
-  0.00     20.63     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj
-  0.00     20.63     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev
-  0.00     20.63     0.00        1     0.00     0.00  DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*)
-  0.00     20.63     0.00        1     0.00     0.00  PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
-  0.00     20.63     0.00        1     0.00     0.00  KSolveState::CheckForMinSolution()
-  0.00     20.63     0.00        1     0.00     0.00  Random::SetSeed(int)
-  0.00     20.63     0.00        1     0.00     0.00  void std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> >::_M_realloc_insert<mf_vector<unsigned int>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned int>**, std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> > >, mf_vector<unsigned int>* const&)
-  0.00     20.63     0.00        1     0.00     0.00  void std::vector<std::mutex*, std::allocator<std::mutex*> >::_M_realloc_insert<std::mutex* const&>(__gnu_cxx::__normal_iterator<std::mutex**, std::vector<std::mutex*, std::allocator<std::mutex*> > >, std::mutex* const&)
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 27.86      6.06     6.06 14874154     0.00     0.00  KSolveState::IsShortPathToState(unsigned int)
+ 13.37      8.96     2.91  4663801     0.00     0.00  Game::AvailableMoves() const
+ 12.84     11.75     2.79 14874154     0.00     0.00  GameState::GameState(Game const&)
+  8.14     13.52     1.77  2939931     0.00     0.00  MoveStorage::DequeueMoveSequence()
+  7.96     15.25     1.73 14874155     0.00     0.00  Game::MinimumMovesLeft() const
+  6.86     16.74     1.49 92202500     0.00     0.00  Game::MakeMove(Move)
+  4.65     17.75     1.01 46648749     0.00     0.00  Pile::Draw(Pile&, int)
+  3.04     18.42     0.66                             KSolve(Game&, unsigned int)
+  2.92     19.05     0.64 60427905     0.00     0.00  Pile::Pop(unsigned int)
+  2.90     19.68     0.63      425     1.48     1.48  robin_hood::detail::BulkPoolAllocator<robin_hood::pair<GameState const, unsigned short>, 4ul, 16384ul>::performAllocation()
+  2.35     20.19     0.51  2939931     0.00     0.00  Game::Deal()
+  1.59     20.54     0.35 19605161     0.00     0.00  KSolveState::SkippableMove(Move)
+  1.20     20.80     0.26 14874154     0.00     0.00  Game::UnMakeMove(Move)
+  1.15     21.05     0.25  2939931     0.00     0.00  KSolveState::MakeAutoMoves()
+  0.90     21.24     0.20  8629670     0.00     0.00  MoveStorage::Push(Move)
+  0.83     21.42     0.18  4663801     0.00     0.00  KSolveState::FilteredAvailableMoves()
+  0.67     21.57     0.15  6905801     0.00     0.00  MoveStorage::EnqueueMoveSequence(unsigned int)
+  0.23     21.62     0.05  6905800     0.00     0.00  MoveStorage::Pop()
+  0.18     21.66     0.04        1    40.01    40.01  KSolveState::~KSolveState()
+  0.09     21.68     0.02                             Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int)
+  0.05     21.69     0.01                             Pile::Draw(unsigned int)
+  0.02     21.69     0.01        1     5.00     5.00  KSolveState::CheckForMinSolution()
+  0.02     21.70     0.01                             MoveStorage::MovesVector() const
+  0.02     21.70     0.01                             Card::AsString[abi:cxx11]() const
+  0.00     21.70     0.00   532560     0.00     0.00  Game::GameOver() const
+  0.00     21.70     0.00     1000     0.00     0.00  Random::CalculateNext()
+  0.00     21.70     0.00      334     0.00     0.00  void std::vector<unsigned long*, std::allocator<unsigned long*> >::_M_realloc_insert<unsigned long* const&>(__gnu_cxx::__normal_iterator<unsigned long**, std::vector<unsigned long*, std::allocator<unsigned long*> > >, unsigned long* const&)
+  0.00     21.70     0.00      106     0.00     0.00  void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag)
+  0.00     21.70     0.00       52     0.00     0.00  CardFromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.00     21.70     0.00       52     0.00     0.00  Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.00     21.70     0.00       17     0.00     0.00  void std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> >::_M_realloc_insert<MoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<MoveStorage::MoveNode**, std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> > >, MoveStorage::MoveNode* const&)
+  0.00     21.70     0.00        1     0.00     0.00  _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj
+  0.00     21.70     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev
+  0.00     21.70     0.00        1     0.00     0.00  DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*)
+  0.00     21.70     0.00        1     0.00     0.00  PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.00     21.70     0.00        1     0.00     0.00  robin_hood::detail::Table<false, 80ul, GameState, unsigned short, Hasher, std::equal_to<GameState> >::rehashPowerOfTwo(unsigned long)
+  0.00     21.70     0.00        1     0.00     0.00  Game::Game(Game const&)
+  0.00     21.70     0.00        1     0.00     0.00  Random::SetSeed(int)
+  0.00     21.70     0.00        1     0.00     0.00  void std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> >::_M_realloc_insert<mf_vector<unsigned long>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned long>**, std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> > >, mf_vector<unsigned long>* const&)
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -72,145 +79,166 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 0.05% of 20.63 seconds
+granularity: each sample hit covers 2 byte(s) for 0.05% of 21.70 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]     99.8    0.00   20.60                 KSolve(Game&, unsigned int) [1]
-                0.66   19.90       1/1           KSolveWorker(KSolveState*) [2]
-                0.04    0.00       1/1           SharedMoveStorage::~SharedMoveStorage() [17]
-                0.00    0.00       1/14600630     Game::MinimumMovesLeft() const [10]
-                0.00    0.00       1/5942378     MoveStorage::File(unsigned int) [13]
-                0.00    0.00      16/16          phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::resize(unsigned long) [30]
-                0.00    0.00       1/3           Game::Game(Game const&) [32]
+[1]     99.8    0.66   21.00                 KSolve(Game&, unsigned int) [1]
+                6.06    3.42 14874154/14874154     KSolveState::IsShortPathToState(unsigned int) [2]
+                0.25    3.52 2939931/2939931     KSolveState::MakeAutoMoves() [3]
+                1.46    1.37 90478630/92202500     Game::MakeMove(Move) [6]
+                1.77    0.00 2939931/2939931     MoveStorage::DequeueMoveSequence() [8]
+                1.73    0.00 14874155/14874155     Game::MinimumMovesLeft() const [9]
+                0.26    0.25 14874154/14874154     Game::UnMakeMove(Move) [13]
+                0.51    0.00 2939931/2939931     Game::Deal() [14]
+                0.16    0.00 6905800/8629670     MoveStorage::Push(Move) [16]
+                0.15    0.00 6905801/6905801     MoveStorage::EnqueueMoveSequence(unsigned int) [17]
+                0.05    0.00 6905800/6905800     MoveStorage::Pop() [18]
+                0.04    0.00       1/1           KSolveState::~KSolveState() [19]
+                0.01    0.00       1/1           KSolveState::CheckForMinSolution() [22]
+                0.00    0.00  532560/532560      Game::GameOver() const [32]
+                0.00    0.00       1/1           Game::Game(Game const&) [44]
+                0.00    0.00       1/1           robin_hood::detail::Table<false, 80ul, GameState, unsigned short, Hasher, std::equal_to<GameState> >::rehashPowerOfTwo(unsigned long) [43]
 -----------------------------------------------
-                0.66   19.90       1/1           KSolve(Game&, unsigned int) [1]
-[2]     99.6    0.66   19.90       1         KSolveWorker(KSolveState*) [2]
-                7.46    1.96 12098989/12098989     KSolveState::IsShortPathToState(unsigned int) [3]
-                0.08    3.04 2322813/2322813     KSolveState::MakeAutoMoves() [4]
-                1.58    0.64 72898039/74257428     Game::MakeMove(Move) [7]
-                1.99    0.00 2258666/2258666     MoveStorage::FetchMoveSequence() [8]
-                1.85    0.00 14600629/14600630     Game::MinimumMovesLeft() const [10]
-                0.51    0.00 2521107/2521107     Game::Deal() [12]
-                0.28    0.00 5942377/5942378     MoveStorage::File(unsigned int) [13]
-                0.23    0.00 12394054/12394054     Game::UnMakeMove(Move) [14]
-                0.15    0.00 7710135/40697638     Pile::Draw(Pile&, int) [11]
-                0.13    0.00 11807220/13218357     MoveStorage::Push(Move) [15]
-                0.01    0.00  413272/413272      Game::GameOver() const [19]
-                0.00    0.00       2/3           Game::Game(Game const&) [32]
-                0.00    0.00       1/1           KSolveState::CheckForMinSolution() [37]
+                6.06    3.42 14874154/14874154     KSolve(Game&, unsigned int) [1]
+[2]     43.7    6.06    3.42 14874154         KSolveState::IsShortPathToState(unsigned int) [2]
+                2.79    0.00 14874154/14874154     GameState::GameState(Game const&) [7]
+                0.63    0.00     425/425         robin_hood::detail::BulkPoolAllocator<robin_hood::pair<GameState const, unsigned short>, 4ul, 16384ul>::performAllocation() [12]
 -----------------------------------------------
-                7.46    1.96 12098989/12098989     KSolveWorker(KSolveState*) [2]
-[3]     45.6    7.46    1.96 12098989         KSolveState::IsShortPathToState(unsigned int) [3]
-                1.85    0.00 13302321/13302321     GameState::GameState(Game const&) [9]
-                0.11    0.00 5664242/5664242     phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::prepare_insert(unsigned long) [16]
+                0.25    3.52 2939931/2939931     KSolve(Game&, unsigned int) [1]
+[3]     17.4    0.25    3.52 2939931         KSolveState::MakeAutoMoves() [3]
+                0.18    3.25 4663801/4663801     KSolveState::FilteredAvailableMoves() [4]
+                0.03    0.03 1723870/92202500     Game::MakeMove(Move) [6]
+                0.04    0.00 1723870/8629670     MoveStorage::Push(Move) [16]
 -----------------------------------------------
-                0.08    3.04 2322813/2322813     KSolveWorker(KSolveState*) [2]
-[4]     15.1    0.08    3.04 2322813         KSolveState::MakeAutoMoves() [4]
-                0.34    2.64 4023614/4023614     KSolveState::FilteredAvailableMoves() [5]
-                0.03    0.01 1359389/74257428     Game::MakeMove(Move) [7]
-                0.01    0.00 1411137/13218357     MoveStorage::Push(Move) [15]
+                0.18    3.25 4663801/4663801     KSolveState::MakeAutoMoves() [3]
+[4]     15.8    0.18    3.25 4663801         KSolveState::FilteredAvailableMoves() [4]
+                2.91    0.00 4663801/4663801     Game::AvailableMoves() const [5]
+                0.35    0.00 19605161/19605161     KSolveState::SkippableMove(Move) [15]
 -----------------------------------------------
-                0.34    2.64 4023614/4023614     KSolveState::MakeAutoMoves() [4]
-[5]     14.4    0.34    2.64 4023614         KSolveState::FilteredAvailableMoves() [5]
-                2.64    0.00 4036159/4036159     Game::AvailableMoves() const [6]
+                2.91    0.00 4663801/4663801     KSolveState::FilteredAvailableMoves() [4]
+[5]     13.4    2.91    0.00 4663801         Game::AvailableMoves() const [5]
 -----------------------------------------------
-                2.64    0.00 4036159/4036159     KSolveState::FilteredAvailableMoves() [5]
-[6]     12.8    2.64    0.00 4036159         Game::AvailableMoves() const [6]
+                0.03    0.03 1723870/92202500     KSolveState::MakeAutoMoves() [3]
+                1.46    1.37 90478630/92202500     KSolve(Game&, unsigned int) [1]
+[6]     13.3    1.49    1.39 92202500         Game::MakeMove(Move) [6]
+                0.82    0.00 37903938/46648749     Pile::Draw(Pile&, int) [10]
+                0.57    0.00 54298562/60427905     Pile::Pop(unsigned int) [11]
 -----------------------------------------------
-                0.03    0.01 1359389/74257428     KSolveState::MakeAutoMoves() [4]
-                1.58    0.64 72898039/74257428     KSolveWorker(KSolveState*) [2]
-[7]     11.0    1.61    0.65 74257428         Game::MakeMove(Move) [7]
-                0.65    0.00 32987503/40697638     Pile::Draw(Pile&, int) [11]
+                2.79    0.00 14874154/14874154     KSolveState::IsShortPathToState(unsigned int) [2]
+[7]     12.9    2.79    0.00 14874154         GameState::GameState(Game const&) [7]
 -----------------------------------------------
-                1.99    0.00 2258666/2258666     KSolveWorker(KSolveState*) [2]
-[8]      9.6    1.99    0.00 2258666         MoveStorage::FetchMoveSequence() [8]
+                1.77    0.00 2939931/2939931     KSolve(Game&, unsigned int) [1]
+[8]      8.2    1.77    0.00 2939931         MoveStorage::DequeueMoveSequence() [8]
 -----------------------------------------------
-                1.85    0.00 13302321/13302321     KSolveState::IsShortPathToState(unsigned int) [3]
-[9]      9.0    1.85    0.00 13302321         GameState::GameState(Game const&) [9]
+                1.73    0.00 14874155/14874155     KSolve(Game&, unsigned int) [1]
+[9]      8.0    1.73    0.00 14874155         Game::MinimumMovesLeft() const [9]
 -----------------------------------------------
-                0.00    0.00       1/14600630     KSolve(Game&, unsigned int) [1]
-                1.85    0.00 14600629/14600630     KSolveWorker(KSolveState*) [2]
-[10]     9.0    1.85    0.00 14600630         Game::MinimumMovesLeft() const [10]
+                0.19    0.00 8744811/46648749     Game::UnMakeMove(Move) [13]
+                0.82    0.00 37903938/46648749     Game::MakeMove(Move) [6]
+[10]     4.7    1.01    0.00 46648749         Pile::Draw(Pile&, int) [10]
 -----------------------------------------------
-                0.15    0.00 7710135/40697638     KSolveWorker(KSolveState*) [2]
-                0.65    0.00 32987503/40697638     Game::MakeMove(Move) [7]
-[11]     3.9    0.81    0.00 40697638         Pile::Draw(Pile&, int) [11]
+                0.06    0.00 6129343/60427905     Game::UnMakeMove(Move) [13]
+                0.57    0.00 54298562/60427905     Game::MakeMove(Move) [6]
+[11]     2.9    0.64    0.00 60427905         Pile::Pop(unsigned int) [11]
 -----------------------------------------------
-                0.51    0.00 2521107/2521107     KSolveWorker(KSolveState*) [2]
-[12]     2.5    0.51    0.00 2521107         Game::Deal() [12]
+                0.63    0.00     425/425         KSolveState::IsShortPathToState(unsigned int) [2]
+[12]     2.9    0.63    0.00     425         robin_hood::detail::BulkPoolAllocator<robin_hood::pair<GameState const, unsigned short>, 4ul, 16384ul>::performAllocation() [12]
 -----------------------------------------------
-                0.00    0.00       1/5942378     KSolve(Game&, unsigned int) [1]
-                0.28    0.00 5942377/5942378     KSolveWorker(KSolveState*) [2]
-[13]     1.3    0.28    0.00 5942378         MoveStorage::File(unsigned int) [13]
-                0.00    0.00     274/274         void std::vector<unsigned int*, std::allocator<unsigned int*> >::_M_realloc_insert<unsigned int* const&>(__gnu_cxx::__normal_iterator<unsigned int**, std::vector<unsigned int*, std::allocator<unsigned int*> > >, unsigned int* const&) [28]
-                0.00    0.00       1/1           void std::vector<std::mutex*, std::allocator<std::mutex*> >::_M_realloc_insert<std::mutex* const&>(__gnu_cxx::__normal_iterator<std::mutex**, std::vector<std::mutex*, std::allocator<std::mutex*> > >, std::mutex* const&) [40]
-                0.00    0.00       1/1           void std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> >::_M_realloc_insert<mf_vector<unsigned int>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned int>**, std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> > >, mf_vector<unsigned int>* const&) [39]
+                0.26    0.25 14874154/14874154     KSolve(Game&, unsigned int) [1]
+[13]     2.4    0.26    0.25 14874154         Game::UnMakeMove(Move) [13]
+                0.19    0.00 8744811/46648749     Pile::Draw(Pile&, int) [10]
+                0.06    0.00 6129343/60427905     Pile::Pop(unsigned int) [11]
 -----------------------------------------------
-                0.23    0.00 12394054/12394054     KSolveWorker(KSolveState*) [2]
-[14]     1.1    0.23    0.00 12394054         Game::UnMakeMove(Move) [14]
+                0.51    0.00 2939931/2939931     KSolve(Game&, unsigned int) [1]
+[14]     2.4    0.51    0.00 2939931         Game::Deal() [14]
 -----------------------------------------------
-                0.01    0.00 1411137/13218357     KSolveState::MakeAutoMoves() [4]
-                0.13    0.00 11807220/13218357     KSolveWorker(KSolveState*) [2]
-[15]     0.7    0.14    0.00 13218357         MoveStorage::Push(Move) [15]
-                0.00    0.00      16/16          void std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> >::_M_realloc_insert<SharedMoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<SharedMoveStorage::MoveNode**, std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> > >, SharedMoveStorage::MoveNode* const&) [31]
+                0.35    0.00 19605161/19605161     KSolveState::FilteredAvailableMoves() [4]
+[15]     1.6    0.35    0.00 19605161         KSolveState::SkippableMove(Move) [15]
 -----------------------------------------------
-                0.11    0.00 5664242/5664242     KSolveState::IsShortPathToState(unsigned int) [3]
-[16]     0.5    0.11    0.00 5664242         phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::prepare_insert(unsigned long) [16]
+                0.04    0.00 1723870/8629670     KSolveState::MakeAutoMoves() [3]
+                0.16    0.00 6905800/8629670     KSolve(Game&, unsigned int) [1]
+[16]     0.9    0.20    0.00 8629670         MoveStorage::Push(Move) [16]
+                0.00    0.00      17/17          void std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> >::_M_realloc_insert<MoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<MoveStorage::MoveNode**, std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> > >, MoveStorage::MoveNode* const&) [38]
+-----------------------------------------------
+                0.15    0.00 6905801/6905801     KSolve(Game&, unsigned int) [1]
+[17]     0.7    0.15    0.00 6905801         MoveStorage::EnqueueMoveSequence(unsigned int) [17]
+                0.00    0.00     334/334         void std::vector<unsigned long*, std::allocator<unsigned long*> >::_M_realloc_insert<unsigned long* const&>(__gnu_cxx::__normal_iterator<unsigned long**, std::vector<unsigned long*, std::allocator<unsigned long*> > >, unsigned long* const&) [34]
+                0.00    0.00       1/1           void std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> >::_M_realloc_insert<mf_vector<unsigned long>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned long>**, std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> > >, mf_vector<unsigned long>* const&) [46]
+-----------------------------------------------
+                0.05    0.00 6905800/6905800     KSolve(Game&, unsigned int) [1]
+[18]     0.2    0.05    0.00 6905800         MoveStorage::Pop() [18]
 -----------------------------------------------
                 0.04    0.00       1/1           KSolve(Game&, unsigned int) [1]
-[17]     0.2    0.04    0.00       1         SharedMoveStorage::~SharedMoveStorage() [17]
+[19]     0.2    0.04    0.00       1         KSolveState::~KSolveState() [19]
 -----------------------------------------------
                                                  <spontaneous>
-[18]     0.1    0.03    0.00                 Pile::Draw(unsigned int) [18]
------------------------------------------------
-                0.01    0.00  413272/413272      KSolveWorker(KSolveState*) [2]
-[19]     0.0    0.01    0.00  413272         Game::GameOver() const [19]
+[20]     0.1    0.02    0.00                 Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int) [20]
 -----------------------------------------------
                                                  <spontaneous>
-[20]     0.0    0.01    0.00                 Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int) [20]
+[21]     0.0    0.01    0.00                 Pile::Draw(unsigned int) [21]
 -----------------------------------------------
-                0.00    0.00     274/274         MoveStorage::File(unsigned int) [13]
-[28]     0.0    0.00    0.00     274         void std::vector<unsigned int*, std::allocator<unsigned int*> >::_M_realloc_insert<unsigned int* const&>(__gnu_cxx::__normal_iterator<unsigned int**, std::vector<unsigned int*, std::allocator<unsigned int*> > >, unsigned int* const&) [28]
+                0.01    0.00       1/1           KSolve(Game&, unsigned int) [1]
+[22]     0.0    0.01    0.00       1         KSolveState::CheckForMinSolution() [22]
 -----------------------------------------------
-                0.00    0.00      52/52          DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [35]
-[29]     0.0    0.00    0.00      52         Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [29]
+                                                 <spontaneous>
+[23]     0.0    0.01    0.00                 MoveStorage::MovesVector() const [23]
 -----------------------------------------------
-                0.00    0.00      16/16          KSolve(Game&, unsigned int) [1]
-[30]     0.0    0.00    0.00      16         phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::resize(unsigned long) [30]
+                                                 <spontaneous>
+[24]     0.0    0.01    0.00                 Card::AsString[abi:cxx11]() const [24]
 -----------------------------------------------
-                0.00    0.00      16/16          MoveStorage::Push(Move) [15]
-[31]     0.0    0.00    0.00      16         void std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> >::_M_realloc_insert<SharedMoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<SharedMoveStorage::MoveNode**, std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> > >, SharedMoveStorage::MoveNode* const&) [31]
+                0.00    0.00  532560/532560      KSolve(Game&, unsigned int) [1]
+[32]     0.0    0.00    0.00  532560         Game::GameOver() const [32]
 -----------------------------------------------
-                0.00    0.00       1/3           KSolve(Game&, unsigned int) [1]
-                0.00    0.00       2/3           KSolveWorker(KSolveState*) [2]
-[32]     0.0    0.00    0.00       3         Game::Game(Game const&) [32]
+                0.00    0.00    1000/1000        Random::SetSeed(int) [45]
+[33]     0.0    0.00    0.00    1000         Random::CalculateNext() [33]
 -----------------------------------------------
-                0.00    0.00       1/1           __libc_csu_init [84]
-[33]     0.0    0.00    0.00       1         _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj [33]
+                0.00    0.00     334/334         MoveStorage::EnqueueMoveSequence(unsigned int) [17]
+[34]     0.0    0.00    0.00     334         void std::vector<unsigned long*, std::allocator<unsigned long*> >::_M_realloc_insert<unsigned long* const&>(__gnu_cxx::__normal_iterator<unsigned long**, std::vector<unsigned long*, std::allocator<unsigned long*> > >, unsigned long* const&) [34]
 -----------------------------------------------
-                0.00    0.00       1/1           __libc_csu_init [84]
-[34]     0.0    0.00    0.00       1         _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev [34]
+                0.00    0.00       1/106         LoadDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int&) [59]
+                0.00    0.00      52/106         Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [37]
+                0.00    0.00      53/106         DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [41]
+[35]     0.0    0.00    0.00     106         void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) [35]
 -----------------------------------------------
-                0.00    0.00       1/1           PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [36]
-[35]     0.0    0.00    0.00       1         DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [35]
-                0.00    0.00      52/52          Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [29]
+                0.00    0.00      52/52          DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [41]
+[36]     0.0    0.00    0.00      52         CardFromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [36]
+                0.00    0.00      52/52          Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [37]
 -----------------------------------------------
-                0.00    0.00       1/1           LoadDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int&) [54]
-[36]     0.0    0.00    0.00       1         PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [36]
-                0.00    0.00       1/1           DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [35]
+                0.00    0.00      52/52          CardFromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [36]
+[37]     0.0    0.00    0.00      52         Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [37]
+                0.00    0.00      52/106         void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) [35]
 -----------------------------------------------
-                0.00    0.00       1/1           KSolveWorker(KSolveState*) [2]
-[37]     0.0    0.00    0.00       1         KSolveState::CheckForMinSolution() [37]
+                0.00    0.00      17/17          MoveStorage::Push(Move) [16]
+[38]     0.0    0.00    0.00      17         void std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> >::_M_realloc_insert<MoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<MoveStorage::MoveNode**, std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> > >, MoveStorage::MoveNode* const&) [38]
 -----------------------------------------------
-                0.00    0.00       1/1           __libc_csu_init [84]
-[38]     0.0    0.00    0.00       1         Random::SetSeed(int) [38]
+                0.00    0.00       1/1           __libc_csu_init [81]
+[39]     0.0    0.00    0.00       1         _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj [39]
 -----------------------------------------------
-                0.00    0.00       1/1           MoveStorage::File(unsigned int) [13]
-[39]     0.0    0.00    0.00       1         void std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> >::_M_realloc_insert<mf_vector<unsigned int>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned int>**, std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> > >, mf_vector<unsigned int>* const&) [39]
+                0.00    0.00       1/1           __libc_csu_init [81]
+[40]     0.0    0.00    0.00       1         _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev [40]
 -----------------------------------------------
-                0.00    0.00       1/1           MoveStorage::File(unsigned int) [13]
-[40]     0.0    0.00    0.00       1         void std::vector<std::mutex*, std::allocator<std::mutex*> >::_M_realloc_insert<std::mutex* const&>(__gnu_cxx::__normal_iterator<std::mutex**, std::vector<std::mutex*, std::allocator<std::mutex*> > >, std::mutex* const&) [40]
+                0.00    0.00       1/1           PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [42]
+[41]     0.0    0.00    0.00       1         DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [41]
+                0.00    0.00      53/106         void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) [35]
+                0.00    0.00      52/52          CardFromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [36]
+-----------------------------------------------
+                0.00    0.00       1/1           LoadDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int&) [59]
+[42]     0.0    0.00    0.00       1         PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [42]
+                0.00    0.00       1/1           DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [41]
+-----------------------------------------------
+                0.00    0.00       1/1           KSolve(Game&, unsigned int) [1]
+[43]     0.0    0.00    0.00       1         robin_hood::detail::Table<false, 80ul, GameState, unsigned short, Hasher, std::equal_to<GameState> >::rehashPowerOfTwo(unsigned long) [43]
+-----------------------------------------------
+                0.00    0.00       1/1           KSolve(Game&, unsigned int) [1]
+[44]     0.0    0.00    0.00       1         Game::Game(Game const&) [44]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [81]
+[45]     0.0    0.00    0.00       1         Random::SetSeed(int) [45]
+                0.00    0.00    1000/1000        Random::CalculateNext() [33]
+-----------------------------------------------
+                0.00    0.00       1/1           MoveStorage::EnqueueMoveSequence(unsigned int) [17]
+[46]     0.0    0.00    0.00       1         void std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> >::_M_realloc_insert<mf_vector<unsigned long>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned long>**, std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> > >, mf_vector<unsigned long>* const&) [46]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -303,14 +331,16 @@ notice and this notice are preserved.
 
 Index by function name
 
-  [33] _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj (KSolver.cpp) [15] MoveStorage::Push(Move) [30] phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::resize(unsigned long)
-  [34] _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev (Game.cpp) [17] SharedMoveStorage::~SharedMoveStorage() [38] Random::SetSeed(int)
-  [35] DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [29] Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [9] GameState::GameState(Game const&)
-   [2] KSolveWorker(KSolveState*) [14] Game::UnMakeMove(Move) [6] Game::AvailableMoves() const
-  [36] PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [12] Game::Deal() [10] Game::MinimumMovesLeft() const
-   [4] KSolveState::MakeAutoMoves() [7] Game::MakeMove(Move) [19] Game::GameOver() const
-   [3] KSolveState::IsShortPathToState(unsigned int) [32] Game::Game(Game const&) [39] void std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> >::_M_realloc_insert<mf_vector<unsigned int>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned int>**, std::vector<mf_vector<unsigned int>*, std::allocator<mf_vector<unsigned int>*> > >, mf_vector<unsigned int>* const&)
-  [37] KSolveState::CheckForMinSolution() [20] Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int) [31] void std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> >::_M_realloc_insert<SharedMoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<SharedMoveStorage::MoveNode**, std::vector<SharedMoveStorage::MoveNode*, std::allocator<SharedMoveStorage::MoveNode*> > >, SharedMoveStorage::MoveNode* const&)
-   [5] KSolveState::FilteredAvailableMoves() [11] Pile::Draw(Pile&, int) [40] void std::vector<std::mutex*, std::allocator<std::mutex*> >::_M_realloc_insert<std::mutex* const&>(__gnu_cxx::__normal_iterator<std::mutex**, std::vector<std::mutex*, std::allocator<std::mutex*> > >, std::mutex* const&)
-   [8] MoveStorage::FetchMoveSequence() [18] Pile::Draw(unsigned int) [28] void std::vector<unsigned int*, std::allocator<unsigned int*> >::_M_realloc_insert<unsigned int* const&>(__gnu_cxx::__normal_iterator<unsigned int**, std::vector<unsigned int*, std::allocator<unsigned int*> > >, unsigned int* const&)
-  [13] MoveStorage::File(unsigned int) [16] phmap::priv::raw_hash_set<phmap::priv::FlatHashMapPolicy<GameState, unsigned short>, Hasher, phmap::EqualTo<GameState>, std::allocator<std::pair<GameState, unsigned short> > >::prepare_insert(unsigned long)
+  [39] _GLOBAL__sub_I__Z8LoadDeckRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERj (KSolver.cpp) [19] KSolveState::~KSolveState() [21] Pile::Draw(unsigned int)
+  [40] _GLOBAL__sub_I__ZNK4Card8AsStringB5cxx11Ev (Game.cpp) [8] MoveStorage::DequeueMoveSequence() [33] Random::CalculateNext()
+  [41] DeckLoader(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int const*) [17] MoveStorage::EnqueueMoveSequence(unsigned int) [45] Random::SetSeed(int)
+  [36] CardFromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [18] MoveStorage::Pop() [7] GameState::GameState(Game const&)
+   [1] KSolve(Game&, unsigned int) [16] MoveStorage::Push(Move) [23] MoveStorage::MovesVector() const
+  [42] PysolDeck(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [37] Card::FromString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [24] Card::AsString[abi:cxx11]() const
+  [12] robin_hood::detail::BulkPoolAllocator<robin_hood::pair<GameState const, unsigned short>, 4ul, 16384ul>::performAllocation() [13] Game::UnMakeMove(Move) [5] Game::AvailableMoves() const
+  [43] robin_hood::detail::Table<false, 80ul, GameState, unsigned short, Hasher, std::equal_to<GameState> >::rehashPowerOfTwo(unsigned long) [14] Game::Deal() [9] Game::MinimumMovesLeft() const
+   [3] KSolveState::MakeAutoMoves() [6] Game::MakeMove(Move) [32] Game::GameOver() const
+  [15] KSolveState::SkippableMove(Move) [44] Game::Game(Game const&) [46] void std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> >::_M_realloc_insert<mf_vector<unsigned long>* const&>(__gnu_cxx::__normal_iterator<mf_vector<unsigned long>**, std::vector<mf_vector<unsigned long>*, std::allocator<mf_vector<unsigned long>*> > >, mf_vector<unsigned long>* const&)
+   [2] KSolveState::IsShortPathToState(unsigned int) [20] Game::Game(std::vector<Card, std::allocator<Card> > const&, unsigned int, unsigned int) [38] void std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> >::_M_realloc_insert<MoveStorage::MoveNode* const&>(__gnu_cxx::__normal_iterator<MoveStorage::MoveNode**, std::vector<MoveStorage::MoveNode*, std::allocator<MoveStorage::MoveNode*> > >, MoveStorage::MoveNode* const&)
+  [22] KSolveState::CheckForMinSolution() [11] Pile::Pop(unsigned int) [34] void std::vector<unsigned long*, std::allocator<unsigned long*> >::_M_realloc_insert<unsigned long* const&>(__gnu_cxx::__normal_iterator<unsigned long**, std::vector<unsigned long*, std::allocator<unsigned long*> > >, unsigned long* const&)
+   [4] KSolveState::FilteredAvailableMoves() [10] Pile::Draw(Pile&, int) [35] void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag)

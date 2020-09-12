@@ -12,9 +12,10 @@
 
 template <typename T, unsigned Capacity> class fixed_capacity_deque
 {
+	static constexpr unsigned _trueCap{2*Capacity+1};
     T* _begin;
     T* _end;
-    T _elem[2*Capacity+1];
+    T _elem[_trueCap];
 public:
 	typedef T value_type;
 	typedef T& reference;
@@ -57,7 +58,7 @@ public:
     }
 	template <class ... Args>
 	void emplace_back(Args...args){
-        assert(_end<_elem+2*Capacity+1);
+        assert(_end<_elem+_trueCap);
 		new(_end) T(args...);
 		_end += 1;
 	}
