@@ -39,14 +39,14 @@ class MoveStorage
 			, _prevNode(prevNode)
 			{}
 	};
-	mf_vector<MoveNode> _moveTree;
+	mf_vector<MoveNode,1024*32> _moveTree;
 	// Stack of indexes to leaf nodes in _moveTree
 	typedef mf_vector<NodeX> LeafNodeStack;
 	// The leaf nodes waiting to grow new branches.  Each LeafNodeStack
 	// stores nodes with the same minimum number of moves in any
 	// completed game that can grow from them.  MoveStorage uses it
 	// to implement a priority queue ordered by the minimum move count.
-	mf_vector<LeafNodeStack> _fringe;
+	mf_vector<LeafNodeStack,64> _fringe;
 	unsigned _startStackIndex;
 	unsigned _offset;		// offset of stack on last Dequeue
 	bool _firstTime;
