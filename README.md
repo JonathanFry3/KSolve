@@ -66,7 +66,7 @@ This is like the Pysol format explained above, except that the cards are in the 
 ## What to Expect
 This program uses lots of memory.  Since one of the largest data structures contains representations of all the unique states the program has generated, you can limit or expand the space (and time) used by using the -STATES flag.  If that is set too high, the program will be unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
 
-There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 unique states). If you have a deal for which you really want a solution but for which you do'nt seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
+There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 unique states). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
 
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the repository Klondike-Solver
 by @ShootMe. Their copyright follows:
