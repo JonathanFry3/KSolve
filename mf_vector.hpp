@@ -93,7 +93,7 @@ public:
 			_locater._offset += 1;
 			if (_locater._offset == _blockSize){
 				_locater = _vector->GetLocater(_index);
-				_location = _locater._block;
+				_location = _locater._block+_locater._offset;
 			} else {
 				_location += 1;
 			}
@@ -104,6 +104,9 @@ public:
 		}
 		bool operator!=(const iterator& other){
 			return !(*this == other);
+		}
+		int operator-(const iterator& o) {
+			return _index - o._index;
 		}
 		T& operator*() {
 			return *_location;

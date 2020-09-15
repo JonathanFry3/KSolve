@@ -26,10 +26,10 @@ struct Specification
 Specification GetSpec()
 {
 	Specification spec;
-	spec._samples = 100;
+	spec._samples = 1000;
 	spec._maxStates = 50'000'000;
 	spec._outputFile = "ran out.txt";
-	spec._seed0 = 58465713;
+	spec._seed0 = 95922957;
 	spec._drawSpec = 1;
 	return spec;
 }
@@ -44,7 +44,7 @@ int main()
 	}
 	std::mt19937 engine;
 	unsigned seed = spec._seed0;
-	for (unsigned sample = 0; sample < spec._samples; ++sample){
+	for (unsigned sample = 132; sample < spec._samples; ++sample){
 		engine.seed(seed);
 		vector<Card> deck;
 		for (unsigned i = 0; i < 52; ++i){
