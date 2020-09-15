@@ -1,9 +1,9 @@
 // mf_vector.hpp - implements a malloc-friendly vector-like template class
 //
-// mf_vector<T> allocates blocks of memory whose size is the larger
-// of 16*sizeof(T) or 4096 bytes.  It keeps track of them in a std::deque.
+// mf_vector<T> allocates blocks of memory whose default size is the larger
+// of 16*sizeof(T) or 4096 bytes.  It keeps track of them in a std::vector.
 // Think of it a a vector implemented with the storage technique of a deque.
-// Since it does not have to support changes at the front, it is faster
+// Since it does not have to support changes at the front, it may be faster
 // than a deque.
 //
 // In a std::vector, looping though members using [] is about as fast
@@ -12,14 +12,19 @@
 //
 // This has only enough of the vector functionality to satisfy KSolve.
 
-#include <deque>
+#include <vector>
 #include <utility>	// max
 #include <iterator>
 #include <cassert>
 #include <cstdlib>	// malloc, free
 #include <new>		// bad_alloc
 
-template <class T> class mf_vector
+template <
+	class T, 
+	size_t BlockSize			// Number of T elements per block.
+								// Powers of 2 are faster.
+		=std::max<size_t>(4096/sizeof(T), 16)> 
+class mf_vector
 {
 	struct Locater
 	{
@@ -30,10 +35,9 @@ template <class T> class mf_vector
 			, _offset(offset)
 		{}
 	};
-	std::deque<T*> _blocks;
+	std::vector<T*> _blocks;
 	size_t _size;
-	static const unsigned _blockSize = 
-			std::max<size_t>(4096/sizeof(T), 16);
+	static const unsigned _blockSize = BlockSize;
 	// Invariant: on exit from any public function,
 	// 0 < end._offset <= _blockSize
 	Locater _end;
@@ -72,8 +76,8 @@ public:
 	typedef size_t size_type;
 	class iterator: std::iterator<std::random_access_iterator_tag, T> 
 	{
-		friend class mf_vector<T>;
-		mf_vector<T>* _vector;
+		friend class mf_vector<T,BlockSize>;
+		mf_vector<T,BlockSize>* _vector;
 		size_t _index;
 		Locater _locater;
 		T* _location;
@@ -89,7 +93,7 @@ public:
 			_locater._offset += 1;
 			if (_locater._offset == _blockSize){
 				_locater = _vector->GetLocater(_index);
-				_location = _locater._block;
+				_location = _locater._block+_locater._offset;
 			} else {
 				_location += 1;
 			}
@@ -101,6 +105,9 @@ public:
 		bool operator!=(const iterator& other){
 			return !(*this == other);
 		}
+		int operator-(const iterator& o) {
+			return _index - o._index;
+		}
 		T& operator*() {
 			return *_location;
 		}
@@ -109,7 +116,9 @@ public:
 	mf_vector()
 		: _size(0)
 		, _end(nullptr,_blockSize)
-		{}
+		{
+			_blocks.reserve(32);
+		}
 	void clear() {
 		for (auto&m:*this) m.~T();	//destruct all
 		while (_blocks.size()) {
