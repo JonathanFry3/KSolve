@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <algorithm>  // for find()
 #include <random>
+#include "mf_vector.hpp"
 
 using namespace std;
 
@@ -293,6 +294,20 @@ int main()
 		string peekmvs = Peek(mvs);
 		assert (peekmvs == "(+6d-4>t3,wa>di,t1>t6x4u1)");
 	}
+	// Test mf_vector
+    mf_vector<int,4> vi;
+
+    for (int i: vi){
+        assert((false,"empty vector failed"));
+    }
+    
+    for (int i = 0; i<4; ++i) {
+        vi.push_back(i);
+    }
+
+    for (auto it = vi.begin(); it != vi.end(); ++it){
+        assert(*it == (it-vi.begin()));
+    }
 	{
 		// trivial is a trivial deal - all automatic moves
 		vector<string> trivial{
