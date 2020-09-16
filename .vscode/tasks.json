@@ -10,7 +10,6 @@
 			//	"-m32",
 			//	"-pg",
 				"-O3",
-				"-DNTHREADS=2",
 			//	"-DNDEBUG",
 				"-pthread",
 				"Game.cpp",
@@ -37,7 +36,6 @@
 			"args": [
 				"-g",
 				"-pthread",
-			//	"-DNTHREADS=1",
 				"Game.cpp",
 				"KSolve.cpp",
 				"unittests.cpp",
@@ -62,7 +60,6 @@
 			"args": [
 				"-g",
 				"-pthread",
-				"-DNTHREADS=2",
 				"-O3",
 				"Game.cpp",
 				"KSolve.cpp",
