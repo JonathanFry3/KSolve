@@ -169,7 +169,8 @@ void KSolveWorker(
 
 KSolveResult KSolve(
 		Game& game,
-		unsigned maxStates)
+		unsigned maxStates,
+		unsigned nthreads)
 {
 	Moves solution;
 	SharedMoveStorage sharedMoveStorage;
@@ -179,25 +180,24 @@ KSolveResult KSolve(
 	const unsigned startMoves = state._game.MinimumMovesLeft();
 
 	state._moveStorage.EnqueueMoveSequence(startMoves);	// pump priming
-#ifdef NTHREADS
-	constexpr unsigned nthreads = NTHREADS;
-#else
-	const unsigned nthreads { []() ->unsigned 
-	{
-		unsigned r = std::thread::hardware_concurrency();
-		if (r == 0) r = 2;
-		return r;
-	}() };
-#endif
+	
+	if (nthreads == 0)
+		nthreads = std::thread::hardware_concurrency() - 1;
+
+	// Start workers in their own threads
 	std::vector<std::thread> threads;
 	threads.reserve(nthreads-1);
 	for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
 		threads.emplace_back(&KSolveWorker, &state);
 		std::this_thread::sleep_for(std::chrono::milliseconds(23));
 	}
+
+	// Run one more worker in this (main) thread
 	KSolveWorker(&state);
+
 	for (auto& thread: threads) 
 		thread.join();
+	// Everybody's finished
 
 	KSolveCode outcome;
 	if (state.k_blewMemory) {
@@ -205,7 +205,11 @@ KSolveResult KSolve(
 	} else if (state._game_state_memory.size() >= maxStates){
 		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
 	} else {
-		outcome = state._minSolution.size() ? SOLVED : IMPOSSIBLE;
+		outcome = state._minSolution.size() 
+			? game.TalonLookAheadLimit() < 24
+				? GAVEUP_SOLVED
+				: SOLVED
+			: IMPOSSIBLE;
 	}
 	return KSolveResult(outcome,state._game_state_memory.size(),solution);
 }

@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
 
 	bool commandLoaded = false;
 	int outputMethod = 0;
-	int multiThreaded = 1;
+	int threads = 2;
 	int maxClosedCount = 0;
 	bool fastMode = false;
 	string fileContents;
@@ -123,6 +123,11 @@ int main(int argc, char * argv[]) {
 			showMoves = true;
 		} else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
 			replay = true;
+		} else if (_stricmp(argv[i], "-thread") == 0 || _stricmp(argv[i], "/thread") == 0 || _stricmp(argv[i], "-t") == 0 || _stricmp(argv[i], "/f") == 0) {
+			if (i + 1 >= argc) { cerr << "-THREAD option requires a number.\n"; return 100; }
+			threads = atoi(argv[i + 1]);
+			if (threads < 0) { cerr << "-THREADS requires a non-negative number\n"; return 100; }
+			i++;
 		} else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "/fast") == 0 || _stricmp(argv[i], "-f") == 0 || _stricmp(argv[i], "/f") == 0) {
 			if (i + 1 >= argc) { cerr << "-FAST option requires a number from 1 to 24.\n"; return 100; }
 			fastOption = atoi(argv[i + 1]);
@@ -130,7 +135,7 @@ int main(int argc, char * argv[]) {
 			i++;
 	} else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
 			cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
-			cout << "KSolver [-dc] [-d] [-g] [-o] [-s] [-r] [-mvs] [Path]\n\n";
+			cout << "KSolver [-dc] [-d] [-g] [-o] [-s] [-r] [-mvs] [-t] [-f] [Path]\n\n";
 			cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
 			cout << "  -deck str [-d str]    Loads the deck specified by the string.\n\n";
 			cout << "  -game # [-g #]        Loads a random game with seed #.\n\n";
@@ -142,9 +147,10 @@ int main(int argc, char * argv[]) {
 			cout << "                        solution is found.";
 			cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
 			cout << "                        before terminating. Defaults to 5,000,000.\n";
-			cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 0 to 9.  0 is fastest,\n";
+			cout << "  -threads # [-t #]     Sets the number of threads. Defaults to 2.\n";
+			cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
 			cout << "                        and most likely to give a non-minimal result or even\n";
-			cout << "                        no result for a solvable deal.\n\n";
+			cout << "                        no result for a solvable deal. 24 is like leaving this out.\n\n";
 			return 0;
 		} else {
 			if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
@@ -176,9 +182,9 @@ int main(int argc, char * argv[]) {
 		}
 
 		auto startTime = steady_clock::now();
-		KSolveResult outcome = KSolve(game, maxClosedCount);
+		KSolveResult outcome = KSolve(game, maxClosedCount, threads);
 		auto & result(outcome._code);
-		Moves & moves(outcome._solution);
+		Moves & moves(outcome._solution); 
 		unsigned moveCount = MoveCount(moves);
 		bool canReplay = false;
 		if (result == SOLVED) {
