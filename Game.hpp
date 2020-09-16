@@ -50,8 +50,9 @@ public:
 	void pop_back(unsigned n)						{for (unsigned i=0;i<n;++i) {pop_back();}}
 	void push_back(const T& cd)						{emplace_back(cd);}
 	void clear()									{while (_size) pop_back();}
-	void append(const_iterator begin, const_iterator end)	
-					{assert(_size+(end-begin)<Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
+	template <typename Iterator>
+	void append(Iterator begin, Iterator end)	
+					{assert(_size+(end-begin)<=Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	void erase(iterator x)
 					{x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
@@ -153,6 +154,19 @@ public:
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
 typedef fixed_capacity_vector<Card,24> CardVec;
+
+// Type to hold a complete deck
+struct CardDeck : fixed_capacity_vector<Card,52> 
+{
+	CardDeck () {}
+	CardDeck (const std::vector<Card> vec) 
+	{
+		append(vec.begin(), vec.end());
+	}
+};
+
+// Function to generate a randomly shuffled deck
+CardDeck NumberedDeal(uint_fast32_t seed);
 
 enum PileCode {
 	STOCK = 0,
@@ -363,13 +377,13 @@ class Game
 	Pile _stock;
 	std::array<Pile,7> _tableau;
 	std::array<Pile,4> _foundation;
-	std::vector<Card> _deck;
+	CardDeck _deck;
 	unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
 	unsigned _talonLookAheadLimit;
 	std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
 public:
-	Game(const std::vector<Card>& deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
+	Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
 	Game(const Game&);
 
 	Pile& Waste()       							{return _waste;}
@@ -383,6 +397,7 @@ public:
 	const std::array<Pile,7>& Tableau() const      	{return _tableau;}
 	const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
 	unsigned DrawSetting() const            		{return _drawSetting;}
+	unsigned TalonLookAheadLimit() const			{return _talonLookAheadLimit;}
 
 	void Deal();
 	QMoves AvailableMoves() const;

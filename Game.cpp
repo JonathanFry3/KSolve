@@ -4,6 +4,8 @@
 
 #include "Game.hpp"
 #include <cassert>
+#include <algorithm>		// random_shuffle
+#include <random>
 
 const std::string suits("cdsh");
 const std::string ranks("a23456789tjqka");
@@ -114,6 +116,23 @@ void Pile::Draw(Pile& other, int n)
 			Draw(other);
 	}
 }
+
+CardDeck NumberedDeal(uint_fast32_t seed)
+{
+	// Create and seed a random number generator
+	std::mt19937 engine;
+	engine.seed(seed);
+
+	// Create a new sorted pack of cards
+	CardDeck deck;
+	for (unsigned i = 0; i < 52; ++i){
+		deck.emplace_back(i);
+	}
+	// Randomly shuffle the deck
+	std::shuffle(deck.begin(),deck.end(),engine);
+	return deck;
+}
+
 static void SetAllPiles(Game& game)
 {
 	auto & allPiles = game.AllPiles();
@@ -123,7 +142,7 @@ static void SetAllPiles(Game& game)
 	for (int ip = 0; ip < 7; ip+=1) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
 }
 
-Game::Game(const std::vector<Card> &deck,unsigned draw,unsigned talonLookAheadLimit)
+Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit)
 	: _deck(deck)
 	, _waste(WASTE)
 	, _stock(STOCK)
