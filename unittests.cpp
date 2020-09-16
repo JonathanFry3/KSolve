@@ -11,9 +11,9 @@
 
 using namespace std;
 
-vector<Card> Cards(const std::vector<std::string>& strings)
+CardDeck Cards(const std::vector<std::string>& strings)
 {
-	vector<Card> result;
+	CardDeck result;
 	for (const auto& str: strings)
 	{
 		auto outcome = Card::FromString(str);
@@ -219,8 +219,7 @@ int main()
 		"st", "c2", 
 		"d8", "dq", "s7", "d6", "ct", "s2", "cj", "d7", "ht", "hk","d2", 
 		"h2", "h9", "s9", "h5", "h7", "c3", "d4", "h6", "sa", "s4", "hq", "d9","d5"});
-	vector<Card> deck = Cards(sdeck);
-	assert(deck.size() == 52);
+	CardDeck deck{Cards(sdeck)};
 
 	// Test Game::Deal()
 	{
