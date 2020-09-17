@@ -46,7 +46,7 @@ std::string Card::AsString() const
 
 // Make a Card from a string like "ah" or "s8".
 // Returns true if it succeeds.
-std::pair<bool,Card> Card::FromString(const std::string& s0)    
+std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept  
 {
 	const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
 	Suit_t suit;
@@ -86,7 +86,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0)
 	return std::pair<bool,Card>(ok,card);
 }
 
-CardVec Pile::Pop(unsigned n)
+CardVec Pile::Pop(unsigned n) noexcept
 {
 	CardVec result;
 	result.append(_cards.end()-n, _cards.end());
@@ -94,7 +94,7 @@ CardVec Pile::Pop(unsigned n)
 	return result;
 }
 
-CardVec Pile::Draw(unsigned n)
+CardVec Pile::Draw(unsigned n) noexcept
 {
 	CardVec result;
 	for (unsigned i = 0; i < n; i+=1) {
@@ -104,7 +104,7 @@ CardVec Pile::Draw(unsigned n)
 	return result;
 }
 
-void Pile::Draw(Pile& other, int n)
+void Pile::Draw(Pile& other, int n) noexcept
 {
 	if (n < 0) {
 		assert(-n <= Size());
@@ -182,9 +182,11 @@ void Game::Deal()
 	}
 	for (unsigned ic = 51; ic >= 28; ic-=1)
 		_stock.Push(_deck[ic]);
+
+	_needKingSpace = true;
 }
 
-void Game::MakeMove(Move mv)
+void Game::MakeMove(Move mv) noexcept
 {
 	const auto to = mv.To();
 	Pile& toPile = *_allPiles[to];
@@ -206,7 +208,7 @@ void Game::MakeMove(Move mv)
 	}
 }
 
-void  Game::UnMakeMove(Move mv)
+void  Game::UnMakeMove(Move mv) noexcept
 {
 	const auto to = mv.To();
 	Pile & toPile = *_allPiles[to];
@@ -225,7 +227,7 @@ void  Game::UnMakeMove(Move mv)
 	}
 }
 
-void Game::MakeMove(const XMove & xmv)
+void Game::MakeMove(const XMove & xmv) noexcept
 {
 	const auto from = xmv.From();
 	const auto to = xmv.To();
@@ -243,13 +245,13 @@ void Game::MakeMove(const XMove & xmv)
 	}
 }
 
-bool Game::GameOver() const 
+bool Game::GameOver() const noexcept
 {
 	return MinFoundationPileSize() == 13;
 }
 
 // Return the height of the shortest foundation pile
-unsigned Game::MinFoundationPileSize() const
+unsigned Game::MinFoundationPileSize() const noexcept
 {
 	const auto& fnd = _foundation;
 	unsigned result = fnd[0].Size();
@@ -386,12 +388,27 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves&
 	qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
 }
 
+// Return true if any more empty columns are needed for kings
+bool Game::NeedKingSpace() noexcept
+{
+	if (!_needKingSpace) return false;
+
+	// Count columns that are empty or headed by kings.
+	// If that count is less than four, we still need more empty columns.
+	unsigned cols = 0;
+	for (auto col=_tableau.begin(); col != _tableau.end() && cols < 4; col+=1){
+		cols += col->Size() == 0 || col->Top().Rank() == KING;
+	}
+	_needKingSpace = cols < 4;
+	return _needKingSpace;
+}
+
 // If any short-foundation moves exist, returns one of those.
 // Otherwise, returns a list of moves that are legal and not
 // known to be wasted.  Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-QMoves Game::AvailableMoves() const 
+QMoves Game::AvailableMoves() noexcept
 {
 	QMoves result;
 
@@ -449,9 +466,9 @@ QMoves Game::AvailableMoves() const
 					// in the to pile, so a move is possible.
 					const int moveCount = cardToCover.Rank() - fromTip.Rank();
 					assert(0 < moveCount && moveCount <= upCount);
-					if (moveCount == upCount){
+					if (moveCount==upCount && (upCount<fromPile.Size() || NeedKingSpace())){
 						// This move will expose a face-down card or
-						// clear a column.
+						// clear a column that's needed for a king.
 						// Move all the face-up cards on the from pile.
 						assert(fromBase.Covers(cardToCover));
 						result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
@@ -554,7 +571,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 // this result plus the number of moves made (from MoveCount())
 // must never decrease when a new move is made (monotonicity).
 // If it does, we won't know when to stop.
-unsigned Game::MinimumMovesLeft() const
+unsigned Game::MinimumMovesLeft() const noexcept
 {
 	const unsigned draw = DrawSetting();
 	const CardVec& waste = _waste.Cards();
@@ -730,7 +747,7 @@ static void InsertionSort(TabStateT& array) {
 	}
 }
 
-GameState::GameState(const Game& game)
+GameState::GameState(const Game& game) noexcept
 {
 	TabStateT tableauState;
 	const auto& tableau = game.Tableau();

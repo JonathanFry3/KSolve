@@ -36,27 +36,27 @@ public:
 	typedef const T* const_iterator;
 	fixed_capacity_vector() 						: _size(0){}
 	~fixed_capacity_vector()						{clear();}
-	size_t capacity() const 						{return Capacity;}
-	T & operator[](unsigned i)						{assert(i<_size); return _elem[i];}
-	const T& operator[](unsigned i) const			{assert(i<_size); return _elem[i];}
-	iterator begin()								{return _elem;}
-	const_iterator begin() const					{return _elem;}
-	size_t size() const								{return _size;}
-	iterator end()									{return _elem+_size;}
-	const_iterator end() const						{return _elem+_size;}
-	T & back()										{return _elem[_size-1];}
-	const T& back() const							{return _elem[_size-1];}
-	void pop_back()									{back().~T(); _size -= 1;}
-	void pop_back(unsigned n)						{for (unsigned i=0;i<n;++i) {pop_back();}}
-	void push_back(const T& cd)						{emplace_back(cd);}
-	void clear()									{while (_size) pop_back();}
+	size_t capacity() const noexcept				{return Capacity;}
+	T & operator[](unsigned i) noexcept				{assert(i<_size); return _elem[i];}
+	const T& operator[](unsigned i) const noexcept	{assert(i<_size); return _elem[i];}
+	iterator begin() noexcept						{return _elem;}
+	const_iterator begin() const noexcept			{return _elem;}
+	size_t size() const	noexcept					{return _size;}
+	iterator end() noexcept							{return _elem+_size;}
+	const_iterator end() const noexcept				{return _elem+_size;}
+	T & back() noexcept								{return _elem[_size-1];}
+	const T& back() const noexcept					{return _elem[_size-1];}
+	void pop_back()	noexcept						{assert(_size);back().~T(); _size -= 1;}
+	void pop_back(unsigned n) noexcept				{assert(n<=_size);for (unsigned i=0;i<n;++i) {pop_back();}}
+	void push_back(const T& cd)	noexcept			{emplace_back(cd);}
+	void clear() noexcept							{while (_size) pop_back();}
 	template <typename Iterator>
-	void append(Iterator begin, Iterator end)	
+	void append(Iterator begin, Iterator end) noexcept	
 					{assert(_size+(end-begin)<=Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
-	void erase(iterator x)
+	void erase(iterator x) noexcept
 					{x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
-	bool operator==(const V& other) const
+	bool operator==(const V& other) const noexcept
 					{	
 						if (_size != other.size()) return false;
 						auto iv = other.begin();
@@ -66,14 +66,15 @@ public:
 						return true;
 					}
 	template <class V>
-	fixed_capacity_vector<T,Capacity>& operator=(const V& other) 
+	fixed_capacity_vector<T,Capacity>& operator=(const V& other) noexcept
 					{
+						assert(other.size()<=Capacity);
 						_size = other.size();
 						std::copy(other.begin(),other.end(),begin());
 						return *this;
 					}
 	template <class ... Args>
-	void emplace_back(Args ... args)
+	void emplace_back(Args ... args) noexcept
 					{
 						assert(_size < Capacity);
 						new(end()) T(args...);
@@ -131,17 +132,17 @@ public:
 		{}
 
 
-	unsigned char Suit() const 			{return _suit;}
-	unsigned char Rank() const 			{return _rank;}
-	bool IsMajor() const				{return _isMajor;}
-	bool OddRed() const 				// true for card that fits on stacks where odd cards are red
+	unsigned char Suit() const noexcept	{return _suit;}
+	unsigned char Rank() const noexcept	{return _rank;}
+	bool IsMajor() const noexcept		{return _isMajor;}
+	bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
 										{return _parity;}
-	unsigned Value() const				{return 13*_suit+_rank;}
+	unsigned Value() const noexcept		{return 13*_suit+_rank;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(Card c) const 			// can c be moved onto this card on a tableau pile?
+	bool Covers(Card c) const noexcept	// can c be moved onto this card on a tableau pile?
 										{return _parity == c._parity && _rank+1 == c._rank;}
-	bool operator==(Card o) const 		{return _suit==o._suit && _rank==o._rank;}
-	bool operator!=(Card o) const 		{return ! (o == *this);}
+	bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
+	bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 
 	// Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
 	// Ignores characters that cannot appear in a valid card string.
@@ -149,7 +150,7 @@ public:
 	// upper or lower case, or mixed.
 	// Returns true and the specified Card if it succeeds, 
 	// false and garbage if it fails,
-	static std::pair<bool,Card> FromString(const std::string& s);
+	static std::pair<bool,Card> FromString(const std::string& s) noexcept;
 };
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
@@ -158,9 +159,10 @@ typedef fixed_capacity_vector<Card,24> CardVec;
 // Type to hold a complete deck
 struct CardDeck : fixed_capacity_vector<Card,52> 
 {
-	CardDeck () {}
-	CardDeck (const std::vector<Card> vec) 
+	CardDeck () = default;
+	CardDeck (const std::vector<Card> vec) noexcept
 	{
+		assert(vec.size() == 52);
 		append(vec.begin(), vec.end());
 	}
 };
@@ -203,31 +205,31 @@ public:
 	, _isFoundation(FOUNDATION <= code && code < FOUNDATION+4)
 	{}
 
-	unsigned Code() const 							{return _code;}
-	unsigned UpCount() const 						{return _upCount;}
-	bool IsTableau() const 							{return _isTableau;}
-	bool IsFoundation() const 						{return _isFoundation;}
-	unsigned Size() const 							{return _cards.size();}
+	unsigned Code() const noexcept					{return _code;}
+	unsigned UpCount() const noexcept				{return _upCount;}
+	bool IsTableau() const noexcept					{return _isTableau;}
+	bool IsFoundation() const noexcept				{return _isFoundation;}
+	unsigned Size() const noexcept					{return _cards.size();}
 
-	void SetUpCount(unsigned up)					{_upCount = up;}
-	void IncrUpCount(int c) 						{_upCount += c;}
-	const Card & operator[](unsigned which) const   {return _cards[which];}
-	const CardVec& Cards() const 					{return _cards;}
-	Card Pop()               {Card r = _cards.back(); _cards.pop_back(); return r;}
-	void Push(Card c)              			{_cards.push_back(c);}
-	CardVec Pop(unsigned n);
-	void Push(CardVec::const_iterator begin, CardVec::const_iterator end)
+	void SetUpCount(unsigned up) noexcept			{_upCount = up;}
+	void IncrUpCount(int c) noexcept				{_upCount += c;}
+	const Card & operator[](unsigned which) const noexcept  {return _cards[which];}
+	const CardVec& Cards() const noexcept			{return _cards;}
+	Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
+	void Push(Card c) noexcept             			{_cards.push_back(c);}
+	CardVec Pop(unsigned n) noexcept;
+	void Push(CardVec::const_iterator begin, CardVec::const_iterator end) noexcept
 											{_cards.append(begin,end);}
-	void Push(const CardVec& cds)           {this->Push(cds.begin(),cds.end());}
-	Card Top() const                        {return *(_cards.end()-_upCount);}
-	Card Back() const                       {return _cards.back();}
-	void ClearCards()                       {_cards.clear(); _upCount = 0;}
-	CardVec Draw(unsigned n);         		// like Pop(), but reverses order of cards drawn
-	void Draw(Pile & from)					{_cards.push_back(from._cards.back()); from._cards.pop_back();}
-	void Draw(Pile & from, int nCards);
+	void Push(const CardVec& cds) noexcept  {this->Push(cds.begin(),cds.end());}
+	Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
+	Card Back() const noexcept				{return _cards.back();}
+	void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
+	CardVec Draw(unsigned n) noexcept; 		// like Pop(), but reverses order of cards drawn
+	void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
+	void Draw(Pile & from, int nCards) noexcept;
 };
 
-static bool IsTableau(unsigned pile)
+static bool IsTableau(unsigned pile) noexcept
 {
 	return TABLEAU <= pile && pile < TABLEAU+7;
 }
@@ -260,12 +262,12 @@ private:
 	};
 
 public:
-	Move() {}
+	Move() = default;
 	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
 	// from stock. One card is then moved from the waste pile to the "to" pile.
 	// All talon moves, and only talon moves, are from the stock pile.
-	Move(unsigned to, unsigned nMoves, int draw)
+	Move(unsigned to, unsigned nMoves, int draw) noexcept
 		: _from(STOCK)
 		, _to(to)
 		, _nMoves(nMoves)
@@ -273,7 +275,7 @@ public:
 		{}
 	// Construct a non-talon move.  UnMakeMove() can't infer the count
 	// of face-up cards in a tableau pile, so AvailableMoves() saves it.
-	Move(unsigned from, unsigned to, unsigned n, unsigned fromUpCount)
+	Move(unsigned from, unsigned to, unsigned n, unsigned fromUpCount) noexcept
 		: _from(from)
 		, _to(to)
 		, _nMoves(1)
@@ -283,13 +285,13 @@ public:
 			assert(from != STOCK);
 		}
 
-	bool IsTalonMove() const 		{return _from==STOCK;}
-	unsigned From() const 			{return _from;}
-	unsigned To()   const			{return _to;}
-	unsigned NCards()    const 		{return (_from == STOCK) ? 1 : _n;}     
-	unsigned FromUpCount() const 	{return _fromUpCount;}
-	unsigned NMoves() const			{return _nMoves;}
-	int DrawCount() const			{return _drawCount;}
+	bool IsTalonMove() const noexcept	{return _from==STOCK;}
+	unsigned From() const noexcept		{return _from;}
+	unsigned To()   const noexcept		{return _to;}
+	unsigned NCards()    const noexcept	{return (_from == STOCK) ? 1 : _n;}     
+	unsigned FromUpCount() const noexcept{return _fromUpCount;}
+	unsigned NMoves() const	noexcept	{return _nMoves;}
+	int DrawCount() const noexcept		{return _drawCount;}
 };
 
 typedef std::vector<Move> Moves;
@@ -299,7 +301,7 @@ typedef fixed_capacity_vector<Move,74> QMoves;
 
 // Return the number of actual moves implied by a vector of Moves.
 template <class SeqType>
-unsigned MoveCount(const SeqType& moves)
+unsigned MoveCount(const SeqType& moves) noexcept
 {
 	unsigned result = 0;
 	for (auto & move: moves)
@@ -381,6 +383,9 @@ class Game
 	unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
 	unsigned _talonLookAheadLimit;
 	std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
+	bool _needKingSpace;				// do we need any more empty columns for kings?
+
+	bool NeedKingSpace() noexcept;
 
 public:
 	Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
@@ -400,13 +405,13 @@ public:
 	unsigned TalonLookAheadLimit() const			{return _talonLookAheadLimit;}
 
 	void Deal();
-	QMoves AvailableMoves() const;
-	void  MakeMove(Move mv);
-	void  UnMakeMove(Move mv);
-	unsigned MinimumMovesLeft() const;
-	void MakeMove(const XMove& xmv);
-	unsigned MinFoundationPileSize() const;
-	bool GameOver() const;
+	QMoves AvailableMoves() noexcept;
+	void  MakeMove(Move mv) noexcept;
+	void  UnMakeMove(Move mv) noexcept;
+	unsigned MinimumMovesLeft() const noexcept;
+	void MakeMove(const XMove& xmv) noexcept;
+	unsigned MinFoundationPileSize() const noexcept;
+	bool GameOver() const noexcept;
 };
 
 // Return a string to visualize the state of a game
@@ -425,8 +430,8 @@ std::string Peek (const Game& game);
 struct GameState {
 	typedef std::uint_fast64_t PartType;
 	std::array<PartType,3> _part;
-	GameState(const Game& game);
-	bool operator==(const GameState& other) const
+	GameState(const Game& game) noexcept;
+	bool operator==(const GameState& other) const noexcept
 	{
 		return _part[0] == other._part[0]
 			&& _part[1] == other._part[1]
