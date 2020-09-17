@@ -438,5 +438,14 @@ struct GameState {
 			&& _part[2] == other._part[2];
 	}
 };
+struct Hasher
+{
+	size_t operator() (const GameState & gs) const noexcept
+	{
+		return 	  gs._part[0]
+				^ gs._part[1]
+				^ gs._part[2];
+	}
+};
 
 #endif      // GAME_HPP

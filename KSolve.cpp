@@ -17,18 +17,6 @@ typedef std::lock_guard<Mutex> Guard;
 typedef std::shared_lock<SharedMutex> SharedGuard;
 typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 
-class Hasher
-{
-public:
-	size_t operator() (const GameState & gs) const noexcept
-	{
-		size_t result = 	 gs._part[0]
-					  	   ^ gs._part[1]
-						   ^ gs._part[2];
-		return result;
-	}
-};
-
 enum {maxMoves = 512};
 typedef fixed_capacity_deque<Move,maxMoves> MoveSequenceType;
 
