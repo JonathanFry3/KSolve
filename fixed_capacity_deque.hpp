@@ -23,99 +23,99 @@ public:
     typedef T* iterator;
     typedef const T* const_iterator;
 
-    fixed_capacity_deque()
+    fixed_capacity_deque() noexcept
         : _begin(_elem+Capacity)
         , _end(_elem+Capacity)
         {}
-	void clear() {
+	void clear() noexcept {
         for (T&elem: *this)
             elem.~T();      // destruct all elements
         _begin = _end = _elem+Capacity;
 	}
-	~fixed_capacity_deque() {
+	~fixed_capacity_deque() noexcept{
 		clear();
 	}
-	size_type size() const{
+	size_type size() const noexcept{
 		return _end-_begin;
 	}
-	bool empty() const {
+	bool empty() const noexcept{
 		return size() == 0;
 	}
 	template <class ... Args>
-	void emplace_front(Args...args){
+	void emplace_front(Args...args) noexcept{
         assert(_elem < _begin);
 		new(_begin-1) T(args...);
 		_begin -= 1;
 	}
-	void push_front(const T& t){
+	void push_front(const T& t) noexcept{
 		emplace_front(t);
 	}
-	void pop_front(){
+	void pop_front() noexcept{
         assert(_begin<_end);
         _begin += 1;
 		(_begin-1)->~T();  //destruct
     }
 	template <class ... Args>
-	void emplace_back(Args...args){
+	void emplace_back(Args...args) noexcept{
         assert(_end<_elem+2*Capacity+1);
 		new(_end) T(args...);
 		_end += 1;
 	}
-	void push_back(const T& t){
+	void push_back(const T& t) noexcept{
 		emplace_back(t);
 	}
-	void pop_back(){
+	void pop_back() noexcept{
         assert(_begin<_end);
 		back().~T();  //destruct
         _end -= 1;
 	}
-	T& back() {
+	T& back() noexcept{
         assert(_begin<_end);
 		return *(_end-1);
 	}
-	const T& back() const {
+	const T& back() const noexcept{
         assert(_begin<_end);
 		return *(_end-1);
 	}
 
-	T& operator[](size_type index){
+	T& operator[](size_type index)noexcept{
         assert(_begin+index<_end);
         return *(_begin+index);
 	}
-	const T& operator[](size_type index) const{
+	const T& operator[](size_type index) const noexcept{
         assert(_begin+index<_end);
         return *(_begin+index);
 	}
-	iterator begin() {
+	iterator begin() noexcept{
 		return _begin;
 	}
 	iterator end() {
 		return _end;
 	}
-	const_iterator begin() const {
+	const_iterator begin() const noexcept{
 		return _begin;
 	}
-	const_iterator end() const{
+	const_iterator end() const noexcept{
 		return _end;
 	}
 
     class const_reverse_iterator: std::iterator<std::random_access_iterator_tag, T>
     {
         const T* _p;
-        explicit const_reverse_iterator(const T* p)
+        explicit const_reverse_iterator(const T* p) noexcept
             : _p(p) {}
         friend class fixed_capacity_deque;
     public:
-        const T& operator*()                                        {return *_p;}
-        const_reverse_iterator& operator++(/*prefix*/)              {--_p;return *this;}
-        const_reverse_iterator& operator--(/*prefix*/)              {++_p;return *this;}
-        bool operator==(const const_reverse_iterator& other) const  {return _p==other._p;}
-        bool operator!=(const const_reverse_iterator& other) const  {return _p!=other._p;}
+        const T& operator*() noexcept                               {return *_p;}
+        const_reverse_iterator& operator++(/*prefix*/) noexcept     {--_p;return *this;}
+        const_reverse_iterator& operator--(/*prefix*/) noexcept     {++_p;return *this;}
+        bool operator==(const const_reverse_iterator& other) const noexcept {return _p==other._p;}
+        bool operator!=(const const_reverse_iterator& other) const noexcept {return _p!=other._p;}
     };
-    const_reverse_iterator crbegin() const{
+    const_reverse_iterator crbegin() const noexcept{
         return const_reverse_iterator(_end-1);
     }
-    const_reverse_iterator crend() const{
+    const_reverse_iterator crend() const noexcept{
         return const_reverse_iterator(_begin-1);
     }
 };

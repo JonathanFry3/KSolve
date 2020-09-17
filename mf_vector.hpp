@@ -30,7 +30,7 @@ class mf_vector
 	{
 		T* _block;
 		unsigned _offset;
-		Locater(T*block, unsigned offset)
+		Locater(T*block, unsigned offset) noexcept
 			: _block(block)
 			, _offset(offset)
 		{}
@@ -42,7 +42,7 @@ class mf_vector
 	// 0 < end._offset <= _blockSize
 	Locater _end;
 
-	Locater GetLocater(size_t index) const {
+	Locater GetLocater(size_t index) const noexcept{
 		assert(index <= _size);
 		if (index == _size) {
 			return _end;
@@ -59,7 +59,7 @@ class mf_vector
 		_end._offset = 0;
 		_blocks.push_back(_end._block);
 	}
-	void DeallocBack(){
+	void DeallocBack() noexcept {
 		assert(_blocks.size());
 		free(_blocks.back());
 		_blocks.pop_back();
@@ -81,14 +81,14 @@ public:
 		size_t _index;
 		Locater _locater;
 		T* _location;
-		explicit iterator(mf_vector* vector, size_t index)
+		explicit iterator(mf_vector* vector, size_t index) noexcept
 			: _vector(vector)
 			, _index(index)
 			, _locater(vector->GetLocater(index))
 			, _location(_locater._block+_locater._offset)
 			{}
 	public:
-		T& operator++(){		// prefix increment, as in ++iter;
+		T& operator++() noexcept {		// prefix increment, as in ++iter;
 			_index += 1;
 			_locater._offset += 1;
 			if (_locater._offset == _blockSize){
@@ -99,40 +99,40 @@ public:
 			}
 			return *_location;
 		}
-		bool operator==(const iterator& other){
+		bool operator==(const iterator& other) noexcept {
 			return _location == other._location;
 		}
-		bool operator!=(const iterator& other){
+		bool operator!=(const iterator& other) noexcept {
 			return !(*this == other);
 		}
-		int operator-(const iterator& o) {
+		int operator-(const iterator& o) noexcept {
 			return _index - o._index;
 		}
-		T& operator*() {
+		T& operator*() noexcept {
 			return *_location;
 		}
 	};
 	friend class iterator;
-	mf_vector()
+	mf_vector() 
 		: _size(0)
 		, _end(nullptr,_blockSize)
 		{
 			_blocks.reserve(32);
 		}
-	void clear() {
+	void clear() noexcept {
 		for (auto&m:*this) m.~T();	//destruct all
 		while (_blocks.size()) {
 			DeallocBack();
 		}
 		_size = 0;
 	}
-	~mf_vector() {
+	~mf_vector() noexcept {
 		clear();
 	}
-	size_t size() const{
+	size_t size() const noexcept{
 		return _size;
 	}
-	bool empty() const {
+	bool empty() const noexcept{
 		return size() == 0;
 	}
 	template <class ... Args>
@@ -146,7 +146,7 @@ public:
 	void push_back(const T& t){
 		emplace_back(t);
 	}
-	void pop_back(){
+	void pop_back() noexcept{
 		assert(_size);
 		back().~T();  //destruct
 		_size -= 1;
@@ -156,31 +156,31 @@ public:
 			_end._offset -= 1;
 		}
 	}
-	T& back() {
+	T& back() noexcept {
 		assert(_end._offset > 0);
 		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
-	const T& back() const {
+	const T& back() const noexcept {
 		assert(_end._offset > 0);
 		assert(_end._block!=nullptr);
 		return _end._block[_end._offset-1];
 	}
 
-	T& operator[](size_t index){
+	T& operator[](size_t index) noexcept {
 		assert(index < _size);
 		Locater d(GetLocater(index));
 		return d._block[d._offset];
 	}
-	const T& operator[](size_t index) const{
+	const T& operator[](size_t index) const noexcept{
 		assert(index < _size);
 		Locater d(GetLocater(index));
 		return d._block[d._offset];
 	}
-	iterator begin() {
+	iterator begin() noexcept {
 		return iterator(this,0);
 	}
-	iterator end() {
+	iterator end() noexcept {
 		return iterator(this,_size);
 	}
 };
