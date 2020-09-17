@@ -30,7 +30,7 @@
         },
         */
         {
-            "name": "Test Game, KSolve, GameStateType",
+            "name": "Test ran",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/unittests",
@@ -48,26 +48,6 @@
                 }
             ]
         }
-        /*
-        {
-            "name": "Test ran",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/ran",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        }
-        */
+        //
     ]
 }
