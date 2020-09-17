@@ -20,7 +20,7 @@ typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 class Hasher
 {
 public:
-	size_t operator() (const GameState & gs) const 
+	size_t operator() (const GameState & gs) const noexcept
 	{
 		size_t result = 	 gs._part[0]
 					  	   ^ gs._part[1]
@@ -77,11 +77,11 @@ public:
 	// Constructor.
 	MoveStorage(SharedMoveStorage& shared);
 	// Return a reference to the storage shared among threads
-	SharedMoveStorage& Shared() const {return _shared;}
+	SharedMoveStorage& Shared() const noexcept {return _shared;}
 	// Push the given move to the back of the current sequence of moves.
 	void Push(Move move);
 	// Remove the last move from the current move sequence.
-	void Pop();
+	void Pop() noexcept;
 	// File the current move sequence under the given index number.
 	// Calls after the first may not use an index less than the first.
 	// Expects index > 0.
@@ -89,14 +89,14 @@ public:
 	// Fetch a move sequence with the lowest available index, make it
 	// the current move sequence and remove it from the queue.  
 	// Return its index number, or zero if no more sequences are available.
-	unsigned DequeueMoveSequence(); 
+	unsigned DequeueMoveSequence() noexcept; 
 	// Make all the moves in the current sequence
-	void MakeSequenceMoves(Game&game);
+	void MakeSequenceMoves(Game&game) const noexcept;
 	// Return the current move sequence in a vector.
 	Moves MovesVector() const;
 	// Return a const reference to the current move sequence in its
 	// native type.
-	const MoveSequenceType& MoveSequence() const {return _currentSequence;}
+	const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 };
 
 struct KSolveState {
@@ -154,11 +154,11 @@ struct KSolveState {
 		, _maxStates(orig._maxStates)
 		{}
 			
-	QMoves MakeAutoMoves();
+	QMoves MakeAutoMoves() noexcept;
 	void CheckForMinSolution();
 	bool IsShortPathToState(unsigned minMoveCount);
-	bool SkippableMove(Move mv);
-	QMoves FilteredAvailableMoves();
+	bool SkippableMove(Move mv)noexcept;
+	QMoves FilteredAvailableMoves()noexcept;
 };
 unsigned KSolveState::k_minSolutionCount(-1);
 Mutex KSolveState::k_minSolutionMutex;
@@ -279,7 +279,7 @@ void MoveStorage::Push(Move move)
 	}
 	_leafIndex = ind;
 }
-void MoveStorage::Pop()
+void MoveStorage::Pop() noexcept
 {
 	_currentSequence.pop_back();
 	_leafIndex = _shared._moveTree[_leafIndex]._prevNode;
@@ -306,7 +306,7 @@ void MoveStorage::EnqueueMoveSequence(unsigned index)
 		_shared._fringe[offset].push_back(_leafIndex);
 	}
 }
-unsigned MoveStorage::DequeueMoveSequence()
+unsigned MoveStorage::DequeueMoveSequence() noexcept
 {
 	unsigned offset;
 	unsigned size;
@@ -346,7 +346,7 @@ unsigned MoveStorage::DequeueMoveSequence()
 	}
 	return result;
 }
-void MoveStorage::MakeSequenceMoves(Game&game)
+void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {
 	for (auto & move: _currentSequence){
 		game.MakeMove(move);
@@ -359,7 +359,7 @@ Moves MoveStorage::MovesVector() const
 }
 
 
-QMoves KSolveState::MakeAutoMoves()
+QMoves KSolveState::MakeAutoMoves() noexcept
 {
 	QMoves availableMoves;
 	while ((availableMoves = FilteredAvailableMoves()).size() == 1)
@@ -371,7 +371,7 @@ QMoves KSolveState::MakeAutoMoves()
 }
 
 // Return a vector of the available moves that pass the SkippableMove filter
-QMoves KSolveState::FilteredAvailableMoves()
+QMoves KSolveState::FilteredAvailableMoves() noexcept
 {
 	QMoves availableMoves = _game.AvailableMoves();
 	for (auto i = availableMoves.begin(); i < availableMoves.end(); ){
@@ -386,7 +386,7 @@ QMoves KSolveState::FilteredAvailableMoves()
 
 
 // Return true if this move cannot be in a minimum solution.
-bool KSolveState::SkippableMove(Move trial)
+bool KSolveState::SkippableMove(Move trial) noexcept
 {
 	// Consider a move at time T0 from A to B and the next move
 	// from B, which goes to C at time Tn.  The move at Tn is
@@ -438,7 +438,7 @@ bool KSolveState::SkippableMove(Move trial)
 
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
-void KSolveState::CheckForMinSolution(){
+void KSolveState::CheckForMinSolution() {
 	const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
 	{
 		Guard karen(k_minSolutionMutex);
