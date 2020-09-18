@@ -162,6 +162,7 @@ Game::Game(const Game& orig)
 	, _foundation(orig._foundation)
 	, _tableau(orig._tableau)
 	, _talonLookAheadLimit(orig._talonLookAheadLimit)
+	, _needKingSpace(orig._needKingSpace)
 	{
 		SetAllPiles(*this);
 	}
