@@ -162,7 +162,7 @@ Game::Game(const Game& orig)
 	, _foundation(orig._foundation)
 	, _tableau(orig._tableau)
 	, _talonLookAheadLimit(orig._talonLookAheadLimit)
-	, _needKingSpace(orig._needKingSpace)
+	, _kingSpaces(orig._kingSpaces)
 	{
 		SetAllPiles(*this);
 	}
@@ -170,6 +170,8 @@ Game::Game(const Game& orig)
 // Deal the cards for Klondike Solitaire.
 void Game::Deal()
 {
+	_kingSpaces = 0;
+
 	for (auto pile: _allPiles)	{
 		pile->ClearCards();
 	}
@@ -180,11 +182,10 @@ void Game::Deal()
 			ideck += 1;
 		}
 		_tableau[i].SetUpCount(1);      // turn up the top card
+		_kingSpaces += _tableau[i][0].Rank() == KING;	// count kings at base
 	}
 	for (unsigned ic = 51; ic >= 28; ic-=1)
 		_stock.Push(_deck[ic]);
-
-	_needKingSpace = true;
 }
 
 void Game::MakeMove(Move mv) noexcept
@@ -203,8 +204,12 @@ void Game::MakeMove(Move mv) noexcept
 		// For other piles, it is undefined.
 		toPile.IncrUpCount(n);
 		fromPile.IncrUpCount(-n);
-		if (fromPile.UpCount() == 0 && fromPile.Size()!= 0){
-			fromPile.SetUpCount(1);    // flip the top card
+		if (fromPile.Size() == 0)
+			_kingSpaces += fromPile.IsTableau(); // count newly cleared columns
+		else {
+			if (fromPile.UpCount() == 0){
+				fromPile.SetUpCount(1);    // flip the top card
+			}
 		}
 	}
 }
@@ -220,10 +225,11 @@ void  Game::UnMakeMove(Move mv) noexcept
 	} else {
 		const auto n = mv.NCards();
 		Pile & fromPile = *_allPiles[mv.From()];
-		fromPile.Push(toPile.Pop(n));
 		if (fromPile.IsTableau()) {
+			_kingSpaces -= fromPile.Size() == 0;  // uncount newly cleared columns
 			fromPile.SetUpCount(mv.FromUpCount());
 		}
+		fromPile.Push(toPile.Pop(n));
 		toPile.IncrUpCount(-n);
 	}
 }
@@ -390,8 +396,9 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves&
 }
 
 // Return true if any more empty columns are needed for kings
-bool Game::NeedKingSpace() noexcept
+bool Game::NeedKingSpace() const noexcept
 {
+<<<<<<< Updated upstream
 	if (!_needKingSpace) return false;
 
 	// Count columns that are empty or headed by kings.
@@ -402,6 +409,9 @@ bool Game::NeedKingSpace() noexcept
 	}
 	_needKingSpace = cols < 4;
 	return _needKingSpace;
+=======
+	return _kingSpaces < 4;
+>>>>>>> Stashed changes
 }
 
 // If any short-foundation moves exist, returns one of those.

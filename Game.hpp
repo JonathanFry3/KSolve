@@ -383,9 +383,9 @@ class Game
 	unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
 	unsigned _talonLookAheadLimit;
 	std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
-	bool _needKingSpace;				// do we need any more empty columns for kings?
+	unsigned _kingSpaces;
 
-	bool NeedKingSpace() noexcept;
+	bool NeedKingSpace() const noexcept;
 
 public:
 	Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
