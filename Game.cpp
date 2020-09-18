@@ -398,7 +398,7 @@ bool Game::NeedKingSpace() noexcept
 	// If that count is less than four, we still need more empty columns.
 	unsigned cols = 0;
 	for (auto col=_tableau.begin(); col != _tableau.end() && cols < 4; col+=1){
-		cols += col->Size() == 0 || col->Top().Rank() == KING;
+		cols += col->Size() == 0 || (*col)[0].Rank() == KING;
 	}
 	_needKingSpace = cols < 4;
 	return _needKingSpace;
