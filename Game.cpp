@@ -398,20 +398,7 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves&
 // Return true if any more empty columns are needed for kings
 bool Game::NeedKingSpace() const noexcept
 {
-<<<<<<< Updated upstream
-	if (!_needKingSpace) return false;
-
-	// Count columns that are empty or headed by kings.
-	// If that count is less than four, we still need more empty columns.
-	unsigned cols = 0;
-	for (auto col=_tableau.begin(); col != _tableau.end() && cols < 4; col+=1){
-		cols += col->Size() == 0 || (*col)[0].Rank() == KING;
-	}
-	_needKingSpace = cols < 4;
-	return _needKingSpace;
-=======
 	return _kingSpaces < 4;
->>>>>>> Stashed changes
 }
 
 // If any short-foundation moves exist, returns one of those.
