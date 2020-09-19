@@ -18,6 +18,7 @@ copies or substantial portions of the Software.
 #include<fstream>
 #include<sstream>		// for stringstream
 #include<iomanip>		// for setprecision
+#include<algorithm>		// for find
 #include<ctime>
 #include<chrono>
 #include<cmath>			// for ceil
@@ -424,7 +425,8 @@ vector<Card> SolitaireDeck(string const& cardSet) {
 			cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
 			return empty;
 		}
-		unsigned suit = suitchar - '1';
+		char suits [] {"1243"};
+		unsigned suit = find(suits,suits+4,suitchar) - suits;
 		Card cd(suit,rank-1);
 		if (dupchk(cd)) {
 			return empty;
