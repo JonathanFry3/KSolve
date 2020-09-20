@@ -310,6 +310,10 @@ bool KSolveState::SkippableMove(Move trial)
 		const Move mv = *imv;
 		if (mv.To() == B){
 			// candidate T0 move
+			if (mv.From() == C) {
+				if (IsTableau(C) && mv.NCards() == mv.FromUpCount())
+					return false;
+			}
 			return  mv.NCards() == trial.NCards();
 		} else {
 			// intervening move
