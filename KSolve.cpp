@@ -389,8 +389,8 @@ bool KSolveState::SkippableMove(Move trial) noexcept
 	// no intervening move has changed pile B and the two moves
 	// move the same number of cards.
 
-	// Was the move from A to C possible at T0? Yes if no intervening
-	// move has changed pile C.
+	// Was the move from A to C possible at T0? Yes if neither that move
+	// nor an intervening move has changed pile C.
 
 	// Since nothing says A cannot equal C, this test catches 
 	// moves that exactly reverse previous moves.
@@ -403,6 +403,8 @@ bool KSolveState::SkippableMove(Move trial) noexcept
 		if (mv.To() == B){
 			// candidate T0 move
 			if (mv.From() == C) {
+				// If A=C and the A to B move flipped a tableau card
+				// face up, then it changed C.
 				if (IsTableau(C) && mv.NCards() == mv.FromUpCount())
 					return false;
 			}
