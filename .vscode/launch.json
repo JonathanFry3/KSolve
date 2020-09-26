@@ -4,7 +4,7 @@
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        /*
+        //
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
@@ -13,7 +13,8 @@
             "args": [
                 "-out", "2"
             //    ,"-mvs"
-                ,"TestDeals.txt"
+                ,"-t","3"
+                ,"randoms.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -28,7 +29,7 @@
                 }
             ]
         },
-        */
+        /*
         {
             "name": "Test ran",
             "type": "cppdbg",
@@ -48,6 +49,6 @@
                 }
             ]
         }
-        //
+        */
     ]
 }
