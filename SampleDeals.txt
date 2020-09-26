@@ -16,6 +16,9 @@ Talon: TC TS AD 4D QS 3H 3S JH TD KC 8H 8S 4S 4H KS 6D 8D 7C JD 9D 2H QD 3D AS
 <QC> <3C> <JS> <2C> 7D
 <5H> <7S> <KD> <9C> <JC> AH
 <4C> <6S> <2S> <6C> <6H> <TH> KH
+#1 = 109 moves (81,510 states), 3 = 102 moves (29,540 states)
+#ShootMe's code needs two more moves at draw 1
+Game: 1407222
 #Reverse-Pysol game
 #1 = 99 moves (42,540 states), 3 = 84 moves (1,345,000 states)
 nolaT: hj c4 s3 hk h9 da ca d8 c2 st dq h5 s2 sa hq sq ht s9 sj d2 c6 ha cq h4
