@@ -567,8 +567,16 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 // this game.  This function must return a result that does not 
 // decrease by more than one after any single move.  The sum of 
 // this result plus the number of moves made (from MoveCount())
-// must never decrease when a new move is made (monotonicity).
+// must never decrease when a new move is made (consistency).
 // If it does, we won't know when to stop.
+//
+// From https://en.wikipedia.org/wiki/Consistent_heuristic:
+//
+//		In the study of path-finding problems in artificial 
+//		intelligence, a heuristic function is said to be consistent, 
+//		or monotone, if its estimate is always less than or equal 
+//		to the estimated distance from any neighbouring vertex to 
+//		the goal, plus the cost of reaching that neighbour.
 unsigned Game::MinimumMovesLeft() const noexcept
 {
 	const unsigned draw = DrawSetting();
@@ -579,7 +587,7 @@ unsigned Game::MinimumMovesLeft() const noexcept
 	unsigned result = talonCount + QuotientRoundedUp(stock.size(),draw);
 
 	if (draw == 1) {
-		// This can fail the monotonicity test for draw setting > 1.
+		// This can fail the consistency test for draw setting > 1.
 		result += MisorderCount(waste.begin(), waste.end());
 	}
 
