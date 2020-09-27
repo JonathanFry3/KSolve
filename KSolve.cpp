@@ -32,7 +32,7 @@ class SharedMoveStorage
 			, _prevNode(prevNode)
 			{}
 	};
-	mf_vector<MoveNode,32*1024> _moveTree;
+	mf_vector<MoveNode,16*1024> _moveTree;
 	Mutex _moveTreeMutex;
 	// Stack of indexes to leaf nodes in _moveTree
 	typedef mf_vector<NodeX> LeafNodeStack;

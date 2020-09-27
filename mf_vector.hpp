@@ -8,7 +8,12 @@
 //
 // In a std::vector, looping though members using [] is about as fast
 // as using an iterator.  With an mf_vector (or a std::deque), 
-// an iterator is faster.
+// an iterator is faster, especially so if sizeof(T) is not a power of 2.
+//
+// Data Races: emplace_back() and push_back() modify the container.  If 
+// reallocation happens in the vector that tracks the storage blocks,
+// all elements of that vector are modified.  Otherwise, no existing element
+// is accessed and concurrently accessing or modifying them is safe.
 //
 // This has only enough of the vector functionality to satisfy KSolve.
 
@@ -117,7 +122,7 @@ public:
 		: _size(0)
 		, _end(nullptr,_blockSize)
 		{
-			_blocks.reserve(32);
+			_blocks.reserve(_blockSize);
 		}
 	void clear() noexcept {
 		for (auto&m:*this) m.~T();	//destruct all
