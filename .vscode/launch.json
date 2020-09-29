@@ -4,12 +4,12 @@
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        //
+        /*
         {
-            "name": "(gdb) Launch",
+            "name": "(gdb) Launch KSolverA",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/KSolver",
+            "program": "${workspaceFolder}/KSolverA",
             "args": [
                 "-out", "2"
             //    ,"-mvs"
@@ -29,13 +29,17 @@
                 }
             ]
         },
-        /*
+        */
         {
-            "name": "Test ran",
+            "name": "Test rana",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/unittests",
-            "args": [],
+            "program": "${workspaceFolder}/rana",
+            "args": [
+                "-e", "10000"
+                ,"-b","236"
+                ,">>" ,"ranout.txt"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -49,6 +53,6 @@
                 }
             ]
         }
-        */
+        //
     ]
 }

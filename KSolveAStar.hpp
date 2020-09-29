@@ -1,4 +1,5 @@
-// KSolve.hpp declares a Klondike Solitaire solver function and auxiliaries
+// KSolveAStar.hpp declares a Klondike Solitaire solver function and auxiliaries.
+// This solver function uses the A* search algorithm.
 
 // MIT License
 
@@ -22,8 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef KSOLVE_HPP
-#define KSOLVE_HPP
+#ifndef KSOLVEASTAR_HPP
+#define KSOLVEASTAR_HPP
 
 #include "Game.hpp"		// for Game
 
@@ -39,23 +40,23 @@
 //
 // For some insight into how it works, look up the A* algorithm.
 
-enum KSolveCode {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE, MEMORY_EXCEEDED};
-struct KSolveResult
+enum KSolveAStarCode {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE, MEMORY_EXCEEDED};
+struct KSolveAStarResult
 {
-	KSolveCode _code;
+	KSolveAStarCode _code;
 	unsigned _stateCount;
 	Moves _solution;
 
-	KSolveResult(KSolveCode code, unsigned stateCount, const Moves& moves)
+	KSolveAStarResult(KSolveAStarCode code, unsigned stateCount, const Moves& moves)
 		: _code(code)
 		, _stateCount(stateCount)
 		, _solution(moves)
 		{}
 };
-KSolveResult KSolve(
+KSolveAStarResult KSolveAStar(
 		Game& gm, 						// The game to be played
 		unsigned maxStates=10'000'000,	// Give up if the number of unique game states
 										// examined exceeds this.
 		unsigned threads=2);
 
-#endif
+#endif    // KSOLVEASTAR_HPP

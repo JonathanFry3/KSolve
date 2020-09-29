@@ -1,4 +1,4 @@
-// ran - Runs many random deals through the KSolve solver, 
+// ran - Runs many random deals through the KSolveAStar solver, 
 // writes a file of results, one line per deal.
 
 #include <fstream>
@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <ctime>
 #include <chrono>
-#include "KSolve.hpp"
+#include "KSolveAStar.hpp"
 
 using namespace std;
 using namespace  chrono;
@@ -132,7 +132,7 @@ int main(int argc, char * argv[])
 			<< spec._threads	<< "\t"			 
 			<< spec._drawSpec << "\t" << flush;
 		auto startTime = steady_clock::now();
-		KSolveResult result = KSolve(game,spec._maxStates,spec._threads);
+		KSolveAStarResult result = KSolveAStar(game,spec._maxStates,spec._threads);
 		duration<float, std::milli> elapsed = steady_clock::now() - startTime;
 		unsigned nMoves = MoveCount(result._solution);
 		cout << result._code << "\t"

@@ -1,4 +1,4 @@
-#include "KSolve.hpp"
+#include "KSolveAStar.hpp"
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_mutex, std::shared_lock
@@ -155,7 +155,7 @@ bool KSolveState::k_blewMemory(false);
 void KSolveWorker(
 		KSolveState* pMasterState);
 
-KSolveResult KSolve(
+KSolveAStarResult KSolveAStar(
 		Game& game,
 		unsigned maxStates,
 		unsigned nthreads)
@@ -187,7 +187,7 @@ KSolveResult KSolve(
 		thread.join();
 	// Everybody's finished
 
-	KSolveCode outcome;
+	KSolveAStarCode outcome;
 	if (state.k_blewMemory) {
 		outcome = MEMORY_EXCEEDED;
 	} else if (state._game_state_memory.size() >= maxStates){
@@ -199,7 +199,7 @@ KSolveResult KSolve(
 				: SOLVED
 			: IMPOSSIBLE;
 	}
-	return KSolveResult(outcome,state._game_state_memory.size(),solution);
+	return KSolveAStarResult(outcome,state._game_state_memory.size(),solution);
 }
 
 void KSolveWorker(

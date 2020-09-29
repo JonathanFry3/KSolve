@@ -1,6 +1,6 @@
-// Tests for Game.cpp KSolve.cpp
+// Tests for Game.cpp KSolveAStar.cpp
 
-#include "KSolve.hpp"
+#include "KSolveAStar.hpp"
 #include <cassert>
 #include <iostream>
 #include <iomanip>	  // for setw()
@@ -122,8 +122,8 @@ static unsigned FoundationCardCount(const Game& game)
 }
 
 
-// enum KSolveResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-void PrintOutcome(KSolveCode outcome, const vector<XMove>& moves)
+// enum KSolveAStarResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
+void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
 		"stock    ",
@@ -325,7 +325,7 @@ int main()
 		{
 			Game game(Cards(quick),1);
 			// PrintGame(game);
-			auto out = KSolve(game); 
+			auto out = KSolveAStar(game); 
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
@@ -436,7 +436,7 @@ int main()
 	{
 		Game game(Cards(deal3));
 		// PrintGame(game);
-		auto outcome = KSolve(game,9'600'000); 
+		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == SOLVED);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
 		assert(MoveCount(outcome._solution) == 99);
