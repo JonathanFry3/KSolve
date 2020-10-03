@@ -22,7 +22,7 @@ copies or substantial portions of the Software.
 #include<ctime>
 #include<chrono>
 #include<cmath>			// for ceil
-#include"KSolve.hpp"
+#include"KSolveAStar.hpp"
 
 #include<cstring>
 #define _stricmp strcasecmp

@@ -77,6 +77,28 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build KSolveRBFS",
+			"command": "g++",
+			"args": [
+				"-g",
+				"-c",
+			//	"-O3",
+				"Game.cpp",
+				"KSolveRBFS.cpp",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
 	]
 }

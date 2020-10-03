@@ -263,7 +263,7 @@ private:
 
 public:
 	Move() = default;
-	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
+	// Construct a talon move.  Represents 'nMoves'-1 draws
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
 	// from stock. One card is then moved from the waste pile to the "to" pile.
 	// All talon moves, and only talon moves, are from the stock pile.

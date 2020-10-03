@@ -15,6 +15,11 @@
 // all elements of that vector are modified.  Otherwise, no existing element
 // is accessed and concurrently accessing or modifying them is safe.
 //
+// Pointers and References: if erase() or insert() is (implemented and)
+// used, pointers and references to elements after the target will be 
+// invalid. Otherwise, elements remain in the same place in memory,
+// so pointers and references remain valid.  
+//
 // This has only enough of the vector functionality to satisfy KSolve.
 
 #include <vector>
@@ -79,7 +84,7 @@ public:
 	typedef T& reference;
 	typedef const T& const_reference;
 	typedef size_t size_type;
-	class iterator: std::iterator<std::random_access_iterator_tag, T> 
+	class iterator: public std::iterator<std::random_access_iterator_tag, T> 
 	{
 		friend class mf_vector<T,BlockSize>;
 		mf_vector<T,BlockSize>* _vector;
@@ -93,7 +98,7 @@ public:
 			, _location(_locater._block+_locater._offset)
 			{}
 	public:
-		T& operator++() noexcept {		// prefix increment, as in ++iter;
+		iterator operator++() noexcept {		// prefix increment, as in ++iter;
 			_index += 1;
 			_locater._offset += 1;
 			if (_locater._offset == _blockSize){
@@ -102,7 +107,18 @@ public:
 			} else {
 				_location += 1;
 			}
-			return *_location;
+			return *this;
+		}
+		iterator operator--() noexcept {		// prefix decrement, as in --iter;
+			_index -= 1;
+			if (_locater._offset == 0){
+				_locater = _vector->GetLocater(_index);
+				_location = _locater._block+_locater._offset;
+			} else {
+				_locater._offset -= 1;
+				_location -= 1;
+			}
+			return *this;
 		}
 		bool operator==(const iterator& other) noexcept {
 			return _location == other._location;
@@ -115,6 +131,17 @@ public:
 		}
 		T& operator*() noexcept {
 			return *_location;
+		}
+		T* operator->() noexcept {
+			return _location;
+		}
+		iterator operator+(std::ptrdiff_t i) noexcept {
+			if (i == 1) return ++(*this);
+			else return iterator(_vector, _index+i);
+		}
+		iterator operator-(std::ptrdiff_t i) noexcept {
+			if (i == 1) return --(*this);
+			else return iterator(_vector, _index-i);
 		}
 	};
 	friend class iterator;
