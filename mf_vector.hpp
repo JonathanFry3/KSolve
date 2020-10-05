@@ -136,12 +136,10 @@ public:
 			return _location;
 		}
 		iterator operator+(std::ptrdiff_t i) noexcept {
-			if (i == 1) return ++(*this);
-			else return iterator(_vector, _index+i);
+			return iterator(_vector, _index+i);
 		}
 		iterator operator-(std::ptrdiff_t i) noexcept {
-			if (i == 1) return --(*this);
-			else return iterator(_vector, _index-i);
+			return iterator(_vector, _index-i);
 		}
 	};
 	friend class iterator;

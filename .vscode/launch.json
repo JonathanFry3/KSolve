@@ -34,7 +34,7 @@
             "name": "Test rana",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/rana",
+            "program": "${workspaceFolder}/unittestsr",
             "args": [
                 "-e", "10000"
                 ,"-b","236"

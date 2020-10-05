@@ -3,7 +3,7 @@
 // space than the A* search implemented by KSolveAStar, although 
 // it will probably use more time.
 
-#include "Game.hpp"
+#include "KSolveRBFS.hpp"
 #include "mf_vector.hpp"
 #include <algorithm>        // *_heap, min
 
@@ -37,6 +37,9 @@ struct SolverState
     Moves _solution;
     mf_vector<Node,16*1024> _graph;
 
+    explicit SolverState(const Game & game)
+        : _game(game)
+        {}
     void PushMove(Move mv) {_game.MakeMove(mv); _movesMade.push_back(mv);}
     void PopMove() {_game.UnMakeMove(_movesMade.back());_movesMade.pop_back();}
     NodeIndex ExtendGraph(NodeIndex node);
@@ -44,7 +47,6 @@ struct SolverState
     QMoves FilteredAvailableMoves() noexcept;
     bool SkippableMove(Move trial) noexcept;
 };
-
 
 Count NewF(SolverState& state, NodeIndex start, Count bound)
 {
@@ -88,6 +90,7 @@ Count NewF(SolverState& state, NodeIndex start, Count bound)
     while (Solved < front._f && front._f <= bound) {
         std::pop_heap(begin,end);
         Count bound1 = std::min(bound, front._f); // front._f is second-best _f
+        assert(state._graph[backx]._f <= front._f);
         (end-1)->_f = NewF(state,backx,bound1);
         std::push_heap(begin,end);
     }
@@ -213,4 +216,17 @@ bool SolverState::SkippableMove(Move trial) noexcept
 	// card that had been exposed in that fashion.  That did not break anything, but
 	// cost more time than it saved.
 	// Jonathan Fry 7/12/2020
+}
+
+KSolveRBFSResult KSolveRBFS(const Game& game)
+{
+    SolverState state(game);
+    Count est = game.MinimumMovesLeft();
+    state._graph.emplace_back(Move(), est);
+    NewF(state, 0, est);
+    KSolveRBFSResult::Code code(state._solution.size()
+                        ? KSolveRBFSResult::Solved
+                        : KSolveRBFSResult::Impossible);
+    KSolveRBFSResult result{code,state._graph.size(),state._solution};
+    return result;
 }

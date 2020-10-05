@@ -80,14 +80,15 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build KSolveRBFS",
+			"label": "C/C++:  g++ build unittestsr",
 			"command": "g++",
 			"args": [
 				"-g",
-				"-c",
 			//	"-O3",
 				"Game.cpp",
 				"KSolveRBFS.cpp",
+				"unittestsr.cpp",
+				"-o", "unittestsr"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
