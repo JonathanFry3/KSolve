@@ -11,6 +11,7 @@
 #include "mf_vector.hpp"
 
 using namespace std;
+using namespace KSolveRBFS;
 
 CardDeck Cards(const std::vector<std::string>& strings)
 {
@@ -123,8 +124,8 @@ static unsigned FoundationCardCount(const Game& game)
 }
 
 
-// enum KSolveRBFSResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
-void PrintOutcome(KSolveRBFSResult::Code outcome, const vector<XMove>& moves)
+// enum Result {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
+void PrintOutcome(Result::Code outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
 		"stock    ",
@@ -330,14 +331,16 @@ int main()
 			"s3","s4","s5","s6","s7","s8","s9","st","sj","sq",
 			"sk","ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"};
 		{
+			/*
 			Game game(Cards(quick),1);
 			// PrintGame(game);
-			auto out = KSolveRBFS(game); 
+			auto out = Solve(game); 
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
-			assert(outcome == KSolveRBFSResult::Solved);
+			assert(outcome == Result::Solved);
 			assert(MoveCount(solution) == 76);
+			*/
 		}
 
 		// Still another...
@@ -442,9 +445,9 @@ int main()
 	}
 	{
 		Game game(Cards(deal3));
-		// PrintGame(game);
-		auto outcome = KSolveRBFS(game); 
-		assert(outcome._code == KSolveRBFSResult::Solved);
+		PrintGame(game);
+		auto outcome = Solve(game); 
+		assert(outcome._code == Result::Solved);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
 		assert(MoveCount(outcome._solution) == 99);
 	}

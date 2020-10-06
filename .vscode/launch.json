@@ -31,14 +31,12 @@
         },
         */
         {
-            "name": "Test rana",
+            "name": "Test unittestsr",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/unittestsr",
             "args": [
-                "-e", "10000"
-                ,"-b","236"
-                ,">>" ,"ranout.txt"
+                ">", "trace.out"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

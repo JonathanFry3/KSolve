@@ -28,26 +28,29 @@
 
 #include "Game.hpp"		// for Game
 
+
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code, a Moves vector, and a graph size.  The vector contains
 // the minimum solution if the code returned is Solved. Otherwise, it will be empty.
 //
 // For some insight into how it works, look up the RBFS algorithm.
 
-struct KSolveRBFSResult
-{
-    enum Code {Solved, Impossible, MemoryExceeded};
-	Moves _solution;
-	size_t _graphSize;
-	Code _code;
+namespace KSolveRBFS{
+	struct Result
+	{
+		enum Code {Solved, Impossible, MemoryExceeded};
+		Moves _solution;
+		size_t _graphSize;
+		Code _code;
 
-	KSolveRBFSResult(Code code, size_t graphSize, const Moves& moves)
-		: _code(code)
-		, _graphSize(graphSize)
-		, _solution(moves)
-		{}
+		Result(Code code, size_t graphSize, const Moves& moves)
+			: _code(code)
+			, _graphSize(graphSize)
+			, _solution(moves)
+			{}
+	};
+	
+	Result Solve(const Game& gm); 
 };
-KSolveRBFSResult KSolveRBFS(
-		const Game& gm); 						// The game to be solved
 
 #endif    // KSOLVERBFS_HPP
