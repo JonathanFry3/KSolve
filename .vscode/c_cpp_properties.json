@@ -3,13 +3,13 @@
         {
             "name": "WSL",
             "includePath": [
-                "/usr/include/c++/9"
-                ,"/usr/include/x86_64-linux-gnu/c++/9"
-                ,"/usr/include/c++/9/backward"
-                ,"/usr/lib/gcc/x86_64-linux-gnu/9/include"
-                ,"/usr/local/include"
-                ,"/usr/include/x86_64-linux-gnu"
-                ,"/usr/include"
+                "/usr/include/c++/9",
+                "/usr/include/x86_64-linux-gnu/c++/9",
+                "/usr/include/c++/9/backward",
+                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -20,6 +20,17 @@
             "cStandard": "c11",
             "cppStandard": "gnu++14",
             "intelliSenseMode": "gcc-x86"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu18",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4
