@@ -40,7 +40,7 @@
 				"KSolveAStar.cpp",
 				"unittestsa.cpp",
 				"-o",
-				"${workspaceFolder}/unittests"
+				"${workspaceFolder}/unittestsa"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
