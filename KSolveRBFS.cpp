@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <deque>
 
 using namespace KSolveRBFS;
 
@@ -60,7 +61,6 @@ std::string Peek(const Node& node)
 {
     std::stringstream s;
     s << "Node(" << Peek(node._move) << ", " << node._f;
-
     s << ", ->";
     if (node._successors == NullIndex)  s << "Null";
     else                                s << node._successors;
@@ -90,72 +90,89 @@ Count SolverState::NewF(NodeIndex start, Count bound)
     } unWinder(*this);
 
     Node & node = _graph[start];
-    std::cout << "NewF(" << Peek(node) << ")\n";
-    if (node._f == Solved || node._f > bound) return node._f;
-    NodeIndex n = node._successors;
-    if (n == NullIndex)
-        n = ExtendGraph(start);
+    // std::cout << "NewF([" << start << "]=" << Peek(node) << ", " << bound << ")\n";
+    // if (node._f == Solved || node._f > bound) return node._f;
+    NodeIndex mom = start;
+    if (node._successors == NullIndex)
+        mom = ExtendGraph(start);
     else {
         // walk to next branching node
-        while (_graph[n]._nSuccessors == 1) {
-            std::cout << "Automove[" << n << "]: " << Peek(_graph[n]) << std::endl;
-            PushMove(_graph[n]._move);
-            n = _graph[n]._successors;
+        while (_graph[mom]._nSuccessors == 1) {
+            mom = _graph[mom]._successors;
+            //std::cout << "Automove[" << mom << "]: " << Peek(_graph[mom]) << std::endl;
+            PushMove(_graph[mom]._move);
         }
-        PushMove(_graph[n]._move);
     }
-    Node & parent = _graph[n];   
-    std::cout << "parent[" << n << "]: " << Peek(parent) << std::endl;
-    std::cout << "bound: " << bound << std::endl;
+    Node & parent = _graph[mom];   
+    //std::cout << "parent[" << mom << "]: " << Peek(parent) << std::endl;
+    //std::cout << "bound: " << bound << std::endl;
     if (parent._nSuccessors == 0 && _game.GameOver()) return Solved;
-    if (parent._nSuccessors == 0) return Failed;                   
+    if (parent._nSuccessors == 0) 
+        return Failed;
     if (parent._f > bound) return parent._f;
     auto begin = _graph.begin()+parent._successors;
     auto end = begin + parent._nSuccessors;
+    assert(std::is_heap(begin,end));
     Node & front = *begin;
     NodeIndex backx = parent._successors+parent._nSuccessors-1;
     Node & back = _graph[backx];
+    /*
+    std::cout << "NewF begin: ";
+    std::cout << "[" << mom << "]._successors: (";
+    for (auto ix = begin; ix != end; ++ix){
+        std::cout << Peek(*ix);
+        if (ix == end-1) std::cout << ")\n";
+        else std::cout << ", ";
+    }
+    */
     while (Solved < front._f && front._f <= bound) {
         std::pop_heap(begin,end);
-        std::cout << "Best[" << backx << "]: " << Peek(back) << std::endl;
-        std::cout << "Second[" << parent._successors << "]: " << Peek(front) << std::endl;
+        //std::cout << "Best[" << backx << "]: " << Peek(back) << std::endl;
+        //std::cout << "Second[" << parent._successors << "]: " << Peek(front) << std::endl;
         Count bound1 = std::min(bound, front._f); // front._f is second-best _f
         assert(back._f <= front._f);
-        PushMove(back._move);
+        PushMove(back._move); 
         back._f = NewF(backx,bound1);
-        std::cout << "NewF(" << backx << "," << bound1 << ") -> " << back._f << std::endl;
+        //std::cout << "NewF(" << backx << "," << bound1 << ") -> " << back._f << std::endl;
         PopMove();
         std::push_heap(begin,end);
     }
+    /*
+    std::cout << "NewF end: ";
+    std::cout << "[" << mom << "]._successors: (";
+    for (auto ix = begin; ix != end; ++ix){
+        std::cout << Peek(*ix);
+        if (ix == end-1) std::cout << ")\n";
+        else std::cout << ", ";
+    }
+    */
     return front._f;
 }
 // Extend the graph to the next branching node
 NodeIndex SolverState::ExtendGraph(NodeIndex nodex)
 {
-    Node * parent = &_graph[nodex];
     QMoves avail = FilteredAvailableMoves();
     Count nMoves = MoveCount(_movesMade);
     // Make automoves
     while (avail.size() == 1) {
         nodex = AddNode(avail[0], nodex, nMoves, true);
-        std::cout << "Add Automove[" << nodex << "]: ";
-        std::cout << Peek(_graph.back()) << std::endl;
+        //std::cout << "Add Automove[" << nodex << "]: ";
+        //std::cout << Peek(_graph.back()) << std::endl;
         nMoves += avail[0].NMoves();
-        parent = &_graph[nodex];
         avail = FilteredAvailableMoves();
     }
     if (avail.size() == 0) {
         if (_game.GameOver()) {
             _solution = _movesMade;
-            parent->_f = Solved;
+            _graph[nodex]._f = Solved;
         } else {
-            parent->_f = Failed;        // dead end
+            _graph[nodex]._f = Failed;        // dead end
         }
     } else {
         // branching node
         for (Move move: avail) {
             NodeIndex loc = AddNode(move,nodex,nMoves,false);
-            std::cout << "Add Node[" << loc << "] " << Peek(_graph[loc]) << std::endl;
+            //std::cout << "Add Node[" << loc << "] " << Peek(_graph[loc]) << std::endl;
             PopMove();
         }
         auto begin = _graph.begin() + _graph[nodex]._successors;
@@ -174,13 +191,13 @@ NodeIndex SolverState::AddNode(Move move, NodeIndex p, Count nMoves, bool autoMo
                 ? parent._f
                 : nMoves+move.NMoves()+_game.MinimumMovesLeft();
     if (est < parent._f) {
-        std::cout << "after " << Peek(move) << ", est = " << est;
-        std::cout << ", parent._f = " << parent._f << std::endl;
+        //std::cout << "after " << Peek(move) << ", est = " << est;
+        //std::cout << ", parent._f = " << parent._f << std::endl;
     }
     assert(est>=parent._f);      // move estimates are non-decreasing
     NodeIndex result = _graph.size();
     _graph.emplace_back(move,est);
-    if (parent._successors == NullIndex)
+    if (parent._successors == NullIndex) 
         parent._successors = result;
     return result;
 }
@@ -261,15 +278,15 @@ void SolverState::PushMove(Move mv)
 {
     _game.MakeMove(mv);
     _movesMade.push_back(mv);
-    std::cout << "PushMove: " << Peek(_movesMade) << std::endl;
+    //std::cout << "PushMove: " << Peek(_movesMade) << std::endl;
 }
 
 void SolverState::PopMove() 
 {
     assert(_movesMade.size());
+    //std::cout << "PopMove: " << Peek(_movesMade) << std::endl;
     _game.UnMakeMove(_movesMade.back());
     _movesMade.pop_back();
-    std::cout << "PopMove: " << Peek(_movesMade) << std::endl;
 }
 
 
@@ -280,14 +297,14 @@ Result KSolveRBFS::Solve(const Game& game)
     Count est = game.MinimumMovesLeft();
     state._graph.emplace_back(Move(), est);
     Node & root = state._graph[0];
-    std::cout << "root == " << Peek(root) << std::endl;
+    //std::cout << "root == " << Peek(root) << std::endl;
     while (root._f != Solved && root._f != Failed)
         root._f = state.NewF(0, root._f);
     Result::Code code(state._solution.size()
                 ? Result::Solved
                 : Result::Impossible);
     Result result{code,state._graph.size(),state._solution};
-    std::cout << "Result: (" << result._code << ", " << result._graphSize;
-    std::cout << ", " << Peek(result._solution) << ")\n\n";
+    //std::cout << "Result: (" << result._code << ", " << result._graphSize;
+    //std::cout << ", " << Peek(result._solution) << ")\n\n";
     return result;
 }

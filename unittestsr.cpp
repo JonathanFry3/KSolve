@@ -444,11 +444,11 @@ int main()
 		}
 	}
 	{
-		Game game(Cards(deal3));
+		Game game(NumberedDeal(1174));
 		PrintGame(game);
 		auto outcome = Solve(game); 
 		assert(outcome._code == Result::Solved);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
-		assert(MoveCount(outcome._solution) == 99);
-	}
+		PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(MoveCount(outcome._solution) == 94);
+	} 
 }

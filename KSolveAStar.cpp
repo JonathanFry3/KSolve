@@ -7,9 +7,7 @@
 #include "mf_vector.hpp"
 #include "fixed_capacity_deque.hpp"
 #include <thread>
-#ifdef KSOLVE_TRACE
 #include <iostream>			// for cout
-#endif  //KSOLVE_TRACE
 
 typedef std::mutex Mutex;
 typedef std::shared_timed_mutex SharedMutex;
@@ -32,7 +30,6 @@ class SharedMoveStorage
 			, _prevNode(prevNode)
 			{}
 	};
-	mf_vector<MoveNode,16*1024> _moveTree;
 	Mutex _moveTreeMutex;
 	// Stack of indexes to leaf nodes in _moveTree
 	typedef mf_vector<NodeX> LeafNodeStack;
@@ -47,6 +44,7 @@ class SharedMoveStorage
 	bool _firstTime;
 	friend class MoveStorage;
 public:
+	mf_vector<MoveNode,16*1024> _moveTree;
 	SharedMoveStorage() 
 		: _firstTime(true)
 		, _startStackIndex(-1)
@@ -188,6 +186,7 @@ KSolveAStarResult KSolveAStar(
 	// Everybody's finished
 
 	KSolveAStarCode outcome;
+	std::cout << "move tree size: " << state._moveStorage.Shared()._moveTree.size() << std::endl << std::flush;
 	if (state.k_blewMemory) {
 		outcome = MEMORY_EXCEEDED;
 	} else if (state._game_state_memory.size() >= maxStates){

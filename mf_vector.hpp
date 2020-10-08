@@ -121,10 +121,13 @@ public:
 			return *this;
 		}
 		bool operator==(const iterator& other) noexcept {
-			return _location == other._location;
+			return _index == other._index;
 		}
 		bool operator!=(const iterator& other) noexcept {
 			return !(*this == other);
+		}
+		bool operator<(const iterator& other) noexcept {
+			return _index < other._index;
 		}
 		int operator-(const iterator& o) noexcept {
 			return _index - o._index;
