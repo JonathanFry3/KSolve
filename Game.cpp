@@ -128,20 +128,20 @@ CardDeck NumberedDeal(uint_fast32_t seed)
 static void SetAllPiles(Game& game)
 {
 	auto & allPiles = game.AllPiles();
-	allPiles[WASTE] = &game.Waste();
-	allPiles[STOCK] = &game.Stock();
-	for (int ip = 0; ip < 4; ip+=1) allPiles[FOUNDATION+ip] = &game.Foundation()[ip];
-	for (int ip = 0; ip < 7; ip+=1) allPiles[TABLEAU+ip] = &game.Tableau()[ip];
+	allPiles[Waste] = &game.WastePile();
+	allPiles[Stock] = &game.StockPile();
+	for (int ip = 0; ip < 4; ip+=1) allPiles[FoundationBase+ip] = &game.Foundation()[ip];
+	for (int ip = 0; ip < 7; ip+=1) allPiles[TableauBase+ip] = &game.Tableau()[ip];
 }
 
 Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit)
 	: _deck(deck)
-	, _waste(WASTE)
-	, _stock(STOCK)
+	, _waste(Waste)
+	, _stock(Stock)
 	, _drawSetting(draw)
 	, _talonLookAheadLimit(talonLookAheadLimit)
-	, _foundation{FOUNDATION1C,FOUNDATION2D,FOUNDATION3S,FOUNDATION4H}
-	, _tableau{TABLEAU1,TABLEAU2,TABLEAU3,TABLEAU4,TABLEAU5,TABLEAU6,TABLEAU7}
+	, _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
+	, _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
 {
 	SetAllPiles(*this);
 	Deal();
@@ -174,7 +174,7 @@ void Game::Deal()
 			ideck += 1;
 		}
 		_tableau[i].SetUpCount(1);      // turn up the top card
-		_kingSpaces += _tableau[i][0].Rank() == KING;	// count kings at base
+		_kingSpaces += _tableau[i][0].Rank() == King;	// count kings at base
 	}
 	for (unsigned ic = 51; ic >= 28; ic-=1)
 		_stock.Push(_deck[ic]);
@@ -233,7 +233,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
 	const unsigned n = xmv.NCards();
 	Pile& toPile = *_allPiles[to];
 	Pile& fromPile = *_allPiles[from];
-	if (from == STOCK || to == STOCK)
+	if (from == Stock || to == Stock)
 		toPile.Draw(fromPile, n);
 	else
 		toPile.Take(fromPile, n);
@@ -272,15 +272,15 @@ static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
 	QMoves result;
 	const auto & fnd = gm.Foundation();
 	const auto & allPiles = gm.AllPiles();
-	for (int iPile = WASTE; iPile<TABLEAU+7 && result.size() == 0; iPile+=1) {
+	for (int iPile = Waste; iPile<TableauBase+7 && result.size() == 0; iPile+=1) {
 		const Pile &pile = *allPiles[iPile] ;
 		if (pile.Size()) {
 			const Card& card = pile.Back();
 			const unsigned suit = card.Suit();
 			if (card.Rank() <= minFoundationSize+1) {
 				if (fnd[suit].Size() == card.Rank()) {
-					const unsigned up = (iPile == WASTE) ? 0 : pile.UpCount();
-					result.emplace_back(iPile,FOUNDATION+suit,1,up);
+					const unsigned up = (iPile == Waste) ? 0 : pile.UpCount();
+					result.emplace_back(iPile,FoundationBase+suit,1,up);
 				}
 			}
 		}
@@ -310,10 +310,10 @@ class TalonSim{
 	unsigned _sSize;
 public:
 	TalonSim(const Game& game)
-		: _waste(game.Waste().Cards())
-		, _stock(game.Stock().Cards())
-		, _wSize(game.Waste().Size())
-		, _sSize(game.Stock().Size())
+		: _waste(game.WastePile().Cards())
+		, _stock(game.StockPile().Cards())
+		, _wSize(game.WastePile().Size())
+		, _sSize(game.StockPile().Size())
 		{}
 	unsigned WasteSize() const
 	{
@@ -352,7 +352,7 @@ typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
 	TalonFutureVec result;
-	const unsigned talonSize = game.Waste().Size() + game.Stock().Size();
+	const unsigned talonSize = game.WastePile().Size() + game.StockPile().Size();
 	if (talonSize == 0) return result;
 
 	TalonSim talon(game);
@@ -430,7 +430,7 @@ QMoves Game::AvailableMoves() noexcept
 
 			if (toPile.Size() == 0) { 
 				if (!kingMoved 
-						&& fromBase.Rank() == KING 
+						&& fromBase.Rank() == King 
 						&& fromPile.Size() > upCount) {
 					// toPile is empty, a king sits atop fromPile's face-up
 					// cards, and it is covering at least one face-down card.
@@ -489,7 +489,7 @@ QMoves Game::AvailableMoves() noexcept
 		const unsigned cardSuit = talonCard._card.Suit();
 		const unsigned cardRank = talonCard._card.Rank();
 		if (cardRank == _foundation[cardSuit].Size()) {
-			const unsigned pileNo = FOUNDATION+cardSuit;
+			const unsigned pileNo = FoundationBase+cardSuit;
 			PushTalonMove(talonCard, pileNo, result);
 			if (cardRank <= minFoundationSize+1){
 				if (_drawSetting == 1) {
@@ -508,7 +508,7 @@ QMoves Game::AvailableMoves() noexcept
 				if (talonCard._card.Covers(tPile.Back())) {
 					PushTalonMove(talonCard, tPile.Code(), result);
 				}
-			} else if (cardRank == KING) {
+			} else if (cardRank == King) {
 				PushTalonMove(talonCard, tPile.Code(), result);
 				break;  // move that king to just one empty pile
 			}
@@ -526,7 +526,7 @@ QMoves Game::AvailableMoves() noexcept
 						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
 					}
 				} else {
-					if (top.Rank() == KING) {
+					if (top.Rank() == King) {
 						result.emplace_back(fPile.Code(),tPile.Code(),1,0);
 						break;  // don't move same king to another tableau pile
 					}
@@ -611,22 +611,22 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 			unsigned n = mv.NCards();
 			bool flip = false;
 			if (IsTableau(from)) {
-				assert(totalCount[from-TABLEAU] >= n);
-				assert(upCount[from-TABLEAU] >= n);
-				totalCount[from-TABLEAU] -= n;
-				upCount[from-TABLEAU] -= n;
-				if (totalCount[from-TABLEAU] && !upCount[from-TABLEAU]){
+				assert(totalCount[from-TableauBase] >= n);
+				assert(upCount[from-TableauBase] >= n);
+				totalCount[from-TableauBase] -= n;
+				upCount[from-TableauBase] -= n;
+				if (totalCount[from-TableauBase] && !upCount[from-TableauBase]){
 					flip = true;
-					upCount[from-TABLEAU] = 1;
+					upCount[from-TableauBase] = 1;
 				}
 			}
 			if (IsTableau(to)) {
-				totalCount[to-TABLEAU] += n;
-				upCount[to-TABLEAU] += n;
+				totalCount[to-TableauBase] += n;
+				upCount[to-TableauBase] += n;
 			}
 			mvnum += 1;
 			result.emplace_back(mvnum,from, to, n,flip);
-			if (mv.From() == WASTE){
+			if (mv.From() == Waste){
 				assert (wasteSize >= 1);
 				wasteSize -= 1;
 			}
@@ -637,7 +637,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 			if (nTalonMoves > stockMovesLeft && stockSize) {
 				// Draw all remaining cards from stock
 				mvnum += 1;
-				result.emplace_back(mvnum,STOCK,WASTE,stockSize,false);
+				result.emplace_back(mvnum,Stock,Waste,stockSize,false);
 				mvnum += stockMovesLeft-1;
 				wasteSize += stockSize;
 				stockSize = 0;
@@ -647,12 +647,12 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 				mvnum += 1;
 				if (stockSize == 0) {
 					// Recycle the waste pile
-					result.emplace_back(mvnum,WASTE,STOCK,wasteSize,false);
+					result.emplace_back(mvnum,Waste,Stock,wasteSize,false);
 					stockSize = wasteSize;
 					wasteSize = 0;
 				}
 				const unsigned nMoved = std::min<unsigned>(stockSize,nTalonMoves*draw);
-				result.emplace_back(mvnum,STOCK,WASTE,nMoved,false);
+				result.emplace_back(mvnum,Stock,Waste,nMoved,false);
 				assert (stockSize >= nMoved && wasteSize+nMoved <= 24);
 				assert(stockSize >= nMoved);
 				stockSize -= nMoved;
@@ -661,12 +661,12 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 				mvnum += nTalonMoves-1;
 			}
 			mvnum += 1;
-			result.emplace_back(mvnum,WASTE,to,1,false);
+			result.emplace_back(mvnum,Waste,to,1,false);
 			assert(wasteSize >= 1);
 			wasteSize -= 1;
 			if (IsTableau(to)) {
-				totalCount[to-TABLEAU] += 1;
-				upCount[to-TABLEAU] += 1;
+				totalCount[to-TableauBase] += 1;
+				upCount[to-TableauBase] += 1;
 			}
 		}
 	}
@@ -772,7 +772,7 @@ GameState::GameState(const Game& game) noexcept
 	_part[1] = ((GameState::PartType(tableauState[3])<<21
 				| tableauState[4])<<21) 
 				| tableauState[5];
-	_part[2] = (tableauState[6]<<5) | game.Stock().Size();
+	_part[2] = (tableauState[6]<<5) | game.StockPile().Size();
 	for (const auto& pile: game.Foundation()){
 		_part[2] =_part[2]<<4 | pile.Size();
 	}

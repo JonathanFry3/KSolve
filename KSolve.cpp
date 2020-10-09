@@ -188,17 +188,17 @@ int main(int argc, char * argv[]) {
 		Moves & moves(outcome._solution); 
 		unsigned moveCount = MoveCount(moves);
 		bool canReplay = false;
-		if (result == SOLVED) {
+		if (result == Solved) {
 			cout << "Minimal solution in " << moveCount << " moves + 21 flips.";
 			canReplay = true;
-		} else if (result == GAVEUP_SOLVED) {
+		} else if (result == GaveUpSolved) {
 			cout << "Solved in " << moveCount << " moves + 21 flips.";
 			canReplay = true;
-		} else if (result == IMPOSSIBLE) {
+		} else if (result == Impossible) {
 			cout << "Impossible.";
-		} else if (result == GAVEUP_UNSOLVED) {
+		} else if (result == GaveUpUnsolved) {
 			cout << "Unknown.";
-		} else if (result == MEMORY_EXCEEDED) {
+		} else if (result == MemoryExceeded) {
 			cout << "Memory exceeded.";
 		}
 		duration<float, std::milli> elapsed = steady_clock::now() - startTime;
@@ -209,7 +209,7 @@ int main(int argc, char * argv[]) {
 			XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
 			cout << "----------------------------------------\n"; 
 			for (XMove xmove: xmoves) {
-				bool isTalonMove = xmove.To() == STOCK || xmove.To() == WASTE;
+				bool isTalonMove = xmove.To() == Stock || xmove.To() == Waste;
 				cout << GetMoveInfo(xmove,game) << "\n";
 				game.MakeMove(xmove);
 				if (!isTalonMove){
@@ -488,19 +488,19 @@ char PFndString(const Game& game, unsigned suit)
 string GameDiagramPysol(const Game& game) {
 	stringstream ss;
 	auto piles(game.AllPiles());
-	ss <<  "Foundations: H-" << PFndString(game,HEARTS) 
-					<< " C-" << PFndString(game,CLUBS) 
-					<< " D-" << PFndString(game,DIAMONDS) 
-					<< " S-" << PFndString(game,SPADES);
+	ss <<  "Foundations: H-" << PFndString(game,Hearts) 
+					<< " C-" << PFndString(game,Clubs) 
+					<< " D-" << PFndString(game,Diamonds) 
+					<< " S-" << PFndString(game,Spades);
 	ss << "\nTalon: ";
 
-	const Pile & waste = game.Waste();
+	const Pile & waste = game.WastePile();
 	int size = waste.Size();
 	for (int j = size - 1; j >= 0; j--) {
 		ss << UpCaseString(waste[j]) << ' ';
 	}
 
-	const Pile & stock = game.Stock();
+	const Pile & stock = game.StockPile();
 	size = stock.Size();
 	for (int j = size - 1; j >= 0; j--) {
 		ss << UpCaseString(stock[j]) << ' ';
@@ -544,12 +544,12 @@ string GetMoveInfo(XMove move, const Game& game) {
 		auto xto = move.To();
 		auto xnum = move.NCards();
 		auto xflip = move.Flip();
-		if (xto == STOCK) {
+		if (xto == Stock) {
 			ss << "Recycle " << xnum << " cards from the waste pile to stock.";
-		} else if (xto == WASTE) {
+		} else if (xto == Waste) {
 			ss << "Draw ";
 			if (xnum == 1) {
-				ss << CardString(game.Stock().Back());
+				ss << CardString(game.StockPile().Back());
 			} else {
 				ss << xnum << " cards";
 			}
@@ -575,8 +575,8 @@ string MovesMade(const XMoves& moves)
 	stringstream ss;
 	char PileNames[] {"?W1234567CDSH"};
 	for (XMove mv: moves) {
-		if (mv.To() == STOCK) ss << "NEW ";
-		else if (mv.From() == STOCK) ss << "DR" << mv.NCards() << " ";
+		if (mv.To() == Stock) ss << "NEW ";
+		else if (mv.From() == Stock) ss << "DR" << mv.NCards() << " ";
 		else {
 			ss << PileNames[mv.From()] << PileNames[mv.To()];
 			if (mv.NCards() > 1) ss << "-" << mv.NCards();

@@ -83,8 +83,8 @@ static void Validate(const Game & game)
 
 	// see if each card is present just once
 	array<bool,52> present{false*52};
-	CheckCards(game.Stock(),present);
-	CheckCards(game.Waste(),present);
+	CheckCards(game.StockPile(),present);
+	CheckCards(game.WastePile(),present);
 	for (auto& pile: game.Tableau()) CheckCards(pile,present);
 	for (auto& pile: game.Foundation()) CheckCards(pile,present);
 
@@ -122,7 +122,7 @@ static unsigned FoundationCardCount(const Game& game)
 }
 
 
-// enum KSolveAStarResult {SOLVED, GAVEUP_SOLVED, GAVEUP_UNSOLVED, IMPOSSIBLE};
+// enum KSolveAStarResult {Solved, GaveUpSolved, GaveUpUnsolved, Impossible,MemoryExceeded};
 void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
@@ -141,7 +141,7 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 		"hearts   "
 	};
 	vector<string> outcomeWords{"Minimal Solution","Solution may not be minimal",
-									"Gave up without solving", "Impossible", "Exception thrown"};
+									"Gave up without solving", "Impossible", "Memory Exceeded"};
 	cout << "Outcome: " << outcomeWords[outcome];
 	if (moves.size()){
 		cout << " in " << moves.back().MoveNum() << " moves";
@@ -151,7 +151,7 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 	for (auto mv : moves){
 		unsigned from = mv.From();
 		unsigned to = mv.To();
-		if (from != STOCK){
+		if (from != Stock){
 			cout << setw(3) << mv.MoveNum() << " Move " << mv.NCards();
 			cout << " from " << pilestring[from];
 			cout << " to " << pilestring[to];
@@ -173,8 +173,8 @@ bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 // Returns true iff GameState(a) should equal GameState(b).
 bool operator==(const Game& a, const Game& b) 
 {
-	if (a.Stock() != b.Stock()) return false;
-	if (a.Waste() != b.Waste()) return false;
+	if (a.StockPile() != b.StockPile()) return false;
+	if (a.WastePile() != b.WastePile()) return false;
 	if (a.Foundation() != b.Foundation()) return false;
 	auto& taba = a.Tableau();
 	auto& tabb = b.Tableau();
@@ -197,8 +197,8 @@ std::minstd_rand rng;
 int main()
 {
 	// Test Card
-	assert(Card(HEARTS,THREE).AsString() == "h3");
-	Card tcard(CLUBS,ACE);
+	assert(Card(Hearts,Ace+2).AsString() == "h3");
+	Card tcard(Clubs,Ace);
 	std::pair<bool,Card> pair = Card::FromString("S10");
 	bool validCardString = pair.first;
 	if (validCardString) tcard = pair.second;
@@ -225,7 +225,7 @@ int main()
 	{
 		Game sol(deck);
 		assert (sol.Tableau()[5].Size() == 6);
-		assert (sol.Stock()[0].AsString() == "d5");
+		assert (sol.StockPile()[0].AsString() == "d5");
 		assert (sol.Tableau()[6][6] == deck[27]);
 		assert (sol.Tableau()[6][5] == deck[26]);
 		assert (sol.Tableau()[5][5] == deck[25]);
@@ -233,28 +233,28 @@ int main()
 		Validate(sol);
 
 		// Test Game::MakeMove
-		sol.MakeMove(Move(TABLEAU1,TABLEAU2,1,0));
+		sol.MakeMove(Move(Tableau1,Tableau2,1,0));
 		assert (sol.Tableau()[0].Size() == 0);
 		assert (sol.Tableau()[1].Size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
 		assert (sol.Tableau()[1].UpCount() == 2);
 
-		assert (sol.Stock().Size() == 24);
-		sol.MakeMove(Move(FOUNDATION2D,4,4));
-		assert (sol.Stock().Size()==20);
-		assert (sol.Waste().Size()==3);
+		assert (sol.StockPile().Size() == 24);
+		sol.MakeMove(Move(Foundation2D,4,4));
+		assert (sol.StockPile().Size()==20);
+		assert (sol.WastePile().Size()==3);
 		assert (sol.Foundation()[1].Back().AsString()=="d6");
-		assert (sol.Waste().Back().AsString()=="s7");
-		assert (sol.Stock().Back().AsString()=="ct");
-		sol.MakeMove(Move(WASTE,TABLEAU1,1,0));
+		assert (sol.WastePile().Back().AsString()=="s7");
+		assert (sol.StockPile().Back().AsString()=="ct");
+		sol.MakeMove(Move(Waste,Tableau1,1,0));
 		assert (sol.Tableau()[0].UpCount() == 1);
 	}
 
 	// Test AvailableMoves, UnMakeMove
 	{
 		Game sol(Game(deck,3));
-		CardVec svstock = sol.Stock().Cards();
-		CardVec svwaste = sol.Waste().Cards();
+		CardVec svstock = sol.StockPile().Cards();
+		CardVec svwaste = sol.WastePile().Cards();
 		vector<CardVec> svtableau;
 		for (unsigned itab = 0; itab<7; ++itab){
 			svtableau.push_back(sol.Tableau()[itab].Cards());
@@ -271,8 +271,8 @@ int main()
 			sol.UnMakeMove(*imv);
 			Validate(sol);
 		}
-		assert (svstock == sol.Stock().Cards());
-		assert (svwaste == sol.Waste().Cards());
+		assert (svstock == sol.StockPile().Cards());
+		assert (svwaste == sol.WastePile().Cards());
 		for (unsigned p = 0; p<7; ++p) {
 			assert(sol.Tableau()[p].Cards() == svtableau[p]);
 		}
@@ -280,9 +280,9 @@ int main()
 	}
 	{
 		// Test Peek functions
-		Move a(TABLEAU3,6,-4);
-		Move b(WASTE,FOUNDATION2D,1,0);
-		Move c(TABLEAU1,TABLEAU6,4,1);
+		Move a(Tableau3,6,-4);
+		Move b(Waste,Foundation2D,1,0);
+		Move c(Tableau1,Tableau6,4,1);
 		string peeka = Peek(a);
 		string peekb = Peek(b);
 		string peekc = Peek(c);
@@ -329,7 +329,7 @@ int main()
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
-			assert(outcome == SOLVED);
+			assert(outcome == Solved);
 			assert(MoveCount(solution) == 76);
 		}
 
@@ -437,7 +437,7 @@ int main()
 		Game game(Cards(deal3));
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
-		assert(outcome._code == SOLVED);
+		assert(outcome._code == Solved);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
 		assert(MoveCount(outcome._solution) == 99);
 	}

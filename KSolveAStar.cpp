@@ -189,15 +189,15 @@ KSolveAStarResult KSolveAStar(
 
 	KSolveAStarCode outcome;
 	if (state.k_blewMemory) {
-		outcome = MEMORY_EXCEEDED;
+		outcome = MemoryExceeded;
 	} else if (state._game_state_memory.size() >= maxStates){
-		outcome = state._minSolution.size() ? GAVEUP_SOLVED : GAVEUP_UNSOLVED;
+		outcome = state._minSolution.size() ? GaveUpSolved : GaveUpUnsolved;
 	} else {
 		outcome = state._minSolution.size() 
 			? game.TalonLookAheadLimit() < 24
-				? GAVEUP_SOLVED
-				: SOLVED
-			: IMPOSSIBLE;
+				? GaveUpSolved
+				: Solved
+			: Impossible;
 	}
 	return KSolveAStarResult(outcome,state._game_state_memory.size(),solution);
 }
@@ -395,7 +395,7 @@ bool KSolveState::SkippableMove(Move trial) noexcept
 	// Since nothing says A cannot equal C, this test catches 
 	// moves that exactly reverse previous moves.
 	const auto B = trial.From();
-	if (B == STOCK || B == WASTE) return false; 
+	if (B == Stock || B == Waste) return false; 
 	const auto C = trial.To();
 	const auto &movesMade = _moveStorage.MoveSequence();
 	for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){

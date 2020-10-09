@@ -100,25 +100,14 @@ public:
 
 enum Rank_t : unsigned char
  {
-	ACE = 0,
-	TWO,
-	THREE,
-	FOUR,
-	FIVE,
-	SIX,
-	SEVEN,
-	EIGHT,
-	NINE,
-	TEN,
-	JACK,
-	QUEEN,
-	KING
+	Ace = 0,
+	King = 12
 };
 enum Suit_t : unsigned char {
-	CLUBS = 0,
-	DIAMONDS,
-	SPADES,
-	HEARTS,
+	Clubs = 0,
+	Diamonds,
+	Spades,
+	Hearts,
 };
 
 class Card
@@ -187,21 +176,21 @@ struct CardDeck : fixed_capacity_vector<Card,52>
 CardDeck NumberedDeal(uint_fast32_t seed);
 
 enum PileCode {
-	STOCK = 0,
-	WASTE,
-	TABLEAU = 2,
-	TABLEAU1 = 2,
-	TABLEAU2,
-	TABLEAU3,
-	TABLEAU4,
-	TABLEAU5,
-	TABLEAU6,
-	TABLEAU7,
-	FOUNDATION = 9,
-	FOUNDATION1C = 9,
-	FOUNDATION2D,
-	FOUNDATION3S,
-	FOUNDATION4H
+	Stock = 0,
+	Waste,
+	TableauBase = 2,
+	Tableau1 = 2,
+	Tableau2,
+	Tableau3,
+	Tableau4,
+	Tableau5,
+	Tableau6,
+	Tableau7,
+	FoundationBase = 9,
+	Foundation1C = 9,
+	Foundation2D,
+	Foundation3S,
+	Foundation4H
 };
 
 class Pile
@@ -217,8 +206,8 @@ public:
 	Pile(PileCode code)
 	: _code(code)
 	, _upCount(0)
-	, _isTableau(TABLEAU <= code && code < TABLEAU+7)
-	, _isFoundation(FOUNDATION <= code && code < FOUNDATION+4)
+	, _isTableau(TableauBase <= code && code < TableauBase+7)
+	, _isFoundation(FoundationBase <= code && code < FoundationBase+4)
 	{}
 
 	unsigned Code() const noexcept					{return _code;}
@@ -246,7 +235,7 @@ public:
 
 static bool IsTableau(unsigned pile) noexcept
 {
-	return TABLEAU <= pile && pile < TABLEAU+7;
+	return TableauBase <= pile && pile < TableauBase+7;
 }
 
 
@@ -283,7 +272,7 @@ public:
 	// from stock. One card is then moved from the waste pile to the "to" pile.
 	// All talon moves, and only talon moves, are from the stock pile.
 	Move(unsigned to, unsigned nMoves, int draw) noexcept
-		: _from(STOCK)
+		: _from(Stock)
 		, _to(to)
 		, _nMoves(nMoves)
 		, _drawCount(draw)
@@ -297,13 +286,13 @@ public:
 		, _n(n)
 		, _fromUpCount(fromUpCount)
 		{
-			assert(from != STOCK);
+			assert(from != Stock);
 		}
 
-	bool IsTalonMove() const noexcept	{return _from==STOCK;}
+	bool IsTalonMove() const noexcept	{return _from==Stock;}
 	unsigned From() const noexcept		{return _from;}
 	unsigned To()   const noexcept		{return _to;}
-	unsigned NCards()    const noexcept	{return (_from == STOCK) ? 1 : _n;}     
+	unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
 	unsigned FromUpCount() const noexcept{return _fromUpCount;}
 	unsigned NMoves() const	noexcept	{return _nMoves;}
 	int DrawCount() const noexcept		{return _drawCount;}
@@ -406,13 +395,13 @@ public:
 	Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
 	Game(const Game&);
 
-	Pile& Waste()       							{return _waste;}
-	Pile& Stock()       							{return _stock;}
+	Pile& WastePile()       						{return _waste;}
+	Pile& StockPile()       						{return _stock;}
 	std::array<Pile,4>& Foundation()   				{return _foundation;}
 	std::array<Pile,7>& Tableau()      				{return _tableau;}
 	std::array<Pile*,13>& AllPiles()     			{return _allPiles;}
-	const Pile & Waste() const       				{return _waste;}
-	const Pile & Stock() const       				{return _stock;}
+	const Pile & WastePile() const     				{return _waste;}
+	const Pile & StockPile() const     				{return _stock;}
 	const std::array<Pile,4>& Foundation() const   	{return _foundation;}
 	const std::array<Pile,7>& Tableau() const      	{return _tableau;}
 	const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
