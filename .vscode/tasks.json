@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build KSolverA",
+			"label": "C/C++:  g++ build KSolve",
 			"command": "g++",
 			"args": [
 				"-g",
@@ -14,9 +14,9 @@
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
-				"KSolverA.cpp", 
+				"KSolve.cpp", 
 				"-o",
-				"${workspaceFolder}/KSolverA"
+				"${workspaceFolder}/KSolve"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -31,14 +31,14 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build unittestsa",
+			"label": "C/C++:  g++ build unittests",
 			"command": "g++",
 			"args": [
 				"-g",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
-				"unittestsa.cpp",
+				"unittests.cpp",
 				"-o",
 				"${workspaceFolder}/unittests"
 			],
@@ -55,7 +55,7 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build rana",
+			"label": "C/C++:  g++ build ran",
 			"command": "g++",
 			"args": [
 				"-g",
@@ -63,9 +63,9 @@
 				"-O3",
 				"Game.cpp",
 				"KSolveAStar.cpp",
-				"rana.cpp",
+				"ran.cpp",
 				"-o",
-				"${workspaceFolder}/rana"
+				"${workspaceFolder}/ran"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"

@@ -1,6 +1,6 @@
 # ACKNOWLEDGEMENTS
 
-The front end code KSolver.cpp is a direct edit of @ShootMe's KlondikeSolver.cpp.
+The front end code KSolve.cpp is a direct edit of @ShootMe's KlondikeSolver.cpp.
 It implements a largely compatible interface to facilitate comparison or migration.
 
 The remaining code in this repository, aside from parallel_hashmap, is original 

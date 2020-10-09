@@ -1,10 +1,10 @@
-# KSolver
+# KSolve
 
 ## Command Options
 
 Klondike (Patience) Solver that finds minimal length solutions.
 
-KSolver [-DC] [-D] [-G] [-O] [-S] [-R] [FilePath]
+KSolve [-DC] [-D] [-G] [-O] [-S] [-R] [FilePath]
 
 -DRAW # [-DC #] - Sets the draw count to use when solving. Defaults to 1.
 
@@ -24,7 +24,7 @@ FilePath - Solves deals specified in the file.
 10,000,000.
 
 -FAST # [-F #] - Fast mode, which limits talon look-ahead.  Enter a number from 1 to 24. 24 will act like -F was
-not used, 1 will be very fast but may give a non-minimal result or even no result for a solvable game.  
+not used, 1 will be very fast and use less memory but may give a non-minimal result or even no result for a solvable game.  Intermediate values give intermediate results.
 When alternative moves are available, the code will not look ahead in the talon more than this number of moves.
 
 ### Notes:
