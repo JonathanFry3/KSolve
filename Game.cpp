@@ -213,7 +213,7 @@ void  Game::UnMakeMove(Move mv) noexcept
 	if (mv.IsTalonMove()) {
 		_waste.Push(toPile.Pop());
 		toPile.IncrUpCount(-1);
-		_waste.Draw(_stock,-mv.DrawCount());
+		_stock.Draw(_waste,mv.DrawCount());
 	} else {
 		const auto n = mv.NCards();
 		Pile & fromPile = *_allPiles[mv.From()];
