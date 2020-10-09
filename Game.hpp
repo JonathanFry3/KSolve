@@ -47,12 +47,8 @@ public:
 	T & back() noexcept								{return _elem[_size-1];}
 	const T& back() const noexcept					{return _elem[_size-1];}
 	void pop_back()	noexcept						{assert(_size);back().~T(); _size -= 1;}
-	void pop_back(unsigned n) noexcept				{assert(n<=_size);for (unsigned i=0;i<n;++i) {pop_back();}}
 	void push_back(const T& cd)	noexcept			{emplace_back(cd);}
 	void clear() noexcept							{while (_size) pop_back();}
-	template <typename Iterator>
-	void append(Iterator begin, Iterator end) noexcept	
-					{assert(_size+(end-begin)<=Capacity);for (auto i=begin;i<end;i+=1){_elem[_size]=*i;_size+=1;}}
 	void erase(iterator x) noexcept
 					{x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
 	template <class V>
@@ -79,6 +75,26 @@ public:
 						assert(_size < Capacity);
 						new(end()) T(args...);
 						_size += 1;
+					}
+	// Functions not part of the std::vector API
+
+	// Push the elements in [begin,end) to the back, preserving order.
+	template <typename Iterator>
+	void append(Iterator begin, Iterator end) noexcept	
+					{
+						assert(_size+(end-begin)<=Capacity);
+						for (auto i=begin;i<end;i+=1){
+							_elem[_size]=*i;
+							_size+=1;
+						}
+					}
+	// Move the last n elements from the argument vector to this, preserving order.
+	template <typename V>
+	void take_back(V& donor, unsigned n) noexcept
+					{
+						assert(donor.size() >= n);
+						append(donor.end()-n, donor.end());
+						donor._size -= n;
 					}
 };
 
@@ -217,10 +233,9 @@ public:
 	const CardVec& Cards() const noexcept			{return _cards;}
 	Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(Card c) noexcept             			{_cards.push_back(c);}
-	CardVec Pop(unsigned n) noexcept;
+	void Take(Pile& donor, unsigned n)		{_cards.take_back(donor._cards, n);}
 	void Push(CardVec::const_iterator begin, CardVec::const_iterator end) noexcept
 											{_cards.append(begin,end);}
-	void Push(const CardVec& cds) noexcept  {this->Push(cds.begin(),cds.end());}
 	Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
 	Card Back() const noexcept				{return _cards.back();}
 	void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
@@ -263,7 +278,7 @@ private:
 
 public:
 	Move() = default;
-	// Construct a talon move.  Represents 'nMoves'-1 draws + recycles.
+	// Construct a talon move.  Represents 'nMoves'-1 draws
 	// Their cumulative effect is to draw 'draw' cards (may be negative)
 	// from stock. One card is then moved from the waste pile to the "to" pile.
 	// All talon moves, and only talon moves, are from the stock pile.

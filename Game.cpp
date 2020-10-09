@@ -86,14 +86,6 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
 	return std::pair<bool,Card>(ok,card);
 }
 
-CardVec Pile::Pop(unsigned n) noexcept
-{
-	CardVec result;
-	result.append(_cards.end()-n, _cards.end());
-	_cards.pop_back(n);
-	return result;
-}
-
 CardVec Pile::Draw(unsigned n) noexcept
 {
 	CardVec result;
@@ -199,7 +191,7 @@ void Game::MakeMove(Move mv) noexcept
 	} else {
 		const auto n = mv.NCards();
 		Pile& fromPile = *_allPiles[mv.From()];
-		toPile.Push(fromPile.Pop(n));
+		toPile.Take(fromPile, n);
 		// For tableau piles, UpCount counts face-up cards.  
 		// For other piles, it is undefined.
 		toPile.IncrUpCount(n);
@@ -229,7 +221,7 @@ void  Game::UnMakeMove(Move mv) noexcept
 			_kingSpaces -= fromPile.Size() == 0;  // uncount newly cleared columns
 			fromPile.SetUpCount(mv.FromUpCount());
 		}
-		fromPile.Push(toPile.Pop(n));
+		fromPile.Take(toPile, n);
 		toPile.IncrUpCount(-n);
 	}
 }
@@ -244,7 +236,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
 	if (from == STOCK || to == STOCK)
 		toPile.Draw(fromPile, n);
 	else
-		toPile.Push(fromPile.Pop(n));
+		toPile.Take(fromPile, n);
 	toPile.IncrUpCount(n);
 	fromPile.IncrUpCount(-n);
 	if (xmv.Flip()){
