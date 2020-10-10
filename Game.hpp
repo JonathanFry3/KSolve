@@ -25,7 +25,6 @@
 // but has a fixed capacity.  It cannot be extended past that.
 // It is safe to use only where the problem limits the size needed.
 #include <cstdint> 		// for uint_fast32_t, uint_fast64_t
-#include <algorithm>	// for std::copy()
 
 template <class T, unsigned Capacity>
 class fixed_capacity_vector{
@@ -65,8 +64,8 @@ public:
 	fixed_capacity_vector<T,Capacity>& operator=(const V& other) noexcept
 					{
 						assert(other.size()<=Capacity);
-						_size = other.size();
-						std::copy(other.begin(),other.end(),begin());
+						clear();
+						for (const auto & m: other) emplace_back(m);
 						return *this;
 					}
 	template <class ... Args>
