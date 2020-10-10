@@ -7,9 +7,6 @@
 #include "mf_vector.hpp"
 #include "fixed_capacity_deque.hpp"
 #include <thread>
-#ifdef KSOLVE_TRACE
-#include <iostream>			// for cout
-#endif  //KSOLVE_TRACE
 
 typedef std::mutex Mutex;
 typedef std::shared_timed_mutex SharedMutex;
@@ -27,6 +24,7 @@ class SharedMoveStorage
 	{
 		Move _move;
 		NodeX _prevNode;
+
 		MoveNode(const Move& mv, NodeX prevNode)
 			: _move(mv)
 			, _prevNode(prevNode)
@@ -87,7 +85,7 @@ public:
 	const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 };
 
-struct KSolveState {
+struct WorkerState {
 	Game _game;
 	// _moveStorage stores the portion of the move tree that has been generated.
 	// Each node has a move and a reference to the node with
@@ -118,7 +116,7 @@ struct KSolveState {
 
 	static bool k_blewMemory;
 
-	explicit KSolveState(  Game & gm, 
+	explicit WorkerState(  Game & gm, 
 			Moves& solution,
 			SharedMoveStorage& sharedMoveStorage,
 			MapType& map,
@@ -134,7 +132,7 @@ struct KSolveState {
 			k_minSolutionCount = -1;
 			k_blewMemory = false;
 		}
-	explicit KSolveState(const KSolveState& orig)
+	explicit WorkerState(const WorkerState& orig)
 		: _moveStorage(orig._moveStorage.Shared())
 		, _game_state_memory(orig._game_state_memory)
 		, _game(orig._game)
@@ -148,12 +146,12 @@ struct KSolveState {
 	bool SkippableMove(Move mv)noexcept;
 	QMoves FilteredAvailableMoves()noexcept;
 };
-unsigned KSolveState::k_minSolutionCount(-1);
-Mutex KSolveState::k_minSolutionMutex;
-bool KSolveState::k_blewMemory(false);
+unsigned WorkerState::k_minSolutionCount(-1);
+Mutex WorkerState::k_minSolutionMutex;
+bool WorkerState::k_blewMemory(false);
 
-void KSolveWorker(
-		KSolveState* pMasterState);
+static void KSolveWorker(
+		WorkerState* pMasterState);
 
 KSolveAStarResult KSolveAStar(
 		Game& game,
@@ -162,8 +160,8 @@ KSolveAStarResult KSolveAStar(
 {
 	Moves solution;
 	SharedMoveStorage sharedMoveStorage;
-	KSolveState::MapType map;
-	KSolveState state(game,solution,sharedMoveStorage,map,maxStates);
+	WorkerState::MapType map;
+	WorkerState state(game,solution,sharedMoveStorage,map,maxStates);
 
 	const unsigned startMoves = state._game.MinimumMovesLeft();
 
@@ -203,9 +201,9 @@ KSolveAStarResult KSolveAStar(
 }
 
 void KSolveWorker(
-		KSolveState* pMasterState)
+		WorkerState* pMasterState)
 {
-	KSolveState state(*pMasterState);
+	WorkerState state(*pMasterState);
 
 	try {
 		// Main loop
@@ -347,7 +345,7 @@ Moves MoveStorage::MovesVector() const
 }
 
 
-QMoves KSolveState::MakeAutoMoves() noexcept
+QMoves WorkerState::MakeAutoMoves() noexcept
 {
 	QMoves availableMoves;
 	while ((availableMoves = FilteredAvailableMoves()).size() == 1)
@@ -359,7 +357,7 @@ QMoves KSolveState::MakeAutoMoves() noexcept
 }
 
 // Return a vector of the available moves that pass the SkippableMove filter
-QMoves KSolveState::FilteredAvailableMoves() noexcept
+QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
 	QMoves availableMoves = _game.AvailableMoves();
 	for (auto i = availableMoves.begin(); i < availableMoves.end(); ){
@@ -374,7 +372,7 @@ QMoves KSolveState::FilteredAvailableMoves() noexcept
 
 
 // Return true if this move cannot be in a minimum solution.
-bool KSolveState::SkippableMove(Move trial) noexcept
+bool WorkerState::SkippableMove(Move trial) noexcept
 {
 	// Consider a move at time T0 from A to B and the next move
 	// from B, which goes to C at time Tn.  The move at Tn is
@@ -432,7 +430,7 @@ bool KSolveState::SkippableMove(Move trial) noexcept
 
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
-void KSolveState::CheckForMinSolution() {
+void WorkerState::CheckForMinSolution() {
 	const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
 	{
 		Guard karen(k_minSolutionMutex);
@@ -446,7 +444,7 @@ void KSolveState::CheckForMinSolution() {
 
 // Returns true if the current move sequence is the shortest path found
 // so far to the current game state.
-bool KSolveState::IsShortPathToState(unsigned moveCount)
+bool WorkerState::IsShortPathToState(unsigned moveCount)
 {
 	const GameState state{_game};
 	bool valueChanged{false};
