@@ -5,7 +5,7 @@
 // expand in either direction. The capacity specified in its definition
 // is the capacity in either direction.
 //
-// This has only enough of the vector functionality to satisfy KSolve.
+// This has only enough of the deque functionality to satisfy KSolve.
 
 #include <iterator>
 #include <cassert>
