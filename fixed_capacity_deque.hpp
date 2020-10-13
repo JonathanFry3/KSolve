@@ -100,7 +100,7 @@ public:
 		return _end;
 	}
 
-    class const_reverse_iterator: std::iterator<std::random_access_iterator_tag, T>
+    class const_reverse_iterator: public std::iterator<std::random_access_iterator_tag, T>
     {
         const T* _p;
         explicit const_reverse_iterator(const T* p) noexcept

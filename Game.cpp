@@ -4,7 +4,7 @@
 
 #include "Game.hpp"
 #include <cassert>
-#include <algorithm>		// random_shuffle
+#include <algorithm>		// shuffle
 #include <random>
 
 const std::string suits("cdsh");
@@ -86,9 +86,9 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
 	return std::pair<bool,Card>(ok,card);
 }
 
-CardVec Pile::Draw(unsigned n) noexcept
+PileVec Pile::Draw(unsigned n) noexcept
 {
-	CardVec result;
+	PileVec result;
 	for (unsigned i = 0; i < n; i+=1) {
 		result.push_back(_cards.back());
 		_cards.pop_back();
@@ -304,8 +304,8 @@ struct TalonFuture {
 // Class to simulate draws and recycles of the talon and
 // return the top card of the simulated waste pile.
 class TalonSim{
-	const CardVec& _waste;
-	const CardVec& _stock;
+	const PileVec& _waste;
+	const PileVec& _stock;
 	unsigned _wSize;
 	unsigned _sSize;
 public:
@@ -572,8 +572,8 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 unsigned Game::MinimumMovesLeft() const noexcept
 {
 	const unsigned draw = DrawSetting();
-	const CardVec& waste = _waste.Cards();
-	const CardVec& stock = _stock.Cards();
+	const PileVec& waste = _waste.Cards();
+	const PileVec& stock = _stock.Cards();
 	const unsigned talonCount = waste.size() + stock.size();
 
 	unsigned result = talonCount + QuotientRoundedUp(stock.size(),draw);

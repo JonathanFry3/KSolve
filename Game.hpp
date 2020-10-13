@@ -143,7 +143,7 @@ public:
 										{return _parity;}
 	unsigned Value() const noexcept		{return 13*_suit+_rank;}
 	std::string AsString() const;       // Returns a string like "ha" or "d2"
-	bool Covers(Card c) const noexcept	// can c be moved onto this card on a tableau pile?
+	bool Covers(Card c) const noexcept	// can this card be moved onto c on a tableau pile?
 										{return _parity == c._parity && _rank+1 == c._rank;}
 	bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
 	bool operator!=(Card o) const noexcept	{return ! (o == *this);}
@@ -158,7 +158,7 @@ public:
 };
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
-typedef fixed_capacity_vector<Card,24> CardVec;
+typedef fixed_capacity_vector<Card,24> PileVec;
 
 // Type to hold a complete deck
 struct CardDeck : fixed_capacity_vector<Card,52> 
@@ -195,7 +195,7 @@ enum PileCode {
 class Pile
 {
 private:
-	CardVec _cards;
+	PileVec _cards;
 	unsigned short _code;
 	unsigned short _upCount;
 	bool _isTableau;
@@ -218,16 +218,16 @@ public:
 	void SetUpCount(unsigned up) noexcept			{_upCount = up;}
 	void IncrUpCount(int c) noexcept				{_upCount += c;}
 	const Card & operator[](unsigned which) const noexcept  {return _cards[which];}
-	const CardVec& Cards() const noexcept			{return _cards;}
+	const PileVec& Cards() const noexcept			{return _cards;}
 	Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
 	void Push(Card c) noexcept             			{_cards.push_back(c);}
 	void Take(Pile& donor, unsigned n)		{_cards.take_back(donor._cards, n);}
-	void Push(CardVec::const_iterator begin, CardVec::const_iterator end) noexcept
+	void Push(PileVec::const_iterator begin, PileVec::const_iterator end) noexcept
 											{_cards.append(begin,end);}
 	Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
 	Card Back() const noexcept				{return _cards.back();}
 	void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
-	CardVec Draw(unsigned n) noexcept; 		// like Pop(), but reverses order of cards drawn
+	PileVec Draw(unsigned n) noexcept; 		// like Take(), but reverses order of cards drawn
 	void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
 	void Draw(Pile & from, int nCards) noexcept;
 };

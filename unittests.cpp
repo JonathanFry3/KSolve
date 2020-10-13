@@ -253,9 +253,9 @@ int main()
 	// Test AvailableMoves, UnMakeMove
 	{
 		Game sol(Game(deck,3));
-		CardVec svstock = sol.StockPile().Cards();
-		CardVec svwaste = sol.WastePile().Cards();
-		vector<CardVec> svtableau;
+		PileVec svstock = sol.StockPile().Cards();
+		PileVec svwaste = sol.WastePile().Cards();
+		vector<PileVec> svtableau;
 		for (unsigned itab = 0; itab<7; ++itab){
 			svtableau.push_back(sol.Tableau()[itab].Cards());
 		}

@@ -93,7 +93,7 @@ struct WorkerState {
 	// moves possible in any finished game that might grow from that leaf.
 	// _moveStorage also stores the sequence of moves we are currently working on.
 	MoveStorage _moveStorage;
-	// _game_state_memory remembers the minimum move count at each game state we have
+	// _closedList remembers the minimum move count at each game state we have
 	// already visited.  If we get to that state again, we look at the current minimum
 	// move count. If it is lower than the stored count, we keep our current node and store
 	// its move count here.  If not, we forget the current node - we already have a
@@ -107,7 +107,7 @@ struct WorkerState {
 			4U, 									// log2(n of submaps)
 			Mutex									// mutex type
 		> MapType;
-	MapType& _game_state_memory;
+	MapType& _closedList;
 	unsigned _maxStates;
 
 	Moves & _minSolution;
@@ -124,17 +124,17 @@ struct WorkerState {
 		: _minSolution(solution)
 		, _game(gm)
 		, _moveStorage(sharedMoveStorage)
-		, _game_state_memory(map)
+		, _closedList(map)
 		, _maxStates(maxStates)
 		{
-			_game_state_memory.reserve(maxStates);
+			_closedList.reserve(maxStates);
 			_minSolution.clear();
 			k_minSolutionCount = -1;
 			k_blewMemory = false;
 		}
 	explicit WorkerState(const WorkerState& orig)
 		: _moveStorage(orig._moveStorage.Shared())
-		, _game_state_memory(orig._game_state_memory)
+		, _closedList(orig._closedList)
 		, _game(orig._game)
 		, _minSolution(orig._minSolution)
 		, _maxStates(orig._maxStates)
@@ -168,14 +168,14 @@ KSolveAStarResult KSolveAStar(
 	state._moveStorage.EnqueueMoveSequence(startMoves);	// pump priming
 	
 	if (nthreads == 0)
-		nthreads = std::thread::hardware_concurrency() - 1;
+		nthreads = std::thread::hardware_concurrency();
 
 	// Start workers in their own threads
 	std::vector<std::thread> threads;
 	threads.reserve(nthreads-1);
 	for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
 		threads.emplace_back(&KSolveWorker, &state);
-		std::this_thread::sleep_for(std::chrono::milliseconds(23));
+		std::this_thread::sleep_for(std::chrono::milliseconds(25));
 	}
 
 	// Run one more worker in this (main) thread
@@ -188,16 +188,16 @@ KSolveAStarResult KSolveAStar(
 	KSolveAStarCode outcome;
 	if (state.k_blewMemory) {
 		outcome = MemoryExceeded;
-	} else if (state._game_state_memory.size() >= maxStates){
+	} else if (state._closedList.size() >= maxStates){
 		outcome = state._minSolution.size() ? GaveUpSolved : GaveUpUnsolved;
 	} else {
-		outcome = state._minSolution.size() 
+		outcome = solution.size() 
 			? game.TalonLookAheadLimit() < 24
 				? GaveUpSolved
 				: Solved
 			: Impossible;
 	}
-	return KSolveAStarResult(outcome,state._game_state_memory.size(),solution);
+	return KSolveAStarResult(outcome,state._closedList.size(),solution);
 }
 
 void KSolveWorker(
@@ -208,7 +208,7 @@ void KSolveWorker(
 	try {
 		// Main loop
 		unsigned minMoves0;
-		while (state._game_state_memory.size() < state._maxStates
+		while (state._closedList.size() < state._maxStates
 				&& !state.k_blewMemory
 				&& (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
 				&& minMoves0 < state.k_minSolutionCount) { 
@@ -305,7 +305,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
 	// When we don't have a lock on it, any of the stacks may become empty or non-empty.
 	for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
 		{
-			SharedGuard marylin(_shared._fringeMutex);
+			SharedGuard marilyn(_shared._fringeMutex);
 			size = _shared._fringe.size();
 			for (offset = 0; offset < size && _shared._fringe[offset].empty(); offset += 1) {}
 		}
@@ -448,12 +448,12 @@ bool WorkerState::IsShortPathToState(unsigned moveCount)
 {
 	const GameState state{_game};
 	bool valueChanged{false};
-	const bool isNewKey = _game_state_memory.try_emplace_l(
+	const bool isNewKey = _closedList.try_emplace_l(
 		state,						// key
-		[&](auto& mapped_value) {	// run behind lock when key found
-			valueChanged = moveCount < mapped_value;
+		[&](auto& mappedValue) {	// run behind lock when key found
+			valueChanged = moveCount < mappedValue;
 			if (valueChanged) 
-				mapped_value = moveCount;
+				mappedValue = moveCount;
 		},
 		moveCount 					// c'tor run behind lock when key not found
 	);
