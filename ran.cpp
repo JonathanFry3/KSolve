@@ -62,13 +62,13 @@ Specification GetSpec(int argc, char * argv[])
 		if (flag == "?" || flag == "-?" || flag == "--help") {
 			cout << "ran - random deal solver" << endl <<endl;
 			cout << "Flags:" << endl;
-			cout << "-? or --help          Gets this explanation." << endl;
+			cout << "-? or --help          Prints this explanation and quits." << endl;
 			cout << "-s # or --seed #      Sets the initial random number seed (default 1)"  << endl;
 			cout << "-i # or --incr #      Sets the increment between seeds (default 1)." << endl;
 			cout << "-b # or --begin #     Sets the first row number (default 1)." << endl;
 			cout << "-e # or --end #       Sets the last row number (default 10)." << endl;
 			cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
-			cout << "-st # or --states #   Set the maximum number of unique states (default 30 million)." << endl;
+			cout << "-st # or --states #   Sets the maximum number of unique states (default 30 million)." << endl;
 			cout << "-t # or --threads #   Sets the number of threads (default 2)." << endl;
 			cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
 			cout << "The output on standard out is a tab-delimited file without headers," << endl;
