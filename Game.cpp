@@ -758,7 +758,7 @@ GameState::GameState(const Game& game) noexcept
 			const auto& cards = pile.Cards();
 			unsigned isMajor = 0;
 			for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
-				isMajor = isMajor<<1 | j->IsMajor();
+				isMajor = isMajor<<1 | unsigned(j->IsMajor());
 			}
 			const Card top = pile.Top();
 			tableauState[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();

@@ -25,7 +25,9 @@ copies or substantial portions of the Software.
 #include"KSolveAStar.hpp"
 
 #include<cstring>
+#ifndef _MSC_VER 
 #define _stricmp strcasecmp
+#endif
 
 using namespace std;
 using namespace std::chrono;

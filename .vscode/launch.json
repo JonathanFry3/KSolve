@@ -29,7 +29,7 @@
                 }
             ]
         },
-        */
+        //
         {
             "name": "Test rana",
             "type": "cppdbg",
@@ -53,6 +53,18 @@
                 }
             ]
         }
-        //
+        */
+		{
+			"name": "(Windows) Launch unittests",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/unittests.exe",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false
+		}
+
     ]
 }

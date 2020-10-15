@@ -77,6 +77,78 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: cl.exe build active file",
+			"command": "cl.exe",
+			"args": [
+				"/Zi",
+				"/EHsc",
+				"/Fe:",
+				"${fileDirname}\\${fileBasenameNoExtension}.exe",
+				"${file}"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},		{
+			"type": "shell",
+			"label": "C/C++: cl.exe build unittests",
+			"command": "cl.exe",
+			"args": [
+				"/Zi",			// debug information format
+				"/EHsc",		// Exception handling options
+				"/Fe:",			// name EXE file
+				"${workspaceFolder}\\unittests.exe",
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"unittests.cpp" 
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+		"type": "shell",
+		"label": "C/C++: cl.exe build KSolve",
+		"command": "cl.exe",
+		"args": [
+			"/Zi",			// debug information format
+			"/EHsc",		// Exception handling options
+			"/O2",			// maximize speed
+			"/utf-8",
+			"/GL",			// Optimize across whole program
+			"/Fe:",			// name EXE file
+			"${workspaceFolder}\\KSolve.exe",
+			"Game.cpp",
+			"KSolveAStar.cpp",
+			"KSolve.cpp" 
+		],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": [
+			"$msCompile"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": true
 		}
-	]
+	}
+]
 }

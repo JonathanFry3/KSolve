@@ -1,36 +1,31 @@
 {
     "configurations": [
         {
-            "name": "WSL",
-            "includePath": [
-                "/usr/include/c++/9",
-                "/usr/include/x86_64-linux-gnu/c++/9",
-                "/usr/include/c++/9/backward",
-                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
-                "/usr/local/include",
-                "/usr/include/x86_64-linux-gnu",
-                "/usr/include"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c11",
-            "cppStandard": "gnu++14",
-            "intelliSenseMode": "gcc-x86"
-        },
-        {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu17",
+            "cStandard": "gnu11",
             "cppStandard": "gnu++14",
             "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "Win32", 
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.18362.0",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Preview/VC/Tools/MSVC/14.28.29331/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "version": 4
