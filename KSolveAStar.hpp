@@ -43,20 +43,20 @@
 enum KSolveAStarCode {Solved, GaveUpSolved, GaveUpUnsolved, Impossible, MemoryExceeded};
 struct KSolveAStarResult
 {
-	KSolveAStarCode _code;
-	unsigned _stateCount;
-	Moves _solution;
+    KSolveAStarCode _code;
+    unsigned _stateCount;
+    Moves _solution;
 
-	KSolveAStarResult(KSolveAStarCode code, unsigned stateCount, const Moves& moves)
-		: _code(code)
-		, _stateCount(stateCount)
-		, _solution(moves)
-		{}
+    KSolveAStarResult(KSolveAStarCode code, unsigned stateCount, const Moves& moves)
+        : _code(code)
+        , _stateCount(stateCount)
+        , _solution(moves)
+        {}
 };
 KSolveAStarResult KSolveAStar(
-		Game& gm, 						// The game to be played
-		unsigned maxStates=10'000'000,	// Give up if the number of unique game states
-										// examined exceeds this.
-		unsigned threads=2);
+        Game& gm, 						// The game to be played
+        unsigned maxStates=10'000'000,	// Give up if the number of unique game states
+                                        // examined exceeds this.
+        unsigned threads=2);
 
 #endif    // KSOLVEASTAR_HPP
