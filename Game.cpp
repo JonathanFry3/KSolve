@@ -545,8 +545,8 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 	unsigned  mins[4] {14,14,14,14};
 	unsigned result = 0;
 	for (auto i = begin; i != end; i+=1){
-		const auto rank = i->Rank();
-		const auto suit = i->Suit();
+		const unsigned rank = i->Rank();
+		const unsigned suit = i->Suit();
 		if (rank < mins[suit])
 			mins[suit] = rank;
 		else
@@ -732,19 +732,6 @@ std::string Peek (const Game&game)
 
 typedef std::array<uint32_t,7> TabStateT;
 
-static void InsertionSort(TabStateT& array) {
-	int j;
-	for(int i = 1; i<7; i++) {
-		auto key = array[i];//take value
-		j = i;
-		while(j > 0 && array[j-1]<key) {
-			array[j] = array[j-1];
-			j--;
-		}
-		array[j] = key;   //insert in right place
-	}
-}
-
 GameState::GameState(const Game& game) noexcept
 {
 	TabStateT tableauState;
@@ -764,7 +751,7 @@ GameState::GameState(const Game& game) noexcept
 			tableauState[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
 		}
 	}
-	InsertionSort(tableauState);
+	std::sort(tableauState.begin(),tableauState.end());
 
 	_part[0] = ((GameState::PartType(tableauState[0])<<21
 				| tableauState[1])<<21) 

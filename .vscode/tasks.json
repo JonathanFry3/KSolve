@@ -149,6 +149,33 @@
 			"kind": "build",
 			"isDefault": true
 		}
+	},
+	{
+		"type": "shell",
+		"label": "C/C++: cl.exe build ran",
+		"command": "cl.exe",
+		"args": [
+			"/Zi",			// debug information format
+			"/EHsc",		// Exception handling options
+			"/O2",			// maximize speed
+			"/utf-8",
+			"/GL",			// Optimize across whole program
+			"/Fe:",			// name EXE file
+			"${workspaceFolder}\\ran.exe",
+			"Game.cpp",
+			"KSolveAStar.cpp",
+			"ran.cpp" 
+		],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": [  
+			"$msCompile"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		}
 	}
 ]
 }
