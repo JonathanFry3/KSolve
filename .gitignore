@@ -9,3 +9,7 @@ gmon.out
 ran
 unittests
 KSolve
+g++
+*.exe
+*.obj
+*.pdb
