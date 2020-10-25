@@ -121,7 +121,6 @@ int main(int argc, char * argv[]) {
             maxClosedCount = atoi(argv[i + 1]);
             if (maxClosedCount < 0) { cerr << "You must specify a valid max number of states.\n"; return 100; }
             i++;
-            if (maxClosedCount == 0) { maxClosedCount = 200000; }
         } else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "/mvs") == 0 || _stricmp(argv[i], "-moves") == 0 || _stricmp(argv[i], "/moves") == 0) {
             showMoves = true;
         } else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
@@ -149,7 +148,7 @@ int main(int argc, char * argv[]) {
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
             cout << "                        solution is found.";
             cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
-            cout << "                        before terminating. Defaults to 5,000,000.\n";
+            cout << "                        before terminating. Defaults to 20,000,000.\n";
             cout << "  -threads # [-t #]     Sets the number of threads. Defaults to 2.\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
@@ -168,7 +167,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (maxClosedCount == 0) { maxClosedCount = 10000000; }
+    if (maxClosedCount == 0) { maxClosedCount = 20'000'000; }
 
     unsigned int fileIndex = 0;
     do {
@@ -190,15 +189,15 @@ int main(int argc, char * argv[]) {
         Moves & moves(outcome._solution); 
         unsigned moveCount = MoveCount(moves);
         bool canReplay = false;
-        if (result == Solved) {
+        if (result == SolvedMinimal) {
             cout << "Minimal solution in " << moveCount << " moves + 21 flips.";
             canReplay = true;
-        } else if (result == GaveUpSolved) {
+        } else if (result == Solved) {
             cout << "Solved in " << moveCount << " moves + 21 flips.";
             canReplay = true;
         } else if (result == Impossible) {
             cout << "Impossible.";
-        } else if (result == GaveUpUnsolved) {
+        } else if (result == GaveUp) {
             cout << "Unknown.";
         } else if (result == MemoryExceeded) {
             cout << "Memory exceeded.";

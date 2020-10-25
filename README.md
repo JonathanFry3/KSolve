@@ -21,7 +21,9 @@ FilePath - Solves deals specified in the file.
 -OUT # [-O #] - Sets the output method of the solver. Defaults to 0, 1 for Pysol, 2 for minimal output.
 
 -STATES # [-S #] - Sets the maximum number of game states to evaluate before terminating. Defaults to 
-10,000,000.
+20,000,000.  At this setting, the program will use around 1,280MB of memory.  If the program finds a solution 
+which it cannot conclude is minimal before reaching this limit, it will continue until it finds a minimal 
+solution, which may use even more memory.
 
 -FAST # [-F #] - Fast mode, which limits talon look-ahead.  Enter a number from 1 to 24. 24 will act like -F was
 not used, 1 will be very fast and use less memory but may give a non-minimal result or even no result for a solvable game.  Intermediate values give intermediate results.
@@ -44,7 +46,7 @@ When using the -MOVES command, the program will produce the moves neccesary such
 		Y will be 1 through 7 or the foundation suit character.
 	XY-# is the same as above except you are moving # number of cards from X to Y.
 	
-This program counts does not count recycles of the stock pile in its move count.
+This program counts does not count flips or recycles of the stock pile in its move count.
 ## Input File
 Problems can be entered four different ways in an input file.  The file SampleDeals.txt shows examples of each.
 ### -DECK String
@@ -69,7 +71,7 @@ This program uses lots of memory.  Since one of the largest data structures cont
 There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 unique states). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
 
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the repository Klondike-Solver
-by @ShootMe. Their copyright follows:
+by @ShootMe. Their license follows:
 
 Copyright (c) 2013 ShootMe
 

@@ -188,14 +188,14 @@ KSolveAStarResult KSolveAStar(
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._closedList.size() >= maxStates){
-        outcome = state._minSolution.size() ? GaveUpSolved : GaveUpUnsolved;
+    } else if (state._minSolution.size()) {
+        outcome = game.TalonLookAheadLimit() < 24
+                ? Solved
+                : SolvedMinimal;
     } else {
-        outcome = solution.size() 
-            ? game.TalonLookAheadLimit() < 24
-                ? GaveUpSolved
-                : Solved
-            : Impossible;
+        outcome = state._closedList.size() >= maxStates 
+                ? GaveUp
+                : Impossible;
     }
     return KSolveAStarResult(outcome,state._closedList.size(),solution);
 }
@@ -208,7 +208,7 @@ void KSolveWorker(
     try {
         // Main loop
         unsigned minMoves0;
-        while (state._closedList.size() < state._maxStates
+        while ( (state._closedList.size() < state._maxStates || state.k_minSolutionCount > 0)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state.k_minSolutionCount) { 

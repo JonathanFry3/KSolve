@@ -30,8 +30,8 @@
 
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code and a Moves vector.  The vector contains
-// the minimum solution if the code returned is Solved. It will contain
-// a solution that may not be minimal if the code is GaveUpSolved.
+// the minimum solution if the code returned is SolvedMinimal. It will contain
+// a solution that may not be minimal if the code is Solved.
 // Otherwise, it will be empty.
 //
 // This function uses an unpredictable amount of main memory. You can
@@ -40,7 +40,7 @@
 //
 // For some insight into how it works, look up the A* algorithm.
 
-enum KSolveAStarCode {Solved, GaveUpSolved, GaveUpUnsolved, Impossible, MemoryExceeded};
+enum KSolveAStarCode {SolvedMinimal, Solved, Impossible, GaveUp, MemoryExceeded};
 struct KSolveAStarResult
 {
     KSolveAStarCode _code;

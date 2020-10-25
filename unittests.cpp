@@ -122,7 +122,7 @@ static unsigned FoundationCardCount(const Game& game)
 }
 
 
-// enum KSolveAStarResult {Solved, GaveUpSolved, GaveUpUnsolved, Impossible,MemoryExceeded};
+// enum KSolveAStarResult {SolvedMinimal, Solved, GaveUp, Impossible,MemoryExceeded};
 void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
@@ -329,7 +329,7 @@ int main()
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
-			assert(outcome == Solved);
+			assert(outcome == SolvedMinimal);
 			assert(MoveCount(solution) == 76);
 		}
 
@@ -437,7 +437,7 @@ int main()
 		Game game(Cards(deal3));
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
-		assert(outcome._code == Solved);
+		assert(outcome._code == SolvedMinimal);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
 		assert(MoveCount(outcome._solution) == 99);
 	}
