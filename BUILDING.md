@@ -12,4 +12,4 @@ The programs are:
 
 * unittests, which is, you guessed it, unit tests of lower-level components plus some small complete problems to solve.
 * KSolve, the program described in README.md.  Provides various ways of entering a deal to solve and various output options, all text-based.
-* ran, which runs a batch of random deals for statistical purposes.  "ran -?" will display its flags.
+* ran, which runs a batch of random deals for statistical purposes.  "ran -?" will print its flags.

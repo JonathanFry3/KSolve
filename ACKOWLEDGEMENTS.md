@@ -6,7 +6,7 @@ It implements a largely compatible interface to facilitate comparison or migrati
 The remaining code in this repository, aside from parallel_hashmap, is original 
 but its general outline 
 and its best ideas are all based on @ShootMe's work.  I lifted those ideas before 
-I became aware of their basis, the A* algorithm.
+I became aware of the basis of some of them, the A* algorithm.
 
 parallel_hashmap, an unordered_map-like structure especially well adapted to 
 multi-threaded operation,
