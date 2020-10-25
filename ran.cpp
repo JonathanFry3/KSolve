@@ -71,9 +71,9 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-st # or --states #   Set the maximum number of unique states (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (default 2)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
-            cout << "The output on standard out is a tab-delimited file without headers," << endl;
+            cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
-            cout << "the number of cards to draw, the result code (see below), " << endl;
+            cout << "the number of cards to draw, the outcome code (see below), " << endl;
             cout << "the number of moves in the solution or zero if no solution found," << endl;
             cout << "the number of unique states generated, and the clock time required in seconds." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
@@ -123,13 +123,17 @@ int main(int argc, char * argv[])
 {
     Specification spec = GetSpec(argc, argv);
     
+    // If the row number starts at 1, insert a header line
+    if (spec._begin == 1)
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tstates\ttime" << endl;
+    
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
         CardDeck deck(NumberedDeal(seed));
         Game game(deck, spec._drawSpec,spec._lookAhead);
         cout << sample << "\t"
             << seed << "\t"
-            << spec._threads	<< "\t"			 
+            << spec._threads << "\t"			 
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
         KSolveAStarResult result = KSolveAStar(game,spec._maxStates,spec._threads);
