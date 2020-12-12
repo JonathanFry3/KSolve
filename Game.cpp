@@ -237,6 +237,8 @@ void Game::MakeMove(const XMove & xmv) noexcept
         toPile.Draw(fromPile, n);
     else
         toPile.Take(fromPile, n);
+    if (fromPile.Size()==0 && fromPile.IsTableau())
+        _kingSpaces += 1;
     toPile.IncrUpCount(n);
     fromPile.IncrUpCount(-n);
     if (xmv.Flip()){
