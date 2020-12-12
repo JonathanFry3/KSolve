@@ -11,9 +11,9 @@
 
 using namespace std;
 
-CardDeck Cards(const std::vector<std::string>& strings)
+std::vector<Card> Cards(const std::vector<std::string>& strings)
 {
-	CardDeck result;
+	std::vector<Card> result;
 	for (const auto& str: strings)
 	{
 		auto outcome = Card::FromString(str);
