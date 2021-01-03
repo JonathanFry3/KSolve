@@ -98,12 +98,12 @@ struct WorkerState {
     // move count. If it is lower than the stored count, we keep our current node and store
     // its move count here.  If not, we forget the current node - we already have a
     // way to get to the same state that is at least as short.
-    typedef phmap::parallel_flat_hash_map<
+    typedef phmap::parallel_flat_hash_map< 
             GameState, 								// key type
             unsigned short, 						// mapped type
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
-             phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
+            phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
             4U, 									// log2(n of submaps)
             Mutex									// mutex type
         > MapType;
@@ -150,13 +150,13 @@ unsigned WorkerState::k_minSolutionCount(-1);
 Mutex WorkerState::k_minSolutionMutex;
 bool WorkerState::k_blewMemory(false);
 
-static void KSolveWorker(
+static void Worker(
         WorkerState* pMasterState);
 
 KSolveAStarResult KSolveAStar(
         Game& game,
         unsigned maxStates,
-        unsigned nthreads)
+        unsigned nThreads)
 {
     Moves solution;
     SharedMoveStorage sharedMoveStorage;
@@ -167,19 +167,19 @@ KSolveAStarResult KSolveAStar(
 
     state._moveStorage.EnqueueMoveSequence(startMoves);	// pump priming
     
-    if (nthreads == 0)
-        nthreads = std::thread::hardware_concurrency();
+    if (nThreads == 0)
+        nThreads = std::thread::hardware_concurrency();
 
     // Start workers in their own threads
     std::vector<std::thread> threads;
-    threads.reserve(nthreads-1);
-    for (unsigned ithread = 0; ithread < nthreads-1; ++ithread) {
-        threads.emplace_back(&KSolveWorker, &state);
+    threads.reserve(nThreads-1);
+    for (unsigned t = 0; t < nThreads-1; ++t) {
+        threads.emplace_back(&Worker, &state);
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 
     // Run one more worker in this (main) thread
-    KSolveWorker(&state);
+    Worker(&state);
 
     for (auto& thread: threads) 
         thread.join();
@@ -200,7 +200,7 @@ KSolveAStarResult KSolveAStar(
     return KSolveAStarResult(outcome,state._closedList.size(),solution);
 }
 
-void KSolveWorker(
+void Worker(
         WorkerState* pMasterState)
 {
     WorkerState state(*pMasterState);
