@@ -208,7 +208,7 @@ void Worker(
     try {
         // Main loop
         unsigned minMoves0;
-        while ( (state._closedList.size() < state._maxStates || state.k_minSolutionCount > 0)
+        while ( (state._closedList.size() < state._maxStates || state.k_minSolutionCount != -1)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state.k_minSolutionCount) { 
