@@ -280,18 +280,25 @@ int main()
 	}
 	{
 		// Test Peek functions
-		Move a(Tableau3,6,-4);
+		Move a(Tableau3,6,5);
 		Move b(Waste,Foundation2D,1,0);
 		Move c(Tableau1,Tableau6,4,1);
+		Move d(Tableau3,6,-4);
+		assert(!a.Recycle());
+		assert(!b.Recycle());
+		assert(!c.Recycle());
+		assert(d.Recycle());
 		string peeka = Peek(a);
 		string peekb = Peek(b);
 		string peekc = Peek(c);
-		assert(peeka == "+6d-4>t3");
+		string peekd = Peek(d);
+		assert(peeka == "+6d5>t3");
 		assert(peekb == "wa>di");
 		assert(peekc == "t1>t6x4u1");
+		assert(peekd == "+6d-4c>t3");
 		Moves mvs({a,b,c});
 		string peekmvs = Peek(mvs);
-		assert (peekmvs == "(+6d-4>t3,wa>di,t1>t6x4u1)");
+		assert (peekmvs == "(+6d5>t3,wa>di,t1>t6x4u1)");
 	}
 	// Test mf_vector
     mf_vector<int,4> vi;

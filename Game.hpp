@@ -294,6 +294,7 @@ public:
     unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
     unsigned FromUpCount() const noexcept{return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
+    bool Recycle() const noexcept       {return _from==Stock && _drawCount+1!=_nMoves;}
     int DrawCount() const noexcept		{return _drawCount;}
 };
 
@@ -302,13 +303,23 @@ typedef std::vector<Move> Moves;
 // A limited-size Moves type for AvailableMoves to return
 typedef fixed_capacity_vector<Move,74> QMoves; 
 
-// Return the number of actual moves implied by a vector of Moves.
+// Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
 unsigned MoveCount(const SeqType& moves) noexcept
 {
     unsigned result = 0;
     for (auto & move: moves)
         result += move.NMoves();
+    return result;
+}
+
+// Return the number of stock recycles implied by a sequence of Moves.
+template <class SeqType>
+unsigned RecycleCount(const SeqType& moves) noexcept
+{
+    unsigned result = 0;
+    for (auto & move: moves)
+        result += move.Recycle();
     return result;
 }
 

@@ -189,11 +189,14 @@ int main(int argc, char * argv[]) {
         Moves & moves(outcome._solution); 
         unsigned moveCount = MoveCount(moves);
         bool canReplay = false;
-        if (result == SolvedMinimal) {
-            cout << "Minimal solution in " << moveCount << " moves + 21 flips.";
-            canReplay = true;
-        } else if (result == Solved) {
-            cout << "Solved in " << moveCount << " moves + 21 flips.";
+        if (result == SolvedMinimal || result == Solved) {
+            if (result == SolvedMinimal) {
+                cout << "Minimal solution in ";
+            } else {
+                cout << "Solved in ";
+            }
+            unsigned cycles = RecycleCount(moves);
+            cout << moveCount << " moves + 21 flips in " << cycles+1 << " pass(es).";
             canReplay = true;
         } else if (result == Impossible) {
             cout << "Impossible.";

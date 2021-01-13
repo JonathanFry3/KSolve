@@ -712,7 +712,11 @@ std::string Peek(const Move & mv)
 {
     std::stringstream outStr;
     if (mv.IsTalonMove()){
-        outStr << "+" << mv.NMoves() << "d" << mv.DrawCount() << ">" << PileNames[mv.To()];
+        outStr << "+" << mv.NMoves() << "d" << mv.DrawCount();
+        if (mv.Recycle()) {
+            outStr << "c";
+        }
+        outStr << ">" << PileNames[mv.To()];
     } else {
         outStr << PileNames[mv.From()] << ">" << PileNames[mv.To()];
         unsigned n = mv.NCards();
