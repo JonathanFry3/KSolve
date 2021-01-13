@@ -279,7 +279,8 @@ int main()
 		assert (FoundationCardCount(sol) == 0);
 	}
 	{
-		// Test Peek functions
+		// Test Move class and Peek functions
+		assert(sizeof(Move)==4);
 		Move a(Tableau3,6,5);
 		Move b(Waste,Foundation2D,1,0);
 		Move c(Tableau1,Tableau6,4,1);

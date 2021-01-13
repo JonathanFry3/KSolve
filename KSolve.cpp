@@ -196,7 +196,12 @@ int main(int argc, char * argv[]) {
                 cout << "Solved in ";
             }
             unsigned cycles = RecycleCount(moves);
-            cout << moveCount << " moves + 21 flips in " << cycles+1 << " pass(es).";
+            cout << moveCount << " moves + 21 flips in " << cycles+1; 
+            if (cycles == 0) {
+                cout  << " pass.";
+            } else {
+                cout << " passes.";
+            }
             canReplay = true;
         } else if (result == Impossible) {
             cout << "Impossible.";
