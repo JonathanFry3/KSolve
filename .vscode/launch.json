@@ -4,7 +4,7 @@
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        //
+        /*
         {
             "name": "(gdb) Launch KSolve",
             "type": "cppdbg",
@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/KSolve",
             "args": [
             //    "-out", "2"
-                ,"-r"
+            //  ,
+                "-r"
                 ,"-t","1"
                 ,"11.29.20.txt"
                 ,">" ,"11.29.20.out"
@@ -54,18 +55,18 @@
                 }
             ]
         }
-        //
+        */
 		{
 			"name": "(Windows) Launch unittests",
-			"type": "cppvsdbg",
+            "type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/unittests.exe",
+			"program": "${workspaceFolder}/unittests",
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false
 		}
-        */
+        //
     ]
 }

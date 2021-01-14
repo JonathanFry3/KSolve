@@ -125,7 +125,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tstates\ttime" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tstates\ttime\tpasses" << endl;
     
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
@@ -142,8 +142,10 @@ int main(int argc, char * argv[])
         cout << result._code << "\t"
             << nMoves << "\t"
             << result._stateCount << "\t"
-            << elapsed.count()/1000. 
-            << endl;
+            << elapsed.count()/1000. << "\t";
+        int passes = -1;
+        if (result._solution.size()) passes = RecycleCount(result._solution) + 1;
+        cout << passes << endl;
         seed +=  spec._incr;
     }
 }

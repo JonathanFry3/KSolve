@@ -134,12 +134,13 @@ static void SetAllPiles(Game& game)
     for (int ip = 0; ip < 7; ip+=1) allPiles[TableauBase+ip] = &game.Tableau()[ip];
 }
 
-Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit)
+Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned recycleLimit)
     : _deck(deck)
     , _waste(Waste)
     , _stock(Stock)
     , _drawSetting(draw)
     , _talonLookAheadLimit(talonLookAheadLimit)
+    , _recycleLimit(recycleLimit)
     , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
     , _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
 {
@@ -155,6 +156,8 @@ Game::Game(const Game& orig)
     , _tableau(orig._tableau)
     , _talonLookAheadLimit(orig._talonLookAheadLimit)
     , _kingSpaces(orig._kingSpaces)
+    , _recycleLimit(orig._recycleLimit)
+    , _recycleCount(orig._recycleCount)
     {
         SetAllPiles(*this);
     }
@@ -163,6 +166,7 @@ Game::Game(const Game& orig)
 void Game::Deal()
 {
     _kingSpaces = 0;
+    _recycleCount = 0;
 
     for (auto pile: _allPiles)	{
         pile->ClearCards();
@@ -188,6 +192,7 @@ void Game::MakeMove(Move mv) noexcept
         _waste.Draw(_stock,mv.DrawCount());
         toPile.Push(_waste.Pop());
         toPile.IncrUpCount(1);
+        if (mv.Recycle()) _recycleCount += 1;
     } else {
         const auto n = mv.NCards();
         Pile& fromPile = *_allPiles[mv.From()];
@@ -214,6 +219,7 @@ void  Game::UnMakeMove(Move mv) noexcept
         _waste.Push(toPile.Pop());
         toPile.IncrUpCount(-1);
         _stock.Draw(_waste,mv.DrawCount());
+        if (mv.Recycle()) _recycleCount -= 1;
     } else {
         const auto n = mv.NCards();
         Pile & fromPile = *_allPiles[mv.From()];
@@ -350,6 +356,8 @@ public:
 // with the number of moves required to reach each one
 // and the number of cards that must be drawn (or undrawn)
 // to reach each one.
+//
+// Enforces the limit on recycles
 typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
@@ -373,9 +381,13 @@ static TalonFutureVec TalonCards(const Game & game)
             nMoves += 1;
             talon.Draw( std::min<unsigned>(drawSetting,talon.StockSize()));
         } else {
-            // Recycle the waste pile
-            nRecycles += 1;
-            talon.Cycle();
+            if (game.RecycleCount() < game.RecycleLimit()){
+                // Recycle the waste pile
+                nRecycles += 1;
+                talon.Cycle();
+            } else {
+                nRecycles = 3;      // kluge to end loop
+            }
         }
     } while (talon.WasteSize() != originalWasteSize && nRecycles < 2);
     return result;
@@ -384,9 +396,10 @@ static TalonFutureVec TalonCards(const Game & game)
 // Push a talon move onto a sequence.
 // This is to visually distinguish talon Move construction from
 // non-talon Move construction in AvailableMoves().
-static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, QMoves& qm)
+static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool recycle, QMoves& qm)
 {
     qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
+    qm.back().SetRecycle(recycle);
 }
 
 // Return true if any more empty columns are needed for kings
@@ -490,9 +503,10 @@ QMoves Game::AvailableMoves() noexcept
 
         const unsigned cardSuit = talonCard._card.Suit();
         const unsigned cardRank = talonCard._card.Rank();
+        bool recycle = talonCard._drawCount != talonCard._nMoves*DrawSetting();
         if (cardRank == _foundation[cardSuit].Size()) {
             const unsigned pileNo = FoundationBase+cardSuit;
-            PushTalonMove(talonCard, pileNo, result);
+            PushTalonMove(talonCard, pileNo, recycle, result);
             if (cardRank <= minFoundationSize+1){
                 if (_drawSetting == 1) {
                     // This is a short-foundation move that ShortFoundationMove()
@@ -508,10 +522,10 @@ QMoves Game::AvailableMoves() noexcept
         for (const Pile& tPile : _tableau) {
             if ((tPile.Size() > 0)) {
                 if (talonCard._card.Covers(tPile.Back())) {
-                    PushTalonMove(talonCard, tPile.Code(), result);
+                    PushTalonMove(talonCard, tPile.Code(), recycle, result);
                 }
             } else if (cardRank == King) {
-                PushTalonMove(talonCard, tPile.Code(), result);
+                PushTalonMove(talonCard, tPile.Code(), recycle, result);
                 break;  // move that king to just one empty pile
             }
         }

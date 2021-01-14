@@ -148,6 +148,7 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 	}
 	cout  << endl;
 
+	unsigned passes(1);
 	for (auto mv : moves){
 		unsigned from = mv.From();
 		unsigned to = mv.To();
@@ -157,8 +158,16 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 			cout << " to " << pilestring[to];
 			if (mv.Flip()) cout << " (flip)";
 			cout << endl;
+			if (to == Stock) passes += 1;
 		} else {
 			cout << setw(3) << mv.MoveNum() << " Draw " << mv.NCards() << endl;
+		}
+	}
+	if (moves.size()) {
+		if (passes == 1) {
+			cout << "One pass.\n";
+		} else {
+			cout << passes << " passes.\n";
 		}
 	}
 }
@@ -285,6 +294,7 @@ int main()
 		Move b(Waste,Foundation2D,1,0);
 		Move c(Tableau1,Tableau6,4,1);
 		Move d(Tableau3,6,-4);
+		d.SetRecycle(true);
 		assert(!a.Recycle());
 		assert(!b.Recycle());
 		assert(!c.Recycle());
@@ -442,11 +452,37 @@ int main()
 		}
 	}
 	{
-		Game game(Cards(deal3));
+		// deal3 can be solved in two passes but not in one drawing one card.
+		Game game(Cards(deal3), 1, 24, 0);
+		// PrintGame(game);
+		auto outcome = KSolveAStar(game,9'600'000); 
+		assert(outcome._code == Impossible);
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+	}
+	{
+		Game game(Cards(deal3), 1, 24, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == SolvedMinimal);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.Draw()));
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
 		assert(MoveCount(outcome._solution) == 99);
+	}
+	{
+		// deal3 can be solved in 84 moves in three passes drawing three cards
+		Game game(Cards(deal3), 3, 24, 2);
+		// PrintGame(game);
+		auto outcome = KSolveAStar(game,9'600'000); 
+		assert(outcome._code == SolvedMinimal);
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(MoveCount(outcome._solution) == 84);
+	}
+	{
+		// in two passes, it takes in 87 moves.
+		Game game(Cards(deal3), 3, 24, 1);
+		// PrintGame(game);
+		auto outcome = KSolveAStar(game,9'600'000); 
+		assert(outcome._code == SolvedMinimal);
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(MoveCount(outcome._solution) == 87);
 	}
 }

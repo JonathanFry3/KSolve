@@ -254,7 +254,8 @@ class Move
 private:
     unsigned char _from;
     unsigned char _to;
-    unsigned char _nMoves;
+    unsigned char _recycle:1;
+    unsigned char _nMoves:7;
     union {
         struct {
             // Non-talon move
@@ -275,6 +276,7 @@ public:
         , _to(to)
         , _nMoves(nMoves)
         , _drawCount(draw)
+        , _recycle(0)
         {}
     // Construct a non-talon move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
@@ -284,9 +286,12 @@ public:
         , _nMoves(1)
         , _n(n)
         , _fromUpCount(fromUpCount)
+        , _recycle(0)
         {
             assert(from != Stock);
         }
+
+    void SetRecycle(bool r) noexcept    {_recycle = r;}      
 
     bool IsTalonMove() const noexcept	{return _from==Stock;}
     unsigned From() const noexcept		{return _from;}
@@ -294,7 +299,7 @@ public:
     unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
     unsigned FromUpCount() const noexcept{return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
-    bool Recycle() const noexcept       {return _from==Stock && _drawCount+1!=_nMoves;}
+    bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{return _drawCount;}
 };
 
@@ -389,20 +394,22 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 class Game
 {
+    CardDeck _deck;
     Pile _waste;
     Pile _stock;
     std::array<Pile,7> _tableau;
     std::array<Pile,4> _foundation;
-    CardDeck _deck;
+    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
     unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
     unsigned _talonLookAheadLimit;
-    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
+    unsigned _recycleLimit;             // max number of recycles allowed
+    unsigned _recycleCount;             // n of recycles so far
     unsigned _kingSpaces;
 
     bool NeedKingSpace() const noexcept;
 
 public:
-    Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24);
+    Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24, unsigned recyleLimit=-1);
     Game(const Game&);
 
     Pile& WastePile()       						{return _waste;}
@@ -417,6 +424,8 @@ public:
     const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
     unsigned DrawSetting() const            		{return _drawSetting;}
     unsigned TalonLookAheadLimit() const			{return _talonLookAheadLimit;}
+    unsigned RecycleLimit() const                   {return _recycleLimit;}
+    unsigned RecycleCount() const                   {return _recycleCount;}
 
     void Deal();
     QMoves AvailableMoves() noexcept;
