@@ -56,7 +56,7 @@ struct KSolveAStarResult
 KSolveAStarResult KSolveAStar(
         Game& gm, 						// The game to be played
         unsigned maxStates=10'000'000,	// Give up if the number of unique game states
-                                        // examined exceeds this.
+                                        // examined exceeds this before any solution is found.
         unsigned threads=2);
 
 #endif    // KSOLVEASTAR_HPP
