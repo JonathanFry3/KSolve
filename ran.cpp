@@ -24,6 +24,7 @@ struct Specification
     unsigned _lookAhead;
     uint_fast32_t _seed0;
     int _incr;
+    bool _vegas;
 };
 
 void Error(string msg)
@@ -56,6 +57,7 @@ Specification GetSpec(int argc, char * argv[])
     spec._drawSpec = 1;
     spec._threads = 2;
     spec._lookAhead = 24;
+    spec._vegas = false;
 
     for (unsigned iarg = 1; iarg < argc; iarg += 1) {
         string flag = argv[iarg];
@@ -68,6 +70,7 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-b # or --begin #     Sets the first row number (default 1)." << endl;
             cout << "-e # or --end #       Sets the last row number (default 10)." << endl;
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
+            cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
             cout << "-st # or --states #   Set the maximum number of unique states (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (default 2)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
@@ -100,6 +103,8 @@ Specification GetSpec(int argc, char * argv[])
             iarg += 1;
             if (iarg > argc) Error("No number after --draw");
             spec._drawSpec = GetNumber(argv[iarg]);
+        } else if (flag == "-v" || flag == "--vegas") {
+            spec._vegas = true;
         } else if (flag == "-st" || flag == "--states") {
             iarg += 1;
             if (iarg > argc) Error("No number after --states");
@@ -122,6 +127,9 @@ Specification GetSpec(int argc, char * argv[])
 int main(int argc, char * argv[])
 {
     Specification spec = GetSpec(argc, argv);
+
+    unsigned recycleLimit(-1);
+    if (spec._vegas) recycleLimit = spec._drawSpec-1;
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
@@ -130,7 +138,7 @@ int main(int argc, char * argv[])
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
         CardDeck deck(NumberedDeal(seed));
-        Game game(deck, spec._drawSpec,spec._lookAhead);
+        Game game(deck, spec._drawSpec,spec._lookAhead,recycleLimit);
         cout << sample << "\t"
             << seed << "\t"
             << spec._threads << "\t"			 
