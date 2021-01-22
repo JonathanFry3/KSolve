@@ -78,7 +78,8 @@ Specification GetSpec(int argc, char * argv[])
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
             cout << "the number of moves in the solution or zero if no solution found," << endl;
-            cout << "the number of unique states generated, and the clock time required in seconds." << endl;
+            cout << "the number of unique states generated, the clock time required in seconds," << endl;
+            cout << "the number of talon passes in the solution or zero if no solution found." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
             cout << "3 = too many states, 4 = exceeded memory." << endl;
             cout << flush;
@@ -151,7 +152,7 @@ int main(int argc, char * argv[])
             << nMoves << "\t"
             << result._stateCount << "\t"
             << elapsed.count()/1000. << "\t";
-        int passes = -1;
+        int passes = 0;
         if (result._solution.size()) passes = RecycleCount(result._solution) + 1;
         cout << passes << endl;
         seed +=  spec._incr;
