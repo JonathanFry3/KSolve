@@ -188,7 +188,7 @@ KSolveAStarResult KSolveAStar(
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._minSolution.size()) {
+    } else if (state._minSolution.size()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
@@ -218,14 +218,18 @@ void Worker(
             state._game.Deal();
             state._moveStorage.MakeSequenceMoves(state._game);
 
+            // Make all the no-choice moves.  Returns the first choice of moves
+            // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
             if (availableMoves.size() == 0 && state._game.GameOver()) {
                 // We have a solution.  See if it is a new champion
                 state.CheckForMinSolution();
-                // See if it the final winner.  It nearly always is.
+                // See if it the final winner.  It usually is.
                 if (minMoves0 == state.k_minSolutionCount)
                     break;
+                else 
+                    continue;
             }
             
             const unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
@@ -344,7 +348,10 @@ Moves MoveStorage::MovesVector() const
     return result;
 }
 
-
+// Make available moves until a branching node or an empty one is encountered.
+// If more than one move is available but order will make no difference
+// (as when two aces are dealt face up), FilteredAvailableMoves() will
+// return them one at a time.
 QMoves WorkerState::MakeAutoMoves() noexcept
 {
     QMoves availableMoves;
