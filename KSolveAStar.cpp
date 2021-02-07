@@ -208,7 +208,8 @@ void Worker(
     try {
         // Main loop
         unsigned minMoves0;
-        while ( (state._closedList.size() < state._maxStates || state.k_minSolutionCount != -1)
+        while ( (state._closedList.size() < state._maxStates 
+                || state.k_minSolutionCount != -1)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state.k_minSolutionCount) { 
@@ -222,30 +223,32 @@ void Worker(
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
-            if (availableMoves.size() == 0 && state._game.GameOver()) {
-                // We have a solution.  See if it is a new champion
-                state.CheckForMinSolution();
-                // See if it the final winner.  It usually is.
-                if (minMoves0 == state.k_minSolutionCount)
-                    break;
-                else 
-                    continue;
-            }
-            
-            const unsigned movesMadeCount = MoveCount(state._moveStorage.MoveSequence());
-
-            // Save the result of each of the possible next moves.
-            for (auto mv: availableMoves){
-                state._game.MakeMove(mv);
-                const unsigned made = movesMadeCount + mv.NMoves();
-                const unsigned remaining = state._game.MinimumMovesLeft();
-                assert(minMoves0 <= made+remaining);
-                if (state.IsShortPathToState(made)) {
-                    state._moveStorage.Push(mv);
-                    state._moveStorage.EnqueueMoveSequence(made+remaining); 
-                    state._moveStorage.Pop();
+            if (availableMoves.size() == 0) {
+                if (state._game.GameOver()) {
+                    // We have a solution.  See if it is a new champion
+                    state.CheckForMinSolution();
+                    // See if it the final winner.  It usually is.
+                    if (minMoves0 == state.k_minSolutionCount)
+                        break;
                 }
-                state._game.UnMakeMove(mv);
+            } else {
+                const unsigned movesMadeCount = 
+                    MoveCount(state._moveStorage.MoveSequence());
+
+                // Save the result of each of the possible next moves.
+                for (auto mv: availableMoves){
+                    state._game.MakeMove(mv);
+                    const unsigned made = movesMadeCount + mv.NMoves();
+                    const unsigned remaining = 
+                        state._game.MinimumMovesLeft();
+                    assert(minMoves0 <= made+remaining);
+                    if (state.IsShortPathToState(made)) {       // <- side effect
+                        state._moveStorage.Push(mv);
+                        state._moveStorage.EnqueueMoveSequence(made+remaining); 
+                        state._moveStorage.Pop();
+                    }
+                    state._game.UnMakeMove(mv);
+                }
             }
         }
     } 
@@ -254,6 +257,7 @@ void Worker(
     }
     return;
 }
+
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
     : _leafIndex(-1)
     , _shared(shared)
