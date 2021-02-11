@@ -35,6 +35,10 @@ public:
     typedef const T* const_iterator;
     fixed_capacity_vector() 						: _size(0){}
     ~fixed_capacity_vector()						{clear();}
+    template <class V>
+        fixed_capacity_vector(const V& donor) 
+        : _size(0)
+        {append(donor.begin(),donor.end());}
     size_t capacity() const noexcept				{return Capacity;}
     T & operator[](unsigned i) noexcept				{assert(i<_size); return _elem[i];}
     const T& operator[](unsigned i) const noexcept	{assert(i<_size); return _elem[i];}
@@ -164,10 +168,10 @@ typedef fixed_capacity_vector<Card,24> PileVec;
 struct CardDeck : fixed_capacity_vector<Card,52> 
 {
     CardDeck () = default;
-    CardDeck (const std::vector<Card> vec) noexcept
+    CardDeck (const std::vector<Card> vec) 
+        : fixed_capacity_vector<Card,52>(vec)
     {
         assert(vec.size() == 52);
-        append(vec.begin(), vec.end());
     }
 };
 
