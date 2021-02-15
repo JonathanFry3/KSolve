@@ -49,7 +49,7 @@ public:
     const_iterator end() const noexcept				{return _elem+_size;}
     T & back() noexcept								{return _elem[_size-1];}
     const T& back() const noexcept					{return _elem[_size-1];}
-    void pop_back()	noexcept						{assert(_size);back().~T(); _size -= 1;}
+    void pop_back()	noexcept						{assert(_size); _size -= 1; _elem[_size].~T();}
     void push_back(const T& cd)	noexcept			{emplace_back(cd);}
     void clear() noexcept							{while (_size) pop_back();}
     void erase(iterator x) noexcept
@@ -196,6 +196,11 @@ enum PileCode {
     Foundation4H
 };
 
+static bool IsTableau(unsigned pile) noexcept
+{
+    return TableauBase <= pile && pile < TableauBase+7;
+}
+
 class Pile
 {
 private:
@@ -209,7 +214,7 @@ public:
     Pile(PileCode code)
     : _code(code)
     , _upCount(0)
-    , _isTableau(TableauBase <= code && code < TableauBase+7)
+    , _isTableau(::IsTableau(code))
     , _isFoundation(FoundationBase <= code && code < FoundationBase+4)
     {}
 
@@ -235,11 +240,6 @@ public:
     void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
     void Draw(Pile & from, int nCards) noexcept;
 };
-
-static bool IsTableau(unsigned pile) noexcept
-{
-    return TableauBase <= pile && pile < TableauBase+7;
-}
 
 
 // Returns a string to visualize a pile for debugging.
