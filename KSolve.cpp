@@ -263,6 +263,22 @@ public:
         }
         return result;
     }
+
+    // Return whether any cards are missing and list any missing cards.
+    bool MissingCards()
+    {
+        bool result = false;
+        for (unsigned c = 0; c < 52; ++c) {
+            if (!used[c])
+            {
+                if (!result) cerr << "Missing";
+                result = true;
+                cerr << " " << Card(c).AsString();
+            }
+        }
+        if (result) cerr << endl;
+        return result;
+    }
 };
 
 // Converts a card to a string and prints an error message if
@@ -332,8 +348,7 @@ vector<Card> DeckLoader(string const& cardSet, const int order[52]) {
         }
         j += 2;
     }
-    if (i < 52) {
-        cerr << "Only " << i << " cards found in input string" << endl;
+    if (dupchk.MissingCards()) {
         return empty;
     }
     return result;
@@ -553,6 +568,7 @@ string GetMoveInfo(XMove move, const Game& game) {
         auto xto = move.To();
         auto xnum = move.NCards();
         auto xflip = move.Flip();
+        ss << setw(3) << move.MoveNum() << ": ";
         if (xto == Stock) {
             ss << "Recycle " << xnum << " cards from the waste pile to stock.";
         } else if (xto == Waste) {
