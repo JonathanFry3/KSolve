@@ -475,4 +475,63 @@ struct Hasher
     }
 };
 
+
+
+// Return true if this move cannot be in a minimum solution.
+template <class V>
+bool ABC_Move(Move trial, const V& movesMade) noexcept
+{
+    // Consider a move at time T0 from A to B and the next move
+    // from B, which goes to C at time Tn.  The move at Tn is
+    // skippable if the same result could have been achieved 
+    // at T0 by moving the same cards directly from A to C.
+
+    // We are now at Tn looking back for a T0 move.  B is our from pile
+    // and C is our to pile.  A candidate T0 move is one that moves
+    // to our from pile (pile B).
+
+    // Do those two moves move the same set of cards?.  Yes if
+    // no intervening move has changed pile B and the two moves
+    // move the same number of cards.
+
+    // Was the move from A to C possible at T0? Yes if pile
+    // C has not changed since the cards moved at T0 were
+    // lifted off pile C.  If the T0 move caused a face-down card
+    // on pile C to be turned up, that changed pile C.
+
+    // Since nothing says A cannot equal C, this test catches 
+    // moves that exactly reverse previous moves.
+    const auto B = trial.From();
+    if (B == Stock || B == Waste) return false; 
+    const auto C = trial.To();
+    for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){
+        const Move mv = *imv;
+        if (mv.To() == B){
+            // candidate T0 move
+            if (mv.From() == C) {
+                // If A=C and the A to B move flipped a tableau card
+                // face up, then it changed C.
+                if (IsTableau(C) && mv.NCards() == mv.FromUpCount())
+                    return false;
+            }
+            return  mv.NCards() == trial.NCards();
+        } else {
+            // intervening move
+            if (mv.To() == C || mv.From() == C)
+                return false;			// trial move's to pile (C) has changed
+            if (mv.From() == B) 
+                return false;			// trial move's from pile (B) has changed
+        }
+    }
+    return false;
+
+    // AvailableMoves() generates moves among tableau files for only two purposes:
+    // to move all the face-up cards, or to expose a card that can be moved to the 
+    // foundation.  I have tried filtering out later moves that would re-cover a 
+    // card that had been exposed in that fashion.  That did not break anything, but
+    // cost more time than it saved.
+    // Jonathan Fry 7/12/2020
+}
+
+
 #endif      // GAME_HPP
