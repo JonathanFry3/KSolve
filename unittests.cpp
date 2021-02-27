@@ -326,6 +326,25 @@ int main()
         assert(*it == (it-vi.begin()));
     }
 	{
+		// Test ABC_Moves
+
+		// Set up a move history
+		vector<Move> made;
+		made.emplace_back(Tableau2,Tableau3,1,2);	// A. move one card from 2 up cards
+		made.emplace_back(Tableau7,Tableau6,2,5);	// B.
+		made.emplace_back(Tableau7,Tableau5,1,3);   // C.
+		made.emplace_back(Tableau4,Tableau2,1,4);	// D.
+		made.emplace_back(Tableau4,Tableau1,3,3);	// E.
+
+		// Test various candidate moves 
+		assert(ABC_Move(Move(Tableau5,Tableau7,1,6),made));		// direct reversal of C
+		assert(ABC_Move(Move(Tableau5,Tableau3,1,6),made));		// could have been done at C
+		assert(!ABC_Move(Move(Tableau5,Tableau3,2,6),made));	// only one card was moved at C
+		assert(!ABC_Move(Move(Tableau6,Tableau7,2,6),made));	// Tableau7 was changed at move C.
+		assert(!ABC_Move(Move(Tableau2,Tableau4,3,4),made));	// Tableau4 was changed at E
+		assert(!ABC_Move(Move(Tableau1,Tableau4,3,4),made));	// E flipped Tableau4
+	}
+	{
 		// trivial is a trivial deal - all automatic moves
 		vector<string> trivial{
 			"ca","h2","d4","s5","s6","d7","h7","da","c3","s4","h5","h6",
@@ -477,7 +496,7 @@ int main()
 		assert(MoveCount(outcome._solution) == 84);
 	}
 	{
-		// in two passes, it takes in 87 moves.
+		// in two passes, it takes 87 moves.
 		Game game(Cards(deal3), 3, 24, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
