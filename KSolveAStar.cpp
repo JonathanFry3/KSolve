@@ -226,9 +226,6 @@ void Worker(
                 if (state._game.GameOver()) {
                     // We have a solution.  See if it is a new champion
                     state.CheckForMinSolution();
-                    // See if it the final winner.  It usually is.
-                    if (minMoves0 == state.k_minSolutionCount)
-                        break;
                 }
             } else {
                 const unsigned movesMadeCount = 
