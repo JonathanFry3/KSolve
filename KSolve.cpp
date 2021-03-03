@@ -218,10 +218,10 @@ int main(int argc, char * argv[]) {
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
             cout << "----------------------------------------\n"; 
             for (XMove xmove: xmoves) {
-                bool isDraw = xmove.To() == Stock || xmove.To() == Waste;
+                bool isTalonMove = xmove.To() == Stock || xmove.To() == Waste;
                 cout << GetMoveInfo(xmove,game) << "\n";
                 game.MakeMove(xmove);
-                if (!isDraw){
+                if (!isTalonMove){
                     if (outputMethod == 0) {
                         cout << "\n" << GameDiagram(game) << "\n\n";
                     } else {
