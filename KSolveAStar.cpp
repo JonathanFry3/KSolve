@@ -110,7 +110,7 @@ struct WorkerState {
     MapType& _closedList;
     unsigned _maxStates;
 
-    Moves & _minSolution;
+    Moves & k_minSolution;
     static unsigned k_minSolutionCount;
     static Mutex k_minSolutionMutex;
 
@@ -121,14 +121,14 @@ struct WorkerState {
             SharedMoveStorage& sharedMoveStorage,
             MapType& map,
             unsigned maxStates)
-        : _minSolution(solution)
+        : k_minSolution(solution)
         , _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
         , _maxStates(maxStates)
         {
             _closedList.reserve(maxStates);
-            _minSolution.clear();
+            k_minSolution.clear();
             k_minSolutionCount = -1;
             k_blewMemory = false;
         }
@@ -136,12 +136,12 @@ struct WorkerState {
         : _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
         , _game(orig._game)
-        , _minSolution(orig._minSolution)
+        , k_minSolution(orig.k_minSolution)
         , _maxStates(orig._maxStates)
         {}
             
     QMoves MakeAutoMoves() noexcept;
-    void CheckForMinSolution();
+    void CheckForMinSolution(unsigned movesMadeCount);
     bool IsShortPathToState(unsigned minMoveCount);
     QMoves FilteredAvailableMoves()noexcept;
 };
@@ -187,7 +187,7 @@ KSolveAStarResult KSolveAStar(
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._minSolution.size()) { 
+    } else if (state.k_minSolution.size()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
@@ -222,14 +222,15 @@ void Worker(
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
+            const unsigned movesMadeCount = 
+                MoveCount(state._moveStorage.MoveSequence());
+
             if (availableMoves.size() == 0) {
                 if (state._game.GameOver()) {
                     // We have a solution.  See if it is a new champion
-                    state.CheckForMinSolution();
+                    state.CheckForMinSolution(movesMadeCount);
                 }
             } else {
-                const unsigned movesMadeCount = 
-                    MoveCount(state._moveStorage.MoveSequence());
 
                 // Save the result of each of the possible next moves.
                 for (auto mv: availableMoves){
@@ -380,15 +381,12 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
-void WorkerState::CheckForMinSolution() {
-    const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
-    {
-        Guard karen(k_minSolutionMutex);
-        const unsigned x = _minSolution.size();
-        if (x == 0 || nmv < k_minSolutionCount) {
-            _minSolution = _moveStorage.MovesVector();
-            k_minSolutionCount = nmv;
-        }
+void WorkerState::CheckForMinSolution(unsigned nmv) {
+    Guard karen(k_minSolutionMutex);
+    const unsigned x = k_minSolution.size();
+    if (x == 0 || nmv < k_minSolutionCount) {
+        k_minSolution = _moveStorage.MovesVector();
+        k_minSolutionCount = nmv;
     }
 }
 
