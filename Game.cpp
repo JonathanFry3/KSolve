@@ -254,7 +254,10 @@ void Game::MakeMove(const XMove & xmv) noexcept
 
 bool Game::GameOver() const noexcept
 {
-    return MinFoundationPileSize() == 13;
+    for (auto & f: _foundation) {
+        if (f.Size() < 13) return false;
+    }
+    return true;
 }
 
 // Return the height of the shortest foundation pile
