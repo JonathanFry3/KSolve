@@ -101,7 +101,7 @@ int main(int argc, char * argv[]) {
             if (i + 1 >= argc) { cerr  << "You must specify deck to load.\n"; return 100; }
             if (commandLoaded) { cerr  << "Only one method can be specified (deck/game/file).\n"; return 100; }
             deck = SolitaireDeck(argv[i+1]);
-            if (deck.size() == 0) { return 100; }
+            if (deck.empty()) { return 100; }
             commandLoaded = true;
             i++;
         } else if (_stricmp(argv[i], "-game") == 0 || _stricmp(argv[i], "/game") == 0 || _stricmp(argv[i], "-g") == 0 || _stricmp(argv[i], "/g") == 0) {
@@ -172,7 +172,7 @@ int main(int argc, char * argv[]) {
     unsigned int fileIndex = 0;
     do {
         if (fileContents.size() > fileIndex) {
-            if ((deck = LoadDeck(fileContents, fileIndex)).size() == 0) {
+            if ((deck = LoadDeck(fileContents, fileIndex)).empty()) {
                 continue;
             }
         }

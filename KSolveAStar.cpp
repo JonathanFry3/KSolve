@@ -222,7 +222,7 @@ void Worker(
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
-            if (availableMoves.size() == 0) {
+            if (availableMoves.empty()) {
                 if (state._game.GameOver()) {
                     // We have a solution.  See if it is a new champion
                     state.CheckForMinSolution();

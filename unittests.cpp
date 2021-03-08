@@ -243,7 +243,7 @@ int main()
 
 		// Test Game::MakeMove
 		sol.MakeMove(Move(Tableau1,Tableau2,1,0));
-		assert (sol.Tableau()[0].Size() == 0);
+		assert (sol.Tableau()[0].Empty());
 		assert (sol.Tableau()[1].Size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
 		assert (sol.Tableau()[1].UpCount() == 2);

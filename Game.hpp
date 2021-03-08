@@ -45,6 +45,7 @@ public:
     iterator begin() noexcept						{return _elem;}
     const_iterator begin() const noexcept			{return _elem;}
     size_t size() const	noexcept					{return _size;}
+    bool empty() const	noexcept					{return _size == 0;}
     iterator end() noexcept							{return _elem+_size;}
     const_iterator end() const noexcept				{return _elem+_size;}
     T & back() noexcept								{return _elem[_size-1];}
@@ -223,6 +224,7 @@ public:
     bool IsTableau() const noexcept					{return _isTableau;}
     bool IsFoundation() const noexcept				{return _isFoundation;}
     unsigned Size() const noexcept					{return _cards.size();}
+    bool Empty() const noexcept 					{return _cards.empty();}
 
     void SetUpCount(unsigned up) noexcept			{_upCount = up;}
     void IncrUpCount(int c) noexcept				{_upCount += c;}

@@ -201,7 +201,7 @@ void Game::MakeMove(Move mv) noexcept
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
         fromPile.IncrUpCount(-n);
-        if (fromPile.Size() == 0)
+        if (fromPile.Empty())
             _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
         else {
             if (fromPile.UpCount() == 0){
@@ -224,7 +224,7 @@ void  Game::UnMakeMove(Move mv) noexcept
         const auto n = mv.NCards();
         Pile & fromPile = *_allPiles[mv.From()];
         if (fromPile.IsTableau()) {
-            _kingSpaces -= fromPile.Size() == 0;  // uncount newly cleared columns
+            _kingSpaces -= fromPile.Empty();  // uncount newly cleared columns
             fromPile.SetUpCount(mv.FromUpCount());
         }
         fromPile.Take(toPile, n);
@@ -283,7 +283,7 @@ static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
     QMoves result;
     const auto & fnd = gm.Foundation();
     const auto & allPiles = gm.AllPiles();
-    for (int iPile = Waste; iPile<TableauBase+7 && result.size() == 0; iPile+=1) {
+    for (int iPile = Waste; iPile<TableauBase+7 && result.empty(); iPile+=1) {
         const Pile &pile = *allPiles[iPile] ;
         if (pile.Size()) {
             const Card& card = pile.Back();
@@ -428,7 +428,7 @@ QMoves Game::AvailableMoves() noexcept
     // Look for moves from tableau piles.
     for (const Pile& fromPile: _tableau) {
         // skip empty from piles
-        if (fromPile.Size() == 0) continue;
+        if (fromPile.Empty()) continue;
 
         const Card fromTip = fromPile.Back();
         const Card fromBase = fromPile.Top();
@@ -446,7 +446,7 @@ QMoves Game::AvailableMoves() noexcept
         for (const Pile& toPile: _tableau) {
             if (&fromPile == &toPile) continue;
 
-            if (toPile.Size() == 0) { 
+            if (toPile.Empty()) { 
                 if (!kingMoved 
                         && fromBase.Rank() == King 
                         && fromPile.Size() > upCount) {

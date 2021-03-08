@@ -40,7 +40,7 @@ public:
         return _end-_begin;
     }
     bool empty() const noexcept{
-        return size() == 0;
+        return _begin==_end;
     }
     template <class ... Args>
     void emplace_front(Args...args) noexcept{
