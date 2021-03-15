@@ -1,4 +1,4 @@
-// Template class fixed_capacity_vector
+// Template class static_vector
 //
 // One of these has much of the API of a std::vector,
 // but has a fixed capacity.  It cannot be extended past that.
@@ -6,20 +6,28 @@
 
 #ifndef FIXED_CAPACITY_VECTOR
 #define FIXED_CAPACITY_VECTOR
-#include <cstdint> 		// for uint_fast32_t, uint_fast64_t
+#include <cstdint> 		// for uint32_t
 #include <cassert>
+#include <type_traits>
+#include <new>
+
 
 template <class T, unsigned Capacity>
-class fixed_capacity_vector{
-    uint_fast32_t _size;
+class static_vector{
+    typedef std::aligned_storage<sizeof(T), alignof(T)>::type Data;
+    T* Ptr(Data* p) {return std::reinterpret_cast<T*>(p);}
+    const T* Ptr(const Data* p) {return std::reinterpret_cast<const T*>(p);}
+    Data* DPtr(T* p) {return std::reinterpret_cast<Data*>(p);}
+    const Data* DPtr(const T* p) {return std::reinterpret_cast<const Data*>(p);}
+    uint32_t _size;
     T _elem[Capacity];
 public:
     typedef T* iterator;
     typedef const T* const_iterator;
-    fixed_capacity_vector() 						: _size(0){}
-    ~fixed_capacity_vector()						{clear();}
+    static_vector() 						: _size(0){}
+    ~static_vector()						{clear();}
     template <class V>
-        fixed_capacity_vector(const V& donor) 
+        static_vector(const V& donor) 
         : _size(0)
         {append(donor.begin(),donor.end());}
     std::size_t capacity() const noexcept			{return Capacity;}
@@ -49,7 +57,7 @@ public:
                         return true;
                     }
     template <class V>
-    fixed_capacity_vector<T,Capacity>& operator=(const V& other) noexcept
+    static_vector<T,Capacity>& operator=(const V& other) noexcept
                     {
                         assert(other.size()<=Capacity);
                         clear();
@@ -60,7 +68,7 @@ public:
     void emplace_back(Args ... args) noexcept
                     {
                         assert(_size < Capacity);
-                        new(&(*end())) T(args...);
+                        new(_elem+_size) T(args...);
                         _size += 1;
                     }
     // Functions not part of the std::vector API
