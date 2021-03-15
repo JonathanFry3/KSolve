@@ -19,7 +19,7 @@
 #include <cassert>
 #include <sstream> 		// for stringstream
 
-#include "fixed_capacity_vector.hpp"
+#include "static_vector.hpp"
 
 
 enum Rank_t : unsigned char
@@ -83,21 +83,21 @@ public:
 };
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
-typedef fixed_capacity_vector<Card,24> PileVec;
+typedef static_vector<Card,24> PileVec;
 
 // Type to hold a complete deck
-struct CardDeck : fixed_capacity_vector<Card,52> 
+struct CardDeck : static_vector<Card,52> 
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
-        : fixed_capacity_vector<Card,52>(vec)
+        : static_vector<Card,52>(vec)
     {
         assert(vec.size() == 52);
     }
 };
 
 // Function to generate a randomly shuffled deck
-CardDeck NumberedDeal(uint_fast32_t seed);
+CardDeck NumberedDeal(uint32_t seed);
 
 enum PileCode {
     Stock = 0,
@@ -232,7 +232,7 @@ public:
 typedef std::vector<Move> Moves;
 
 // A limited-size Moves type for AvailableMoves to return
-typedef fixed_capacity_vector<Move,74> QMoves; 
+typedef static_vector<Move,74> QMoves; 
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>

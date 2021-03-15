@@ -109,7 +109,7 @@ void Pile::Draw(Pile& other, int n) noexcept
     }
 }
 
-CardDeck NumberedDeal(uint_fast32_t seed)
+CardDeck NumberedDeal(uint32_t seed)
 {
     // Create and seed a random number generator
     std::mt19937 engine;
@@ -361,7 +361,7 @@ public:
 // to reach each one.
 //
 // Enforces the limit on recycles
-typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
+typedef static_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
     TalonFutureVec result;

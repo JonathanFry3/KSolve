@@ -22,7 +22,7 @@ struct Specification
     unsigned _maxStates;
     unsigned _drawSpec;
     unsigned _lookAhead;
-    uint_fast32_t _seed0;
+    uint32_t _seed0;
     int _incr;
     bool _vegas;
 };
