@@ -9,7 +9,7 @@
 #include <cstdint> 		// for uint32_t
 #include <cassert>
 #include <iterator>     // std::reverse_iterator, std::distance
-#include <algorithm>    // for std::move()
+#include <algorithm>    // for std::move(), std::copy()
 
 
 template <class T, unsigned Capacity>
@@ -34,10 +34,10 @@ struct static_vector{
         {append(donor.begin(),donor.end());}
     std::size_t capacity() const noexcept			{return Capacity;}
     reference at(unsigned i) 	                    {verify(i<_size); return data()[i];}
-    reference operator[](unsigned i) noexcept	    {debug(i<_size); return data()[i];}
+    reference operator[](unsigned i) noexcept	    {assert(i<_size); return data()[i];}
     const_reference at(unsigned i) const 	        {verify(i<_size); return data()[i];}
     const_reference operator[](unsigned i) const noexcept
-                                                	{debug(i<_size); return data()[i];}
+                                                	{assert(i<_size); return data()[i];}
     iterator begin() noexcept						{return data();}
     const_iterator begin() const noexcept			{return data();}
     size_type size() const noexcept				    {return _size;}
@@ -48,7 +48,7 @@ struct static_vector{
     const_iterator end() const noexcept				{return data()+_size;}
     reference back() noexcept				    	{return data()[_size-1];}
     const_reference back() const noexcept			{return data()[_size-1];}
-    void pop_back()	noexcept						{debug(_size); _size -= 1; end()->~value_type();}
+    void pop_back()	noexcept						{assert(_size); _size -= 1; end()->~value_type();}
     void push_back(const T& cd)	noexcept			{emplace_back(cd);}
     void clear() noexcept							{while (_size) pop_back();}
     void erase(iterator x) noexcept                 
@@ -66,15 +66,25 @@ struct static_vector{
     template <class V>
     static_vector<value_type,Capacity>& operator=(const V& other) noexcept
                     {
-                        debug(other.size()<=Capacity);
+                        assert(other.size()<=Capacity);
                         clear();
-                        for (const auto & m: other) emplace_back(m);
+                        std::copy(other.begin(),other.end(),begin());
+                        _size = other.size();
+                        return *this;
+                    }
+    template <class V>
+    static_vector<value_type,Capacity>& operator=(const V&& other) noexcept
+                    {
+                        assert(other.size()<=Capacity);
+                        clear();
+                        std::move(other.begin(),other.end(),begin());
+                        _size = other.size();
                         return *this;
                     }
     template <class ... Args>
     void emplace_back(Args ... args)
                     {
-                        debug(_size < Capacity);
+                        assert(_size < Capacity);
                         pointer p{data()+_size};
                         new(p) value_type(args...);
                         _size += 1;
@@ -85,7 +95,7 @@ struct static_vector{
     template <typename Iterator>
     void append(Iterator begin, Iterator end) noexcept	
                     {
-                        debug(_size+(end-begin)<=Capacity);
+                        assert(_size+(end-begin)<=Capacity);
                         for (auto i=begin;i<end;i+=1){
                             data()[_size] = *i;
                             _size+=1;
@@ -95,7 +105,7 @@ struct static_vector{
     template <typename V>
     void take_back(V& donor, unsigned n) noexcept
                     {
-                        debug(donor.size() >= n);
+                        assert(donor.size() >= n);
                         append(donor.end()-n, donor.end());
                         donor._size -= n;
                     }
@@ -103,8 +113,7 @@ private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
 
-    static void verify(bool cond){if (~cond) throw std::out_of_range();}
-    static void debug(bool cond) {assert(cond);}
+    static void verify(bool cond){if (!cond) throw std::out_of_range("static_vector range error");}
 
     uint32_t _size;
     storage_type _elem[Capacity];

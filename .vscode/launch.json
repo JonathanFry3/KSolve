@@ -55,7 +55,7 @@
                 }
             ]
         }
-        */
+        //
 		{
 			"name": "(Windows) Launch unittests",
             "type": "cppdbg",
@@ -67,7 +67,7 @@
 			"environment": [],
 			"externalConsole": false
 		}
-        /*
+        */
 		{
 			"name": "(Windows) Launch test-sv",
             "type": "cppdbg",
@@ -79,6 +79,6 @@
 			"environment": [],
 			"externalConsole": false
 		}
-        */
+        //
     ]
 }
