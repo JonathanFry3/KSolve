@@ -64,6 +64,8 @@ struct static_vector{
                         return true;
                     }
     template <class V>
+    bool operator!=(const V& other) const noexcept {return !(*this==other);}                 
+    template <class V>
     static_vector<value_type,Capacity>& operator=(const V& other) noexcept
                     {
                         assert(other.size()<=Capacity);
@@ -97,8 +99,7 @@ struct static_vector{
                     {
                         assert(_size+(end-begin)<=Capacity);
                         for (auto i=begin;i<end;i+=1){
-                            data()[_size] = *i;
-                            _size+=1;
+                            push_back(*i);
                         }
                     }
     // Move the last n elements from the argument vector to this, preserving order.

@@ -1,6 +1,7 @@
 // Test driver for static_vector
 
 #include "static_vector.hpp"
+#include <vector>
 
 // A class which counts its instances
 struct SelfCount {
@@ -84,10 +85,37 @@ int main() {
         assert((*(cdi50.begin()))() == 0);
         assert(di50.begin()+di50.size() == di50.end());
 
+        // erase()
+        assert(di50.size() == 31);
+        di50.erase(di50.begin()+8);
+        assert(di50.size() == 30);
+        assert(di50[7]() == 7);
+        assert(di50[8]() == 9);
+        assert(di50[29]() == 30);
+
         // clear()
         di50.clear();
         assert(di50.size() == 0);
         assert(SelfCount::count == di50.size());
+    }
+    {
+        // operator==(), operator!=()
+        std::vector<int> dv;
+        static_vector<unsigned,32> sv;
+        for (int i = 0; i < 20; ++i){
+            dv.push_back(i);
+            sv.push_back(i);
+        }
+        assert(sv==dv);
+        sv[8] = 5;
+        assert(sv!=dv);
+        sv[8] = 8;
+        sv.pop_back();
+        assert(sv!=dv);
+
+        // operator=()
+        sv = dv;
+        assert(sv==dv);
     }
 
 }
