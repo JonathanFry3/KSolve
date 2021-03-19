@@ -152,15 +152,30 @@ public:
     const PileVec& Cards() const noexcept			{return _cards;}
     Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
     void Push(Card c) noexcept             			{_cards.push_back(c);}
-    void Take(Pile& donor, unsigned n)		{_cards.take_back(donor._cards, n);}
-    void Push(PileVec::const_iterator begin, PileVec::const_iterator end) noexcept
-                                            {_cards.append(begin,end);}
     Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
     Card Back() const noexcept				{return _cards.back();}
     void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
-    PileVec Draw(unsigned n) noexcept; 		// like Take(), but reverses order of cards drawn
+    void Take(Pile& donor, unsigned n) noexcept // Take the last n cards from donor preserving order	
+        {
+            assert(n <= donor.Size());
+            for (auto p = donor._cards.end()-n; p < donor._cards.end(); ++p)
+                _cards.push_back(*p);
+            for (unsigned i = 0; i < n; ++i)
+                donor._cards.pop_back();
+        }
+    void Draw(Pile& other, int n) noexcept
+    {
+        if (n < 0) {
+            assert(-n <= Size());
+            for (unsigned i = 0; i < -n; ++i)
+                other.Draw(*this);
+        } else {
+            assert(n <= other.Size());
+            for (unsigned i = 0; i < n; ++i)
+                Draw(other);
+        }
+    }
     void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
-    void Draw(Pile & from, int nCards) noexcept;
 };
 
 

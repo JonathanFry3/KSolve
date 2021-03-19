@@ -77,8 +77,10 @@
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
-			"externalConsole": false
-		}
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true
+        }
         //
     ]
 }
