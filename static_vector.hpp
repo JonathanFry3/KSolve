@@ -31,7 +31,7 @@ struct static_vector{
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
     // copy constructor
-    static_vector(this& donor) : _size(0) 
+    static_vector(this_class& donor) : _size(0) 
         {
             assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(m);
@@ -41,7 +41,7 @@ struct static_vector{
     // the existing static_vector.  It leaves the moved-from object
     // unchanged, aside from whatever changes moving its elements
     // made.
-    static_vector(this&& donor) : _size(0) 
+    static_vector(this_class&& donor) : _size(0) 
         {
             assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(std::move(m));
