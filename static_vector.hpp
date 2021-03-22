@@ -15,6 +15,7 @@
 
 template <class T, unsigned Capacity>
 struct static_vector{
+    using this_class = static_vector<T,Capacity>;
     using value_type = T;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
@@ -30,21 +31,20 @@ struct static_vector{
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
     // copy constructor
-    template <unsigned C>
-    static_vector(const static_vector<T,C>& donor) : _size(0) 
+    static_vector(this& donor) : _size(0) 
         {
             assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(m);
         }
     // move constructor
-    // Constructs the new vector by moving all the elements of
-    // the existing vector.  It leaves the existing vector empty.
-    template <unsigned C>
-    static_vector(static_vector<T,C>&& donor) : _size(0) 
+    // Constructs the new static_vector by moving all the elements of
+    // the existing static_vector.  It leaves the moved-from object
+    // unchanged, aside from whatever changes moving its elements
+    // made.
+    static_vector(this&& donor) : _size(0) 
         {
             assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(std::move(m));
-            donor._size = 0;
         }
     // fill constructor
     static_vector(unsigned n) 
@@ -112,16 +112,25 @@ struct static_vector{
     template <class V>
     static_vector<value_type,Capacity>& operator=(const V& other) noexcept
                     {
-                        assign(other.begin(), other.end());
+                        if (reinterpret_cast<const V*>(this) != &other)
+                            assign(other.begin(), other.end());
+                        return *this;
+                    }
+    static_vector<value_type,Capacity>& operator=(const this_class& other) noexcept
+                    {
+                        if (this != &other)
+                            assign(other.begin(), other.end());
                         return *this;
                     }
     template <class V>
     static_vector<value_type,Capacity>& operator=(const V&& other) noexcept
                     {
-                        assert(other.size()<=Capacity);
-                        clear();
-                        std::move(other.begin(),other.end(),begin());
-                        _size = other.size();
+                        if (reinterpret_cast<const V*>(this) != &other) {
+                            assert(other.size()<=Capacity);
+                            clear();
+                            std::move(other.begin(),other.end(),begin());
+                            _size = other.size();
+                        }
                         return *this;
                     }
     template <class ... Args>

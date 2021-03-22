@@ -4,33 +4,39 @@
 #include <vector>
 #include <list>
 
-// A class which counts its instances
+// A class which simulates owning a resource (or not) and
+// counts the instances that own the resource.
 struct SelfCount {
     static int count;
     int32_t _member;
+    bool _owns;
     explicit SelfCount(int val)
-        : _member(val)
+        : _member(val), _owns(true)
         {
             count += 1;
         }
     SelfCount(const SelfCount& val)
-        : _member(val._member)
+        : _member(val._member), _owns(true)
         {
             count += 1; 
         }
-    SelfCount(const SelfCount&& val)
-        : _member(val._member)
+    SelfCount(SelfCount&& val)
+        : _member(val._member), _owns(true)
         {
+            _owns = val._owns;
+            val._owns = false;
         }
-    SelfCount & operator=(const SelfCount&& right)
+    SelfCount & operator=(SelfCount&& right)
     {
         _member = right._member;
+        _owns = right._owns;
+        right._owns = false;
         return *this;
     }
     uint32_t operator()() const noexcept {return _member;}
     ~SelfCount() {
         assert(count);
-        count -= 1;
+        count -= _owns;
     }
 };
 
@@ -58,18 +64,19 @@ int main() {
         {
             // copy
             assert(SelfCount::count == 60);
-            static_vector<SelfCount,73> i73 {sv};
-            assert(i73.size() == 30);
+            static_vector<SelfCount,95> i95 (sv);
+            assert(i95.size() == 30);
             assert(SelfCount::count == 90);
-            for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
         }
         {
             // move
             assert(SelfCount::count == 60);
-            static_vector<SelfCount,73> i73 {std::move(sv)};
-            assert(i73.size() == 30);
+            static_vector<SelfCount,95> i95 (std::move(sv));
+            assert(sv.size() == 30);
+            assert(i95.size() == 30);
             assert(SelfCount::count == 60);
-            for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
         }
 
     }
@@ -77,7 +84,6 @@ int main() {
         // Default Constructor, empty()
         static_vector<SelfCount,50> di50;
         assert(SelfCount::count == 0);
-        assert(sizeof(di50) == 51*4);
         assert(di50.size() == 0);
         assert(di50.capacity() == 50);
         assert(di50.empty());
@@ -186,9 +192,21 @@ int main() {
         sv.pop_back();
         assert(sv!=dv);
 
-        // operator=()
+        // copy operator=()
         sv = dv;
         assert(sv==dv);
+        assert(sv.size() == 20);
+        sv = sv;
+        assert(sv.size() == 20);
+        assert(sv == dv);
+
+        // move operator=()
+        sv = std::move(dv);
+        assert(sv.size() == 20);
+        assert(sv == dv);
+        sv = std::move(sv);
+        assert(sv.size() == 20);
+        assert(sv == dv);
     }
 
 }
