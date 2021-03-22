@@ -10,6 +10,7 @@
 #include <cassert>
 #include <iterator>     // std::reverse_iterator, std::distance
 #include <algorithm>    // for std::move(), std::copy()
+#include <initializer_list>
 
 
 template <class T, unsigned Capacity>
@@ -29,11 +30,34 @@ struct static_vector{
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
     // copy constructor
-    template <class V>
-    static_vector(const V& donor) : _size(0) {append(donor.begin(),donor.end());}
+    template <unsigned C>
+    static_vector(const static_vector<T,C>& donor) : _size(0) 
+        {
+            assert(donor.size() <= Capacity);
+            for (auto& m:donor) emplace_back(m);
+        }
     // move constructor
-    template <class V>
-    static_vector(const V&& donor) : _size(0) {move_append(donor.begin(),donor.end());}
+    // Constructs the new vector by moving all the elements of
+    // the existing vector.  It leaves the existing vector empty.
+    template <unsigned C>
+    static_vector(static_vector<T,C>&& donor) : _size(0) 
+        {
+            assert(donor.size() <= Capacity);
+            for (auto& m:donor) emplace_back(std::move(m));
+            donor._size = 0;
+        }
+    // fill constructor
+    static_vector(unsigned n) 
+    : _size(0)
+    {for (unsigned i=0; i<n; ++i) emplace_back();}
+
+    // range constructor
+    template <class InputIterator, 
+                typename = std::_RequireInputIter<InputIterator>>       // TODO: not portable
+    static_vector(InputIterator begin, InputIterator end)
+    : _size(0)
+    {for (InputIterator k=begin; k!= end; ++k) push_back(*k);}
+
 
     std::size_t capacity() const noexcept			{return Capacity;}
     reference at(unsigned i) 	                    {verify(i<_size); return data()[i];}
@@ -68,13 +92,27 @@ struct static_vector{
                     }
     template <class V>
     bool operator!=(const V& other) const noexcept {return !(*this==other);}                 
+    void assign(size_type n, const_reference val)
+                    {
+                        clear();
+                        for (unsigned i = 0; i < n; ++i) push_back(val);
+                    }
+    void assign(std::initializer_list<value_type> x)
+                    {
+                        clear();
+                        for (auto& a:x) push_back(a);
+                    }
+    template <class InputIterator, 
+                typename = std::_RequireInputIter<InputIterator>>       // TODO: not portable
+    void assign(InputIterator begin, InputIterator end)
+                    {
+                        clear();
+                        for (InputIterator k=begin; k!= end; ++k) push_back(*k);
+                    }                        
     template <class V>
     static_vector<value_type,Capacity>& operator=(const V& other) noexcept
                     {
-                        assert(other.size()<=Capacity);
-                        clear();
-                        std::copy(other.begin(),other.end(),begin());
-                        _size = other.size();
+                        assign(other.begin(), other.end());
                         return *this;
                     }
     template <class V>

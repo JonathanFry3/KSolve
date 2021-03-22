@@ -2,11 +2,12 @@
 
 #include "static_vector.hpp"
 #include <vector>
+#include <list>
 
 // A class which counts its instances
 struct SelfCount {
     static int count;
-    uint32_t _member;
+    int32_t _member;
     explicit SelfCount(int val)
         : _member(val)
         {
@@ -17,6 +18,15 @@ struct SelfCount {
         {
             count += 1; 
         }
+    SelfCount(const SelfCount&& val)
+        : _member(val._member)
+        {
+        }
+    SelfCount & operator=(const SelfCount&& right)
+    {
+        _member = right._member;
+        return *this;
+    }
     uint32_t operator()() const noexcept {return _member;}
     ~SelfCount() {
         assert(count);
@@ -30,6 +40,40 @@ int main() {
 
     // Constructors.
     {
+        // fill
+        static_vector<int,20> i20(17);
+        assert(i20.size() == 17);
+        for (int k:i20) assert(k==0);
+
+        // range
+        assert(SelfCount::count == 0);
+        std::list<SelfCount> li;
+        for (int i = 0; i < 30; ++i) li.emplace_back(i-13);
+        assert(SelfCount::count == 30);
+        static_vector<SelfCount,95> sv(li.begin(),li.end());
+        assert(SelfCount::count == 60);
+        assert(sv.size() == 30);
+        for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
+
+        {
+            // copy
+            assert(SelfCount::count == 60);
+            static_vector<SelfCount,73> i73 {sv};
+            assert(i73.size() == 30);
+            assert(SelfCount::count == 90);
+            for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+        }
+        {
+            // move
+            assert(SelfCount::count == 60);
+            static_vector<SelfCount,73> i73 {std::move(sv)};
+            assert(i73.size() == 30);
+            assert(SelfCount::count == 60);
+            for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+        }
+
+    }
+    {
         // Default Constructor, empty()
         static_vector<SelfCount,50> di50;
         assert(SelfCount::count == 0);
@@ -37,6 +81,7 @@ int main() {
         assert(di50.size() == 0);
         assert(di50.capacity() == 50);
         assert(di50.empty());
+
 
         // emplace_back(), size()
         for (unsigned i = 0; i < 50; i+= 1){
@@ -97,6 +142,34 @@ int main() {
         di50.clear();
         assert(di50.size() == 0);
         assert(SelfCount::count == di50.size());
+    }
+    {
+        // assign()
+        // fill type
+        std::vector<int> dv;
+        dv.assign(6,-29);
+        assert(dv.size() == 6);
+        for (auto i: dv) assert(i==-29);
+    }{
+        // range type
+        static_vector<int,10> dv;
+        std::list<unsigned> lst;
+        for (unsigned i = 9; i < 9+8; ++i){
+            lst.push_back(i);
+        }
+        dv.assign(lst.begin(),lst.end());
+        assert(dv.size() == 8);
+        for (unsigned i = 9; i < 9+8; ++i) {assert(dv[i-9]==i);}
+
+        static_vector<int,9> dv2;
+        dv2.push_back(78);
+        dv2.assign(dv.begin(),dv.end());
+        for (unsigned i = 9; i < 9+8; ++i) {assert(dv2[i-9]==i);}
+
+        // initializer list type
+        dv.assign({-3, 27, 12, -397});
+        assert(dv.size() == 4);
+        assert(dv[2] == 12);
     }
     {
         // operator==(), operator!=()

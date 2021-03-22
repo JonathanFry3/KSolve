@@ -156,13 +156,13 @@ public:
     Card Back() const noexcept				{return _cards.back();}
     void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
     void Take(Pile& donor, unsigned n) noexcept // Take the last n cards from donor preserving order	
-        {
-            assert(n <= donor.Size());
-            for (auto p = donor._cards.end()-n; p < donor._cards.end(); ++p)
-                _cards.push_back(*p);
-            for (unsigned i = 0; i < n; ++i)
-                donor._cards.pop_back();
-        }
+    {
+        assert(n <= donor.Size());
+        for (auto p = donor._cards.end()-n; p < donor._cards.end(); ++p)
+            _cards.push_back(*p);
+        for (unsigned i = 0; i < n; ++i)
+            donor._cards.pop_back();
+    }
     void Draw(Pile& other, int n) noexcept
     {
         if (n < 0) {
