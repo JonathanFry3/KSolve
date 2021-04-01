@@ -28,6 +28,7 @@ struct SelfCount {
         }
     SelfCount & operator=(SelfCount&& right)
     {
+        count -= _owns;
         _member = right._member;
         _owns = right._owns;
         right._owns = false;
@@ -35,9 +36,10 @@ struct SelfCount {
     }
     uint32_t operator()() const noexcept {return _member;}
     ~SelfCount() {
-        assert(count);
         count -= _owns;
-    }
+        _owns = false;
+        assert(count >= 0);
+    } 
 };
 
 int SelfCount::count = 0;
@@ -106,19 +108,28 @@ int main() {
         assert(di50.size() == 30);
 
         // at()
-        di50.at(9)() == 9;
-        cdi50.at(29)() == 29;
+        assert(di50.at(9)() == 9);
+        assert(cdi50.at(29)() == 29);
         try {
-            int k = di50.at(30)();
+            int k = di50.at(30)();  // should throw std::out_of_bounds
             assert(false);
         } 
-        catch (...) {}
+        catch (std::out_of_range) {}
+        catch (...) {assert(false);}
 
-        // operator[](), back()
+        // operator[](), back(), front()
         assert(di50[7]() == 7);
+        di50[7] = SelfCount(91);
+        assert(di50[7]() == 91);
+        di50[7] = SelfCount(7);
         assert(cdi50[23]() == 23);
-        assert(cdi50.back()() == 29);
         assert(di50.back()() == 29);
+        di50.back() = SelfCount(92);
+        assert(di50.back()() == 92);
+        di50.back() = SelfCount(29);
+        assert(di50.back()() == 29);
+        assert(di50.front()() == 0);
+        assert(cdi50.front()() == 0);
 
         // push_back()
         di50.push_back(SelfCount(30));
@@ -132,24 +143,62 @@ int main() {
         assert(s() == 8);
 
         // begin(), end()
-        assert(&(*(cdi50.begin()+6)) == cdi50.data()+6);
+        assert(&(*(di50.begin()+6)) == cdi50.data()+6);
         assert((*(cdi50.begin()))() == 0);
+        *(di50.begin()+8) = SelfCount(71);
+        assert(cdi50[8]() == 71);
+        *(di50.begin()+8) = SelfCount(8);
         assert(di50.begin()+di50.size() == di50.end());
+        assert(SelfCount::count == di50.size());
+
+        // begin(), end()
+        assert(&(*(di50.begin()+6)) == cdi50.data()+6);
+        assert((*(cdi50.begin()))() == 0);
+        *(di50.begin()+8) = SelfCount(71);
+        assert(cdi50[8]() == 71);
+        *(di50.begin()+8) = SelfCount(8);
+        assert(di50.begin()+di50.size() == di50.end());
+        assert(SelfCount::count == di50.size());
+
+        // cbegin(), cend()
+        assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
+        assert((*(di50.cbegin()))() == 0);
+        *(di50.begin()+8) = SelfCount(71);
+        assert(cdi50[8]() == 71);
+        *(di50.begin()+8) = SelfCount(8);
+        assert(di50.cbegin()+di50.size() == di50.cend());
+        assert(SelfCount::count == di50.size());
+
+
+        // rbegin(), rend(), crbegin(), crend()
+        assert(&(*(di50.crbegin()+6)) == cdi50.end()-7);
+        assert((*(di50.crbegin()))() == 30);
+        *(di50.rbegin()+8) = SelfCount(71);
+        assert(cdi50[22]() == 71);
+        *(di50.rbegin()+8) = SelfCount(22);
+        assert(di50.crbegin()+di50.size() == di50.crend());
+        assert(SelfCount::count == di50.size());
+        for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
 
         // erase()
         assert(di50.size() == 31);
         di50.erase(di50.begin()+8);
+        assert(SelfCount::count == di50.size());
         assert(di50.size() == 30);
         assert(di50[7]() == 7);
         assert(di50[8]() == 9);
         assert(di50[29]() == 30);
 
+        // emplace()
+        assert((*di50.emplace(di50.begin()+8,96))() == 96);
+        assert(di50[9]() == 9);
+        assert(SelfCount::count == di50.size());
+
         // clear()
         di50.clear();
         assert(di50.size() == 0);
         assert(SelfCount::count == di50.size());
-    }
-    {
+    }{
         // assign()
         // fill type
         std::vector<int> dv;

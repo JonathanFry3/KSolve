@@ -11,6 +11,7 @@
 #include <iterator>     // std::reverse_iterator, std::distance
 #include <algorithm>    // for std::move(), std::copy()
 #include <initializer_list>
+#include <stdexcept>    // for std::out_if_range
 
 
 template <class T, unsigned Capacity>
@@ -31,7 +32,7 @@ struct static_vector{
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
     // copy constructor
-    static_vector(this_class& donor) : _size(0) 
+    static_vector(const this_class& donor) : _size(0) 
         {
             assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(m);
@@ -59,7 +60,8 @@ struct static_vector{
     {for (InputIterator k=begin; k!= end; ++k) push_back(*k);}
 
 
-    std::size_t capacity() const noexcept			{return Capacity;}
+    constexpr std::size_t capacity() const noexcept	{return Capacity;}
+    constexpr std::size_t max_size() const noexcept	{return Capacity;}
     reference at(unsigned i) 	                    {verify(i<_size); return data()[i];}
     reference operator[](unsigned i) noexcept	    {assert(i<_size); return data()[i];}
     const_reference at(unsigned i) const 	        {verify(i<_size); return data()[i];}
@@ -67,12 +69,22 @@ struct static_vector{
                                                 	{assert(i<_size); return data()[i];}
     iterator begin() noexcept						{return data();}
     const_iterator begin() const noexcept			{return data();}
+    const_iterator cbegin() const noexcept			{return data();}
+    iterator end() noexcept							{return data()+_size;}
+    const_iterator end() const noexcept				{return data()+_size;}
+    const_iterator cend() noexcept      			{return data()+_size;}
+    reverse_iterator rbegin() noexcept              {return reverse_iterator(end());}
+    const_reverse_iterator rbegin() const noexcept  {return const_reverse_iterator(end());}
+    const_reverse_iterator crbegin() noexcept       {return const_reverse_iterator(cend());}
+    reverse_iterator rend() noexcept                {return reverse_iterator(begin());}
+    const_reverse_iterator rend() const noexcept    {return const_reverse_iterator(begin());}
+    const_reverse_iterator crend()  noexcept        {return const_reverse_iterator(cbegin());}
     size_type size() const noexcept				    {return _size;}
     pointer data() noexcept                         {return reinterpret_cast<pointer>(_elem);}
     const_pointer data() const noexcept             {return reinterpret_cast<const_pointer>(_elem);}
     bool empty() const	noexcept					{return _size == 0;}
-    iterator end() noexcept							{return data()+_size;}
-    const_iterator end() const noexcept				{return data()+_size;}
+    reference front() noexcept                      {assert(_size); return data()[0];}
+    const_reference front() const noexcept          {assert(_size); return data()[0];}
     reference back() noexcept				    	{return data()[_size-1];}
     const_reference back() const noexcept			{return data()[_size-1];}
     void pop_back()	noexcept						{assert(_size); _size -= 1; end()->~value_type();}
@@ -133,14 +145,45 @@ struct static_vector{
                         }
                         return *this;
                     }
+    template <class... Args>
+    iterator emplace (const_iterator position, Args&&... args)
+                    {
+                        assert(_size < Capacity);
+                        pointer p = const_cast<pointer>(position);
+                        std::move_backward(p, end(), end()+1);
+                        new(p) value_type(args...);
+                        ++_size;
+                        return p;
+                    }
     template <class ... Args>
     void emplace_back(Args ... args)
                     {
                         assert(_size < Capacity);
                         pointer p{data()+_size};
                         new(p) value_type(args...);
-                        _size += 1;
+                        ++_size;
                     }
+    // single element insert()
+    iterator insert (const_iterator position, const value_type& val)    {emplace(position, val);}
+    // fill insert
+    iterator insert (const_iterator position, size_type n, const value_type& val)
+                    {
+                        assert(_size+n <= Capacity);
+                        iterator p = const_cast<pointer>(position);
+                        std::move_backward(p, end(), end()+n);
+                        for (iterator i = p; i < p+n; ++i) {
+                            new(i) val;
+                        }
+                        _size += n;
+                    }
+    // range insert()	
+    template <class InputIterator>
+    iterator insert (const_iterator position, InputIterator first, InputIterator last);
+    // move insert()	
+    iterator insert (const_iterator position, value_type&& val);
+    // initializer list insert()
+    iterator insert (const_iterator position, initializer_list<value_type> il);
+
 private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;

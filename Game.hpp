@@ -90,7 +90,7 @@ struct CardDeck : static_vector<Card,52>
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
-        : static_vector<Card,52>(vec)
+        : static_vector<Card,52>(vec.begin(),vec.end())
     {
         assert(vec.size() == 52);
     }
