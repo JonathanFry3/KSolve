@@ -199,15 +199,6 @@ int main() {
         assert(di50.begin()+di50.size() == di50.end());
         assert(SelfCount::Count() == di50.size());
 
-        // begin(), end()
-        assert(&(*(di50.begin()+6)) == cdi50.data()+6);
-        assert((*(cdi50.begin()))() == 0);
-        *(di50.begin()+8) = SelfCount(71);
-        assert(cdi50[8]() == 71);
-        *(di50.begin()+8) = SelfCount(8);
-        assert(di50.begin()+di50.size() == di50.end());
-        assert(SelfCount::Count() == di50.size());
-
         // cbegin(), cend()
         assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
         assert((*(di50.cbegin()))() == 0);
@@ -216,7 +207,6 @@ int main() {
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.cbegin()+di50.size() == di50.cend());
         assert(SelfCount::Count() == di50.size());
-
 
         // rbegin(), rend(), crbegin(), crend()
         assert(&(*(di50.crbegin()+6)) == cdi50.end()-7);
@@ -230,7 +220,8 @@ int main() {
 
         // erase()
         assert(di50.size() == 31);
-        di50.erase(di50.begin()+8);
+        assert(di50.erase(di50.begin()+8) == di50.begin()+8);
+
         assert(SelfCount::Count() == di50.size());
         assert(di50.size() == 30);
         assert(di50[7]() == 7);
@@ -240,6 +231,20 @@ int main() {
         // emplace()
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
+        assert(di50.size() == 31);
+        assert(SelfCount::Count() == di50.size());
+
+        // range erase()
+        auto spot = di50.erase(di50.begin()+8, di50.begin()+12);
+        assert(spot == di50.begin()+8);
+        assert(*spot == 12);
+        assert(*(spot-1) == 7);
+        assert(di50.size() == 27);
+        assert(SelfCount::Count() == di50.size());
+
+        assert(di50.erase(di50.end()-7, di50.end()) == di50.end());
+        assert(di50.size() == 20);
+        assert(di50.back() == 23);
         assert(SelfCount::Count() == di50.size());
 
         // clear()
@@ -320,6 +325,12 @@ int main() {
         assert(SelfCount::Count() == 40);
         assert(b.size() == 20);
         assert(a == b);
+
+        // initializer_list operator=()
+        auto& ref = b = {14, -293, 1200, -2, 0};
+        assert(b.size() == 5);
+        assert(ref[3]() ==-2);
+        assert(ref == b);
     }{
         // The many flavors of insert()
 

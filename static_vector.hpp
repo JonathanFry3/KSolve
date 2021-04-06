@@ -3,14 +3,12 @@
 // One of these has nearly all of the API of a std::vector,
 // but has a fixed capacity.  It cannot be extended past that.
 // It is safe to use only where the problem limits the size needed.
-// The functions reserve() and shrink_to_fit() are not implemented
-// because they might be misleading.
 //
 // The implementation uses no dynamic storage; the entire vector
 // resides where it is declared.
 //
-// A swap() member function is defined, but only between static_vectors of
-// the same value type and capacity.  It simply performs a std::swap().
+// The functions reserve() and shrink_to_fit() do nothing; the
+// function get_allocator() is not implemented.
 
 #ifndef STATIC_VECTOR
 #define STATIC_VECTOR
@@ -42,8 +40,7 @@ struct static_vector{
     // copy constructor
     static_vector(const this_type& donor) : _size(0) 
         {
-            assert(donor.size() <= Capacity);
-            for (auto& m:donor) emplace_back(m);
+            for (auto& m:donor) push_back(m);
         }
     // move constructor
     // Constructs the new static_vector by moving all the elements of
@@ -52,28 +49,28 @@ struct static_vector{
     // made.
     static_vector(this_type&& donor) : _size(0) 
         {
-            assert(donor.size() <= Capacity);
             for (auto& m:donor) emplace_back(std::move(m));
         }
     // fill constructor
-    static_vector(size_type n) 
-    : _size(0)
-    {for (size_type i=0; i<n; ++i) emplace_back();}
-
+    static_vector(size_type n) : _size(0)
+        {
+            for (size_type i=0; i<n; ++i) emplace_back();
+        }
     // range constructor
     template <class InputIterator, 
                 typename = std::_RequireInputIter<InputIterator> >       // TODO: not portable
-    static_vector(InputIterator begin, InputIterator end)
-    : _size(0)
-    {for (InputIterator k=begin; k!= end; ++k) emplace_back(*k);}
+    static_vector(InputIterator begin, InputIterator end) : _size(0)
+        {
+            for (InputIterator k=begin; k!= end; ++k) emplace_back(*k);
+        }
 
 
     constexpr std::size_t capacity() const noexcept	{return Capacity;}
     constexpr std::size_t max_size() const noexcept	{return Capacity;}
     reference at(size_type i) 	                    {verify(i<_size); return data()[i];}
-    reference operator[](size_type i) noexcept	    {assert(i<_size); return data()[i];}
+    reference operator[](size_type i) 	            {assert(i<_size); return data()[i];}
     const_reference at(size_type i) const 	        {verify(i<_size); return data()[i];}
-    const_reference operator[](size_type i) const noexcept
+    const_reference operator[](size_type i) const
                                                 	{assert(i<_size); return data()[i];}
     iterator begin() noexcept						{return data();}
     const_iterator begin() const noexcept			{return data();}
@@ -95,11 +92,36 @@ struct static_vector{
     const_reference front() const noexcept          {assert(_size); return data()[0];}
     reference back() noexcept				    	{return data()[_size-1];}
     const_reference back() const noexcept			{return data()[_size-1];}
-    void pop_back()	noexcept						{assert(_size); _size -= 1; end()->~value_type();}
-    void push_back(const T& cd)	noexcept			{emplace_back(cd);}
+    void pop_back()	        						{assert(_size); _size -= 1; end()->~value_type();}
+    void push_back(const T& cd)     				{emplace_back(cd);}
+    void push_back(T&& cd)     				        {emplace_back(std::move(cd));}
     void clear() noexcept							{while (_size) pop_back();}
-    void erase(iterator x) noexcept                 
-                    {x->~value_type(); std::move(x+1,end(),x); _size -= 1;}
+    void reserve(size_type n)                       {assert(n <= capacity());}
+    void shrink_to_fit()                            {}
+    iterator erase(const_iterator position) noexcept                 
+                    {
+                        assert(good_iter(position+1));
+                        iterator x = const_cast<iterator>(position);
+                        x->~value_type(); 
+                        std::move(x+1,end(),x); 
+                        _size -= 1;
+                        return x;
+                    }
+    iterator erase (const_iterator first, const_iterator last)
+                    {
+                        iterator f = const_cast<iterator>(first);
+                        iterator l = const_cast<iterator>(last);
+                        if (first != last){
+                            assert(good_iter(first+1));
+                            assert(good_iter(last));
+                            assert(first<last);
+                            for (iterator it = f; it < l; ++it)
+                                it->~value_type();
+                            std::move(l, end(), f);
+                            _size -= last-first;
+                        }
+                        return f;
+                    }                    
     template <class V>
     bool operator==(const V& other) const noexcept
                     {	
@@ -115,10 +137,11 @@ struct static_vector{
     void assign(size_type n, const_reference val)
                     {
                         clear();
-                        for (size_type i = 0; i < n; ++i) push_back(val);
+                        while (size()<n) push_back(val);
                     }
     void assign(std::initializer_list<value_type> x)
                     {
+                        assert(x.size() <= capacity());
                         clear();
                         for (auto& a:x) push_back(a);
                     }
@@ -129,20 +152,13 @@ struct static_vector{
                         clear();
                         for (InputIterator k=begin; k!= end; ++k) push_back(*k);
                     }                        
-    template <class V>
-    static_vector<value_type,Capacity>& operator=(const V& other) noexcept
-                    {
-                        if (reinterpret_cast<const V*>(this) != &other)
-                            assign(other.begin(), other.end());
-                        return *this;
-                    }
-    static_vector<value_type,Capacity>& operator=(const this_type& other) noexcept
+    this_type& operator=(const this_type& other) noexcept
                     {
                         if (this != &other)
                             assign(other.begin(), other.end());
                         return *this;
                     }
-    static_vector<value_type,Capacity>& operator=(this_type&& other) noexcept
+    this_type& operator=(this_type&& other) noexcept
                     {
                         if (data() != other.data()) {
                             clear();
@@ -153,6 +169,11 @@ struct static_vector{
                         }
                         return *this;
                     }
+    this_type& operator=(std::initializer_list<value_type> il)
+                    {
+                        assign(il);
+                        return *this;
+                    }                        
     template <class... Args>
     iterator emplace (const_iterator position, Args&&... args)
                     {
@@ -272,6 +293,11 @@ private:
                     new(end()+n-nu+i) value_type(std::move(*(end()-nu+i)));
                 // shift elements to previously occupied cells by assignment
                 std::move_backward(p, end()-nu, end());
+            }
+    // returns true iff it-1 can be dereferenced.
+    bool good_iter(const const_iterator &it)
+            {
+                return begin() < it && it <= end();
             }
 };
 #endif      // ndef STATIC_VECTOR
