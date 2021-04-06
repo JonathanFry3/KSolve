@@ -280,20 +280,6 @@ int main() {
         assert(dv[2] == 12);
     }
     {
-        // operator==(), operator!=()
-        std::vector<int> dv;
-        static_vector<unsigned,32> sv;
-        for (int i = 0; i < 20; ++i){
-            dv.push_back(i);
-            sv.push_back(i);
-        }
-        assert(sv==dv);
-        sv[8] = 5;
-        assert(sv!=dv);
-        sv[8] = 8;
-        sv.pop_back();
-        assert(sv!=dv);
-    }{
         // assignment operators
         static_vector<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);
@@ -434,5 +420,28 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
+    }{
+        // comparison functions
+        static_vector<int,73> v0;
+        static_vector<int,70> v1;
+        for (unsigned i = 0; i < 40; ++i){
+            v0.push_back(i);
+            v1.push_back(i);
+        }
+
+        assert(v0 == v1);
+        assert(v1 == v0);
+        assert(!(v0 < v1));
+
+        v1.pop_back();
+        assert(v1 < v0);
+        assert(v1 <= v0);
+        assert(v0 > v1);
+        assert(v0 >= v1);
+        assert(v1 != v0);
+
+        v1[16] = 235;
+        assert(v0 < v1);
+        assert(v0 != v1);
     }
 }

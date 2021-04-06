@@ -15,7 +15,7 @@
 #include <cstdint> 		// for uint32_t
 #include <cassert>
 #include <iterator>     // std::reverse_iterator
-#include <algorithm>    // for std::move...()
+#include <algorithm>    // for std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept>    // for std::out_of_range
 
@@ -122,18 +122,6 @@ struct static_vector{
                         }
                         return f;
                     }                    
-    template <class V>
-    bool operator==(const V& other) const noexcept
-                    {	
-                        if (_size != other.size()) return false;
-                        auto iv = other.begin();
-                        for(auto ic=begin();ic!=end();ic+=1,iv+=1){
-                            if (*ic != *iv) return false;
-                        }
-                        return true;
-                    }
-    template <class V>
-    bool operator!=(const V& other) const noexcept {return !(*this==other);}                 
     void assign(size_type n, const_reference val)
                     {
                         clear();
@@ -257,7 +245,6 @@ struct static_vector{
                     {
                         std::swap(*this,x);
                     }
-
 private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
@@ -300,4 +287,38 @@ private:
                 return begin() < it && it <= end();
             }
 };
+
+//  Non-member overloads
+
+template <class T, unsigned C0, unsigned C1>
+bool operator== (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    if (lhs.size() != rhs.size()) return false;
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator!= (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    return !(rhs == lhs);
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator<  (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),rhs.end());
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator<= (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    return !(rhs < lhs);
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator>  (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    return rhs < lhs;
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator>= (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
+{
+    return !(lhs < rhs);
+}
 #endif      // ndef STATIC_VECTOR
