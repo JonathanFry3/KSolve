@@ -142,13 +142,13 @@ struct static_vector{
                             assign(other.begin(), other.end());
                         return *this;
                     }
-    template <class V>
-    static_vector<value_type,Capacity>& operator=(const V&& other) noexcept
+    static_vector<value_type,Capacity>& operator=(this_type&& other) noexcept
                     {
-                        if (reinterpret_cast<const V*>(this) != &other) {
-                            assert(other.size()<=Capacity);
+                        if (data() != other.data()) {
                             clear();
-                            std::move(other.begin(),other.end(),begin());
+                            iterator p = begin();
+                            for (auto & o:other)
+                                new(p++) value_type(std::move(o));
                             _size = other.size();
                         }
                         return *this;
@@ -158,7 +158,7 @@ struct static_vector{
                     {
                         assert(_size < Capacity);
                         assert(begin()<=position && position<=end());
-                        pointer p = const_cast<pointer>(position);
+                        iterator p = const_cast<iterator>(position);
                         make_room(p,1);
                         new(p) value_type(args...);
                         ++_size;
@@ -189,7 +189,7 @@ struct static_vector{
                     {
                         assert(_size+n <= Capacity);
                         assert(begin()<=position && position<=end());
-                        iterator p = const_cast<pointer>(position);
+                        iterator p = const_cast<iterator>(position);
                         make_room(p,n);
                         // copy val n times into newly available cells
                         for (iterator i = p; i < p+n; ++i) {
@@ -202,10 +202,10 @@ struct static_vector{
     template <class InputIterator>
     iterator insert (const_iterator position, InputIterator first, InputIterator last)
                     {
-                        iterator p = const_cast<pointer>(position);
+                        iterator p = const_cast<iterator>(position);
                         while (first != last)
                             emplace(p++,*first++);
-                        return const_cast<pointer>(position);
+                        return const_cast<iterator>(position);
                     }
     // initializer list insert()
     iterator insert (const_iterator position, std::initializer_list<value_type> il)
@@ -213,7 +213,7 @@ struct static_vector{
                         size_type n = il.size();
                         assert(_size+n <= Capacity);
                         assert(begin()<=position && position<=end());
-                        iterator p = const_cast<pointer>(position);
+                        iterator p = const_cast<iterator>(position);
                         make_room(p,n);
                         // copy il into newly available cells
                         auto j = il.begin();
@@ -225,9 +225,8 @@ struct static_vector{
                     }
     void resize (size_type n, const value_type& val)
                     {
-                        assert(n <= Capacity);
-                        while(n < size()) erase(end()-1);
-                        if (size() < n) insert(end(),size()-n,val);
+                        while (n < size()) pop_back();
+                        while (size() < n) push_back(val);
                     }
     void resize (size_type n)
                     {

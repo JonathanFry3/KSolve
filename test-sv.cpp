@@ -46,11 +46,11 @@ struct SelfCount {
     }
     bool operator==(const SelfCount& right) const 
     {
-        return _member == right._member;
+        return _member == right._member && _owns == right._owns;
     }
     bool operator!=(const SelfCount& right) const 
     {
-        return _member != right._member;
+        return ! operator==(right);
     }
     uint32_t operator()() const noexcept {return _member;}
     ~SelfCount() {
@@ -288,25 +288,39 @@ int main() {
         sv[8] = 8;
         sv.pop_back();
         assert(sv!=dv);
+    }{
+        // assignment operators
+        static_vector<SelfCount, 50> a, b;
+        assert(SelfCount::Count() == 0);
+        for (unsigned i = 0; i<20; ++i)
+            a.emplace_back(i);
+        assert(SelfCount::Count() == 20);
 
         // copy operator=()
-        sv = dv;
-        assert(sv==dv);
-        assert(sv.size() == 20);
-        sv = sv;
-        assert(sv.size() == 20);
-        assert(sv == dv);
+        b = a;
+        assert(a==b);
+        assert(b.size() == 20);
+        assert(SelfCount::Count() == 40);
+
+        a = a;
+        assert(a.size() == 20);
+        assert(a == b);
+        assert(SelfCount::Count() == 40);
 
         // move operator=()
-        sv = std::move(dv);
-        assert(sv.size() == 20);
-        assert(sv == dv);
-        sv = std::move(sv);
-        assert(sv.size() == 20);
-        assert(sv == dv);
-    }
+        b = std::move(a);
+        assert(b.size() == 20);
+        assert(SelfCount::Count() == 20);
+        assert(a != b);
 
-    {
+        a = b;
+        assert(SelfCount::Count() == 40);
+
+        b = std::move(b);
+        assert(SelfCount::Count() == 40);
+        assert(b.size() == 20);
+        assert(a == b);
+    }{
         // The many flavors of insert()
 
         assert(SelfCount::Count() == 0);
