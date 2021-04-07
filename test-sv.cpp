@@ -114,19 +114,27 @@ int main() {
         {
             // copy
             assert(SelfCount::Count() == 30);
-            static_vector<SelfCount,95> i95 (sv);
-            assert(i95.size() == 30);
+            static_vector<SelfCount,80> i80 (sv);
+            assert(i80.size() == 30);
             assert(SelfCount::Count() == 60);
-            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
+            for (int i = 0; i < 30; ++i) assert(i80[i]() == i-13);
         }
         {
             // move
+            assert(SelfCount::Count() == 30);
+            static_vector<SelfCount,73> i73 (std::move(sv));
+            assert(sv.size() == 30);
+            assert(i73.size() == 30);
+            assert(SelfCount::Count() == 30);
+            for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
+
             assert(SelfCount::Count() == 30);
             static_vector<SelfCount,95> i95 (std::move(sv));
             assert(sv.size() == 30);
             assert(i95.size() == 30);
             assert(SelfCount::Count() == 30);
             for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
+
         }
 
     }
@@ -430,6 +438,7 @@ int main() {
         }
 
         assert(v0 == v1);
+        assert(v0 == v0);
         assert(v1 == v0);
         assert(!(v0 < v1));
 

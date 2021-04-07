@@ -38,9 +38,17 @@ struct static_vector{
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
     // copy constructor
-    static_vector(const this_type& donor) : _size(0) 
+    static_vector(const this_type& donor) : _size(0)
         {
-            for (auto& m:donor) push_back(m);
+            for (auto& m:donor) 
+                new(data()+_size++) value_type(m);
+        }
+    template<unsigned C1>
+    static_vector(const static_vector<T,C1>& donor) : _size(0) 
+        {
+            assert(donor.size() <= Capacity);
+            for (auto& m:donor) 
+                new(data()+_size++) value_type(m);
         }
     // move constructor
     // Constructs the new static_vector by moving all the elements of
@@ -49,7 +57,15 @@ struct static_vector{
     // made.
     static_vector(this_type&& donor) : _size(0) 
         {
-            for (auto& m:donor) emplace_back(std::move(m));
+            for (auto& m:donor) 
+                new(data()+_size++) value_type(std::move(m));
+        }
+    template<unsigned C1>
+    static_vector(static_vector<T,C1>&& donor) : _size(0) 
+        {
+            assert(donor.size() <= Capacity);
+            for (auto& m:donor) 
+                new(data()+_size++) value_type(std::move(m));
         }
     // fill constructor
     static_vector(size_type n) : _size(0)
