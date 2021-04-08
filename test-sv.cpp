@@ -286,8 +286,7 @@ int main() {
         dv.assign({-3, 27, 12, -397});
         assert(dv.size() == 4);
         assert(dv[2] == 12);
-    }
-    {
+    }{
         // assignment operators
         static_vector<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);
@@ -321,10 +320,42 @@ int main() {
         assert(a == b);
 
         // initializer_list operator=()
-        auto& ref = b = {14, -293, 1200, -2, 0};
+        b = {14, -293, 1200, -2, 0};
         assert(b.size() == 5);
-        assert(ref[3]() ==-2);
-        assert(ref == b);
+        assert(b[3]() == -2);
+    }{
+        // assignment operators between vectors of different capacities
+        static_vector<SelfCount, 50> a;
+        static_vector<SelfCount, 70> b;
+        assert(SelfCount::Count() == 0);
+        for (unsigned i = 0; i<20; ++i)
+            a.emplace_back(i);
+        assert(SelfCount::Count() == 20);
+
+        // copy operator=()
+        b = a;
+        assert(a==b);
+        assert(b.size() == 20);
+        assert(SelfCount::Count() == 40);
+
+        a = a;
+        assert(a.size() == 20);
+        assert(a == b);
+        assert(SelfCount::Count() == 40);
+
+        // move operator=()
+        b = std::move(a);
+        assert(b.size() == 20);
+        assert(SelfCount::Count() == 20);
+        assert(a != b);
+
+        a = b;
+        assert(SelfCount::Count() == 40);
+
+        b = std::move(b);
+        assert(SelfCount::Count() == 40);
+        assert(b.size() == 20);
+        assert(a == b);
     }{
         // The many flavors of insert()
 
@@ -408,7 +439,29 @@ int main() {
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
     }{
-        // swap()
+        // swap() member
+        assert(SelfCount::Count() == 0);
+        static_vector<SelfCount, 99> va, vc;
+        static_vector<SelfCount, 99> vb, vd;
+        for (int i = 0; i < 57; ++i){
+            va.emplace_back(i);
+            if (i < 19) vb.emplace_back(i+300);
+        }
+        vc = va;
+        vd = vb;
+        assert(va.size() == 57);
+        assert(vb.size() == 19);
+        assert(SelfCount::Count() == 2*(19+57));
+        assert(vc == va);
+        assert(vd == vb);
+        va.swap(vb);
+        assert(vb.size() == 57);
+        assert(va.size() == 19);
+        assert(SelfCount::Count() == 2*(19+57));
+        assert(vd == va);
+        assert(vc == vb);
+    }{
+        // swap() non-member overload
         assert(SelfCount::Count() == 0);
         static_vector<SelfCount, 99> va, vb, vc, vd;
         for (int i = 0; i < 57; ++i){
@@ -422,7 +475,7 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
-        va.swap(vb);
+        swap(va,vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
         assert(SelfCount::Count() == 2*(19+57));

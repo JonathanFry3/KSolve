@@ -80,7 +80,6 @@ struct static_vector{
             for (InputIterator k=begin; k!= end; ++k) emplace_back(*k);
         }
 
-
     constexpr std::size_t capacity() const noexcept	{return Capacity;}
     constexpr std::size_t max_size() const noexcept	{return Capacity;}
     reference at(size_type i) 	                    {verify(i<_size); return data()[i];}
@@ -261,7 +260,6 @@ struct static_vector{
                     {
                         std::swap(*this,x);
                     }
-private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
     size_type _size;
@@ -302,6 +300,7 @@ private:
             {
                 return begin() < it && it <= end();
             }
+    // 
 };
 
 //  Non-member overloads
@@ -336,5 +335,11 @@ template <class T, unsigned C0, unsigned C1>
 bool operator>= (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
 {
     return !(lhs < rhs);
+}
+
+template <class T, unsigned C>
+void swap(static_vector<T,C>& a, static_vector<T,C>& b)
+{
+    a.swap(b);
 }
 #endif      // ndef STATIC_VECTOR
