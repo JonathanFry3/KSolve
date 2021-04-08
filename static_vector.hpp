@@ -19,6 +19,7 @@
 #include <initializer_list>
 #include <stdexcept>    // for std::out_of_range
 
+namespace frystl {
 
 template <class T, uint32_t Capacity>
 struct static_vector{
@@ -342,4 +343,5 @@ void swap(static_vector<T,C>& a, static_vector<T,C>& b)
 {
     a.swap(b);
 }
+}   // namespace frystl
 #endif      // ndef STATIC_VECTOR

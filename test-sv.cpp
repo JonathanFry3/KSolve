@@ -4,6 +4,8 @@
 #include <vector>
 #include <list>
 
+using namespace frystl;
+
 // A class which simulates owning a resource (or not) and
 // counts the instances that own the resource.
 struct SelfCount {

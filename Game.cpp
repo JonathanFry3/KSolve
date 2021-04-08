@@ -338,7 +338,7 @@ public:
 // to reach each one.
 //
 // Enforces the limit on recycles
-typedef static_vector<TalonFuture,24> TalonFutureVec;
+typedef frystl::static_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
     TalonFutureVec result;

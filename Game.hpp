@@ -83,10 +83,10 @@ public:
 };
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
-typedef static_vector<Card,24> PileVec;
+typedef frystl::static_vector<Card,24> PileVec;
 
 // Type to hold a complete deck
-struct CardDeck : static_vector<Card,52> 
+struct CardDeck : frystl::static_vector<Card,52> 
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
@@ -247,7 +247,7 @@ public:
 typedef std::vector<Move> Moves;
 
 // A limited-size Moves type for AvailableMoves to return
-typedef static_vector<Move,74> QMoves; 
+typedef frystl::static_vector<Move,74> QMoves; 
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
