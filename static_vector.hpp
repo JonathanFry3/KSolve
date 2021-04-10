@@ -83,9 +83,9 @@ struct static_vector{
 
     constexpr std::size_t capacity() const noexcept	{return Capacity;}
     constexpr std::size_t max_size() const noexcept	{return Capacity;}
-    reference at(size_type i) 	                    {verify(i<_size); return data()[i];}
+    reference at(size_type i) 	                    {Verify(i<_size); return data()[i];}
     reference operator[](size_type i) 	            {assert(i<_size); return data()[i];}
-    const_reference at(size_type i) const 	        {verify(i<_size); return data()[i];}
+    const_reference at(size_type i) const 	        {Verify(i<_size); return data()[i];}
     const_reference operator[](size_type i) const
                                                 	{assert(i<_size); return data()[i];}
     iterator begin() noexcept						{return data();}
@@ -116,7 +116,7 @@ struct static_vector{
     void shrink_to_fit()                            {}
     iterator erase(const_iterator position) noexcept                 
                     {
-                        assert(good_iter(position+1));
+                        assert(GoodIter(position+1));
                         iterator x = const_cast<iterator>(position);
                         x->~value_type(); 
                         std::move(x+1,end(),x); 
@@ -128,8 +128,8 @@ struct static_vector{
                         iterator f = const_cast<iterator>(first);
                         iterator l = const_cast<iterator>(last);
                         if (first != last){
-                            assert(good_iter(first+1));
-                            assert(good_iter(last));
+                            assert(GoodIter(first+1));
+                            assert(GoodIter(last));
                             assert(first<last);
                             for (iterator it = f; it < l; ++it)
                                 it->~value_type();
@@ -184,7 +184,7 @@ struct static_vector{
                         assert(_size < Capacity);
                         assert(begin()<=position && position<=end());
                         iterator p = const_cast<iterator>(position);
-                        make_room(p,1);
+                        MakeRoom(p,1);
                         new(p) value_type(args...);
                         ++_size;
                         return p;
@@ -215,7 +215,7 @@ struct static_vector{
                         assert(_size+n <= Capacity);
                         assert(begin()<=position && position<=end());
                         iterator p = const_cast<iterator>(position);
-                        make_room(p,n);
+                        MakeRoom(p,n);
                         // copy val n times into newly available cells
                         for (iterator i = p; i < p+n; ++i) {
                             new(i) value_type(val);
@@ -239,7 +239,7 @@ struct static_vector{
                         assert(_size+n <= Capacity);
                         assert(begin()<=position && position<=end());
                         iterator p = const_cast<iterator>(position);
-                        make_room(p,n);
+                        MakeRoom(p,n);
                         // copy il into newly available cells
                         auto j = il.begin();
                         for (iterator i = p; i < p+n; ++i,++j) {
@@ -261,33 +261,16 @@ struct static_vector{
                     {
                         std::swap(*this,x);
                     }
+private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
     size_type _size;
     storage_type _elem[Capacity];
 
-    static void verify(bool cond)
+    static void Verify(bool cond)
         {if (!cond) throw std::out_of_range("static_vector range error");}
-
-    // Push the elements in [begin,end) to the back, preserving order.
-    template <typename Iterator>
-    void append(Iterator begin, Iterator end) noexcept	
-            {
-                assert(_size+(end-begin)<=Capacity);
-                for (auto i=begin;i<end;i+=1){
-                    push_back(*i);
-                }
-            }
-    template <typename Iterator>
-    void move_append(Iterator begin, Iterator end) noexcept	
-            {
-                assert(_size+(end-begin)<=Capacity);
-                for (auto i=begin;i<end;i+=1){
-                    push_back(std::move(*i));
-                }
-            }
     // Move cells at and to the right of p to the right by n spaces.
-    void make_room(iterator p, size_type n)
+    void MakeRoom(iterator p, size_type n)
             {
                 // fill the uninitialized target cells by move construction
                 size_type nu = std::min(size_type(end()-p),n);
@@ -297,7 +280,7 @@ struct static_vector{
                 std::move_backward(p, end()-nu, end());
             }
     // returns true iff it-1 can be dereferenced.
-    bool good_iter(const const_iterator &it)
+    bool GoodIter(const const_iterator &it)
             {
                 return begin() < it && it <= end();
             }
