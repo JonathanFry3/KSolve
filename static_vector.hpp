@@ -35,10 +35,12 @@ struct static_vector{
     using const_iterator = const_pointer;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-
+//
+//******* Public member functions:
+//
     static_vector() 						: _size(0){}
     ~static_vector()						{clear();}
-    // copy constructor
+    // copy constructors
     static_vector(const this_type& donor) : _size(0)
         {
             for (auto& m:donor) 
@@ -51,7 +53,7 @@ struct static_vector{
             for (auto& m:donor) 
                 new(data()+_size++) value_type(m);
         }
-    // move constructor
+    // move constructors
     // Constructs the new static_vector by moving all the elements of
     // the existing static_vector.  It leaves the moved-from object
     // unchanged, aside from whatever changes moving its elements
@@ -80,64 +82,8 @@ struct static_vector{
         {
             for (InputIterator k=begin; k!= end; ++k) emplace_back(*k);
         }
-
-    constexpr std::size_t capacity() const noexcept	{return Capacity;}
-    constexpr std::size_t max_size() const noexcept	{return Capacity;}
-    reference at(size_type i) 	                    {Verify(i<_size); return data()[i];}
-    reference operator[](size_type i) 	            {assert(i<_size); return data()[i];}
-    const_reference at(size_type i) const 	        {Verify(i<_size); return data()[i];}
-    const_reference operator[](size_type i) const
-                                                	{assert(i<_size); return data()[i];}
-    iterator begin() noexcept						{return data();}
-    const_iterator begin() const noexcept			{return data();}
-    const_iterator cbegin() const noexcept			{return data();}
-    iterator end() noexcept							{return data()+_size;}
-    const_iterator end() const noexcept				{return data()+_size;}
-    const_iterator cend() const noexcept      		{return data()+_size;}
-    reverse_iterator rbegin() noexcept              {return reverse_iterator(end());}
-    const_reverse_iterator rbegin() const noexcept  {return const_reverse_iterator(end());}
-    const_reverse_iterator crbegin() const noexcept {return const_reverse_iterator(cend());}
-    reverse_iterator rend() noexcept                {return reverse_iterator(begin());}
-    const_reverse_iterator rend() const noexcept    {return const_reverse_iterator(begin());}
-    const_reverse_iterator crend()  const noexcept  {return const_reverse_iterator(cbegin());}
-    size_type size() const noexcept				    {return _size;}
-    pointer data() noexcept                         {return reinterpret_cast<pointer>(_elem);}
-    const_pointer data() const noexcept             {return reinterpret_cast<const_pointer>(_elem);}
-    bool empty() const	noexcept					{return _size == 0;}
-    reference front() noexcept                      {assert(_size); return data()[0];}
-    const_reference front() const noexcept          {assert(_size); return data()[0];}
-    reference back() noexcept				    	{return data()[_size-1];}
-    const_reference back() const noexcept			{return data()[_size-1];}
-    void pop_back()	        						{assert(_size); _size -= 1; end()->~value_type();}
-    void push_back(const T& cd)     				{emplace_back(cd);}
-    void push_back(T&& cd)     				        {emplace_back(std::move(cd));}
-    void clear() noexcept							{while (_size) pop_back();}
-    void reserve(size_type n)                       {assert(n <= capacity());}
-    void shrink_to_fit()                            {}
-    iterator erase(const_iterator position) noexcept                 
-                    {
-                        assert(GoodIter(position+1));
-                        iterator x = const_cast<iterator>(position);
-                        x->~value_type(); 
-                        std::move(x+1,end(),x); 
-                        _size -= 1;
-                        return x;
-                    }
-    iterator erase (const_iterator first, const_iterator last)
-                    {
-                        iterator f = const_cast<iterator>(first);
-                        iterator l = const_cast<iterator>(last);
-                        if (first != last){
-                            assert(GoodIter(first+1));
-                            assert(GoodIter(last));
-                            assert(first<last);
-                            for (iterator it = f; it < l; ++it)
-                                it->~value_type();
-                            std::move(l, end(), f);
-                            _size -= last-first;
-                        }
-                        return f;
-                    }                    
+    //
+    //  Assignment functions
     void assign(size_type n, const_reference val)
                     {
                         clear();
@@ -178,6 +124,75 @@ struct static_vector{
                         assign(il);
                         return *this;
                     }                        
+//
+//  Element access functions
+//
+    pointer data() noexcept                         {return reinterpret_cast<pointer>(_elem);}
+    reference at(size_type i) 	                    {Verify(i<_size); return data()[i];}
+    reference operator[](size_type i) 	            {assert(i<_size); return data()[i];}
+    const_reference at(size_type i) const 	        {Verify(i<_size); return data()[i];}
+    const_reference operator[](size_type i) const
+                                                	{assert(i<_size); return data()[i];}
+    const_pointer data() const noexcept             {return reinterpret_cast<const_pointer>(_elem);}
+    reference back() noexcept				    	{return data()[_size-1];}
+    const_reference back() const noexcept			{return data()[_size-1];}
+    reference front() noexcept                      {assert(_size); return data()[0];}
+    const_reference front() const noexcept          {assert(_size); return data()[0];}
+//
+// Iterators
+//
+    iterator begin() noexcept						{return data();}
+    const_iterator begin() const noexcept			{return data();}
+    const_iterator cbegin() const noexcept			{return data();}
+    iterator end() noexcept							{return data()+_size;}
+    const_iterator end() const noexcept				{return data()+_size;}
+    const_iterator cend() const noexcept      		{return data()+_size;}
+    reverse_iterator rbegin() noexcept              {return reverse_iterator(end());}
+    const_reverse_iterator rbegin() const noexcept  {return const_reverse_iterator(end());}
+    const_reverse_iterator crbegin() const noexcept {return const_reverse_iterator(cend());}
+    reverse_iterator rend() noexcept                {return reverse_iterator(begin());}
+    const_reverse_iterator rend() const noexcept    {return const_reverse_iterator(begin());}
+    const_reverse_iterator crend()  const noexcept  {return const_reverse_iterator(cbegin());}
+//
+// Capacity and size
+//
+    constexpr std::size_t capacity() const noexcept	{return Capacity;}
+    constexpr std::size_t max_size() const noexcept	{return Capacity;}
+    size_type size() const noexcept				    {return _size;}
+    bool empty() const	noexcept					{return _size == 0;}
+    void reserve(size_type n)                       {assert(n <= capacity());}
+    void shrink_to_fit()                            {}
+//
+//  Modifiers
+//
+    void pop_back()	        						{assert(_size); _size -= 1; end()->~value_type();}
+    void push_back(const T& cd)     				{emplace_back(cd);}
+    void push_back(T&& cd)     				        {emplace_back(std::move(cd));}
+    void clear() noexcept							{while (_size) pop_back();}
+    iterator erase(const_iterator position) noexcept                 
+                    {
+                        assert(GoodIter(position+1));
+                        iterator x = const_cast<iterator>(position);
+                        x->~value_type(); 
+                        std::move(x+1,end(),x); 
+                        _size -= 1;
+                        return x;
+                    }
+    iterator erase (const_iterator first, const_iterator last)
+                    {
+                        iterator f = const_cast<iterator>(first);
+                        iterator l = const_cast<iterator>(last);
+                        if (first != last){
+                            assert(GoodIter(first+1));
+                            assert(GoodIter(last));
+                            assert(first<last);
+                            for (iterator it = f; it < l; ++it)
+                                it->~value_type();
+                            std::move(l, end(), f);
+                            _size -= last-first;
+                        }
+                        return f;
+                    }                    
     template <class... Args>
     iterator emplace (const_iterator position, Args&&... args)
                     {
@@ -261,6 +276,9 @@ struct static_vector{
                     {
                         std::swap(*this,x);
                     }
+//
+//******* Private member functions:
+//
 private:
     using storage_type =
         std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
@@ -286,9 +304,9 @@ private:
             }
     // 
 };
-
-//  Non-member overloads
-
+//
+//*******  Non-member overloads
+//
 template <class T, unsigned C0, unsigned C1>
 bool operator== (const static_vector<T,C0>& lhs, const static_vector<T,C1>& rhs)
 {
