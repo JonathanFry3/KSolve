@@ -86,30 +86,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
     return std::pair<bool,Card>(ok,card);
 }
 
-PileVec Pile::Draw(unsigned n) noexcept
-{
-    PileVec result;
-    for (unsigned i = 0; i < n; i+=1) {
-        result.push_back(_cards.back());
-        _cards.pop_back();
-    }
-    return result;
-}
-
-void Pile::Draw(Pile& other, int n) noexcept
-{
-    if (n < 0) {
-        assert(-n <= Size());
-        for (unsigned i = 0; i < -n; ++i)
-            other.Draw(*this);
-    } else {
-        assert(n <= other.Size());
-        for (unsigned i = 0; i < n; ++i)
-            Draw(other);
-    }
-}
-
-CardDeck NumberedDeal(uint_fast32_t seed)
+CardDeck NumberedDeal(uint32_t seed)
 {
     // Create and seed a random number generator
     std::mt19937 engine;
@@ -361,7 +338,7 @@ public:
 // to reach each one.
 //
 // Enforces the limit on recycles
-typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
+typedef frystl::static_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
     TalonFutureVec result;

@@ -31,7 +31,7 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build unittests",
+			"label": "C/C++:  g++ build and run unittests",
 			"command": "g++",
 			"args": [
 				"-g",
@@ -39,8 +39,29 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"unittests.cpp",
-				"-o",
-				"${workspaceFolder}/unittests"
+				"-o","${workspaceFolder}/unittests"
+				,"&&","./unittests"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build and run test-Sv",
+			"command": "g++",
+			"args": [
+				"-g",
+				"test-sv.cpp",
+				"-o","${workspaceFolder}/test-sv"
+				,"&&","./test-sv"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"

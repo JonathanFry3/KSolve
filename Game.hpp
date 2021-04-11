@@ -19,88 +19,8 @@
 #include <cassert>
 #include <sstream> 		// for stringstream
 
-// Template class fixed_capacity_vector
-//
-// One of these has much of the API of a std::vector,
-// but has a fixed capacity.  It cannot be extended past that.
-// It is safe to use only where the problem limits the size needed.
-#include <cstdint> 		// for uint_fast32_t, uint_fast64_t
+#include "static_vector.hpp"
 
-template <class T, unsigned Capacity>
-class fixed_capacity_vector{
-    uint_fast32_t _size;
-    T _elem[Capacity];
-public:
-    typedef T* iterator;
-    typedef const T* const_iterator;
-    fixed_capacity_vector() 						: _size(0){}
-    ~fixed_capacity_vector()						{clear();}
-    template <class V>
-        fixed_capacity_vector(const V& donor) 
-        : _size(0)
-        {append(donor.begin(),donor.end());}
-    size_t capacity() const noexcept				{return Capacity;}
-    T & operator[](unsigned i) noexcept				{assert(i<_size); return _elem[i];}
-    const T& operator[](unsigned i) const noexcept	{assert(i<_size); return _elem[i];}
-    iterator begin() noexcept						{return _elem;}
-    const_iterator begin() const noexcept			{return _elem;}
-    size_t size() const	noexcept					{return _size;}
-    bool empty() const	noexcept					{return _size == 0;}
-    iterator end() noexcept							{return _elem+_size;}
-    const_iterator end() const noexcept				{return _elem+_size;}
-    T & back() noexcept								{return _elem[_size-1];}
-    const T& back() const noexcept					{return _elem[_size-1];}
-    void pop_back()	noexcept						{assert(_size); _size -= 1; _elem[_size].~T();}
-    void push_back(const T& cd)	noexcept			{emplace_back(cd);}
-    void clear() noexcept							{while (_size) pop_back();}
-    void erase(iterator x) noexcept
-                    {x->~T();for (iterator y = x+1; y < end(); ++y) *(y-1) = *y; _size-=1;}
-    template <class V>
-    bool operator==(const V& other) const noexcept
-                    {	
-                        if (_size != other.size()) return false;
-                        auto iv = other.begin();
-                        for(auto ic=begin();ic!=end();ic+=1,iv+=1){
-                            if (*ic != *iv) return false;
-                        }
-                        return true;
-                    }
-    template <class V>
-    fixed_capacity_vector<T,Capacity>& operator=(const V& other) noexcept
-                    {
-                        assert(other.size()<=Capacity);
-                        clear();
-                        for (const auto & m: other) emplace_back(m);
-                        return *this;
-                    }
-    template <class ... Args>
-    void emplace_back(Args ... args) noexcept
-                    {
-                        assert(_size < Capacity);
-                        new(end()) T(args...);
-                        _size += 1;
-                    }
-    // Functions not part of the std::vector API
-
-    // Push the elements in [begin,end) to the back, preserving order.
-    template <typename Iterator>
-    void append(Iterator begin, Iterator end) noexcept	
-                    {
-                        assert(_size+(end-begin)<=Capacity);
-                        for (auto i=begin;i<end;i+=1){
-                            _elem[_size]=*i;
-                            _size+=1;
-                        }
-                    }
-    // Move the last n elements from the argument vector to this, preserving order.
-    template <typename V>
-    void take_back(V& donor, unsigned n) noexcept
-                    {
-                        assert(donor.size() >= n);
-                        append(donor.end()-n, donor.end());
-                        donor._size -= n;
-                    }
-};
 
 enum Rank_t : unsigned char
  {
@@ -163,21 +83,21 @@ public:
 };
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
-typedef fixed_capacity_vector<Card,24> PileVec;
+typedef frystl::static_vector<Card,24> PileVec;
 
 // Type to hold a complete deck
-struct CardDeck : fixed_capacity_vector<Card,52> 
+struct CardDeck : frystl::static_vector<Card,52> 
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
-        : fixed_capacity_vector<Card,52>(vec)
+        : static_vector<Card,52>(vec.begin(),vec.end())
     {
         assert(vec.size() == 52);
     }
 };
 
 // Function to generate a randomly shuffled deck
-CardDeck NumberedDeal(uint_fast32_t seed);
+CardDeck NumberedDeal(uint32_t seed);
 
 enum PileCode {
     Stock = 0,
@@ -232,15 +152,30 @@ public:
     const PileVec& Cards() const noexcept			{return _cards;}
     Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
     void Push(Card c) noexcept             			{_cards.push_back(c);}
-    void Take(Pile& donor, unsigned n)		{_cards.take_back(donor._cards, n);}
-    void Push(PileVec::const_iterator begin, PileVec::const_iterator end) noexcept
-                                            {_cards.append(begin,end);}
     Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
     Card Back() const noexcept				{return _cards.back();}
     void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
-    PileVec Draw(unsigned n) noexcept; 		// like Take(), but reverses order of cards drawn
+    void Take(Pile& donor, unsigned n) noexcept // Take the last n cards from donor preserving order	
+    {
+        assert(n <= donor.Size());
+        for (auto p = donor._cards.end()-n; p < donor._cards.end(); ++p)
+            _cards.push_back(*p);
+        for (unsigned i = 0; i < n; ++i)
+            donor._cards.pop_back();
+    }
+    void Draw(Pile& other, int n) noexcept
+    {
+        if (n < 0) {
+            assert(-n <= Size());
+            for (unsigned i = 0; i < -n; ++i)
+                other.Draw(*this);
+        } else {
+            assert(n <= other.Size());
+            for (unsigned i = 0; i < n; ++i)
+                Draw(other);
+        }
+    }
     void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
-    void Draw(Pile & from, int nCards) noexcept;
 };
 
 
@@ -312,7 +247,7 @@ public:
 typedef std::vector<Move> Moves;
 
 // A limited-size Moves type for AvailableMoves to return
-typedef fixed_capacity_vector<Move,74> QMoves; 
+typedef frystl::static_vector<Move,74> QMoves; 
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
