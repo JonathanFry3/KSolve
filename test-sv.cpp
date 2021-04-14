@@ -1,76 +1,11 @@
 // Test driver for static_vector
 
 #include "static_vector.hpp"
+#include "SelfCount.hpp"
 #include <vector>
 #include <list>
 
 using namespace frystl;
-
-// A class which simulates owning a resource (or not) and
-// counts the instances that own the resource.
-struct SelfCount {
-    int32_t _member;
-    bool _owns;
-    SelfCount()
-        : _member(0), _owns(true)
-        {
-            IncrCount(1);
-        }
-    SelfCount(int val)
-        : _member(val), _owns(true)
-        {
-            IncrCount(1);
-        }
-    SelfCount(const SelfCount& val)
-        : _member(val._member), _owns(true)
-        {
-            IncrCount(1); 
-        }
-    SelfCount(SelfCount&& val)
-        : _member(val._member)
-        , _owns(val._owns)
-        {
-            val._owns = false;
-        }
-    SelfCount & operator=(SelfCount&& right)
-    {
-        if (this != &right) {
-            IncrCount(-_owns); 
-            _member = right._member;
-            _owns = right._owns;
-            right._owns = false;
-        }
-        return *this;
-    }
-    SelfCount & operator=(const SelfCount& right)
-    {
-        assert(false);
-    }
-    bool operator==(const SelfCount& right) const 
-    {
-        return _member == right._member && _owns == right._owns;
-    }
-    bool operator!=(const SelfCount& right) const 
-    {
-        return ! operator==(right);
-    }
-    uint32_t operator()() const noexcept {return _member;}
-    ~SelfCount() {
-        IncrCount(-_owns); 
-        _owns = false;
-        assert(count >= 0);
-    }
-    static int Count()
-    {
-        return count;
-    }
-private:
-    static int count;
-    void IncrCount(int i) 
-    {
-        count += i;
-    }
-};
 
 // Test fill insert.
 // Assumes vec is a static_vector of type SelfCount
@@ -92,8 +27,6 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
         assert(vec[size+n-1]()== size-1);
     }
 }
-
-int SelfCount::count = 0;
 
 int main() {
 
