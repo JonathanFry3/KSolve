@@ -345,5 +345,5 @@ void swap(static_vector<T,C>& a, static_vector<T,C>& b)
 {
     a.swap(b);
 }
-}   // namespace frystl
+};   // namespace frystl
 #endif      // ndef STATIC_VECTOR

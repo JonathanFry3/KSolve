@@ -23,12 +23,13 @@
 // The functions reserve(), shrink_to_fit(), capacity(), and data()
 // are not implemented.
 
-#include <vector>
-#include <utility>	// max
-#include <iterator>
+#include <utility>	    // max
 #include <cassert>
-#include <cstdlib>	// malloc, free
-#include <new>		// bad_alloc
+#include <cstdlib>	    // malloc, free
+#include <new>		    // std::bad_alloc
+#include <stdexcept>    // std::out_of_range
+#include <iterator>     // std::reverse_iterator
+#include <vector>
 
 namespace frystl {
 template <
@@ -98,6 +99,8 @@ private:
         _end._offset += 1;
         _size += 1;
     }
+    static void Verify(bool cond)
+        {if (!cond) throw std::out_of_range("static_vector range error");}
 public:
 
     class iterator: public std::iterator<std::random_access_iterator_tag, T> 
@@ -136,28 +139,28 @@ public:
             }
             return *this;
         }
-        bool operator==(const iterator& other) noexcept {
+        bool operator==(const iterator& other) const noexcept {
             return _index == other._index;
         }
-        bool operator!=(const iterator& other) noexcept {
+        bool operator!=(const iterator& other) const noexcept {
             return !(*this == other);
         }
-        bool operator<(const iterator& other) noexcept {
+        bool operator<(const iterator& other) const noexcept {
             return _index < other._index;
         }
-        int operator-(const iterator& o) noexcept {
+        int operator-(const iterator& o) const noexcept {
             return _index - o._index;
         }
-        reference operator*() noexcept {
+        reference operator*() const noexcept {
             return *_location;
         }
-        pointer operator->() noexcept {
+        pointer operator->() const noexcept {
             return _location;
         }
-        iterator operator+(std::ptrdiff_t i) noexcept {
+        iterator operator+(std::ptrdiff_t i) const noexcept {
             return iterator(_vector, _index+i);
         }
-        iterator operator-(std::ptrdiff_t i) noexcept {
+        iterator operator-(std::ptrdiff_t i) const noexcept {
             return iterator(_vector, _index-i);
         }
     };
@@ -199,32 +202,34 @@ public:
             }
             return *this;
         }
-        bool operator==(const const_iterator& other) noexcept {
+        bool operator==(const const_iterator& other) const noexcept {
             return _index == other._index;
         }
-        bool operator!=(const const_iterator& other) noexcept {
+        bool operator!=(const const_iterator& other) const noexcept {
             return !(*this == other);
         }
-        bool operator<(const const_iterator& other) noexcept {
+        bool operator<(const const_iterator& other) const noexcept {
             return _index < other._index;
         }
-        int operator-(const const_iterator& o) noexcept {
+        int operator-(const const_iterator& o) const noexcept {
             return _index - o._index;
         }
-        const_reference operator*() noexcept {
+        const_reference operator*() const noexcept {
             return *_location;
         }
-        const_pointer operator->() noexcept {
+        const_pointer operator->() const noexcept {
             return _location;
         }
-        const_iterator operator+(std::ptrdiff_t i) noexcept {
+        const_iterator operator+(std::ptrdiff_t i) const noexcept {
             return const_iterator(_vector, _index+i);
         }
-        const_iterator operator-(std::ptrdiff_t i) noexcept {
+        const_iterator operator-(std::ptrdiff_t i) const noexcept {
             return const_iterator(_vector, _index-i);
         }
     };
     friend class iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     // Constructors
     mf_vector()             // default c'tor
@@ -336,6 +341,16 @@ public:
         return (*this)[0];
     }
 
+    reference at(size_t index) {
+        Verify(index < _size);
+        Locater d(GetLocater(index));
+        return d._block[d._offset];
+    }
+    const_reference at(size_t index) const {
+        Verify(index < _size);
+        Locater d(GetLocater(index));
+        return d._block[d._offset];
+    }
     reference operator[](size_t index) noexcept {
         assert(index < _size);
         Locater d(GetLocater(index));
@@ -358,5 +373,35 @@ public:
     const_iterator end() const noexcept {
         return const_iterator(this,_size);
     }
+    const_iterator cbegin() const noexcept {
+        return const_iterator(this,0);
+    }
+    const_iterator cend() const noexcept {
+        return const_iterator(this,_size);
+    }
+    reverse_iterator rbegin() noexcept
+    {
+        return reverse_iterator(end());
+    }
+    const_reverse_iterator rbegin() const noexcept  
+    {
+        return const_reverse_iterator(cend());
+    }
+    const_reverse_iterator crbegin() const noexcept 
+    {
+        return const_reverse_iterator(cend());
+    }
+    reverse_iterator rend() noexcept
+    {
+        return reverse_iterator(begin());
+    }
+    const_reverse_iterator rend() const noexcept
+    {
+        return const_reverse_iterator(cbegin());
+    }
+    const_reverse_iterator crend() const noexcept
+    {
+        return const_reverse_iterator(cbegin());
+    }
 };  // template class mf_vector
-}   // namespace frystl
+};   // namespace frystl

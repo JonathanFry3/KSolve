@@ -85,7 +85,6 @@ int main() {
         assert(di50.size() == 30);
 
         // at()
-        /*
         assert(di50.at(9)() == 9);
         assert(cdi50.at(29)() == 29);
         try {
@@ -94,7 +93,6 @@ int main() {
         } 
         catch (std::out_of_range) {}
         catch (...) {assert(false);}
-        */
 
         // operator[](), back(), front()
         assert(di50[7]() == 7);
@@ -126,22 +124,22 @@ int main() {
         assert(SelfCount::Count() == di50.size());
 
         // cbegin(), cend()
-        /*
-        assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
+        assert(*(di50.cbegin()+6) == cdi50[6]);
         assert((*(di50.cbegin()))() == 0);
         *(di50.begin()+8) = SelfCount(71);
         assert(cdi50[8]() == 71);
         *(di50.begin()+8) = SelfCount(8);
-        assert(di50.cbegin()+di50.size() == di50.cend());
+        assert(di50.cbegin()+di50.size() == cdi50.end());
         assert(SelfCount::Count() == di50.size());
 
+/*
         // rbegin(), rend(), crbegin(), crend()
-        assert(&(*(di50.crbegin()+6)) == cdi50.end()-7);
+        assert(&(*(di50.crbegin()+6)) == &(*(cdi50.cend()-7)));
         assert((*(di50.crbegin()))() == 30);
         *(di50.rbegin()+8) = SelfCount(71);
         assert(cdi50[22]() == 71);
         *(di50.rbegin()+8) = SelfCount(22);
-        assert(di50.crbegin()+di50.size() == di50.crend());
+        assert(di50.crbegin()+di50.size() == cdi50.rend());
         assert(SelfCount::Count() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
 
