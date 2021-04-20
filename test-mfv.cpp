@@ -10,12 +10,18 @@ using namespace frystl;
 int main() {
 
     // Constructors.
-    /*{
+    {
         // fill
-        mf_vector<int,20> i20(17);
-        assert(i20.size() == 17);
-        for (int k:i20) assert(k==0);
+        {
+            mf_vector<int,8> i20(17);
+            assert(i20.size() == 17);
+            for (int k:i20) assert(k==0);
 
+            mf_vector<int,16> i23(17, -6);
+            assert(i23.size() == 17);
+            for (int k:i23) assert(k==-6);
+        }
+        /*
         // range
         assert(SelfCount::Count() == 0);
         std::list<int> li;
@@ -50,8 +56,8 @@ int main() {
             for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
 
         }
-
-    }*/
+        */
+    }
     {
         // Default Constructor, empty()
         mf_vector<SelfCount,50> di50;

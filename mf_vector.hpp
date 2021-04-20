@@ -20,7 +20,8 @@
 // invalid. Otherwise, elements remain in the same place in memory,
 // so pointers and references remain valid.  
 //
-// This has only enough of the vector functionality to satisfy KSolve.
+// The functions reserve(), shrink_to_fit(), capacity(), and data()
+// are not implemented.
 
 #include <vector>
 #include <utility>	// max
@@ -217,12 +218,23 @@ public:
     };
     friend class iterator;
 
-    mf_vector() 
+    // Constructors
+    mf_vector()             // default c'tor
         : _size(0)
         , _end(nullptr,_blockSize)
         {
             _blocks.reserve(_blockSize);
         }
+    // Fill constructors
+    explicit mf_vector( size_type count, const_reference value ) 
+        : mf_vector()
+        {
+            for (size_type i = 0; i < count; ++i)
+                push_back(value);
+        }
+    explicit mf_vector( size_type count ) 
+        : mf_vector(count, T())
+        {}
     void clear() noexcept {
         for (auto&m:*this) m.~T();	//destruct all
         while (_blocks.size()) {
