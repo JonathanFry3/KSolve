@@ -91,6 +91,13 @@ private:
             _end._block = nullptr;
         _end._offset = _blockSize;
     }
+    void MovePushBack(T&& value) {
+        if (_end._offset == _blockSize)
+            AllocBack();
+        new(_end._block+_end._offset) T(std::move(value));
+        _end._offset += 1;
+        _size += 1;
+    }
 public:
 
     class iterator: public std::iterator<std::random_access_iterator_tag, T> 
@@ -258,6 +265,20 @@ public:
         {
             for (auto& value: other) 
                 push_back(value);
+        }
+    // Move constructors
+    mf_vector(this_type&& other)
+        : mf_vector()
+        {
+            for (auto&& value: other) 
+                MovePushBack(std::move(value));
+        }
+    template<size_type B1>
+    mf_vector(mf_vector<T,B1>&& other)
+        : mf_vector()
+        {
+            for (auto&& value: other) 
+                MovePushBack(std::move(value));
         }
     void clear() noexcept {
         for (auto&m:*this) m.~T();	//destruct all

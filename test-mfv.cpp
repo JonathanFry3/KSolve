@@ -43,7 +43,6 @@ int main() {
             assert(SelfCount::Count() == 90);
             for (int i = 0; i < 30; ++i) assert(j80[i]() == i-13);
         }
-        /*
         {
             // move
             assert(SelfCount::Count() == 30);
@@ -54,14 +53,12 @@ int main() {
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
 
             assert(SelfCount::Count() == 30);
-            mf_vector<SelfCount,95> i95 (std::move(sv));
+            mf_vector<SelfCount,73> j73 (std::move(i73));
             assert(sv.size() == 30);
-            assert(i95.size() == 30);
+            assert(j73.size() == 30);
             assert(SelfCount::Count() == 30);
-            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
-
+            for (int i = 0; i < 30; ++i) assert(j73[i]() == i-13);
         }
-        */
     }
     {
         // Default Constructor, empty()
