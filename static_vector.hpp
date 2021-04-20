@@ -70,11 +70,12 @@ struct static_vector{
             for (auto& m:donor) 
                 new(data()+_size++) value_type(std::move(m));
         }
-    // fill constructor
-    static_vector(size_type n) : _size(0)
+    // fill constructors
+    static_vector(size_type n, const_reference value) : _size(0)
         {
-            for (size_type i=0; i<n; ++i) emplace_back();
+            for (size_type i=0; i<n; ++i) push_back(value);
         }
+    static_vector(size_type n) : static_vector(n,T()) {}
     // range constructor
     template <class InputIterator, 
                 typename = std::_RequireInputIter<InputIterator> >       // TODO: not portable

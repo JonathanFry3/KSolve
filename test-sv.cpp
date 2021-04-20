@@ -33,9 +33,15 @@ int main() {
     // Constructors.
     {
         // fill
-        static_vector<int,20> i20(17);
-        assert(i20.size() == 17);
-        for (int k:i20) assert(k==0);
+        {
+            static_vector<int,20> i20(17);
+            assert(i20.size() == 17);
+            for (int k:i20) assert(k==0);
+
+            static_vector<int,23> i23(17, -6);
+            assert(i23.size() == 17);
+            for (int k:i23) assert(k==-6);
+        }
 
         // range
         assert(SelfCount::Count() == 0);
