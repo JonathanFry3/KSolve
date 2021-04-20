@@ -59,6 +59,11 @@ int main() {
             assert(i80.size() == 30);
             assert(SelfCount::Count() == 60);
             for (int i = 0; i < 30; ++i) assert(i80[i]() == i-13);
+
+            static_vector<SelfCount,80> j80 (i80);
+            assert(j80.size() == 30);
+            assert(SelfCount::Count() == 90);
+            for (int i = 0; i < 30; ++i) assert(j80[i]() == i-13);        
         }
         {
             // move

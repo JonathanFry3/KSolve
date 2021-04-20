@@ -46,6 +46,7 @@ public:
     typedef const T& const_reference;
     typedef T* pointer;
     typedef size_t size_type;
+    using this_type = mf_vector<T,BlockSize>;
 private:
     struct Locater
     {
@@ -235,14 +236,28 @@ public:
     explicit mf_vector( size_type count ) 
         : mf_vector(count, T())
         {}
-    // Range constructor
+    // Range constructors
     template< class InputIt , 
-                typename = std::_RequireInputIter<InputIt> >       // TODO: not portable
+                typename = std::_RequireInputIter<InputIt> >        // TODO: not portable
     mf_vector( InputIt first, InputIt last)
         : mf_vector()
         {
             for (InputIt i = first; i != last; ++i)
                 push_back(*i);
+        }
+    // Copy Constructors
+    mf_vector(const this_type& other)                               // TODO: don't know why we need this
+        : mf_vector()
+        {
+            for (auto& value: other) 
+                push_back(value);
+        }
+    template<size_type B1>
+    mf_vector(const mf_vector<T,B1>& other)
+        : mf_vector()
+        {
+            for (auto& value: other) 
+                push_back(value);
         }
     void clear() noexcept {
         for (auto&m:*this) m.~T();	//destruct all

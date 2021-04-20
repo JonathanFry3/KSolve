@@ -67,12 +67,25 @@
 			"environment": [],
 			"externalConsole": false
 		}
-        */
 		{
 			"name": "(Windows) Launch test-sv",
             "type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/test-sv",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true
+        }
+        */
+		{
+			"name": "(Windows) Launch test-mfv",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/test-mfv",
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
