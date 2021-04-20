@@ -55,13 +55,34 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build and run test-Sv",
+			"label": "C/C++:  g++ build and run test-sv",
 			"command": "g++",
 			"args": [
 				"-g",
 				"test-sv.cpp",
 				"-o","${workspaceFolder}/test-sv"
-				,"&&","./test-sv"
+				,"&&","${workspaceFolder}/test-sv"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build and run test-mfv",
+			"command": "g++",
+			"args": [
+				"-g",
+				"test-mfv.cpp",
+				"-o","${workspaceFolder}/test-mfv"
+				,"&&","${workspaceFolder}/test-mfv"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
