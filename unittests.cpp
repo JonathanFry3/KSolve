@@ -312,7 +312,7 @@ int main()
 		assert (peekmvs == "(+6d5>t3,wa>di,t1>t6x4u1)");
 	}
 	// Test mf_vector
-    mf_vector<int,4> vi;
+    frystl::mf_vector<int,4> vi;
 
     for (int i: vi){
         assert((false,"empty vector failed"));
