@@ -21,7 +21,6 @@ int main() {
             assert(i23.size() == 17);
             for (int k:i23) assert(k==-6);
         }
-        /*
         // range
         assert(SelfCount::Count() == 0);
         std::list<int> li;
@@ -30,6 +29,7 @@ int main() {
         assert(SelfCount::Count() == 30);
         assert(sv.size() == 30);
         for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
+        /*
 
         {
             // copy

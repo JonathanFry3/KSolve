@@ -235,6 +235,15 @@ public:
     explicit mf_vector( size_type count ) 
         : mf_vector(count, T())
         {}
+    // Range constructor
+    template< class InputIt , 
+                typename = std::_RequireInputIter<InputIt> >       // TODO: not portable
+    mf_vector( InputIt first, InputIt last)
+        : mf_vector()
+        {
+            for (InputIt i = first; i != last; ++i)
+                push_back(*i);
+        }
     void clear() noexcept {
         for (auto&m:*this) m.~T();	//destruct all
         while (_blocks.size()) {
