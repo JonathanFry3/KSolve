@@ -103,20 +103,13 @@ private:
         {if (!cond) throw std::out_of_range("static_vector range error");}
 public:
 
-    class iterator: public std::iterator<std::random_access_iterator_tag, T> 
+    struct iterator
     {
-        friend class mf_vector<T,BlockSize>;
-        mf_vector<T,BlockSize>* _vector;
-        size_t _index;
-        Locater _locater;
-        pointer _location;
-        explicit iterator(mf_vector* vector, size_t index) noexcept
-            : _vector(vector)
-            , _index(index)
-            , _locater(vector->GetLocater(index))
-            , _location(_locater._block+_locater._offset)
-            {}
-    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
         iterator operator++() noexcept {		// prefix increment, as in ++iter;
             _index += 1;
             _locater._offset += 1;
@@ -163,23 +156,28 @@ public:
         iterator operator-(std::ptrdiff_t i) const noexcept {
             return iterator(_vector, _index-i);
         }
-    };
-    friend class iterator;
-
-    class const_iterator: public std::iterator<std::random_access_iterator_tag, T> 
-    {
+    private:
         friend class mf_vector<T,BlockSize>;
-        const mf_vector<T,BlockSize>* _vector;
+        mf_vector<T,BlockSize>* _vector;
         size_t _index;
         Locater _locater;
-        const_pointer _location;
-        explicit const_iterator(const mf_vector* vector, size_t index) noexcept
+        pointer _location;
+        explicit iterator(mf_vector* vector, size_t index) noexcept
             : _vector(vector)
             , _index(index)
             , _locater(vector->GetLocater(index))
             , _location(_locater._block+_locater._offset)
             {}
-    public:
+    };
+    friend class iterator;
+
+    struct const_iterator
+    {
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
         const_iterator operator++() noexcept {		// prefix increment, as in ++iter;
             _index += 1;
             _locater._offset += 1;
@@ -226,6 +224,18 @@ public:
         const_iterator operator-(std::ptrdiff_t i) const noexcept {
             return const_iterator(_vector, _index-i);
         }
+    private:
+        friend class mf_vector<T,BlockSize>;
+        const mf_vector<T,BlockSize>* _vector;
+        size_t _index;
+        Locater _locater;
+        const_pointer _location;
+        explicit const_iterator(const mf_vector* vector, size_t index) noexcept
+            : _vector(vector)
+            , _index(index)
+            , _locater(vector->GetLocater(index))
+            , _location(_locater._block+_locater._offset)
+            {}
     };
     friend class iterator;
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -258,7 +268,7 @@ public:
                 push_back(*i);
         }
     // Copy Constructors
-    mf_vector(const this_type& other)                               // TODO: don't know why we need this
+    mf_vector(const this_type& other) 
         : mf_vector()
         {
             for (auto& value: other) 
