@@ -47,7 +47,6 @@ public:
     typedef const T& const_reference;
     typedef T* pointer;
     typedef size_t size_type;
-    using this_type = mf_vector<T,BlockSize>;
 private:
     struct Locater
     {
@@ -58,59 +57,19 @@ private:
             , _offset(offset)
         {}
     };
-    std::vector<pointer> _blocks;
-    size_t _size;
-    static const unsigned _blockSize = BlockSize;
-    // Invariant: on exit from any public function,
-    // 0 < end._offset <= _blockSize
-    Locater _end;
-
-    Locater GetLocater(size_t index) const noexcept{
-        assert(index <= _size);
-        if (index == _size) {
-            return _end;
-        } else {
-            size_t which_block = index/_blockSize;
-            pointer const block = _blocks[which_block];
-            const unsigned offset = index%_blockSize;
-            return Locater(block,offset);
-        }
-    }
-    void AllocBack() {
-        _end._block = reinterpret_cast<pointer>(malloc(sizeof(T)*_blockSize));
-        if (!_end._block) throw std::bad_alloc();
-        _end._offset = 0;
-        _blocks.push_back(_end._block);
-    }
-    void DeallocBack() noexcept {
-        assert(_blocks.size());
-        free(_blocks.back());
-        _blocks.pop_back();
-        if (_blocks.size())
-            _end._block = _blocks.back();
-        else
-            _end._block = nullptr;
-        _end._offset = _blockSize;
-    }
-    void MovePushBack(T&& value) {
-        if (_end._offset == _blockSize)
-            AllocBack();
-        new(_end._block+_end._offset) T(std::move(value));
-        _end._offset += 1;
-        _size += 1;
-    }
-    static void Verify(bool cond)
-        {if (!cond) throw std::out_of_range("static_vector range error");}
 public:
 
-    struct iterator
+    template <typename PointerType, typename ReferenceType>
+    struct Iterator
     {
         using iterator_category = std::random_access_iterator_tag;
         using value_type = T;
         using difference_type = std::ptrdiff_t;
-        using pointer = T*;
-        using reference = T&;
-        iterator operator++() noexcept {		// prefix increment, as in ++iter;
+        using pointer = PointerType;
+        using reference = ReferenceType;
+        Iterator() = delete;
+        Iterator(const Iterator& ) = default;
+        Iterator operator++() noexcept {		// prefix increment, as in ++iter;
             _index += 1;
             _locater._offset += 1;
             if (_locater._offset == _blockSize){
@@ -121,7 +80,7 @@ public:
             }
             return *this;
         }
-        iterator operator--() noexcept {		// prefix decrement, as in --iter;
+        Iterator operator--() noexcept {		// prefix decrement, as in --iter;
             _index -= 1;
             if (_locater._offset == 0){
                 _locater = _vector->GetLocater(_index);
@@ -132,16 +91,16 @@ public:
             }
             return *this;
         }
-        bool operator==(const iterator& other) const noexcept {
+        bool operator==(const Iterator& other) const noexcept {
             return _index == other._index;
         }
-        bool operator!=(const iterator& other) const noexcept {
+        bool operator!=(const Iterator& other) const noexcept {
             return !(*this == other);
         }
-        bool operator<(const iterator& other) const noexcept {
+        bool operator<(const Iterator& other) const noexcept {
             return _index < other._index;
         }
-        int operator-(const iterator& o) const noexcept {
+        int operator-(const Iterator& o) const noexcept {
             return _index - o._index;
         }
         reference operator*() const noexcept {
@@ -150,11 +109,11 @@ public:
         pointer operator->() const noexcept {
             return _location;
         }
-        iterator operator+(std::ptrdiff_t i) const noexcept {
-            return iterator(_vector, _index+i);
+        Iterator operator+(std::ptrdiff_t i) const noexcept {
+            return Iterator(_vector, _index+i);
         }
-        iterator operator-(std::ptrdiff_t i) const noexcept {
-            return iterator(_vector, _index-i);
+        Iterator operator-(std::ptrdiff_t i) const noexcept {
+            return Iterator(_vector, _index-i);
         }
     private:
         friend class mf_vector<T,BlockSize>;
@@ -162,82 +121,18 @@ public:
         size_t _index;
         Locater _locater;
         pointer _location;
-        explicit iterator(mf_vector* vector, size_t index) noexcept
+        explicit Iterator(mf_vector* vector, size_t index) noexcept
             : _vector(vector)
             , _index(index)
             , _locater(vector->GetLocater(index))
             , _location(_locater._block+_locater._offset)
             {}
     };
-    friend class iterator;
+    using iterator=Iterator<T*,T&>;
+    friend iterator;
 
-    struct const_iterator
-    {
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type = T;
-        using difference_type = std::ptrdiff_t;
-        using pointer = const T*;
-        using reference = const T&;
-        const_iterator operator++() noexcept {		// prefix increment, as in ++iter;
-            _index += 1;
-            _locater._offset += 1;
-            if (_locater._offset == _blockSize){
-                _locater = _vector->GetLocater(_index);
-                _location = _locater._block+_locater._offset;
-            } else {
-                _location += 1;
-            }
-            return *this;
-        }
-        const_iterator operator--() noexcept {		// prefix decrement, as in --iter;
-            _index -= 1;
-            if (_locater._offset == 0){
-                _locater = _vector->GetLocater(_index);
-                _location = _locater._block+_locater._offset;
-            } else {
-                _locater._offset -= 1;
-                _location -= 1;
-            }
-            return *this;
-        }
-        bool operator==(const const_iterator& other) const noexcept {
-            return _index == other._index;
-        }
-        bool operator!=(const const_iterator& other) const noexcept {
-            return !(*this == other);
-        }
-        bool operator<(const const_iterator& other) const noexcept {
-            return _index < other._index;
-        }
-        int operator-(const const_iterator& o) const noexcept {
-            return _index - o._index;
-        }
-        const_reference operator*() const noexcept {
-            return *_location;
-        }
-        const_pointer operator->() const noexcept {
-            return _location;
-        }
-        const_iterator operator+(std::ptrdiff_t i) const noexcept {
-            return const_iterator(_vector, _index+i);
-        }
-        const_iterator operator-(std::ptrdiff_t i) const noexcept {
-            return const_iterator(_vector, _index-i);
-        }
-    private:
-        friend class mf_vector<T,BlockSize>;
-        const mf_vector<T,BlockSize>* _vector;
-        size_t _index;
-        Locater _locater;
-        const_pointer _location;
-        explicit const_iterator(const mf_vector* vector, size_t index) noexcept
-            : _vector(vector)
-            , _index(index)
-            , _locater(vector->GetLocater(index))
-            , _location(_locater._block+_locater._offset)
-            {}
-    };
-    friend class iterator;
+    using const_iterator = Iterator<const T*, const T&>;
+    friend const_iterator;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -268,7 +163,7 @@ public:
                 push_back(*i);
         }
     // Copy Constructors
-    mf_vector(const this_type& other) 
+    mf_vector(const mf_vector& other) 
         : mf_vector()
         {
             for (auto& value: other) 
@@ -282,7 +177,7 @@ public:
                 push_back(value);
         }
     // Move constructors
-    mf_vector(this_type&& other)
+    mf_vector(mf_vector&& other)
         : mf_vector()
         {
             for (auto&& value: other) 
@@ -378,16 +273,16 @@ public:
         return iterator(this,_size);
     }
     const_iterator begin() const noexcept {
-        return const_iterator(this,0);
+        return const_iterator(const_cast<mf_vector*>(this),0);
     }
     const_iterator end() const noexcept {
-        return const_iterator(this,_size);
+        return const_iterator(const_cast<mf_vector*>(this),_size);
     }
     const_iterator cbegin() const noexcept {
-        return const_iterator(this,0);
+        return const_iterator(const_cast<mf_vector*>(this),0);
     }
     const_iterator cend() const noexcept {
-        return const_iterator(this,_size);
+        return const_iterator(const_cast<mf_vector*>(this),_size);
     }
     reverse_iterator rbegin() noexcept
     {
@@ -412,6 +307,54 @@ public:
     const_reverse_iterator crend() const noexcept
     {
         return const_reverse_iterator(cbegin());
+    }
+private:
+    std::vector<pointer> _blocks;
+    size_t _size;
+    static const unsigned _blockSize = BlockSize;
+    // Invariant: on exit from any public function,
+    // 0 < end._offset <= _blockSize
+    Locater _end;
+
+    Locater GetLocater(size_t index) const noexcept{
+        assert(index <= _size);
+        if (index == _size) {
+            return _end;
+        } else {
+            size_t which_block = index/_blockSize;
+            pointer const block = _blocks[which_block];
+            const unsigned offset = index%_blockSize;
+            return Locater(block,offset);
+        }
+    }
+    void AllocBack() {
+        _end._block = reinterpret_cast<pointer>(malloc(sizeof(T)*_blockSize));
+        if (!_end._block) throw std::bad_alloc();
+        _end._offset = 0;
+        _blocks.push_back(_end._block);
+    }
+    void DeallocBack() noexcept {
+        assert(_blocks.size());
+        free(_blocks.back());
+        _blocks.pop_back();
+        if (_blocks.size())
+            _end._block = _blocks.back();
+        else
+            _end._block = nullptr;
+        _end._offset = _blockSize;
+    }
+    void MovePushBack(T&& value) {
+        if (_end._offset == _blockSize)
+            AllocBack();
+        new(_end._block+_end._offset) T(std::move(value));
+        _end._offset += 1;
+        _size += 1;
+    }
+    static void Verify(bool cond)
+        {if (!cond) throw std::out_of_range("static_vector range error");}
+    iterator MakeIterator(const const_iterator& ci) noexcept
+    {
+        return iterator(ci._vector, ci._index);
     }
 };  // template class mf_vector
 };   // namespace frystl
