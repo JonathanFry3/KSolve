@@ -203,7 +203,7 @@ int main() {
         dv.assign({-3, 27, 12, -397});
         assert(dv.size() == 4);
         assert(dv[2] == 12);
-    }/*{
+    }{
         // assignment operators
         mf_vector<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);
@@ -273,7 +273,7 @@ int main() {
         assert(SelfCount::Count() == 40);
         assert(b.size() == 20);
         assert(a == b);
-    }{
+    }/*{
         // The many flavors of insert()
 
         assert(SelfCount::Count() == 0);

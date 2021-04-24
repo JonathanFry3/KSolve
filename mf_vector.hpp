@@ -25,7 +25,6 @@
 
 #include <utility>	    // max
 #include <cassert>
-//#include <new>		    // std::bad_alloc
 #include <stdexcept>    // std::out_of_range
 #include <iterator>     // std::reverse_iterator
 #include <vector>
@@ -84,6 +83,18 @@ public:
             }
             return *this;
         }
+        Iterator operator++(int i) noexcept {		// postfix increment, as in iter++;
+            Iterator result = *this;
+            _index += 1;
+            _locater._offset += 1;
+            if (_locater._offset == _blockSize){
+                _locater = _vector->GetLocater(_index);
+                _location = _locater._block+_locater._offset;
+            } else {
+                _location += 1;
+            }
+            return result;
+        }
         Iterator operator--() noexcept {		// prefix decrement, as in --iter;
             _index -= 1;
             if (_locater._offset == 0){
@@ -94,6 +105,18 @@ public:
                 _location -= 1;
             }
             return *this;
+        }
+        Iterator operator--(int i) noexcept {		// postfix decrement, as in iter--;
+            Iterator result = *this;
+            _index -= 1;
+            if (_locater._offset == 0){
+                _locater = _vector->GetLocater(_index);
+                _location = _locater._block+_locater._offset;
+            } else {
+                _locater._offset -= 1;
+                _location -= 1;
+            }
+            return result;
         }
         bool operator==(const Iterator& other) const noexcept {
             return _index == other._index;
@@ -322,6 +345,29 @@ public:
                         clear();
                         for (InputIterator k=begin; k!= end; ++k) push_back(*k);
                     }                        
+    mf_vector& operator=(const mf_vector& other) noexcept
+                    {
+                        if (this != &other)
+                            assign(other.begin(), other.end());
+                        return *this;
+                    }
+    mf_vector& operator=(mf_vector&& other) noexcept
+                    {
+                        if (this != &other) {
+                            clear();
+                            Grow(other.size());
+                            iterator p = begin();
+                            for (auto & o:other)
+                                new(p++._location) value_type(std::move(o));
+                            _size = other.size();
+                        }
+                        return *this;
+                    }
+    mf_vector& operator=(std::initializer_list<value_type> il)
+                    {
+                        assign(il);
+                        return *this;
+                    }                        
     iterator begin() noexcept {
         return iterator(this,0);
     }
@@ -425,7 +471,7 @@ private:
         _size += 1;
     }
     static void Verify(bool cond)
-        {if (!cond) throw std::out_of_range("static_vector range error");}
+        {if (!cond) throw std::out_of_range("mf_vector range error");}
     iterator MakeIterator(const const_iterator& ci) noexcept
     {
         return iterator(ci._vector, ci._index, 
@@ -435,13 +481,27 @@ private:
     {
         return it._vector == this && it._index <= _size;
     }
-    bool Referenceable(const const_iterator& it)
+    bool Dereferenceable(const const_iterator& it)
     {
         return it._vector == this && it._index < _size;
     }
     bool GoodRange(const_iterator& first, const_iterator& last)
     {
-        return Referenceable(first) && GoodIter(last) && first._index <= last._index;
+        return Dereferenceable(first) && GoodIter(last) && first._index <= last._index;
     }
 };  // template class mf_vector
+//
+//*******  Non-member overloads
+//
+template <class T, size_t C0, size_t C1>
+bool operator== (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    if (lhs.size() != rhs.size()) return false;
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+template <class T, size_t C0, size_t C1>
+bool operator!= (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    return !(rhs == lhs);
+}
 };   // namespace frystl
