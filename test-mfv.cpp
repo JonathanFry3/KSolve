@@ -152,7 +152,6 @@ int main() {
         assert(di7[7]() == 7);
         assert(di7[8]() == 9);
         assert(di7[29]() == 30);
-/*
 
         // emplace()
         assert((*di7.emplace(di7.begin()+8,96))() == 96);
@@ -172,7 +171,6 @@ int main() {
         assert(di7.size() == 20);
         assert(di7.back() == 23);
         assert(SelfCount::Count() == di7.size());
-        */
 
         // clear()
         di7.clear();

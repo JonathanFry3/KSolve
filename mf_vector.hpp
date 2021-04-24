@@ -221,11 +221,17 @@ public:
     }
     template <class ... Args>
     void emplace_back(Args...args){
-        if (_end._offset == _blockSize)
-            Grow();
-        new(_end._block+_end._offset) T(args...);
-        _end._offset += 1;
+        Grow(_size+1);
+        new(_end._block+_end._offset-1) value_type(args...);
         _size += 1;
+    }
+    template <class ... Args>
+    iterator emplace(const_iterator position, Args...args){
+        iterator pos = MakeIterator(position);
+        MakeSpace(pos, 1);
+        new(pos._location) T(args...);
+        _size += 1;
+        return pos;
     }
     void push_back(const_reference t){
         emplace_back(t);
@@ -358,15 +364,16 @@ private:
             return Locater(block,offset);
         }
     }
-    // Add a storage block at the back.  Adjust _end.
-    // Expects _size does not reflect the value being added.
-    void Grow() {
+    // Grow capacity to newSize.  Adjust _end for new size.  Don't touch _size.
+    void Grow(size_type newSize) {
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
-        _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-        _end._offset = 0;
-        _blocks.push_back(_end._block);
-        assert((_size+_blockSize)/_blockSize == _blocks.size());
+        size_type newBlocks = (newSize+_blockSize-1)/_blockSize;
+        while (newBlocks < _blocks.size()) {
+            _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+            _blocks.push_back(_end._block);
+        }
+        _end._offset = newSize%_blockSize;
     }
     // Release any no-longer-needed storage blocks.  Adjust _end to new _size;
     // Expects _size already reflects the value(s) being erased.
@@ -384,11 +391,18 @@ private:
         _end._offset = (_blockSize+_size-1)%_blockSize + 1;
         assert((_size+_blockSize-1)/_blockSize == _blocks.size());
     }
+    // Make n spaces available starting at pos.  Shift
+    // all elements at and after pos right by n spaces.
+    // Adjusts _end but not _size.
+    void MakeSpace(iterator pos, size_type n)
+    {
+        iterator oldEnd = end();
+        Grow(_size+n);
+        std::move_backward(pos,oldEnd,end());
+    }
     void MovePushBack(T&& value) {
-        if (_end._offset == _blockSize)
-            Grow();
-        new(_end._block+_end._offset) T(std::move(value));
-        _end._offset += 1;
+        Grow(_size+1);
+        new(_end._block+_end._offset-1) T(std::move(value));
         _size += 1;
     }
     static void Verify(bool cond)
