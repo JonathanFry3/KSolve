@@ -62,121 +62,122 @@ int main() {
     }
     {
         // Default Constructor, empty()
-        mf_vector<SelfCount,50> di50;
+        mf_vector<SelfCount,7> di7;
         assert(SelfCount::Count() == 0);
-        assert(di50.size() == 0);
-        assert(di50.empty());
+        assert(di7.size() == 0);
+        assert(di7.empty());
 
 
         // emplace_back(), size()
+
         for (unsigned i = 0; i < 50; i+= 1){
-            di50.emplace_back(i);
-            assert(di50.size() == i+1);
-            assert(SelfCount::Count() == di50.size());
+            di7.emplace_back(i);
+            assert(di7.size() == i+1);
+            assert(SelfCount::Count() == di7.size());
         }
 
-        const auto & cdi50{di50};
+        const auto & cdi50{di7};
 
         // pop_back()
         for (unsigned i = 0; i<20; i += 1){
-            di50.pop_back();
-            assert(SelfCount::Count() == di50.size());
+            di7.pop_back();
+            assert(SelfCount::Count() == di7.size());
         }
-        assert(di50.size() == 30);
+        assert(di7.size() == 30);
 
         // at()
-        assert(di50.at(9)() == 9);
+        assert(di7.at(9)() == 9);
         assert(cdi50.at(29)() == 29);
         try {
-            int k = di50.at(30)();  // should throw std::out_of_bounds
+            int k = di7.at(30)();  // should throw std::out_of_bounds
             assert(false);
         } 
         catch (std::out_of_range) {}
         catch (...) {assert(false);}
 
         // operator[](), back(), front()
-        assert(di50[7]() == 7);
-        di50[7] = SelfCount(91);
-        assert(di50[7]() == 91);
-        di50[7] = SelfCount(7);
+        assert(di7[7]() == 7);
+        di7[7] = SelfCount(91);
+        assert(di7[7]() == 91);
+        di7[7] = SelfCount(7);
         assert(cdi50[23]() == 23);
-        assert(di50.back()() == 29);
-        di50.back() = SelfCount(92);
-        assert(di50.back()() == 92);
-        di50.back() = SelfCount(29);
-        assert(di50.back()() == 29);
-        assert(di50.front()() == 0);
+        assert(di7.back()() == 29);
+        di7.back() = SelfCount(92);
+        assert(di7.back()() == 92);
+        di7.back() = SelfCount(29);
+        assert(di7.back()() == 29);
+        assert(di7.front()() == 0);
         assert(cdi50.front()() == 0);
 
         // push_back()
-        di50.push_back(SelfCount(30));
+        di7.push_back(SelfCount(30));
         assert(cdi50[30]() == 30);
         assert(SelfCount::Count() == 31);
 
-        assert(di50.size() == 31);
+        assert(di7.size() == 31);
 
         // begin(), end()
         assert((*(cdi50.begin()))() == 0);
-        *(di50.begin()+8) = SelfCount(71);
+        *(di7.begin()+8) = SelfCount(71);
         assert(cdi50[8]() == 71);
-        *(di50.begin()+8) = SelfCount(8);
-        assert(di50.begin()+di50.size() == di50.end());
-        assert(SelfCount::Count() == di50.size());
+        *(di7.begin()+8) = SelfCount(8);
+        assert(di7.begin()+di7.size() == di7.end());
+        assert(SelfCount::Count() == di7.size());
 
         // cbegin(), cend()
-        assert(*(di50.cbegin()+6) == cdi50[6]);
-        assert((*(di50.cbegin()))() == 0);
-        *(di50.begin()+8) = SelfCount(71);
+        assert(*(di7.cbegin()+6) == cdi50[6]);
+        assert((*(di7.cbegin()))() == 0);
+        *(di7.begin()+8) = SelfCount(71);
         assert(cdi50[8]() == 71);
-        *(di50.begin()+8) = SelfCount(8);
-        assert(di50.cbegin()+di50.size() == cdi50.end());
-        assert(SelfCount::Count() == di50.size());
+        *(di7.begin()+8) = SelfCount(8);
+        assert(di7.cbegin()+di7.size() == cdi50.end());
+        assert(SelfCount::Count() == di7.size());
 
         // rbegin(), rend(), crbegin(), crend()
-        assert(&(*(di50.crbegin()+6)) == &(*(cdi50.cend()-7)));
-        assert((*(di50.crbegin()))() == 30);
-        *(di50.rbegin()+8) = SelfCount(71);
+        assert(&(*(di7.crbegin()+6)) == &(*(cdi50.cend()-7)));
+        assert((*(di7.crbegin()))() == 30);
+        *(di7.rbegin()+8) = SelfCount(71);
         assert(cdi50[22]() == 71);
-        *(di50.rbegin()+8) = SelfCount(22);
-        assert(di50.crbegin()+di50.size() == cdi50.rend());
-        assert(SelfCount::Count() == di50.size());
+        *(di7.rbegin()+8) = SelfCount(22);
+        assert(di7.crbegin()+di7.size() == cdi50.rend());
+        assert(SelfCount::Count() == di7.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
 
         // erase()
-        assert(di50.size() == 31);
-        assert(di50.erase(di50.begin()+8) == di50.begin()+8);
+        assert(di7.size() == 31);
+        assert(di7.erase(di7.begin()+8) == di7.begin()+8);
 
-        assert(SelfCount::Count() == di50.size());
-        assert(di50.size() == 30);
-        assert(di50[7]() == 7);
-        assert(di50[8]() == 9);
-        assert(di50[29]() == 30);
+        assert(SelfCount::Count() == di7.size());
+        assert(di7.size() == 30);
+        assert(di7[7]() == 7);
+        assert(di7[8]() == 9);
+        assert(di7[29]() == 30);
 /*
 
         // emplace()
-        assert((*di50.emplace(di50.begin()+8,96))() == 96);
-        assert(di50[9]() == 9);
-        assert(di50.size() == 31);
-        assert(SelfCount::Count() == di50.size());
+        assert((*di7.emplace(di7.begin()+8,96))() == 96);
+        assert(di7[9]() == 9);
+        assert(di7.size() == 31);
+        assert(SelfCount::Count() == di7.size());
 
         // range erase()
-        auto spot = di50.erase(di50.begin()+8, di50.begin()+12);
-        assert(spot == di50.begin()+8);
+        auto spot = di7.erase(di7.begin()+8, di7.begin()+12);
+        assert(spot == di7.begin()+8);
         assert(*spot == 12);
         assert(*(spot-1) == 7);
-        assert(di50.size() == 27);
-        assert(SelfCount::Count() == di50.size());
+        assert(di7.size() == 27);
+        assert(SelfCount::Count() == di7.size());
 
-        assert(di50.erase(di50.end()-7, di50.end()) == di50.end());
-        assert(di50.size() == 20);
-        assert(di50.back() == 23);
-        assert(SelfCount::Count() == di50.size());
+        assert(di7.erase(di7.end()-7, di7.end()) == di7.end());
+        assert(di7.size() == 20);
+        assert(di7.back() == 23);
+        assert(SelfCount::Count() == di7.size());
         */
 
         // clear()
-        di50.clear();
-        assert(di50.size() == 0);
-        assert(SelfCount::Count() == di50.size());
+        di7.clear();
+        assert(di7.size() == 0);
+        assert(SelfCount::Count() == di7.size());
     }/*{
         // assign()
         // fill type

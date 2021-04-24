@@ -25,8 +25,7 @@
 
 #include <utility>	    // max
 #include <cassert>
-#include <cstdlib>	    // malloc, free
-#include <new>		    // std::bad_alloc
+//#include <new>		    // std::bad_alloc
 #include <stdexcept>    // std::out_of_range
 #include <iterator>     // std::reverse_iterator
 #include <vector>
@@ -360,15 +359,17 @@ private:
         }
     }
     // Add a storage block at the back.  Adjust _end.
+    // Expects _size does not reflect the value being added.
     void Grow() {
-        //_end._block = reinterpret_cast<pointer>(malloc(sizeof(T)*_blockSize));
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
         _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
         _end._offset = 0;
         _blocks.push_back(_end._block);
+        assert((_size+_blockSize)/_blockSize == _blocks.size());
     }
     // Release any no-longer-needed storage blocks.  Adjust _end to new _size;
+    // Expects _size already reflects the value(s) being erased.
     void Shrink() noexcept {
         size_type cap = _blockSize*_blocks.size();
         while (_size+_blockSize <= cap){
@@ -381,6 +382,7 @@ private:
         else
             _end._block = nullptr;
         _end._offset = (_blockSize+_size-1)%_blockSize + 1;
+        assert((_size+_blockSize-1)/_blockSize == _blocks.size());
     }
     void MovePushBack(T&& value) {
         if (_end._offset == _blockSize)
