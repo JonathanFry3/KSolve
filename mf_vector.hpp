@@ -59,16 +59,21 @@ private:
     };
 public:
 
-    template <typename PointerType, typename ReferenceType>
+    template <typename ValueType>
     struct Iterator
     {
         using iterator_category = std::random_access_iterator_tag;
-        using value_type = T;
+        using value_type = ValueType;
         using difference_type = std::ptrdiff_t;
-        using pointer = PointerType;
-        using reference = ReferenceType;
+        using pointer = value_type *;
+        using reference = value_type &;
         Iterator() = delete;
         Iterator(const Iterator& ) = default;
+        // implicit conversion operator iterator -> const_iterator
+        operator Iterator<ValueType const>()
+        {
+            return Iterator<ValueType const>(_vector,_index,_locater,_location);
+        }
         Iterator operator++() noexcept {		// prefix increment, as in ++iter;
             _index += 1;
             _locater._offset += 1;
@@ -127,12 +132,23 @@ public:
             , _locater(vector->GetLocater(index))
             , _location(_locater._block+_locater._offset)
             {}
+        explicit Iterator(
+            mf_vector* const vector, 
+            size_t index, 
+            Locater& locater, 
+            pointer location) noexcept
+            : _vector(vector)
+            , _index(index)
+            , _locater(locater)
+            , _location(location)
+            {}
     };
-    using iterator=Iterator<T*,T&>;
+    using const_iterator = Iterator<T const>;
+    friend const_iterator;
+
+    using iterator=Iterator<T>;
     friend iterator;
 
-    using const_iterator = Iterator<const T*, const T&>;
-    friend const_iterator;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -191,11 +207,9 @@ public:
                 MovePushBack(std::move(value));
         }
     void clear() noexcept {
-        for (auto&m:*this) m.~T();	//destruct all
-        while (_blocks.size()) {
-            DeallocBack();
-        }
+        for (auto&m:*this) m.~T();	// destruct all
         _size = 0;
+        Shrink();                   // free memory
     }
     ~mf_vector() noexcept {
         clear();
@@ -209,7 +223,7 @@ public:
     template <class ... Args>
     void emplace_back(Args...args){
         if (_end._offset == _blockSize)
-            AllocBack();
+            Grow();
         new(_end._block+_end._offset) T(args...);
         _end._offset += 1;
         _size += 1;
@@ -222,7 +236,7 @@ public:
         back().~T();  //destruct
         _size -= 1;
         if (_end._offset == 1) {
-            DeallocBack();
+            Shrink();
         } else {
             _end._offset -= 1;
         }
@@ -265,6 +279,24 @@ public:
         assert(index < _size);
         Locater d(GetLocater(index));
         return d._block[d._offset];
+    }
+    iterator erase (const_iterator first, const_iterator last) noexcept
+    {
+        iterator f = MakeIterator(first);
+        assert(GoodRange(first,last));
+        if (first < last){
+            iterator l = MakeIterator(last);
+            for (iterator it = f; it < l; ++it)
+                it->~value_type();
+            std::move(l, end(), f);
+            _size -= last-first;
+            Shrink();
+        }
+        return f;
+    }                    
+    iterator erase(const_iterator position) noexcept                 
+    {
+        return erase(position, position+1);
     }
     iterator begin() noexcept {
         return iterator(this,0);
@@ -327,25 +359,32 @@ private:
             return Locater(block,offset);
         }
     }
-    void AllocBack() {
-        _end._block = reinterpret_cast<pointer>(malloc(sizeof(T)*_blockSize));
-        if (!_end._block) throw std::bad_alloc();
+    // Add a storage block at the back.  Adjust _end.
+    void Grow() {
+        //_end._block = reinterpret_cast<pointer>(malloc(sizeof(T)*_blockSize));
+        using storage_type =
+            std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
+        _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
         _end._offset = 0;
         _blocks.push_back(_end._block);
     }
-    void DeallocBack() noexcept {
-        assert(_blocks.size());
-        free(_blocks.back());
-        _blocks.pop_back();
+    // Release any no-longer-needed storage blocks.  Adjust _end to new _size;
+    void Shrink() noexcept {
+        size_type cap = _blockSize*_blocks.size();
+        while (_size+_blockSize <= cap){
+            free(_blocks.back());
+            _blocks.pop_back();
+            cap -= _blockSize;
+        }
         if (_blocks.size())
             _end._block = _blocks.back();
         else
             _end._block = nullptr;
-        _end._offset = _blockSize;
+        _end._offset = (_blockSize+_size-1)%_blockSize + 1;
     }
     void MovePushBack(T&& value) {
         if (_end._offset == _blockSize)
-            AllocBack();
+            Grow();
         new(_end._block+_end._offset) T(std::move(value));
         _end._offset += 1;
         _size += 1;
@@ -354,7 +393,20 @@ private:
         {if (!cond) throw std::out_of_range("static_vector range error");}
     iterator MakeIterator(const const_iterator& ci) noexcept
     {
-        return iterator(ci._vector, ci._index);
+        return iterator(ci._vector, ci._index, 
+            const_cast<Locater&>(ci._locater), const_cast<pointer>(ci._location));
+    }
+    bool GoodIter(const const_iterator& it)
+    {
+        return it._vector == this && it._index <= _size;
+    }
+    bool Referenceable(const const_iterator& it)
+    {
+        return it._vector == this && it._index < _size;
+    }
+    bool GoodRange(const_iterator& first, const_iterator& last)
+    {
+        return Referenceable(first) && GoodIter(last) && first._index <= last._index;
     }
 };  // template class mf_vector
 };   // namespace frystl

@@ -141,7 +141,6 @@ int main() {
         assert(di50.crbegin()+di50.size() == cdi50.rend());
         assert(SelfCount::Count() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
-/*
 
         // erase()
         assert(di50.size() == 31);
@@ -152,6 +151,7 @@ int main() {
         assert(di50[7]() == 7);
         assert(di50[8]() == 9);
         assert(di50[29]() == 30);
+/*
 
         // emplace()
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
