@@ -176,10 +176,10 @@ int main() {
         di7.clear();
         assert(di7.size() == 0);
         assert(SelfCount::Count() == di7.size());
-    }/*{
+    }{
         // assign()
         // fill type
-        std::vector<int> dv;
+        mf_vector<int,2> dv;
         dv.assign(6,-29);
         assert(dv.size() == 6);
         for (auto i: dv) assert(i==-29);
@@ -203,7 +203,7 @@ int main() {
         dv.assign({-3, 27, 12, -397});
         assert(dv.size() == 4);
         assert(dv[2] == 12);
-    }{
+    }/*{
         // assignment operators
         mf_vector<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);

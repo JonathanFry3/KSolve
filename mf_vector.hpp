@@ -303,6 +303,25 @@ public:
     {
         return erase(position, position+1);
     }
+    //
+    //  Assignment functions
+    void assign(size_type n, const_reference val)
+                    {
+                        clear();
+                        while (size()<n) push_back(val);
+                    }
+    void assign(std::initializer_list<value_type> x)
+                    {
+                        clear();
+                        for (auto& a:x) push_back(a);
+                    }
+    template <class InputIterator, 
+                typename = std::_RequireInputIter<InputIterator>>       // TODO: not portable
+    void assign(InputIterator begin, InputIterator end)
+                    {
+                        clear();
+                        for (InputIterator k=begin; k!= end; ++k) push_back(*k);
+                    }                        
     iterator begin() noexcept {
         return iterator(this,0);
     }
