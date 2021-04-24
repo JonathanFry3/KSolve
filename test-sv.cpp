@@ -208,7 +208,7 @@ int main() {
     }{
         // assign()
         // fill type
-        std::vector<int> dv;
+        static_vector<int,6> dv;
         dv.assign(6,-29);
         assert(dv.size() == 6);
         for (auto i: dv) assert(i==-29);
