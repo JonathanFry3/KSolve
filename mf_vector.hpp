@@ -24,10 +24,11 @@
 // are not implemented.
 
 #include <utility>	    // max
-#include <cassert>
+#include <cassert>      // assert
 #include <stdexcept>    // std::out_of_range
 #include <iterator>     // std::reverse_iterator
 #include <vector>
+#include <initializer_list>
 
 namespace frystl {
 template <
@@ -127,10 +128,20 @@ public:
         bool operator<(const Iterator& other) const noexcept {
             return _index < other._index;
         }
+        bool operator<=(const Iterator& other) const noexcept {
+            return !(other < *this);
+        }
+        bool operator>(const Iterator& other) const noexcept {
+            return other < *this;
+        }
+        bool operator>=(const Iterator& other) const noexcept {
+            return !(other < *this);
+        }
         int operator-(const Iterator& o) const noexcept {
             return _index - o._index;
         }
         reference operator*() const noexcept {
+            assert(_index < _vector->size());
             return *_location;
         }
         pointer operator->() const noexcept {
@@ -142,6 +153,25 @@ public:
         Iterator operator-(std::ptrdiff_t i) const noexcept {
             return Iterator(_vector, _index-i);
         }
+        Iterator operator+=(std::ptrdiff_t i) noexcept {
+            if (i == 1) ++(*this);
+            else if (i == -1) --(*this);
+            else *this = Iterator(_vector, _index+i);
+            return *this;
+        }
+        Iterator operator-=(std::ptrdiff_t i) noexcept {
+            assert(_index>0);
+            if (i == 1) --(*this);
+            else if (i == -1) ++(*this);
+            else *this = Iterator(_vector, _index-i);
+            return *this;
+        }
+        reference operator[] (std::ptrdiff_t i) const noexcept {
+            std::ptrdiff_t j = j+_index;
+            assert(0 <= j && j < _vector->size());
+            return *Iterator(_vector,j);
+        }
+
     private:
         friend class mf_vector<T,BlockSize>;
         mf_vector<T,BlockSize>* _vector;
@@ -227,6 +257,13 @@ public:
         {
             for (auto&& value: other) 
                 MovePushBack(std::move(value));
+        }
+    // initializer list constructor
+    mf_vector(std::initializer_list<value_type> il) 
+        : mf_vector()
+        {
+            for (auto & value:il)
+                push_back(value);
         }
     void clear() noexcept {
         for (auto&m:*this) m.~T();	// destruct all
