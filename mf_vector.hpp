@@ -495,6 +495,22 @@ namespace frystl
                 emplace(p++, *first++);
             return MakeIterator(position);
         }
+        // initializer list insert()
+        iterator insert(const_iterator position, std::initializer_list<value_type> il)
+        {
+            size_type n = il.size();
+            assert(GoodIter(position));
+            iterator p = MakeIterator(position);
+            MakeRoom(p, n);
+            // copy il into newly available cells
+            auto j = il.begin();
+            for (iterator i = p; i < p + n; ++i, ++j)
+            {
+                new (i._location) value_type(*j);
+            }
+            _size += n;
+            return p;
+        }
         iterator begin() noexcept
         {
             return iterator(this, 0);

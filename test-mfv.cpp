@@ -353,10 +353,9 @@ int main() {
             assert(r2[31+9]() == 31);
         }
         assert(SelfCount::Count() == 47);
-        /*
         {
             // Initializer list insert()
-            mf_vector<SelfCount,99> r2(roop);
+            mf_vector<SelfCount,19> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             using Z = SelfCount;
@@ -368,7 +367,6 @@ int main() {
             assert(r2[31+4]() == 31);
         }
         assert(SelfCount::Count() == 47);
-        */
     }
     /*
     {
