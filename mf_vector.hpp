@@ -251,7 +251,7 @@ public:
     template <class ... Args>
     iterator emplace(const_iterator position, Args...args){
         iterator pos = MakeIterator(position);
-        MakeSpace(pos, 1);
+        MakeRoom(pos, 1);
         new(pos._location) T(args...);
         _size += 1;
         return pos;
@@ -367,7 +367,28 @@ public:
                     {
                         assign(il);
                         return *this;
-                    }                        
+                    }          
+
+    // move insert()	
+    iterator insert (iterator position, value_type&& val)
+                    {
+                        assert(GoodIter(position));
+                        return emplace(position, std::move(val));
+                    }
+    // fill insert
+    iterator insert (const_iterator position, size_type n, const value_type& val)
+                    {
+                        assert(GoodIter(position));
+                        iterator p = MakeIterator(position);
+                        MakeRoom(p,n);
+                        // copy val n times into newly available cells
+                        for (iterator i = p; i < p+n; ++i) {
+                            new(i._location) value_type(val);
+                        }
+                        _size += n;
+                        return p;
+                    }
+
     iterator begin() noexcept {
         return iterator(this,0);
     }
@@ -459,7 +480,7 @@ private:
     // Make n spaces available starting at pos.  Shift
     // all elements at and after pos right by n spaces.
     // Adjusts _end but not _size.
-    void MakeSpace(iterator pos, size_type n)
+    void MakeRoom(iterator pos, size_type n)
     {
         iterator oldEnd = end();
         Grow(_size+n);

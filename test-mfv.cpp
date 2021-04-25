@@ -7,6 +7,27 @@
 
 using namespace frystl;
 
+// Test fill insert.
+// Assumes vec is a static_vector of type SelfCount
+// such that vec[i]() == i for all vec[i].
+template <class C>
+static void TestFillInsert(C vec, unsigned iat, unsigned n)
+{
+    unsigned count0 = SelfCount::Count();
+    unsigned size = vec.size();
+    auto spot = vec.begin() + iat;
+    vec.insert(spot,n,SelfCount(843));
+    assert(vec.size() == size+n);
+    assert(SelfCount::Count() == count0+n);
+    assert(vec[iat-1]() == iat-1);
+    assert(vec[iat]() == 843);
+    assert(vec[iat+n-1]() == 843);
+    if (iat < size) {
+        assert(vec[iat+n]() == iat);
+        assert(vec[size+n-1]()== size-1);
+    }
+}
+
 int main() {
 
     // Constructors.
@@ -273,7 +294,7 @@ int main() {
         assert(SelfCount::Count() == 40);
         assert(b.size() == 20);
         assert(a == b);
-    }/*{
+    }{
         // The many flavors of insert()
 
         assert(SelfCount::Count() == 0);
@@ -299,7 +320,7 @@ int main() {
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
-
+        /*
         {
             // Range insert()
             std::list<int> intList;
@@ -331,8 +352,9 @@ int main() {
             assert(r2[31+4]() == 31);
         }
         assert(SelfCount::Count() == 47);
+        */
     }
-
+    /*
     {
         // resize()
         assert(SelfCount::Count() == 0);
