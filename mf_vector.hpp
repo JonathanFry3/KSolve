@@ -32,9 +32,9 @@
 namespace frystl {
 template <
     class T, 
-    size_t BlockSize			// Number of T elements per block.
+    unsigned BlockSize			// Number of T elements per block.
                                 // Powers of 2 are faster.
-        =std::max<size_t>(4096/sizeof(T), 16)
+        =std::max<unsigned>(4096/sizeof(T), 16)
     > 
 class mf_vector
 {
@@ -145,10 +145,10 @@ public:
     private:
         friend class mf_vector<T,BlockSize>;
         mf_vector<T,BlockSize>* _vector;
-        size_t _index;
-        Locater _locater;
         pointer _location;
-        explicit Iterator(mf_vector* vector, size_t index) noexcept
+        size_type _index;
+        Locater _locater;
+        explicit Iterator(mf_vector* vector, size_type index) noexcept
             : _vector(vector)
             , _index(index)
             , _locater(vector->GetLocater(index))
@@ -156,7 +156,7 @@ public:
             {}
         explicit Iterator(
             mf_vector* const vector, 
-            size_t index, 
+            size_type index, 
             Locater& locater, 
             pointer location) noexcept
             : _vector(vector)
@@ -207,7 +207,7 @@ public:
             for (auto& value: other) 
                 push_back(value);
         }
-    template<size_type B1>
+    template<unsigned B1>
     mf_vector(const mf_vector<T,B1>& other)
         : mf_vector()
         {
@@ -236,7 +236,7 @@ public:
     ~mf_vector() noexcept {
         clear();
     }
-    size_t size() const noexcept{
+    size_type size() const noexcept{
         return _size;
     }
     bool empty() const noexcept{
@@ -288,22 +288,22 @@ public:
         return (*this)[0];
     }
 
-    reference at(size_t index) {
+    reference at(size_type index) {
         Verify(index < _size);
         Locater d(GetLocater(index));
         return d._block[d._offset];
     }
-    const_reference at(size_t index) const {
+    const_reference at(size_type index) const {
         Verify(index < _size);
         Locater d(GetLocater(index));
         return d._block[d._offset];
     }
-    reference operator[](size_t index) noexcept {
+    reference operator[](size_type index) noexcept {
         assert(index < _size);
         Locater d(GetLocater(index));
         return d._block[d._offset];
     }
-    const_reference operator[](size_t index) const noexcept{
+    const_reference operator[](size_type index) const noexcept{
         assert(index < _size);
         Locater d(GetLocater(index));
         return d._block[d._offset];
@@ -412,18 +412,18 @@ public:
     }
 private:
     std::vector<pointer> _blocks;
-    size_t _size;
+    size_type _size;
     static const unsigned _blockSize = BlockSize;
     // Invariant: on exit from any public function,
     // 0 < end._offset <= _blockSize
     Locater _end;
 
-    Locater GetLocater(size_t index) const noexcept{
+    Locater GetLocater(size_type index) const noexcept{
         assert(index <= _size);
         if (index == _size) {
             return _end;
         } else {
-            size_t which_block = index/_blockSize;
+            size_type which_block = index/_blockSize;
             pointer const block = _blocks[which_block];
             const unsigned offset = index%_blockSize;
             return Locater(block,offset);
@@ -493,15 +493,35 @@ private:
 //
 //*******  Non-member overloads
 //
-template <class T, size_t C0, size_t C1>
+template <class T, unsigned C0, unsigned C1>
 bool operator== (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
 {
     if (lhs.size() != rhs.size()) return false;
     return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
-template <class T, size_t C0, size_t C1>
+template <class T, unsigned C0, unsigned C1>
 bool operator!= (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
 {
     return !(rhs == lhs);
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator<  (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),rhs.end());
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator<= (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    return !(rhs < lhs);
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator>  (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    return rhs < lhs;
+}
+template <class T, unsigned C0, unsigned C1>
+bool operator>= (const mf_vector<T,C0>& lhs, const mf_vector<T,C1>& rhs)
+{
+    return !(lhs < rhs);
 }
 };   // namespace frystl

@@ -398,7 +398,7 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
-    }{
+    }*/{
         // comparison functions
         mf_vector<int,73> v0;
         mf_vector<int,70> v1;
@@ -422,5 +422,5 @@ int main() {
         v1[16] = 235;
         assert(v0 < v1);
         assert(v0 != v1);
-    }*/
+    }
 }
