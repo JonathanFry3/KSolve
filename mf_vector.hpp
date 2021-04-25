@@ -76,8 +76,8 @@ namespace frystl
             {
                 return Iterator<ValueType const>(_vector, _index, _locater, _location);
             }
-            Iterator operator++() noexcept
-            { // prefix increment, as in ++iter;
+            Iterator operator++() noexcept  // prefix increment, as in ++iter
+            {
                 _index += 1;
                 _locater._offset += 1;
                 if (_locater._offset == _blockSize)
@@ -91,8 +91,8 @@ namespace frystl
                 }
                 return *this;
             }
-            Iterator operator++(int i) noexcept
-            { // postfix increment, as in iter++;
+            Iterator operator++(int i) noexcept  // postfix increment, as in iter++
+            {
                 Iterator result = *this;
                 _index += 1;
                 _locater._offset += 1;
@@ -107,8 +107,8 @@ namespace frystl
                 }
                 return result;
             }
-            Iterator operator--() noexcept
-            { // prefix decrement, as in --iter;
+            Iterator operator--() noexcept  // prefix decrement, as in --iter;
+            { 
                 _index -= 1;
                 if (_locater._offset == 0)
                 {
@@ -122,8 +122,8 @@ namespace frystl
                 }
                 return *this;
             }
-            Iterator operator--(int i) noexcept
-            { // postfix decrement, as in iter--;
+            Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
+            { 
                 Iterator result = *this;
                 _index -= 1;
                 if (_locater._offset == 0)
