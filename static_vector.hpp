@@ -83,6 +83,14 @@ struct static_vector{
         {
             for (InputIterator k=begin; k!= end; ++k) emplace_back(*k);
         }
+    // initializer list constructor
+    static_vector(std::initializer_list<value_type> il) : _size(il.size())
+        {
+            assert(il.size() <= Capacity);
+            pointer p = data();
+            for (auto & value:il)
+                new(p++) value_type(value);
+        }
     //
     //  Assignment functions
     void assign(size_type n, const_reference val)
