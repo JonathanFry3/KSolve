@@ -336,7 +336,6 @@ int main() {
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
-        /*
         {
             // Range insert()
             std::list<int> intList;
@@ -354,6 +353,7 @@ int main() {
             assert(r2[31+9]() == 31);
         }
         assert(SelfCount::Count() == 47);
+        /*
         {
             // Initializer list insert()
             mf_vector<SelfCount,99> r2(roop);

@@ -472,7 +472,7 @@ namespace frystl
             assert(GoodIter(position));
             return emplace(position, std::move(val));
         }
-        // fill insert
+        // fill insert()
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
             assert(GoodIter(position));
@@ -486,7 +486,15 @@ namespace frystl
             _size += n;
             return p;
         }
-
+        // Range insert()
+        template <class InputIterator>
+        iterator insert(const_iterator position, InputIterator first, InputIterator last)
+        {
+            iterator p = MakeIterator(position);
+            while (first != last)
+                emplace(p++, *first++);
+            return MakeIterator(position);
+        }
         iterator begin() noexcept
         {
             return iterator(this, 0);
