@@ -511,6 +511,17 @@ namespace frystl
             _size += n;
             return p;
         }
+        void resize(size_type n, const value_type &val)
+        {
+            while (n < size())
+                pop_back();
+            while (size() < n)
+                push_back(val);
+        }
+        void resize(size_type n)
+        {
+            resize(n, value_type());
+        }
         iterator begin() noexcept
         {
             return iterator(this, 0);

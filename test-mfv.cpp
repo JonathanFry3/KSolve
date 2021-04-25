@@ -368,7 +368,6 @@ int main() {
         }
         assert(SelfCount::Count() == 47);
     }
-    /*
     {
         // resize()
         assert(SelfCount::Count() == 0);
@@ -391,7 +390,9 @@ int main() {
         assert(v99.size() == 56);
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
-    }{
+    }
+    /*
+    {
         // swap() member
         assert(SelfCount::Count() == 0);
         mf_vector<SelfCount, 99> va, vc;
