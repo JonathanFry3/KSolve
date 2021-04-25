@@ -206,6 +206,22 @@ int main() {
         assert(di50.size() == 0);
         assert(SelfCount::Count() == di50.size());
     }{
+        // Operation on iterators
+        static_vector<int, 10> vec({0,1,2,3,4,5,6,7});
+        using It = static_vector<int,5>::const_iterator;
+        It i1 = vec.cbegin()+3;
+        assert(*i1 == 3);
+        assert(*(i1-2) == 1);
+        i1 += 1;
+        assert(*i1 == 4);
+        i1 -= 3;
+        assert(*i1 == 1);
+        assert(i1[3] == 4);
+
+        It i2(vec.end());
+        assert(i2-i1 == 7);
+        assert(i2>i1);
+    }{
         // assign()
         // fill type
         static_vector<int,6> dv;
