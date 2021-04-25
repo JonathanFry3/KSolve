@@ -390,13 +390,11 @@ int main() {
         assert(v99.size() == 56);
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
-    }
-    /*
-    {
+    }{
         // swap() member
         assert(SelfCount::Count() == 0);
-        mf_vector<SelfCount, 99> va, vc;
-        mf_vector<SelfCount, 99> vb, vd;
+        mf_vector<SelfCount, 9> va, vc;
+        mf_vector<SelfCount, 9> vb, vd;
         for (int i = 0; i < 57; ++i){
             va.emplace_back(i);
             if (i < 19) vb.emplace_back(i+300);
@@ -435,7 +433,7 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
-    }*/{
+    }{
         // comparison functions
         mf_vector<int,73> v0;
         mf_vector<int,70> v1;

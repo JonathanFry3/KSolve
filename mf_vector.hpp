@@ -570,6 +570,10 @@ namespace frystl
         {
             return const_reverse_iterator(cbegin());
         }
+        void swap(mf_vector &x)
+        {
+            std::swap(*this, x);
+        }
 
     private:
         std::vector<pointer> _blocks;
@@ -697,6 +701,12 @@ namespace frystl
     bool operator>=(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
     {
         return !(lhs < rhs);
+    }
+
+    template <class T, unsigned C>
+    void swap(mf_vector<T, C> &a, mf_vector<T, C> &b)
+    {
+        a.swap(b);
     }
 }; // namespace frystl
 #endif      // ndef MF_VECTOR
