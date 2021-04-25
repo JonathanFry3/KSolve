@@ -22,6 +22,8 @@
 //
 // The functions reserve(), shrink_to_fit(), capacity(), and data()
 // are not implemented.
+#ifndef MF_VECTOR
+#define MF_VECTOR
 
 #include <utility>   // max
 #include <cassert>   // assert
@@ -662,3 +664,4 @@ namespace frystl
         return !(lhs < rhs);
     }
 }; // namespace frystl
+#endif      // ndef MF_VECTOR
