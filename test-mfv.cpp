@@ -35,10 +35,12 @@ int main() {
         // fill
         {
             mf_vector<int,8> i20(17);
+            assert(i20.capacity() == 64);
             assert(i20.size() == 17);
             for (int k:i20) assert(k==0);
 
-            mf_vector<int,16> i23(17, -6);
+            mf_vector<int,16,3> i23(17, -6);
+            assert(i23.capacity() == 48);
             assert(i23.size() == 17);
             for (int k:i23) assert(k==-6);
         }
@@ -50,7 +52,6 @@ int main() {
         assert(SelfCount::Count() == 30);
         assert(sv.size() == 30);
         for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
-
         {
             // copy
             assert(SelfCount::Count() == 30);

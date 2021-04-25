@@ -38,7 +38,8 @@ namespace frystl
         class T,
         unsigned BlockSize // Number of T elements per block.
                            // Powers of 2 are faster.
-        = std::max<unsigned>(4096 / sizeof(T), 16)>
+        = std::max<unsigned>(4096 / sizeof(T), 16),
+        size_t NBlocks = BlockSize>
     class mf_vector
     {
     public:
@@ -212,8 +213,8 @@ namespace frystl
             }
 
         private:
-            friend class mf_vector<T, BlockSize>;
-            mf_vector<T, BlockSize> *_vector;
+            friend class mf_vector;
+            mf_vector *_vector;
             pointer _location;
             size_type _index;
             Locater _locater;
@@ -243,7 +244,7 @@ namespace frystl
         mf_vector() // default c'tor
             : _size(0), _end(nullptr, _blockSize)
         {
-            _blocks.reserve(_blockSize);
+            _blocks.reserve(NBlocks);
         }
         // Fill constructors
         explicit mf_vector(size_type count, const_reference value)
@@ -272,8 +273,8 @@ namespace frystl
             for (auto &value : other)
                 push_back(value);
         }
-        template <unsigned B1>
-        mf_vector(const mf_vector<T, B1> &other)
+        template <unsigned B1, size_t NB>
+        mf_vector(const mf_vector<T, B1, NB> &other)
             : mf_vector()
         {
             for (auto &value : other)
@@ -286,8 +287,8 @@ namespace frystl
             for (auto &&value : other)
                 MovePushBack(std::move(value));
         }
-        template <size_type B1>
-        mf_vector(mf_vector<T, B1> &&other)
+        template <unsigned B1, size_t NB>
+        mf_vector(mf_vector<T, B1, NB> &&other)
             : mf_vector()
         {
             for (auto &&value : other)
@@ -314,6 +315,10 @@ namespace frystl
         size_type size() const noexcept
         {
             return _size;
+        }
+        size_type capacity() const noexcept
+        {
+            return _blockSize*_blocks.size();
         }
         bool empty() const noexcept
         {
@@ -670,41 +675,41 @@ namespace frystl
     //
     //*******  Non-member overloads
     //
-    template <class T, unsigned C0, unsigned C1>
-    bool operator==(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator==(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
-    template <class T, unsigned C0, unsigned C1>
-    bool operator!=(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator!=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         return !(rhs == lhs);
     }
-    template <class T, unsigned C0, unsigned C1>
-    bool operator<(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator<(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
-    template <class T, unsigned C0, unsigned C1>
-    bool operator<=(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator<=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         return !(rhs < lhs);
     }
-    template <class T, unsigned C0, unsigned C1>
-    bool operator>(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator>(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         return rhs < lhs;
     }
-    template <class T, unsigned C0, unsigned C1>
-    bool operator>=(const mf_vector<T, C0> &lhs, const mf_vector<T, C1> &rhs)
+    template <class T>
+    bool operator>=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
     {
         return !(lhs < rhs);
     }
 
-    template <class T, unsigned C>
-    void swap(mf_vector<T, C> &a, mf_vector<T, C> &b)
+    template <class T, unsigned BS, size_t NB0, size_t NB1>
+    void swap(mf_vector<T, BS, NB0> &a, mf_vector<T, BS, NB1> &b)
     {
         a.swap(b);
     }
