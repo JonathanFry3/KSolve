@@ -3,7 +3,7 @@
 // mf_vector<T,B,N> is a std::vector-like class that stores elements of type T
 // in blocks of size B.  It grows by adding additional blocks, so existing
 // blocks are never reallocated. It stores pointers to its blocks in a std::vector.
-// That std::vector is initially allocated at size N.  This storage sheme
+// That std::vector is initially allocated at size N.  This storage scheme
 // is similar to that used by std::deque.
 //
 // It's functions have the same semantics as those of std::vector with the
@@ -113,68 +113,28 @@ namespace frystl
             // implicit conversion operator iterator -> const_iterator
             operator Iterator<ValueType const>()
             {
-                return Iterator<ValueType const>(_vector, _index, _locater, _location);
+                return Iterator<ValueType const>(_vector, _index, _offset, _location);
             }
             Iterator operator++() noexcept  // prefix increment, as in ++iter
             {
-                _index += 1;
-                _locater._offset += 1;
-                if (_locater._offset == _blockSize)
-                {
-                    _locater = _vector->GetLocater(_index);
-                    _location = _locater._block + _locater._offset;
-                }
-                else
-                {
-                    _location += 1;
-                }
+                Increment();
                 return *this;
             }
             Iterator operator++(int i) noexcept  // postfix increment, as in iter++
             {
                 Iterator result = *this;
-                _index += 1;
-                _locater._offset += 1;
-                if (_locater._offset == _blockSize)
-                {
-                    _locater = _vector->GetLocater(_index);
-                    _location = _locater._block + _locater._offset;
-                }
-                else
-                {
-                    _location += 1;
-                }
+                Increment();
                 return result;
             }
             Iterator operator--() noexcept  // prefix decrement, as in --iter;
-            { 
-                _index -= 1;
-                if (_locater._offset == 0)
-                {
-                    _locater = _vector->GetLocater(_index);
-                    _location = _locater._block + _locater._offset;
-                }
-                else
-                {
-                    _locater._offset -= 1;
-                    _location -= 1;
-                }
+            {
+                Decrement();
                 return *this;
             }
             Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
             { 
                 Iterator result = *this;
-                _index -= 1;
-                if (_locater._offset == 0)
-                {
-                    _locater = _vector->GetLocater(_index);
-                    _location = _locater._block + _locater._offset;
-                }
-                else
-                {
-                    _locater._offset -= 1;
-                    _location -= 1;
-                }
+                Decrement();
                 return result;
             }
             bool operator==(const Iterator &other) const noexcept
@@ -225,9 +185,9 @@ namespace frystl
             Iterator operator+=(std::ptrdiff_t i) noexcept
             {
                 if (i == 1)
-                    ++(*this);
+                    Increment();
                 else if (i == -1)
-                    --(*this);
+                    Decrement();
                 else
                     *this = Iterator(_vector, _index + i);
                 return *this;
@@ -236,9 +196,9 @@ namespace frystl
             {
                 assert(_index > 0);
                 if (i == 1)
-                    --(*this);
+                    Decrement();
                 else if (i == -1)
-                    ++(*this);
+                    Increment();
                 else
                     *this = Iterator(_vector, _index - i);
                 return *this;
@@ -255,18 +215,55 @@ namespace frystl
             mf_vector *_vector;
             pointer _location;
             size_type _index;
-            Locater _locater;
+            size_type _offset;
             explicit Iterator(mf_vector *vector, size_type index) noexcept
-                : _vector(vector), _index(index), _locater(vector->GetLocater(index)), _location(_locater._block + _locater._offset)
+                : _vector(vector)
+                , _index(index)
             {
+                Locater l = vector->GetLocater(index);
+                _offset = l._offset;
+                _location = l._block+l._offset;
             }
             explicit Iterator(
                 mf_vector *const vector,
                 size_type index,
-                Locater &locater,
+                size_type offset,
                 pointer location) noexcept
-                : _vector(vector), _index(index), _locater(locater), _location(location)
+                : _vector(vector)
+                , _index(index)
+                , _offset(offset)
+                , _location(location)
             {
+            }
+            void Increment()
+            {
+                _index += 1;
+                _offset += 1;
+                if (_offset == _blockSize)
+                {
+                    Locater l = _vector->GetLocater(_index);
+                    _offset = l._offset;
+                    _location = l._block + l._offset;
+                }
+                else
+                {
+                    _location += 1;
+                }
+            }
+            void Decrement()
+            { 
+                _index -= 1;
+                if (_offset == 0)
+                {
+                    Locater l = _vector->GetLocater(_index);
+                    _offset = l._offset;
+                    _location = l._block + l._offset;
+                }
+                else
+                {
+                    _offset -= 1;
+                    _location -= 1;
+                }
             }
         };
         using const_iterator = Iterator<T const>;
@@ -695,7 +692,7 @@ namespace frystl
         iterator MakeIterator(const const_iterator &ci) noexcept
         {
             return iterator(ci._vector, ci._index,
-                            const_cast<Locater &>(ci._locater), const_cast<pointer>(ci._location));
+                            ci._offset, const_cast<pointer>(ci._location));
         }
         bool GoodIter(const const_iterator &it)
         {
