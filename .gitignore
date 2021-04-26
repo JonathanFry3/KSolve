@@ -10,6 +10,8 @@ ran
 unittests
 KSolve
 g++
+test-mfv
 *.exe
 *.obj
 *.pdb
+test-sv
