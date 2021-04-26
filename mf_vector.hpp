@@ -1,27 +1,65 @@
-// mf_vector.hpp - implements a malloc-friendly vector-like template class
+// mf_vector.hpp - implements a memory-friendly vector-like template class
 //
-// mf_vector<T> allocates blocks of memory whose default size is the larger
-// of 16*sizeof(T) or 4096 bytes.  It keeps track of them in a std::vector.
-// Think of it a a vector implemented with the storage technique of a deque.
-// Since it does not have to support changes at the front, it may be faster
-// than a deque.
+// mf_vector<T,B,N> is a std::vector-like class that stores elements of type T
+// in blocks of size B.  It grows by adding additional blocks, so existing
+// blocks are never reallocated. It stores pointers to its blocks in a std::vector.
+// That std::vector is initially allocated at size N.  This storage sheme
+// is similar to that used by std::deque.
 //
-// In a std::vector, looping though members using [] is about as fast
-// as using an iterator.  With an mf_vector (or a std::deque),
-// an iterator is faster, especially so if sizeof(T) is not a power of 2.
+// It's functions have the same semantics as those of std::vector with the
+// following exceptions:
 //
-// Data Races: emplace_back() and push_back() modify the container.  If
-// reallocation happens in the vector that tracks the storage blocks,
-// all elements of that vector are modified.  Otherwise, no existing element
-// is accessed and concurrently accessing or modifying them is safe.
+//  (1) shrink_to_fit(), data(), max_size(), get_allocator(), 
+//      and reserve() are not implemented.
+//  (2) capacity() returns the number of elements the mf_vector can store
+//      without reallocating the std::vector of block pointers.
 //
-// Pointers and References: if erase() or insert() is (implemented and)
+// Performance: Generally similar to std::deque.
+// Adding an element at the end has amortized constant complexity.
+// Random access (operator[]) takes longer that for a std::vector or 
+// array, as a lookup in the vector of storage block pointers is needed.
+// This extra lookup is far faster if B is a power of 2, as an optimizing
+// compiler will replace the division and remainder operations needed with
+// shift and mask operations.
+// Sequential access (using iterators) is faster than random access, as 
+// lookup is not needed except between storage blocks.
+// Like std::vector, mf_vector has an efficient swap() member function
+// and non-member override that exchange implementations but do not copy
+// any member values.  
+//
+// Data Races: If reallocation happens in the vector that tracks the
+// storage blocks, all elements of that vector are modified, so no 
+// other access is safe. 
+// Erase() and insert() modify all the elements at and after 
+// their target positions. At() and operator[] can be used to
+// modify an existing element, but accessing or modifying other elements
+// is safe.  Emplace_back() and push_back() add elements at the end, 
+// but do not modify any other elements, so accessing or modifying
+// them is safe unless the block pointer vector is reallocated, 
+// but any operation that explicitly or implicitly
+// uses end() is not safe.
+//
+// Pointers and References: if erase() or insert() is 
 // used, pointers and references to elements after the target will be
 // invalid. Otherwise, elements remain in the same place in memory,
 // so pointers and references remain valid.
 //
-// The functions reserve(), shrink_to_fit(), capacity(), and data()
-// are not implemented.
+// Contrast with std::vector:
+// + The memory required by std::vector is three time size() during
+//   reallocation. Mf_vector never requires more than B extra spaces.
+// + Std::vector may require many small memory allocations when the 
+//   vector is small.
+// - Random access (operator[]) is faster with std::vector.
+
+// Contrast with std::deque:
+// + Mf_vector's storage is much more customizable than std::deque's.  
+//   For some mutithreaded algorithms, read operations 
+//   do not need any synchronization if the mf_vector used never 
+//   reallocates the vector of block pointers. (Those are algorithms where
+//   the only write operations are appending elements to the back
+//   and that the read operations do not use end(), so no searches.)
+// - Std::deque is a deque, i.e. elements can efficiently be pushed to
+//   and popped from the front.
 #ifndef MF_VECTOR
 #define MF_VECTOR
 
