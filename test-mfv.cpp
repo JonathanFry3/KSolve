@@ -28,6 +28,16 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     }
 }
 
+template<unsigned B, size_t N>
+static bool AscendingInts(mf_vector<SelfCount,B,N> vec)
+{
+    for (unsigned i = 0; i < vec.size(); ++i){
+        if (vec[i]() != i) 
+            return false;
+    }
+    return true;
+}
+
 int main() {
 
     // Constructors.
@@ -179,6 +189,7 @@ int main() {
         assert((*di7.emplace(di7.begin()+8,96))() == 96);
         assert(di7[9]() == 9);
         assert(di7.size() == 31);
+        assert(di7[30] == 30);
         assert(SelfCount::Count() == di7.size());
 
         // range erase()
@@ -189,7 +200,8 @@ int main() {
         assert(di7.size() == 27);
         assert(SelfCount::Count() == di7.size());
 
-        assert(di7.erase(di7.end()-7, di7.end()) == di7.end());
+        spot = di7.erase(di7.end()-7, di7.end());
+        assert(spot == di7.end());
         assert(di7.size() == 20);
         assert(di7.back() == 23);
         assert(SelfCount::Count() == di7.size());
@@ -198,7 +210,9 @@ int main() {
         di7.clear();
         assert(di7.size() == 0);
         assert(SelfCount::Count() == di7.size());
-    }{
+    }
+    assert(SelfCount::Count() == 0);
+    {
         // Operation on iterators
         using It = mf_vector<int,5>::const_iterator;
         mf_vector<int, 5> vec({0,1,2,3,4,5,6,7});
@@ -243,8 +257,8 @@ int main() {
         assert(dv[2] == 12);
     }{
         // assignment operators
-        mf_vector<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);
+        mf_vector<SelfCount, 50> a, b;
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
         assert(SelfCount::Count() == 20);
@@ -262,12 +276,18 @@ int main() {
 
         // move operator=()
         b = std::move(a);
+        assert(a.size() == 0);
         assert(b.size() == 20);
+        assert(AscendingInts(b));
         assert(SelfCount::Count() == 20);
         assert(a != b);
 
         a = b;
         assert(SelfCount::Count() == 40);
+        assert(b.size() == 20);
+        assert(AscendingInts(b));
+        assert(a.size() == 20);
+        assert(AscendingInts(a));
 
         b = std::move(b);
         assert(SelfCount::Count() == 40);
@@ -276,8 +296,11 @@ int main() {
 
         // initializer_list operator=()
         b = {14, -293, 1200, -2, 0};
+        assert(SelfCount::Count() == 25);
         assert(b.size() == 5);
         assert(b[3]() == -2);
+        assert(a.size() == 20);
+        assert(AscendingInts(a));
     }{
         // assignment operators between vectors of different capacities
         mf_vector<SelfCount, 50> a;
@@ -428,7 +451,7 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
-        swap(va,vb);
+        std::swap(va,vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
         assert(SelfCount::Count() == 2*(19+57));
@@ -458,5 +481,14 @@ int main() {
         v1[16] = 235;
         assert(v0 < v1);
         assert(v0 != v1);
+    }
+    {
+        // Grow it big
+        const uint64_t sz = 4*256*1024*1024;
+        mf_vector<int64_t,8*1024> big;
+        for (int_fast64_t j = 0; j < sz; ++j)
+            big.push_back(j);
+        for (int_fast64_t j = 0; j < sz; ++j)
+            assert(big[j] == j);
     }
 }

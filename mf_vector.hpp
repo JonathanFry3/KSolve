@@ -47,8 +47,6 @@
 // Contrast with std::vector:
 // + The memory required by std::vector is three time size() during
 //   reallocation. Mf_vector never requires more than B extra spaces.
-// + Std::vector may require many small memory allocations when the 
-//   vector is small.
 // - Random access (operator[]) is faster with std::vector.
 
 // Contrast with std::deque:
@@ -205,7 +203,7 @@ namespace frystl
             }
             reference operator[](std::ptrdiff_t i) const noexcept
             {
-                std::ptrdiff_t j = j + _index;
+                std::ptrdiff_t j = i + _index;
                 assert(0 <= j && j < _vector->size());
                 return *Iterator(_vector, j);
             }
@@ -353,7 +351,7 @@ namespace frystl
         }
         size_type capacity() const noexcept
         {
-            return _blockSize*_blocks.size();
+            return _blockSize*_blocks.capacity();
         }
         bool empty() const noexcept
         {
@@ -372,7 +370,6 @@ namespace frystl
             iterator pos = MakeIterator(position);
             MakeRoom(pos, 1);
             new (pos._location) T(args...);
-            _size += 1;
             return pos;
         }
         void push_back(const_reference t)
@@ -492,11 +489,7 @@ namespace frystl
             if (this != &other)
             {
                 clear();
-                Grow(other.size());
-                iterator p = begin();
-                for (auto &o : other)
-                    new (p++._location) value_type(std::move(o));
-                _size = other.size();
+                swap(other);
             }
             return *this;
         }
@@ -523,7 +516,6 @@ namespace frystl
             {
                 new (i._location) value_type(val);
             }
-            _size += n;
             return p;
         }
         // Range insert()
@@ -548,7 +540,6 @@ namespace frystl
             {
                 new (i._location) value_type(*j);
             }
-            _size += n;
             return p;
         }
         void resize(size_type n, const value_type &val)
@@ -641,15 +632,15 @@ namespace frystl
         // Grow capacity to newSize.  Adjust _end for new size.  Don't touch _size.
         void Grow(size_type newSize)
         {
+            assert(newSize);
             using storage_type =
                 std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
-            size_type newBlocks = (newSize + _blockSize - 1) / _blockSize;
-            while (newBlocks < _blocks.size())
+            while (_blocks.size()*_blockSize < newSize)
             {
                 _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
                 _blocks.push_back(_end._block);
             }
-            _end._offset = newSize % _blockSize;
+            _end._offset = (newSize-1)%_blockSize + 1;
         }
         // Release any no-longer-needed storage blocks.  Adjust _end to new _size;
         // Expects _size already reflects the value(s) being erased.
@@ -662,11 +653,15 @@ namespace frystl
                 _blocks.pop_back();
                 cap -= _blockSize;
             }
-            if (_blocks.size())
+            if (_blocks.size()) {
                 _end._block = _blocks.back();
+                _end._offset = (_size - 1)%_blockSize + 1;
+            }
             else
+            {
                 _end._block = nullptr;
-            _end._offset = (_blockSize + _size - 1) % _blockSize + 1;
+                _end._offset = 0;
+            }
             assert((_size + _blockSize - 1) / _blockSize == _blocks.size());
         }
         // Make n spaces available starting at pos.  Shift
@@ -676,6 +671,7 @@ namespace frystl
         {
             iterator oldEnd = end();
             Grow(_size + n);
+            _size += n;
             std::move_backward(pos, oldEnd, end());
         }
         void MovePushBack(T &&value)
@@ -742,11 +738,12 @@ namespace frystl
     {
         return !(lhs < rhs);
     }
-
+/*
     template <class T, unsigned BS, size_t NB0, size_t NB1>
     void swap(mf_vector<T, BS, NB0> &a, mf_vector<T, BS, NB1> &b)
     {
         a.swap(b);
     }
+*/
 }; // namespace frystl
 #endif      // ndef MF_VECTOR

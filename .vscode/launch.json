@@ -31,16 +31,16 @@
                 }
             ]
         },
-        /*
+        //
         {
             "name": "Launch ran",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ran",
             "args": [
-                "-e", "10000"
-                ,"-b","236"
-                ,">>" ,"ranout.txt"
+                "-e", "4"
+                ,"-b","4"
+                ,"-s","4"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -55,7 +55,7 @@
                 }
             ]
         }
-        //
+        /*
 		{
 			"name": "(Windows) Launch unittests",
             "type": "cppdbg",

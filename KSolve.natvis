@@ -10,4 +10,14 @@
       </ArrayItems>
     </Expand>
   </Type>
+  <Type Name="std::_Vector_base&lt;*,*&gt;">
+      <DisplayString>{{ size={_M_impl._M_finish-_M_impl._M_start} }}</DisplayString>
+      <Expand>
+          <Item Name="[capacity]" >_M_impl._M_end_of_storage-_M_impl._M_start</Item>
+          <ArrayItems>
+              <Size>_M_impl._M_finish-_M_impl._M_start</Size>
+              <ValuePointer>($T1*)_M_impl._M_start</ValuePointer>
+          </ArrayItems>
+      </Expand>
+  </Type>
 </AutoVisualizer>
