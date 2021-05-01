@@ -307,7 +307,7 @@ namespace frystl
                 push_back(value);
         }
         template <unsigned B1, size_t NB>
-        mf_vector(const mf_vector<T, B1, NB> &other)
+        explicit mf_vector(const mf_vector<T, B1, NB> &other)
             : mf_vector()
         {
             for (auto &value : other)
@@ -493,6 +493,29 @@ namespace frystl
             }
             return *this;
         }
+        /*
+        template <size_t N>
+        mf_vector &operator=(mf_vector<T,BlockSize,N> &&other) noexcept
+        {
+            if (this != reinterpret_cast<mf_vector*>(&other))
+            {
+                clear();
+                swap(other);
+            }
+            return *this;
+        }
+        template <unsigned B, size_t N>
+        mf_vector &operator=(mf_vector<T,B,N> &&other) noexcept
+        {
+            assert(this != reinterpret_cast<mf_vector*>(&other));
+            clear();
+            for (auto& val:other){
+                emplace_back(std::move(val));
+            }
+            other.clear();
+            return *this;
+        }
+        */
         mf_vector &operator=(std::initializer_list<value_type> il)
         {
             assign(il);
@@ -601,9 +624,11 @@ namespace frystl
         {
             return const_reverse_iterator(cbegin());
         }
-        void swap(mf_vector &x)
+        void swap(mf_vector &other)
         {
-            std::swap(*this, x);
+            std::swap(_blocks,other._blocks);
+            std::swap(_size,other._size);
+            std::swap(_end,other._end);
         }
 
     private:
@@ -706,44 +731,42 @@ namespace frystl
     //
     //*******  Non-member overloads
     //
-    template <class T>
-    bool operator==(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator==(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
-    template <class T>
-    bool operator!=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator!=(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         return !(rhs == lhs);
     }
-    template <class T>
-    bool operator<(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator<(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
-    template <class T>
-    bool operator<=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator<=(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         return !(rhs < lhs);
     }
-    template <class T>
-    bool operator>(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator>(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         return rhs < lhs;
     }
-    template <class T>
-    bool operator>=(const mf_vector<T> &lhs, const mf_vector<T> &rhs)
+    template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
+    bool operator>=(const mf_vector<T,B1,N1> &lhs, const mf_vector<T,B2,N2> &rhs)
     {
         return !(lhs < rhs);
     }
-/*
     template <class T, unsigned BS, size_t NB0, size_t NB1>
     void swap(mf_vector<T, BS, NB0> &a, mf_vector<T, BS, NB1> &b)
     {
         a.swap(b);
     }
-*/
 }; // namespace frystl
 #endif      // ndef MF_VECTOR

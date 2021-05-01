@@ -302,9 +302,9 @@ int main() {
         assert(a.size() == 20);
         assert(AscendingInts(a));
     }{
-        // assignment operators between vectors of different capacities
+        // assignment operators
         mf_vector<SelfCount, 50> a;
-        mf_vector<SelfCount, 70> b;
+        mf_vector<SelfCount, 50> b;
         assert(SelfCount::Count() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
@@ -484,11 +484,11 @@ int main() {
     }
     {
         // Grow it big
-        const uint64_t sz = 4*256*1024*1024;
+        const uint64_t sz = 3*64*1024*1024;
         mf_vector<int64_t,8*1024> big;
         for (int_fast64_t j = 0; j < sz; ++j)
             big.push_back(j);
-        for (int_fast64_t j = 0; j < sz; ++j)
+        for (int_fast64_t j = 0; j < sz; j += 93)
             assert(big[j] == j);
     }
 }
