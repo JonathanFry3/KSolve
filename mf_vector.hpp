@@ -1,4 +1,4 @@
-// mf_vector.hpp - implements a memory-friendly vector-like template class
+// mf_vector.hpp - defines a memory-friendly vector-like template class
 //
 // mf_vector<T,B,N> is a std::vector-like class that stores elements of type T
 // in blocks of size B.  It grows by adding additional blocks, so existing
@@ -13,6 +13,7 @@
 //      and reserve() are not implemented.
 //  (2) capacity() returns the number of elements the mf_vector can store
 //      without reallocating the std::vector of block pointers.
+//  (3) the function block_size() returns the value of the B parameter.
 //
 // Performance: Generally similar to std::deque.
 // Adding an element at the end has amortized constant complexity.
@@ -25,7 +26,8 @@
 // lookup is not needed except between storage blocks.
 // Like std::vector, mf_vector has an efficient swap() member function
 // and non-member override that exchange implementations but do not copy
-// any member values.  
+// any member values. That function is used for move construction and
+// move assignment between mf_vectors having the same T and B parameters.
 //
 // Data Races: If reallocation happens in the vector that tracks the
 // storage blocks, all elements of that vector are modified, so no 

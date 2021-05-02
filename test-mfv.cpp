@@ -503,7 +503,7 @@ int main() {
         assert(v0 != v1);
     }
     {
-        // Grow it big
+        // Grow it big (needs 1.5GB)
         const uint64_t sz = 3*64*1024*1024;
         mf_vector<int64_t,8*1024> big;
         for (int_fast64_t j = 0; j < sz; ++j)
