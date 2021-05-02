@@ -28,6 +28,11 @@ static void TestFillInsert(C vec, unsigned iat, unsigned n)
     }
 }
 
+static void DoMoveAssignment(mf_vector<SelfCount,50> &b, mf_vector<SelfCount,70> &c)
+{
+    c = std::move(b);
+}
+
 template<unsigned B, size_t N>
 static bool AscendingInts(mf_vector<SelfCount,B,N> vec)
 {
@@ -78,15 +83,15 @@ int main() {
         {
             // move
             assert(SelfCount::Count() == 30);
-            mf_vector<SelfCount,73> i73 (std::move(sv));
-            assert(sv.size() == 30);
+            mf_vector<SelfCount,73> i73 {std::move(sv)};
+            assert(sv.size() == 0);
             assert(i73.size() == 30);
             assert(SelfCount::Count() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
 
             assert(SelfCount::Count() == 30);
             mf_vector<SelfCount,73> j73 (std::move(i73));
-            assert(sv.size() == 30);
+            assert(i73.size() == 0);
             assert(j73.size() == 30);
             assert(SelfCount::Count() == 30);
             for (int i = 0; i < 30; ++i) assert(j73[i]() == i-13);
@@ -324,6 +329,7 @@ int main() {
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
+        assert(a.empty());
         assert(SelfCount::Count() == 20);
         assert(a != b);
 
@@ -334,6 +340,20 @@ int main() {
         assert(SelfCount::Count() == 40);
         assert(b.size() == 20);
         assert(a == b);
+
+        // move operator=() with different block sizes
+        mf_vector<SelfCount,70> c;
+        for (unsigned i = 12; i < 62; ++i)
+        {
+            c.emplace_back(i);
+        }
+        assert(SelfCount::Count() == 90);
+
+        DoMoveAssignment(b,c);
+        assert(SelfCount::Count() == 40);
+        assert(c.size() == 20);
+        assert(b.empty());
+        assert(c[1] == 1);
     }{
         // The many flavors of insert()
 

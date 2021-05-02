@@ -317,15 +317,19 @@ namespace frystl
         mf_vector(mf_vector &&other)
             : mf_vector()
         {
-            for (auto &&value : other)
-                MovePushBack(std::move(value));
+            swap(other);
         }
         template <unsigned B1, size_t NB>
         mf_vector(mf_vector<T, B1, NB> &&other)
             : mf_vector()
         {
-            for (auto &&value : other)
-                MovePushBack(std::move(value));
+            if (block_size() == other.block_size())
+                swap(reinterpret_cast<mf_vector&>(other));
+            else {
+                for (auto &&value : other)
+                    MovePushBack(std::move(value));
+                other.clear();
+            }
         }
         // initializer list constructor
         mf_vector(std::initializer_list<value_type> il)
@@ -351,7 +355,7 @@ namespace frystl
         }
         size_type capacity() const noexcept
         {
-            return _blockSize*_blocks.capacity();
+            return block_size()*_blocks.capacity();
         }
         bool empty() const noexcept
         {
@@ -493,29 +497,24 @@ namespace frystl
             }
             return *this;
         }
-        /*
-        template <size_t N>
-        mf_vector &operator=(mf_vector<T,BlockSize,N> &&other) noexcept
-        {
-            if (this != reinterpret_cast<mf_vector*>(&other))
-            {
-                clear();
-                swap(other);
-            }
-            return *this;
-        }
         template <unsigned B, size_t N>
         mf_vector &operator=(mf_vector<T,B,N> &&other) noexcept
         {
-            assert(this != reinterpret_cast<mf_vector*>(&other));
-            clear();
-            for (auto& val:other){
-                emplace_back(std::move(val));
+            mf_vector* pOther = reinterpret_cast<mf_vector*>(&other);
+            if (this != pOther)
+            {
+                clear();
+                if (block_size() == pOther->block_size()) {
+                    swap(*pOther);
+                } else {
+                    for (auto& val:other){
+                        emplace_back(std::move(val));
+                    }
+                    other.clear();
+                }
             }
-            other.clear();
             return *this;
         }
-        */
         mf_vector &operator=(std::initializer_list<value_type> il)
         {
             assign(il);
@@ -631,10 +630,14 @@ namespace frystl
             std::swap(_end,other._end);
         }
 
+        constexpr unsigned block_size() const noexcept
+        {
+            return _blockSize;
+        }
     private:
+        static const unsigned _blockSize = BlockSize;
         std::vector<pointer> _blocks;
         size_type _size;
-        static const unsigned _blockSize = BlockSize;
         // Invariant: on exit from any public function,
         // 0 < end._offset <= _blockSize
         Locater _end;
