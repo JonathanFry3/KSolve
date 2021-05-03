@@ -42,7 +42,7 @@ class SharedMoveStorage
     // to implement a priority queue ordered by the minimum move count.
     mf_vector<LeafNodeStack,128> _fringe;
     SharedMutex _fringeMutex;
-    mf_vector<Mutex> _fringeStackMutexes;
+    mf_vector<Mutex,128> _fringeStackMutexes;
     unsigned _startStackIndex;
     bool _firstTime;
     friend class MoveStorage;
