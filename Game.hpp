@@ -44,7 +44,12 @@ private:
     unsigned char _parity;
 
 public:
-    Card(){}
+    Card() :
+        _suit(0),
+        _rank(0),
+        _isMajor(0),
+        _parity(0)
+        {}
 
     Card(const Card& orig) = default;
 
@@ -168,12 +173,12 @@ public:
     void Draw(Pile& other, int n) noexcept
     {
         if (n < 0) {
-            assert(-n <= Size());
-            for (unsigned i = 0; i < -n; ++i)
+            assert(-n <= int(Size()));
+            for (int i = 0; i < -n; ++i)
                 other.Draw(*this);
         } else {
-            assert(n <= other.Size());
-            for (unsigned i = 0; i < n; ++i)
+            assert(n <= int(other.Size()));
+            for (int i = 0; i < n; ++i)
                 Draw(other);
         }
     }
@@ -218,8 +223,8 @@ public:
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
-        , _drawCount(draw)
         , _recycle(0)
+        , _drawCount(draw)
         {}
     // Construct a non-talon move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
@@ -227,9 +232,9 @@ public:
         : _from(from)
         , _to(to)
         , _nMoves(1)
+        , _recycle(0)
         , _n(n)
         , _fromUpCount(fromUpCount)
-        , _recycle(0)
         {
             assert(from != Stock);
         }

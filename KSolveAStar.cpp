@@ -123,11 +123,11 @@ struct WorkerState {
             SharedMoveStorage& sharedMoveStorage,
             MapType& map,
             unsigned maxStates)
-        : _minSolution(solution)
-        , _game(gm)
+        : _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
         , _maxStates(maxStates)
+        , _minSolution(solution)
         {
             _closedList.reserve(maxStates);
             _minSolution.clear();
@@ -135,11 +135,11 @@ struct WorkerState {
             k_blewMemory = false;
         }
     explicit WorkerState(const WorkerState& orig)
-        : _moveStorage(orig._moveStorage.Shared())
+        : _game(orig._game)
+        , _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
-        , _game(orig._game)
-        , _minSolution(orig._minSolution)
         , _maxStates(orig._maxStates)
+        , _minSolution(orig._minSolution)
         {}
             
     QMoves MakeAutoMoves() noexcept;
@@ -210,7 +210,7 @@ void Worker(
         // Main loop
         unsigned minMoves0;
         while ( (state._closedList.size() < state._maxStates 
-                || state.k_minSolutionCount != -1)
+                || state.k_minSolutionCount != -1U)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state.k_minSolutionCount) { 
@@ -250,15 +250,15 @@ void Worker(
             }
         }
     } 
-    catch(std::bad_alloc) {
+    catch(std::bad_alloc&) {
         state.k_blewMemory = true;
     }
     return;
 }
 
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
-    : _leafIndex(-1)
-    , _shared(shared)
+    : _shared(shared)
+    , _leafIndex(-1)
     {}
 void MoveStorage::Push(Move move)
 {

@@ -118,8 +118,8 @@ Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned rec
     , _drawSetting(draw)
     , _talonLookAheadLimit(talonLookAheadLimit)
     , _recycleLimit(recycleLimit)
-    , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
     , _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
+    , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
 {
     SetAllPiles(*this);
     Deal();
@@ -129,12 +129,12 @@ Game::Game(const Game& orig)
     , _waste(orig._waste)
     , _stock(orig._stock)
     , _drawSetting(orig._drawSetting)
-    , _foundation(orig._foundation)
-    , _tableau(orig._tableau)
     , _talonLookAheadLimit(orig._talonLookAheadLimit)
-    , _kingSpaces(orig._kingSpaces)
     , _recycleLimit(orig._recycleLimit)
     , _recycleCount(orig._recycleCount)
+    , _kingSpaces(orig._kingSpaces)
+    , _tableau(orig._tableau)
+    , _foundation(orig._foundation)
     {
         SetAllPiles(*this);
     }
@@ -449,8 +449,8 @@ QMoves Game::AvailableMoves() noexcept
                         && (fromTip.OddRed() == cardToCover.OddRed())){
                     // Some face-up card in the from pile covers the top card
                     // in the to pile, so a move is possible.
-                    const int moveCount = cardToCover.Rank() - fromTip.Rank();
-                    assert(0 < moveCount && moveCount <= upCount);
+                    const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
+                    assert(moveCount <= upCount);
                     if (moveCount==upCount && (upCount<fromPile.Size() || NeedKingSpace())){
                         // This move will expose a face-down card or
                         // clear a column that's needed for a king.
@@ -483,7 +483,7 @@ QMoves Game::AvailableMoves() noexcept
 
         const unsigned cardSuit = talonCard._card.Suit();
         const unsigned cardRank = talonCard._card.Rank();
-        bool recycle = talonCard._drawCount != talonCard._nMoves*DrawSetting();
+        bool recycle = talonCard._drawCount != int(talonCard._nMoves*DrawSetting());
         if (cardRank == _foundation[cardSuit].Size()) {
             const unsigned pileNo = FoundationBase+cardSuit;
             PushTalonMove(talonCard, pileNo, recycle, result);
