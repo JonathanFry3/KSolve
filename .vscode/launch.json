@@ -31,16 +31,17 @@
                 }
             ]
         },
-        //
+        */
         {
             "name": "Launch ran",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ran",
             "args": [
-                "-e", "4"
-                ,"-b","4"
-                ,"-s","4"
+                "-e", "1"
+                ,"-t","1"
+                ,"-s","14686"
+                ,"-st","10000000"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -80,7 +81,7 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        */
+        //
 		{
 			"name": "(Windows) Launch test-mfv",
             "type": "cppdbg",
@@ -94,6 +95,6 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        //
+        */
     ]
 }

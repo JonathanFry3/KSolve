@@ -445,7 +445,7 @@ QMoves Game::AvailableMoves() noexcept
                 // See whether any of the from pile's up cards can be moved
                 // to the to pile.
                 const unsigned toRank = cardToCover.Rank();
-                if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
+                if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1U
                         && (fromTip.OddRed() == cardToCover.OddRed())){
                     // Some face-up card in the from pile covers the top card
                     // in the to pile, so a move is possible.

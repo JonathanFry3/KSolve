@@ -4,7 +4,6 @@
 #include <shared_mutex>		// for std::shared_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h" 
-#include <deque>
 #include "mf_vector.hpp"
 #include "fixed_capacity_deque.hpp"
 #include <thread>
@@ -36,7 +35,7 @@ class SharedMoveStorage
     mf_vector<MoveNode,16*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    typedef std::deque<NodeX> LeafNodeStack;
+    typedef mf_vector<NodeX> LeafNodeStack;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
@@ -49,8 +48,8 @@ class SharedMoveStorage
     friend class MoveStorage;
 public:
     SharedMoveStorage() 
-        : _firstTime(true)
-        , _startStackIndex(-1)
+        : _startStackIndex(-1)
+        , _firstTime(true)
     {
     }
 };
@@ -332,7 +331,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     if (result) {
         // Follow the links to recover all of its preceding moves in reverse order.
         _currentSequence.clear();
-        for (NodeX node = _leafIndex; node != -1; node = _shared._moveTree[node]._prevNode){
+        for (NodeX node = _leafIndex; node != -1U; node = _shared._moveTree[node]._prevNode){
             const Move mv = _shared._moveTree[node]._move;
             _currentSequence.push_front(mv);
         }

@@ -46,6 +46,8 @@ private:
 public:
     Card(){}
 
+    Card(const Card& orig) = default;
+
     Card(unsigned char suit,unsigned char rank) : 
         _suit(suit),
         _rank(rank),
@@ -195,8 +197,8 @@ class Move
 private:
     unsigned char _from;
     unsigned char _to;
-    unsigned char _recycle:1;
     unsigned char _nMoves:7;
+    unsigned char _recycle:1;
     union {
         struct {
             // Non-talon move
@@ -338,14 +340,14 @@ class Game
     CardDeck _deck;
     Pile _waste;
     Pile _stock;
-    std::array<Pile,7> _tableau;
-    std::array<Pile,4> _foundation;
-    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
     unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
     unsigned _talonLookAheadLimit;
     unsigned _recycleLimit;             // max number of recycles allowed
     unsigned _recycleCount;             // n of recycles so far
     unsigned _kingSpaces;
+    std::array<Pile,7> _tableau;
+    std::array<Pile,4> _foundation;
+    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
     bool NeedKingSpace() const noexcept;
 

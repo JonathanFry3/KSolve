@@ -637,6 +637,8 @@ namespace frystl
             return _blockSize;
         }
     private:
+        using storage_type =
+            std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
         static const unsigned _blockSize = BlockSize;
         std::vector<pointer> _blocks;
         size_type _size;
@@ -663,8 +665,6 @@ namespace frystl
         void Grow(size_type newSize)
         {
             assert(newSize);
-            using storage_type =
-                std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
             while (_blocks.size()*_blockSize < newSize)
             {
                 _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
@@ -679,7 +679,7 @@ namespace frystl
             size_type cap = _blockSize * _blocks.size();
             while (_size + _blockSize <= cap)
             {
-                free(_blocks.back());
+                delete[] reinterpret_cast<storage_type*>(_blocks.back());
                 _blocks.pop_back();
                 cap -= _blockSize;
             }

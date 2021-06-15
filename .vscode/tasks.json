@@ -103,6 +103,7 @@
 				"-g",
 				"-pthread",
 				"-O3",
+			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"ran.cpp",
