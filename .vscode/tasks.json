@@ -31,7 +31,7 @@
 		},
 		{
 			"type": "shell",
-			"label": "C/C++:  g++ build unittests",
+			"label": "C/C++:  g++ build and run unittests",
 			"command": "g++",
 			"args": [
 				"-g",
@@ -39,8 +39,50 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"unittests.cpp",
-				"-o",
-				"${workspaceFolder}/unittests"
+				"-o","${workspaceFolder}/unittests"
+				,"&&","./unittests"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build and run test-sv",
+			"command": "g++",
+			"args": [
+				"-g",
+				"test-sv.cpp",
+				"-o","${workspaceFolder}/test-sv"
+				,"&&","${workspaceFolder}/test-sv"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build and run test-mfv",
+			"command": "g++",
+			"args": [
+				"-g",
+				"test-mfv.cpp",
+				"-o","${workspaceFolder}/test-mfv"
+				,"&&","${workspaceFolder}/test-mfv"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -61,6 +103,7 @@
 				"-g",
 				"-pthread",
 				"-O3",
+			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"ran.cpp",

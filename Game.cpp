@@ -86,30 +86,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
     return std::pair<bool,Card>(ok,card);
 }
 
-PileVec Pile::Draw(unsigned n) noexcept
-{
-    PileVec result;
-    for (unsigned i = 0; i < n; i+=1) {
-        result.push_back(_cards.back());
-        _cards.pop_back();
-    }
-    return result;
-}
-
-void Pile::Draw(Pile& other, int n) noexcept
-{
-    if (n < 0) {
-        assert(-n <= Size());
-        for (unsigned i = 0; i < -n; ++i)
-            other.Draw(*this);
-    } else {
-        assert(n <= other.Size());
-        for (unsigned i = 0; i < n; ++i)
-            Draw(other);
-    }
-}
-
-CardDeck NumberedDeal(uint_fast32_t seed)
+CardDeck NumberedDeal(uint32_t seed)
 {
     // Create and seed a random number generator
     std::mt19937 engine;
@@ -141,8 +118,8 @@ Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned rec
     , _drawSetting(draw)
     , _talonLookAheadLimit(talonLookAheadLimit)
     , _recycleLimit(recycleLimit)
-    , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
     , _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
+    , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
 {
     SetAllPiles(*this);
     Deal();
@@ -152,12 +129,12 @@ Game::Game(const Game& orig)
     , _waste(orig._waste)
     , _stock(orig._stock)
     , _drawSetting(orig._drawSetting)
-    , _foundation(orig._foundation)
-    , _tableau(orig._tableau)
     , _talonLookAheadLimit(orig._talonLookAheadLimit)
-    , _kingSpaces(orig._kingSpaces)
     , _recycleLimit(orig._recycleLimit)
     , _recycleCount(orig._recycleCount)
+    , _kingSpaces(orig._kingSpaces)
+    , _tableau(orig._tableau)
+    , _foundation(orig._foundation)
     {
         SetAllPiles(*this);
     }
@@ -361,7 +338,7 @@ public:
 // to reach each one.
 //
 // Enforces the limit on recycles
-typedef fixed_capacity_vector<TalonFuture,24> TalonFutureVec;
+typedef frystl::static_vector<TalonFuture,24> TalonFutureVec;
 static TalonFutureVec TalonCards(const Game & game)
 {
     TalonFutureVec result;
@@ -468,12 +445,12 @@ QMoves Game::AvailableMoves() noexcept
                 // See whether any of the from pile's up cards can be moved
                 // to the to pile.
                 const unsigned toRank = cardToCover.Rank();
-                if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1
+                if (fromTip.Rank() < toRank && toRank <= fromBase.Rank()+1U
                         && (fromTip.OddRed() == cardToCover.OddRed())){
                     // Some face-up card in the from pile covers the top card
                     // in the to pile, so a move is possible.
-                    const int moveCount = cardToCover.Rank() - fromTip.Rank();
-                    assert(0 < moveCount && moveCount <= upCount);
+                    const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
+                    assert(moveCount <= upCount);
                     if (moveCount==upCount && (upCount<fromPile.Size() || NeedKingSpace())){
                         // This move will expose a face-down card or
                         // clear a column that's needed for a king.
@@ -506,7 +483,7 @@ QMoves Game::AvailableMoves() noexcept
 
         const unsigned cardSuit = talonCard._card.Suit();
         const unsigned cardRank = talonCard._card.Rank();
-        bool recycle = talonCard._drawCount != talonCard._nMoves*DrawSetting();
+        bool recycle = talonCard._drawCount != int(talonCard._nMoves*DrawSetting());
         if (cardRank == _foundation[cardSuit].Size()) {
             const unsigned pileNo = FoundationBase+cardSuit;
             PushTalonMove(talonCard, pileNo, recycle, result);

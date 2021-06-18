@@ -17,6 +17,8 @@ typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 enum {maxMoves = 512};
 typedef fixed_capacity_deque<Move,maxMoves> MoveSequenceType;
 
+using namespace frystl;
+
 class SharedMoveStorage
 {
     typedef std::uint32_t NodeX;
@@ -40,14 +42,14 @@ class SharedMoveStorage
     // to implement a priority queue ordered by the minimum move count.
     mf_vector<LeafNodeStack,128> _fringe;
     SharedMutex _fringeMutex;
-    mf_vector<Mutex> _fringeStackMutexes;
+    mf_vector<Mutex,128> _fringeStackMutexes;
     unsigned _startStackIndex;
     bool _firstTime;
     friend class MoveStorage;
 public:
     SharedMoveStorage() 
-        : _firstTime(true)
-        , _startStackIndex(-1)
+        : _startStackIndex(-1)
+        , _firstTime(true)
     {
     }
 };
@@ -121,11 +123,11 @@ struct WorkerState {
             SharedMoveStorage& sharedMoveStorage,
             MapType& map,
             unsigned maxStates)
-        : _minSolution(solution)
-        , _game(gm)
+        : _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
         , _maxStates(maxStates)
+        , _minSolution(solution)
         {
             _closedList.reserve(maxStates);
             _minSolution.clear();
@@ -133,11 +135,11 @@ struct WorkerState {
             k_blewMemory = false;
         }
     explicit WorkerState(const WorkerState& orig)
-        : _moveStorage(orig._moveStorage.Shared())
+        : _game(orig._game)
+        , _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
-        , _game(orig._game)
-        , _minSolution(orig._minSolution)
         , _maxStates(orig._maxStates)
+        , _minSolution(orig._minSolution)
         {}
             
     QMoves MakeAutoMoves() noexcept;
@@ -208,7 +210,7 @@ void Worker(
         // Main loop
         unsigned minMoves0;
         while ( (state._closedList.size() < state._maxStates 
-                || state.k_minSolutionCount != -1)
+                || state.k_minSolutionCount != -1U)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state.k_minSolutionCount) { 
@@ -248,15 +250,15 @@ void Worker(
             }
         }
     } 
-    catch(std::bad_alloc) {
+    catch(std::bad_alloc&) {
         state.k_blewMemory = true;
     }
     return;
 }
 
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
-    : _leafIndex(-1)
-    , _shared(shared)
+    : _shared(shared)
+    , _leafIndex(-1)
     {}
 void MoveStorage::Push(Move move)
 {
@@ -329,7 +331,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     if (result) {
         // Follow the links to recover all of its preceding moves in reverse order.
         _currentSequence.clear();
-        for (NodeX node = _leafIndex; node != -1; node = _shared._moveTree[node]._prevNode){
+        for (NodeX node = _leafIndex; node != -1U; node = _shared._moveTree[node]._prevNode){
             const Move mv = _shared._moveTree[node]._move;
             _currentSequence.push_front(mv);
         }

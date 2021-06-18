@@ -22,7 +22,7 @@ struct Specification
     unsigned _maxStates;
     unsigned _drawSpec;
     unsigned _lookAhead;
-    uint_fast32_t _seed0;
+    uint32_t _seed0;
     int _incr;
     bool _vegas;
 };
@@ -59,7 +59,7 @@ Specification GetSpec(int argc, char * argv[])
     spec._lookAhead = 24;
     spec._vegas = false;
 
-    for (unsigned iarg = 1; iarg < argc; iarg += 1) {
+    for (int iarg = 1; iarg < argc; iarg += 1) {
         string flag = argv[iarg];
         if (flag == "?" || flag == "-?" || flag == "--help") {
             cout << "ran - random deal solver" << endl <<endl;

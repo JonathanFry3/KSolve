@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+ <Type Name="static_vector&lt;*,*&gt;">
+    <DisplayString>{{size = {_size}}}</DisplayString>
+    <Expand>
+      <Item Name="[capacity]">$T2</Item>
+      <ArrayItems>
+        <Size>_size</Size>
+        <ValuePointer>($T1*)_elem</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="std::_Vector_base&lt;*,*&gt;">
+      <DisplayString>{{ size={_M_impl._M_finish-_M_impl._M_start} }}</DisplayString>
+      <Expand>
+          <Item Name="[capacity]" >_M_impl._M_end_of_storage-_M_impl._M_start</Item>
+          <ArrayItems>
+              <Size>_M_impl._M_finish-_M_impl._M_start</Size>
+              <ValuePointer>($T1*)_M_impl._M_start</ValuePointer>
+          </ArrayItems>
+      </Expand>
+  </Type>
+</AutoVisualizer>
