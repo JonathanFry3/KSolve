@@ -15,7 +15,7 @@ typedef std::shared_lock<SharedMutex> SharedGuard;
 typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 
 enum {maxMoves = 512};
-typedef fixed_capacity_deque<Move,maxMoves> MoveSequenceType;
+typedef static_deque<Move,maxMoves> MoveSequenceType;
 
 using namespace frystl;
 
