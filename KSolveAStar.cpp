@@ -5,7 +5,7 @@
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h" 
 #include "mf_vector.hpp"
-#include "fixed_capacity_deque.hpp"
+#include "static_deque.hpp"
 #include <thread>
 
 typedef std::mutex Mutex;
