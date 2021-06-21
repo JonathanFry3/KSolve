@@ -76,6 +76,27 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  g++ build and run test-sd",
+			"command": "g++",
+			"args": [
+				"-g",
+				"test-sd.cpp",
+				"-o","${workspaceFolder}/test-sd"
+				,"&&","${workspaceFolder}/test-sd"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++:  g++ build and run test-mfv",
 			"command": "g++",
 			"args": [
