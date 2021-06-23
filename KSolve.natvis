@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
- <Type Name="static_vector&lt;*,*&gt;">
+ <Type Name="frystl::static_vector&lt;*,*&gt;">
     <DisplayString>{{size = {_size}}}</DisplayString>
     <Expand>
       <Item Name="[capacity]">$T2</Item>
       <ArrayItems>
         <Size>_size</Size>
         <ValuePointer>($T1*)_elem</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+ <Type Name="frystl::static_deque&lt;*,*&gt;">
+    <DisplayString>{{size = {_end-_begin}}}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">$T2</Item>
+      <ArrayItems>
+        <Size>_end-_begin</Size>
+        <ValuePointer>_begin</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
