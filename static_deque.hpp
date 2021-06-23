@@ -97,6 +97,15 @@ namespace frystl
             for (auto &m : donor)
                 emplace_back(std::move(m));
         }
+        // initializer list constructor
+        static_deque(std::initializer_list<value_type> il)
+            : _begin(Data()+Capacity-1-il.size()/2)
+            , _end(_begin)
+        {
+            assert(il.size() <= _trueCap);
+            for (auto &value : il)
+                emplace_back(value);
+        }
         ~static_deque() noexcept
         {
             clear();

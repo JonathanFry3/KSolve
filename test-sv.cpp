@@ -82,7 +82,14 @@ int main() {
             for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
 
         }
-
+        {
+            // initializer list constructor
+            unsigned c = SelfCount::Count();
+            static_vector<SelfCount, 10> i10 {28, -373, 42, 10000000, -1};
+            assert(SelfCount::Count() == c+5);
+            assert(i10[2] == 42);
+            assert(i10.size() == 5);
+        }            
     }
     {
         // Default Constructor, empty()
