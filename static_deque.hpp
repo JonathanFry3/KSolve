@@ -76,6 +76,27 @@ namespace frystl
             for (auto &m : donor)
                 emplace_back(m);
         }
+        // move constructors
+        // Constructs the new static_deque by moving all the elements of
+        // the existing static_deque.  It leaves the moved-from object
+        // unchanged, aside from whatever changes moving its elements
+        // made.
+        static_deque(this_type &&donor)
+            : _begin(Data()+Capacity-1-donor.size()/2)
+            , _end(_begin)
+        {
+            for (auto &m : donor)
+                emplace_back(std::move(m));
+        }
+        template <unsigned C1>
+        static_deque(static_deque<value_type, C1> &&donor)
+            : _begin(Data()+Capacity-1-donor.size()/2)
+            , _end(_begin)
+        {
+            assert(donor.size() <= _trueCap);
+            for (auto &m : donor)
+                emplace_back(std::move(m));
+        }
         ~static_deque() noexcept
         {
             clear();

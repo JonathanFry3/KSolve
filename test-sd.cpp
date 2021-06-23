@@ -47,11 +47,11 @@ int main() {
             // range
             assert(SelfCount::Count() == 0);
             std::list<int> li;
-            for (int i = 0; i < 30; ++i) li.push_back(i-13);
-            static_deque<SelfCount,30> sv(li.begin(),li.end());
+            for (int i = 0; i < 30; ++i) li.emplace_back(i-13);
+            static_deque<SelfCount,30> sd30(li.begin(),li.end());
             assert(SelfCount::Count() == 30);
-            assert(sv.size() == 30);
-            for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
+            assert(sd30.size() == 30);
+            for (int i = 0; i < 30; ++i) assert(sd30[i]() == i-13);
         }
         {
             // copy to different capacity
@@ -69,25 +69,26 @@ int main() {
             assert(SelfCount::Count() == 90);
             for (int i = 0; i < 30; ++i) assert(j80[i]() == i-13);        
         }
-/*
         {
-            // move
+            // move to target of different capacity
+            static_deque<SelfCount,30> sd30;
+            for (unsigned i = 0; i < 30; ++i) sd30.emplace_back(i-13);
             assert(SelfCount::Count() == 30);
-            static_deque<SelfCount,73> i73 (std::move(sv));
-            assert(sv.size() == 30);
+            static_deque<SelfCount,73> i73 (std::move(sd30));
+            assert(sd30.size() == 30);
             assert(i73.size() == 30);
             assert(SelfCount::Count() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
 
+            // move to target of same capacity
             assert(SelfCount::Count() == 30);
-            static_deque<SelfCount,95> i95 (std::move(sv));
-            assert(sv.size() == 30);
-            assert(i95.size() == 30);
+            static_deque<SelfCount,73> j73 (std::move(i73));
+            assert(i73.size() == 30);
+            assert(j73.size() == 30);
             assert(SelfCount::Count() == 30);
-            for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
+            for (int i = 0; i < 30; ++i) assert(j73[i]() == i-13);
 
         }
-*/
     }
     /*
     {
