@@ -120,10 +120,10 @@ int main() {
         assert(di50.at(9)() == 9);
         assert(cdi50.at(29)() == 29);
         try {
-            int k = di50.at(30)();  // should throw std::out_of_bounds
+            int k = di50.at(30)();  // should throw std::out_of_range
             assert(false);
         } 
-        catch (std::out_of_range) {}
+        catch (std::out_of_range&) {}
         catch (...) {assert(false);}
 
         // operator[](), back(), front()
