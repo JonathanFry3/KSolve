@@ -12,7 +12,10 @@
 // from the center toward the back. After the default constructor
 // is executed, the next insertion will be to the center cell.
 
-#include <iterator>
+#include <iterator>  // std::reverse_iterator
+#include <algorithm> // for std::move...(), equal(), lexicographical_compare()
+#include <initializer_list>
+#include <stdexcept> // for std::out_of_range
 #include <cassert>
 
 namespace frystl
@@ -125,17 +128,17 @@ namespace frystl
             return _begin == _end;
         }
         template <class... Args>
-        void emplace_front(Args... args) noexcept
+        void emplace_front(Args... args)
         {
             assert(Data() < _begin);
             new (_begin - 1) value_type(args...);
             _begin -= 1;
         }
-        void push_front(const_reference t) noexcept
+        void push_front(const_reference t)
         {
             emplace_front(t);
         }
-        void pop_front() noexcept
+        void pop_front()
         {
             assert(_begin < _end);
             _begin += 1;
@@ -148,7 +151,7 @@ namespace frystl
             new (_end) value_type(args...);
             _end += 1;
         }
-        void push_back(const reference t) noexcept
+        void push_back(const_reference t) noexcept
         {
             emplace_back(t);
         }
@@ -157,16 +160,6 @@ namespace frystl
             assert(_begin < _end);
             back().~value_type(); //destruct
             _end -= 1;
-        }
-        reference back() noexcept
-        {
-            assert(_begin < _end);
-            return *(_end - 1);
-        }
-        const_reference back() const noexcept
-        {
-            assert(_begin < _end);
-            return *(_end - 1);
         }
 
         reference operator[](size_type index) noexcept
@@ -178,6 +171,47 @@ namespace frystl
         {
             assert(_begin + index < _end);
             return *(_begin + index);
+        }
+
+        pointer data() noexcept 
+        { 
+            return _begin; 
+        }
+
+        const_pointer data() const noexcept
+        { 
+            return _begin; 
+        }
+
+        reference at(size_type index)
+        {
+            Verify(_begin + index < _end);
+            return *(_begin + index);
+        }
+        const_reference at(size_type index) const
+        {
+            Verify(_begin + index < _end);
+            return *(_begin + index);
+        }
+        reference front() noexcept
+        {
+            assert(_begin < _end);
+            return *_begin;
+        }
+        const_reference front() const noexcept
+        {
+            assert(_begin < _end);
+            return *_begin;
+        }
+        reference back() noexcept
+        {
+            assert(_begin < _end);
+            return *(_end-1);
+        }
+        const_reference back() const noexcept
+        {
+            assert(_begin < _end);
+            return *(_end-1);
         }
         iterator begin() noexcept
         {
@@ -192,6 +226,14 @@ namespace frystl
             return _begin;
         }
         const_iterator end() const noexcept
+        {
+            return _end;
+        }
+        const_iterator cbegin() noexcept
+        {
+            return _begin;
+        }
+        const_iterator cend() noexcept
         {
             return _end;
         }
@@ -227,6 +269,11 @@ namespace frystl
         const_pointer Data() const
         {
             return reinterpret_cast<const_pointer>(_elem);
+        }
+        static void Verify(bool cond)
+        {
+            if (!cond)
+                throw std::out_of_range("static_deque range error");
         }
     };
 }

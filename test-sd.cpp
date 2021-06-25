@@ -98,13 +98,11 @@ int main() {
             assert(i10.size() == 5);
         }            
     }
-    /*
     {
         // Default Constructor, empty()
         static_deque<SelfCount,50> di50;
         assert(SelfCount::Count() == 0);
         assert(di50.size() == 0);
-        assert(di50.capacity() == 50);
         assert(di50.empty());
 
 
@@ -123,16 +121,18 @@ int main() {
             assert(SelfCount::Count() == di50.size());
         }
         assert(di50.size() == 30);
-
+        
+/*
         // at()
         assert(di50.at(9)() == 9);
         assert(cdi50.at(29)() == 29);
         try {
-            int k = di50.at(30)();  // should throw std::out_of_bounds
+            int k = di50.at(30)();  // should throw std::out_of_range
             assert(false);
         } 
-        catch (std::out_of_range) {}
+        catch (std::out_of_range&) {}
         catch (...) {assert(false);}
+*/
 
         // operator[](), back(), front()
         assert(di50[7]() == 7);
@@ -154,7 +154,6 @@ int main() {
         assert(SelfCount::Count() == 31);
 
         assert(di50.size() == 31);
-
         // data()
         const SelfCount& s {*(cdi50.data()+8)};
         assert(s() == 8);
@@ -171,8 +170,8 @@ int main() {
         // cbegin(), cend()
         assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
         assert((*(di50.cbegin()))() == 0);
-        *(di50.begin()+8) = SelfCount(71);
-        assert(cdi50[8]() == 71);
+        *(di50.begin()+8) = SelfCount(73);
+        assert(cdi50[8]() == 73);
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.cbegin()+di50.size() == di50.cend());
         assert(SelfCount::Count() == di50.size());
@@ -186,6 +185,7 @@ int main() {
         assert(di50.crbegin()+di50.size() == di50.crend());
         assert(SelfCount::Count() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
+    /*
 
         // erase()
         assert(di50.size() == 31);
@@ -482,6 +482,6 @@ int main() {
         v1[16] = 235;
         assert(v0 < v1);
         assert(v0 != v1);
-    }
     */
+    }
 }
