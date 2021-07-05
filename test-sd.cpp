@@ -211,7 +211,6 @@ int main() {
             assert(copy.back() == 23);
             assert(SelfCount::Count() == base_count+copy.size());
         }
-    /*
 
         // erase()
         assert(di50.size() == 31);
@@ -223,6 +222,7 @@ int main() {
         assert(di50[8]() == 9);
         assert(di50[29]() == 30);
 
+/*
         // emplace()
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);

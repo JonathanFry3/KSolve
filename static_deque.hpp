@@ -280,6 +280,11 @@ namespace frystl
             }
             return result;
         }
+        iterator erase(const_iterator position) noexcept
+        {
+            assert(GoodIter(position + 1));
+            return erase(position, position+1);
+        }
 
     private:
         static constexpr unsigned _trueCap{2 * (Capacity-1) + 1};
