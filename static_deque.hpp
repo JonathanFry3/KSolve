@@ -282,7 +282,6 @@ namespace frystl
         }
         iterator erase(const_iterator position) noexcept
         {
-            assert(GoodIter(position + 1));
             return erase(position, position+1);
         }
 
