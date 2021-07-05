@@ -185,6 +185,32 @@ int main() {
         assert(di50.crbegin()+di50.size() == di50.crend());
         assert(SelfCount::Count() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
+
+        {
+            // range erase()
+            int base_count{SelfCount::Count()};
+            frystl::static_deque<SelfCount,50> copy{di50};
+            assert(SelfCount::Count() == 2*base_count);
+
+            auto spot = copy.erase(copy.begin()+21, copy.begin()+23);
+            assert(spot == copy.begin()+21);
+            assert(*spot == 23);
+            assert(*(spot-1) == 20);
+            assert(copy.size() == base_count - 2);
+            assert(SelfCount::Count() == base_count+copy.size());
+
+            spot = copy.erase(copy.begin()+8, copy.begin()+12);
+            assert(spot == copy.begin()+8);
+            assert(*spot == 12);
+            assert(*(spot-1) == 7);
+            assert(copy.size() == base_count-6);
+            assert(SelfCount::Count() == base_count+copy.size());
+
+            assert(copy.erase(copy.end()-7, copy.end()) == copy.end());
+            assert(copy.size() == base_count - 13);
+            assert(copy.back() == 23);
+            assert(SelfCount::Count() == base_count+copy.size());
+        }
     /*
 
         // erase()
@@ -201,19 +227,6 @@ int main() {
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
         assert(di50.size() == 31);
-        assert(SelfCount::Count() == di50.size());
-
-        // range erase()
-        auto spot = di50.erase(di50.begin()+8, di50.begin()+12);
-        assert(spot == di50.begin()+8);
-        assert(*spot == 12);
-        assert(*(spot-1) == 7);
-        assert(di50.size() == 27);
-        assert(SelfCount::Count() == di50.size());
-
-        assert(di50.erase(di50.end()-7, di50.end()) == di50.end());
-        assert(di50.size() == 20);
-        assert(di50.back() == 23);
         assert(SelfCount::Count() == di50.size());
 
         // clear()

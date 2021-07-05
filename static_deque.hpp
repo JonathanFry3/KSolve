@@ -253,6 +253,33 @@ namespace frystl
         {
             return const_reverse_iterator(_begin);
         }
+        iterator erase(const_iterator first, const_iterator last)
+        {
+            const iterator f = const_cast<iterator>(first);
+            const iterator l = const_cast<iterator>(last);
+            iterator result;
+            if (first != last)
+            {
+                assert(GoodIter(first + 1));
+                assert(GoodIter(last));
+                assert(first < last);
+                unsigned nToErase = last-first;
+                for (iterator it = f; it < l; ++it)
+                    it->~value_type();
+                if (first-_begin < _end-last) {
+                    // Move the elements before first
+                    std::move_backward(_begin,f,l);
+                    _begin += nToErase;
+                    result = l;
+                } else {
+                    // Move the elements at and after last
+                    std::move(l, end(), f);
+                    _end -= nToErase;
+                    result = f;
+                }
+            }
+            return result;
+        }
 
     private:
         static constexpr unsigned _trueCap{2 * (Capacity-1) + 1};
@@ -274,6 +301,11 @@ namespace frystl
         {
             if (!cond)
                 throw std::out_of_range("static_deque range error");
+        }
+        // returns true iff it-1 can be dereferenced.
+        bool GoodIter(const const_iterator &it)
+        {
+            return begin() < it && it <= end();
         }
     };
 }
