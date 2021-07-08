@@ -290,13 +290,42 @@ namespace frystl
             return p;
         }
         // range insert()
-        template <class InputIterator>
-        iterator insert(const_iterator position, InputIterator first, InputIterator last)
+        private:
+            template <class InpIter>
+            iterator insert(
+                const_iterator position, 
+                InpIter first, 
+                InpIter last,
+                std::input_iterator_tag)
+            {
+                iterator p = const_cast<iterator>(position);
+                while (first != last)
+                    emplace(p++, *first++);
+                return const_cast<iterator>(position);
+            }
+            template <class DAIter>
+            iterator insert(
+                const_iterator position, 
+                DAIter first, 
+                DAIter last,
+                std::random_access_iterator_tag)
+            {
+                iterator p = const_cast<iterator>(position);
+                int n = last-first;
+                MakeRoom(p,n);
+                iterator result = p;
+                while (first != last) {
+                    new(p++) value_type(*first++);
+                }
+                _size += n;
+                return result;
+            }
+        public:
+        template <class Iter>
+        iterator insert(const_iterator position, Iter first, Iter last)
         {
-            iterator p = const_cast<iterator>(position);
-            while (first != last)
-                emplace(p++, *first++);
-            return const_cast<iterator>(position);
+            return insert(position,first,last,
+                typename std::iterator_traits<Iter>::iterator_category());
         }
         // initializer list insert()
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
