@@ -213,6 +213,17 @@ namespace frystl
             assert(_begin < _end);
             return *(_end-1);
         }
+        template <class... Args>
+        iterator emplace(const_iterator pos, Args...args)
+        {
+            bool atEdge = pos==cbegin() || pos==cend();
+            iterator p = MakeRoom(const_cast<iterator>(pos),1);
+            if (atEdge)
+                new(p) value_type(args...);
+            else 
+                (*p) = std::move(value_type(args...));
+            return p;
+        }
         iterator begin() noexcept
         {
             return _begin;
@@ -310,6 +321,46 @@ namespace frystl
         bool GoodIter(const const_iterator &it)
         {
             return begin() < it && it <= end();
+        }
+        // Slide cells at and behind p to the back by n spaces.
+        // Return an iterator pointing to the first cleared cell (p)
+        iterator MakeRoomAfter(iterator p, size_type n)
+        {
+            assert(end()+n <= data()+_trueCap);
+            iterator src = end();
+            iterator tgt = src+n;
+            // Fill the uninitialized target cells by move construction
+            while(p<src && end()<tgt)
+                new (--tgt) value_type(std::move(*(--src)));       
+            // Shift elements to previously occupied cells by assignment
+            std::move_backward(p, src, tgt);
+            _end += n;
+            return p;
+        }
+        // Slide cells before p to the front by n spaces.
+        // Return an iterator pointing to the first cleared cell (p-n)
+        iterator MakeRoomBefore(iterator p, size_type n)
+        {
+            iterator src = begin();
+            iterator tgt = src-n;
+            assert(Data() <= tgt);
+            // fill the uninitialized target cells by move construction
+            while (src < p && tgt < begin())
+                new (tgt++) value_type(std::move(*(src++)));
+            // shift elements to previously occupied cells by move assignment
+            std::move(src,p,tgt);
+            _begin -= n;
+            return p-n;
+        }
+        // Slide cells toward the front or back to make room for n elements
+        // before p.  Choose the faster direction.
+        // Return an iterator pointing to the first cleared space. 
+        iterator MakeRoom(iterator p, size_type n)
+        {
+            if (end()-p < p-begin())
+                return MakeRoomAfter(p, n);
+            else
+                return MakeRoomBefore(p, n);
         }
     };
 }

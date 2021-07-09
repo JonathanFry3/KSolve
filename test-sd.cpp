@@ -222,7 +222,6 @@ int main() {
         assert(di50[8]() == 9);
         assert(di50[29]() == 30);
 
-/*
         // emplace()
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
@@ -249,7 +248,9 @@ int main() {
         It i2(vec.end());
         assert(i2-i1 == 7);
         assert(i2>i1);
-    }{
+    }
+    {
+/*
         // assign()
         // fill type
         static_deque<int,6> dv;
@@ -373,13 +374,14 @@ int main() {
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
 
+
         {
-            // Range insert()
+            // Range insert() from a range of input iterators
             std::list<int> intList;
             for (int i = 0; i < 9; ++i) {
                 intList.push_back(i+173);
             }
-            static_deque<SelfCount,99> r2(roop);
+            static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
@@ -388,6 +390,37 @@ int main() {
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
             assert(r2[31+9]() == 31);
+        }
+        assert(SelfCount::Count() == 47);
+        {
+            // Range insert() from a range of random access iterators
+            static_vector<int,71> intList;
+            for (int i = 0; i < 9; ++i) {
+                intList.push_back(i+173);
+            }
+            static_vector<SelfCount,99> r2(roop);
+            assert(r2.size() == 47);
+            assert(SelfCount::Count() == 47*2);
+            r2.insert(r2.begin()+31, intList.begin(), intList.end());
+            assert(r2.size() == 47+9);
+            assert(SelfCount::Count() == 2*47+9);
+            assert(r2[30]() == 30);
+            assert(r2[31+4]() == 4+173);
+            assert(r2[31+9]() == 31);
+        }
+        assert(SelfCount::Count() == 47);
+        {
+            // Initializer list insert()
+            static_vector<SelfCount,99> r2(roop);
+            assert(r2.size() == 47);
+            assert(SelfCount::Count() == 47*2);
+            using Z = SelfCount;
+            r2.insert(r2.begin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
+            assert(r2.size() == 47+4);
+            assert(SelfCount::Count() == 2*47+4);
+            assert(r2[30]() == 30);
+            assert(r2[30+3]() == 274);
+            assert(r2[31+4]() == 31);
         }
         assert(SelfCount::Count() == 47);
         {
