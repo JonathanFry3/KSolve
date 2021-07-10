@@ -13,12 +13,12 @@ using namespace frystl;
 template <class C>
 static void TestFillInsert(C vec, unsigned iat, unsigned n)
 {
-    unsigned count0 = SelfCount::Count();
+    unsigned count0 = SelfCount::OwnerCount();
     unsigned size = vec.size();
     auto spot = vec.begin() + iat;
     vec.insert(spot,n,SelfCount(843));
     assert(vec.size() == size+n);
-    assert(SelfCount::Count() == count0+n);
+    assert(SelfCount::OwnerCount() == count0+n);
     assert(vec[iat-1]() == iat-1);
     assert(vec[iat]() == 843);
     assert(vec[iat+n-1]() == 843);
@@ -44,49 +44,49 @@ int main() {
         }
 
         // range
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         std::list<int> li;
         for (int i = 0; i < 30; ++i) li.push_back(i-13);
         static_vector<SelfCount,95> sv(li.begin(),li.end());
-        assert(SelfCount::Count() == 30);
+        assert(SelfCount::OwnerCount() == 30);
         assert(sv.size() == 30);
         for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
 
         {
             // copy
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_vector<SelfCount,80> i80 (sv);
             assert(i80.size() == 30);
-            assert(SelfCount::Count() == 60);
+            assert(SelfCount::OwnerCount() == 60);
             for (int i = 0; i < 30; ++i) assert(i80[i]() == i-13);
 
             static_vector<SelfCount,80> j80 (i80);
             assert(j80.size() == 30);
-            assert(SelfCount::Count() == 90);
+            assert(SelfCount::OwnerCount() == 90);
             for (int i = 0; i < 30; ++i) assert(j80[i]() == i-13);        
         }
         {
             // move
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_vector<SelfCount,73> i73 (std::move(sv));
             assert(sv.size() == 30);
             assert(i73.size() == 30);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
 
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_vector<SelfCount,95> i95 (std::move(sv));
             assert(sv.size() == 30);
             assert(i95.size() == 30);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(i95[i]() == i-13);
 
         }
         {
             // initializer list constructor
-            unsigned c = SelfCount::Count();
+            unsigned c = SelfCount::OwnerCount();
             static_vector<SelfCount, 10> i10 {28, -373, 42, 10000000, -1};
-            assert(SelfCount::Count() == c+5);
+            assert(SelfCount::OwnerCount() == c+5);
             assert(i10[2] == 42);
             assert(i10.size() == 5);
         }            
@@ -94,7 +94,7 @@ int main() {
     {
         // Default Constructor, empty()
         static_vector<SelfCount,50> di50;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         assert(di50.size() == 0);
         assert(di50.capacity() == 50);
         assert(di50.empty());
@@ -104,7 +104,7 @@ int main() {
         for (unsigned i = 0; i < 50; i+= 1){
             di50.emplace_back(i);
             assert(di50.size() == i+1);
-            assert(SelfCount::Count() == di50.size());
+            assert(SelfCount::OwnerCount() == di50.size());
         }
 
         const auto & cdi50{di50};
@@ -112,7 +112,7 @@ int main() {
         // pop_back()
         for (unsigned i = 0; i<20; i += 1){
             di50.pop_back();
-            assert(SelfCount::Count() == di50.size());
+            assert(SelfCount::OwnerCount() == di50.size());
         }
         assert(di50.size() == 30);
 
@@ -143,7 +143,7 @@ int main() {
         // push_back()
         di50.push_back(SelfCount(30));
         assert(cdi50[30]() == 30);
-        assert(SelfCount::Count() == 31);
+        assert(SelfCount::OwnerCount() == 31);
 
         assert(di50.size() == 31);
 
@@ -158,7 +158,7 @@ int main() {
         assert(cdi50[8]() == 71);
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.begin()+di50.size() == di50.end());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // cbegin(), cend()
         assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
@@ -167,7 +167,7 @@ int main() {
         assert(cdi50[8]() == 71);
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.cbegin()+di50.size() == di50.cend());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // rbegin(), rend(), crbegin(), crend()
         assert(&(*(di50.crbegin()+6)) == cdi50.end()-7);
@@ -176,14 +176,14 @@ int main() {
         assert(cdi50[22]() == 71);
         *(di50.rbegin()+8) = SelfCount(22);
         assert(di50.crbegin()+di50.size() == di50.crend());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
 
         // erase()
         assert(di50.size() == 31);
         assert(di50.erase(di50.begin()+8) == di50.begin()+8);
 
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
         assert(di50.size() == 30);
         assert(di50[7]() == 7);
         assert(di50[8]() == 9);
@@ -193,7 +193,7 @@ int main() {
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
         assert(di50.size() == 31);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // range erase()
         auto spot = di50.erase(di50.begin()+8, di50.begin()+12);
@@ -201,17 +201,17 @@ int main() {
         assert(*spot == 12);
         assert(*(spot-1) == 7);
         assert(di50.size() == 27);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         assert(di50.erase(di50.end()-7, di50.end()) == di50.end());
         assert(di50.size() == 20);
         assert(di50.back() == 23);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // clear()
         di50.clear();
         assert(di50.size() == 0);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
     }{
         // Operation on iterators
         static_vector<int, 10> vec({0,1,2,3,4,5,6,7});
@@ -258,33 +258,33 @@ int main() {
     }{
         // assignment operators
         static_vector<SelfCount, 50> a, b;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
 
         // copy operator=()
         b = a;
         assert(a==b);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         a = a;
         assert(a.size() == 20);
         assert(a == b);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
         a = b;
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         b = std::move(b);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b);
 
@@ -296,49 +296,49 @@ int main() {
         // assignment operators between vectors of different capacities
         static_vector<SelfCount, 50> a;
         static_vector<SelfCount, 70> b;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
 
         // copy operator=()
         b = a;
         assert(a==b);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         a = a;
         assert(a.size() == 20);
         assert(a == b);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
         a = b;
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         b = std::move(b);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b);
     }{
         // The many flavors of insert()
 
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_vector<SelfCount,99> roop;
         for (unsigned i = 0; i < 47; ++i)
             roop.emplace_back(i);
 
         // Move insert()
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         auto spot = roop.begin()+9;
         roop.insert(spot,SelfCount(71));
         assert(roop.size() == 48);
-        assert(SelfCount::Count() == 48);
+        assert(SelfCount::OwnerCount() == 48);
         assert(roop[8]() == 8);
         assert(roop[9]() == 71);
         assert(roop[10]() == 9);
@@ -347,7 +347,7 @@ int main() {
 
         // Fill insert()
         assert(roop.size() == 47);
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
@@ -360,15 +360,15 @@ int main() {
             }
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
             assert(r2.size() == 47+9);
-            assert(SelfCount::Count() == 2*47+9);
+            assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
             assert(r2[31+9]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             // Range insert() from a range of random access iterators
             static_vector<int,71> intList;
@@ -377,56 +377,56 @@ int main() {
             }
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
             assert(r2.size() == 47+9);
-            assert(SelfCount::Count() == 2*47+9);
+            assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
             assert(r2[31+9]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
         {
             // Initializer list insert()
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::Count() == 47*2);
+            assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
             r2.insert(r2.begin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
-            assert(SelfCount::Count() == 2*47+4);
+            assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);
             assert(r2[30+3]() == 274);
             assert(r2[31+4]() == 31);
         }
-        assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
     }
 
     {
         // resize()
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_vector<SelfCount, 99> v99;
         for (int i = 0; i < 73; ++i)
             v99.emplace_back(i);
         assert(v99.size() == 73);
-        assert(SelfCount::Count() == 73);
+        assert(SelfCount::OwnerCount() == 73);
         v99.resize(78,SelfCount(-823));
         assert(v99.size() == 78);
-        assert(SelfCount::Count() == 78);
+        assert(SelfCount::OwnerCount() == 78);
         assert(v99[72]() == 72);
         assert(v99[73]() == -823);
         assert(v99[77]() == -823);
         v99.resize(49);
         assert(v99.size() == 49);
-        assert(SelfCount::Count() == 49);
+        assert(SelfCount::OwnerCount() == 49);
         assert(v99[48]() == 48);
         v99.resize(56);
         assert(v99.size() == 56);
-        assert(SelfCount::Count() == 56);
+        assert(SelfCount::OwnerCount() == 56);
         assert(v99[55]() == 0);
     }{
         // swap() member
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_vector<SelfCount, 99> va, vc;
         static_vector<SelfCount, 99> vb, vd;
         for (int i = 0; i < 57; ++i){
@@ -437,18 +437,18 @@ int main() {
         vd = vb;
         assert(va.size() == 57);
         assert(vb.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
         va.swap(vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
     }{
         // swap() non-member overload
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         static_vector<SelfCount, 99> va, vb, vc, vd;
         for (int i = 0; i < 57; ++i){
             va.emplace_back(i);
@@ -458,13 +458,13 @@ int main() {
         vd = vb;
         assert(va.size() == 57);
         assert(vb.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vc == va);
         assert(vd == vb);
         swap(va,vb);
         assert(vb.size() == 57);
         assert(va.size() == 19);
-        assert(SelfCount::Count() == 2*(19+57));
+        assert(SelfCount::OwnerCount() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
     }{

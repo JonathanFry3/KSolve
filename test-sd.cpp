@@ -45,11 +45,11 @@ int main() {
         }
         {
             // range
-            assert(SelfCount::Count() == 0);
+            assert(SelfCount::OwnerCount() == 0);
             std::list<int> li;
             for (int i = 0; i < 30; ++i) li.emplace_back(i-13);
             static_deque<SelfCount,30> sd30(li.begin(),li.end());
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             assert(sd30.size() == 30);
             for (int i = 0; i < 30; ++i) assert(sd30[i]() == i-13);
         }
@@ -57,43 +57,43 @@ int main() {
             // copy to different capacity
             static_deque<SelfCount,30> sv30;
             for (unsigned i = 0; i < 30; ++i) sv30.emplace_back(i-13);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_deque<SelfCount,80> i80 (sv30);
             assert(i80.size() == 30);
-            assert(SelfCount::Count() == 60);
+            assert(SelfCount::OwnerCount() == 60);
             for (int i = 0; i < 30; ++i) assert(i80[i]() == i-13);
 
             // copy to same capacity
             static_deque<SelfCount,80> j80 (i80);
             assert(j80.size() == 30);
-            assert(SelfCount::Count() == 90);
+            assert(SelfCount::OwnerCount() == 90);
             for (int i = 0; i < 30; ++i) assert(j80[i]() == i-13);        
         }
         {
             // move to target of different capacity
             static_deque<SelfCount,30> sd30;
             for (unsigned i = 0; i < 30; ++i) sd30.emplace_back(i-13);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_deque<SelfCount,73> i73 (std::move(sd30));
             assert(sd30.size() == 30);
             assert(i73.size() == 30);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(i73[i]() == i-13);
 
             // move to target of same capacity
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             static_deque<SelfCount,73> j73 (std::move(i73));
             assert(i73.size() == 30);
             assert(j73.size() == 30);
-            assert(SelfCount::Count() == 30);
+            assert(SelfCount::OwnerCount() == 30);
             for (int i = 0; i < 30; ++i) assert(j73[i]() == i-13);
 
         }
         {
             // initializer list constructor
-            unsigned c = SelfCount::Count();
+            unsigned c = SelfCount::OwnerCount();
             static_deque<SelfCount, 10> i10 {28, -373, 42, 10000000, -1};
-            assert(SelfCount::Count() == c+5);
+            assert(SelfCount::OwnerCount() == c+5);
             assert(i10[2] == 42);
             assert(i10.size() == 5);
         }            
@@ -101,7 +101,7 @@ int main() {
     {
         // Default Constructor, empty()
         static_deque<SelfCount,50> di50;
-        assert(SelfCount::Count() == 0);
+        assert(SelfCount::OwnerCount() == 0);
         assert(di50.size() == 0);
         assert(di50.empty());
 
@@ -110,7 +110,7 @@ int main() {
         for (unsigned i = 0; i < 50; i+= 1){
             di50.emplace_back(i);
             assert(di50.size() == i+1);
-            assert(SelfCount::Count() == di50.size());
+            assert(SelfCount::OwnerCount() == di50.size());
         }
 
         const auto & cdi50{di50};
@@ -118,7 +118,7 @@ int main() {
         // pop_back()
         for (unsigned i = 0; i<20; i += 1){
             di50.pop_back();
-            assert(SelfCount::Count() == di50.size());
+            assert(SelfCount::OwnerCount() == di50.size());
         }
         assert(di50.size() == 30);
         
@@ -151,7 +151,7 @@ int main() {
         // push_back()
         di50.push_back(SelfCount(30));
         assert(cdi50[30]() == 30);
-        assert(SelfCount::Count() == 31);
+        assert(SelfCount::OwnerCount() == 31);
 
         assert(di50.size() == 31);
         // data()
@@ -165,7 +165,7 @@ int main() {
         assert(cdi50[8]() == 71);
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.begin()+di50.size() == di50.end());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // cbegin(), cend()
         assert(&(*(di50.cbegin()+6)) == cdi50.data()+6);
@@ -174,7 +174,7 @@ int main() {
         assert(cdi50[8]() == 73);
         *(di50.begin()+8) = SelfCount(8);
         assert(di50.cbegin()+di50.size() == di50.cend());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // rbegin(), rend(), crbegin(), crend()
         assert(&(*(di50.crbegin()+6)) == cdi50.end()-7);
@@ -183,40 +183,40 @@ int main() {
         assert(cdi50[22]() == 71);
         *(di50.rbegin()+8) = SelfCount(22);
         assert(di50.crbegin()+di50.size() == di50.crend());
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
         for (int i = 0; i < 31; i++) assert(cdi50[i]() == i);
 
         {
             // range erase()
-            int base_count{SelfCount::Count()};
+            int base_count{SelfCount::OwnerCount()};
             frystl::static_deque<SelfCount,50> copy{di50};
-            assert(SelfCount::Count() == 2*base_count);
+            assert(SelfCount::OwnerCount() == 2*base_count);
 
             auto spot = copy.erase(copy.begin()+21, copy.begin()+23);
             assert(spot == copy.begin()+21);
             assert(*spot == 23);
             assert(*(spot-1) == 20);
             assert(copy.size() == base_count - 2);
-            assert(SelfCount::Count() == base_count+copy.size());
+            assert(SelfCount::OwnerCount() == base_count+copy.size());
 
             spot = copy.erase(copy.begin()+8, copy.begin()+12);
             assert(spot == copy.begin()+8);
             assert(*spot == 12);
             assert(*(spot-1) == 7);
             assert(copy.size() == base_count-6);
-            assert(SelfCount::Count() == base_count+copy.size());
+            assert(SelfCount::OwnerCount() == base_count+copy.size());
 
             assert(copy.erase(copy.end()-7, copy.end()) == copy.end());
             assert(copy.size() == base_count - 13);
             assert(copy.back() == 23);
-            assert(SelfCount::Count() == base_count+copy.size());
+            assert(SelfCount::OwnerCount() == base_count+copy.size());
         }
 
         // erase()
         assert(di50.size() == 31);
         assert(di50.erase(di50.begin()+8) == di50.begin()+8);
 
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
         assert(di50.size() == 30);
         assert(di50[7]() == 7);
         assert(di50[8]() == 9);
@@ -226,12 +226,12 @@ int main() {
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
         assert(di50.size() == 31);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
 
         // clear()
         di50.clear();
         assert(di50.size() == 0);
-        assert(SelfCount::Count() == di50.size());
+        assert(SelfCount::OwnerCount() == di50.size());
     }{
         // Operation on iterators
         static_deque<int, 10> vec({0,1,2,3,4,5,6,7});
