@@ -250,7 +250,7 @@ namespace frystl
             assert(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
-            new (p) value_type(args...);
+            MoveConstruct(p,args...);
             ++_size;
             return p;
         }
@@ -265,13 +265,16 @@ namespace frystl
         // single element insert()
         iterator insert(const_iterator position, const value_type &val)
         {
+            assert(GoodIter(position));
             iterator p = const_cast<iterator>(position);
-            return emplace(p, val);
+            MakeRoom(p,1);
+            Construct(p, val);
+            ++_size;
+            return p;
         }
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            assert(begin() <= position && position <= end());
             return emplace(position, std::move(val));
         }
         // fill insert
@@ -284,7 +287,7 @@ namespace frystl
             // copy val n times into newly available cells
             for (iterator i = p; i < p + n; ++i)
             {
-                new (i) value_type(val);
+                Construct(i, val);
             }
             _size += n;
             return p;
@@ -380,13 +383,33 @@ namespace frystl
             size_type nu = std::min(size_type(end() - p), n);
             for (size_type i = 0; i < nu; ++i)
                 new (end() + n - nu + i) value_type(std::move(*(end() - nu + i)));
-            // shift elements to previously occupied cells by assignment
+            // shift elements to previously occupied cells by move assignment
             std::move_backward(p, end() - nu, end());
         }
         // returns true iff it-1 can be dereferenced.
         bool GoodIter(const const_iterator &it)
         {
             return begin() < it && it <= end();
+        }
+        template <class... Args>
+        void Construct(iterator pos, Args... args)
+        {
+            if (pos < end())
+                // fill previously occupied cells using assignment
+                (*pos)  = value_type(args...);
+            else 
+                // fill unoccupied cells in place by constructon
+                new (pos) value_type(args...);
+        }
+        template <class... Args>
+        void MoveConstruct(iterator pos, Args... args)
+        {
+            if (pos < end())
+                // fill previously occupied cells using move assignment
+                (*pos)  = std::move(value_type(args...));
+            else 
+                // fill unoccupied cells in place by constructon
+                new (pos) value_type(args...);
         }
         //
     };
