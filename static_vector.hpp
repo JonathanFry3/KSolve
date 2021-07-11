@@ -271,7 +271,7 @@ namespace frystl
             assert(GoodIter(position));
             iterator p = const_cast<iterator>(position);
             MakeRoom(p,1);
-            Construct(p, val);
+            FillCell(p, val);
             ++_size;
             return p;
         }
@@ -299,7 +299,7 @@ namespace frystl
             // copy val n times into newly available cells
             for (iterator i = p; i < p + n; ++i)
             {
-                Construct(i, val);
+                FillCell(i, val);
             }
             _size += n;
             return p;
@@ -315,7 +315,7 @@ namespace frystl
             {
                 iterator p = const_cast<iterator>(position);
                 while (first != last)
-                    emplace(p++, *first++);
+                    insert(p++, *first++);
                 return const_cast<iterator>(position);
             }
             template <class DAIter>
@@ -330,7 +330,7 @@ namespace frystl
                 MakeRoom(p,n);
                 iterator result = p;
                 while (first != last) {
-                    new(p++) value_type(*first++);
+                    FillCell(p++, *first++);
                 }
                 _size += n;
                 return result;
@@ -354,7 +354,7 @@ namespace frystl
             auto j = il.begin();
             for (iterator i = p; i < p + n; ++i, ++j)
             {
-                new (i) value_type(*j);
+                FillCell(i, *j);
             }
             _size += n;
             return p;
@@ -404,13 +404,13 @@ namespace frystl
             return begin() < it && it <= end();
         }
         template <class... Args>
-        void Construct(iterator pos, Args... args)
+        void FillCell(iterator pos, Args... args)
         {
             if (pos < end())
-                // fill previously occupied cells using assignment
+                // fill previously occupied cell using assignment
                 (*pos)  = value_type(args...);
             else 
-                // fill unoccupied cells in place by constructon
+                // fill unoccupied cell in place by constructon
                 new (pos) value_type(args...);
         }
         //

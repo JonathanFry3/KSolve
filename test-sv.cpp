@@ -13,12 +13,14 @@ using namespace frystl;
 template <class C>
 static void TestFillInsert(C vec, unsigned iat, unsigned n)
 {
-    unsigned count0 = SelfCount::OwnerCount();
+    unsigned count0 = SelfCount::Count();
+    unsigned ownerCount0 = SelfCount::OwnerCount();
     unsigned size = vec.size();
     auto spot = vec.begin() + iat;
     vec.insert(spot,n,SelfCount(843));
     assert(vec.size() == size+n);
-    assert(SelfCount::OwnerCount() == count0+n);
+    assert(SelfCount::Count() == count0+n);
+    assert(SelfCount::OwnerCount() == ownerCount0+n);
     assert(vec[iat-1]() == iat-1);
     assert(vec[iat]() == 843);
     assert(vec[iat+n-1]() == 843);
@@ -402,8 +404,10 @@ int main() {
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::OwnerCount() == 47*2);
+            assert(SelfCount::Count() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
             assert(r2.size() == 47+9);
+            assert(SelfCount::Count() == 2*47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
@@ -418,9 +422,11 @@ int main() {
             }
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
+            assert(SelfCount::Count() == 47*2);
             assert(SelfCount::OwnerCount() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
             assert(r2.size() == 47+9);
+            assert(SelfCount::Count() == 2*47+9);
             assert(SelfCount::OwnerCount() == 2*47+9);
             assert(r2[30]() == 30);
             assert(r2[31+4]() == 4+173);
@@ -431,10 +437,12 @@ int main() {
             // Initializer list insert()
             static_vector<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
-            assert(SelfCount::OwnerCount() == 47*2);
+             assert(SelfCount::Count() == 2*47);
+           assert(SelfCount::OwnerCount() == 47*2);
             using Z = SelfCount;
             r2.insert(r2.begin()+31, {Z(-72),Z(0),Z(274),Z(-34245)});
             assert(r2.size() == 47+4);
+            assert(SelfCount::Count() == 2*47+4);
             assert(SelfCount::OwnerCount() == 2*47+4);
             assert(r2[30]() == 30);
             assert(r2[30+3]() == 274);
