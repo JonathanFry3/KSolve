@@ -55,6 +55,7 @@ struct SelfCount {
         return ! operator==(right);
     }
     uint32_t operator()() const noexcept {return _member;}
+    bool Owns() const noexcept {return _owns;}
     
     ~SelfCount() {
         IncrOwnerCount(-_owns); 

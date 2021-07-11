@@ -250,7 +250,10 @@ namespace frystl
             assert(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
-            MoveConstruct(p,args...);
+            if (p < end())
+                (*p) = std::move(value_type(args...));
+            else 
+                new(p) value_type(args...);
             ++_size;
             return p;
         }
@@ -275,7 +278,16 @@ namespace frystl
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            return emplace(position, std::move(val));
+            assert(_size < Capacity);
+            assert(begin() <= position && position <= end());
+            iterator p = const_cast<iterator>(position);
+            MakeRoom(p, 1);
+            if (p < end())
+                (*p) = std::move(val);
+            else 
+                new(p) value_type(val);
+            ++_size;
+            return p;
         }
         // fill insert
         iterator insert(const_iterator position, size_type n, const value_type &val)
@@ -397,16 +409,6 @@ namespace frystl
             if (pos < end())
                 // fill previously occupied cells using assignment
                 (*pos)  = value_type(args...);
-            else 
-                // fill unoccupied cells in place by constructon
-                new (pos) value_type(args...);
-        }
-        template <class... Args>
-        void MoveConstruct(iterator pos, Args... args)
-        {
-            if (pos < end())
-                // fill previously occupied cells using move assignment
-                (*pos)  = std::move(value_type(args...));
             else 
                 // fill unoccupied cells in place by constructon
                 new (pos) value_type(args...);
