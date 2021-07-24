@@ -37,12 +37,12 @@ namespace frystl
 
         // default c'tor
         static_deque() noexcept
-            : _begin(Data() + Capacity - 1), _end(Data() + Capacity - 1)
+            : _begin(FirstSpace() + Capacity - 1), _end(FirstSpace() + Capacity - 1)
         {
         }
         // fill c'tor with explicit value
         static_deque(size_type count, const_reference value)
-            : _begin(Data() + Capacity - 1 - count / 2), _end(_begin + count)
+            : _begin(FirstSpace() + Capacity - 1 - count / 2), _end(_begin + count)
         {
             assert(count <= 2 * Capacity - 1);
             for (pointer p = _begin; p < _end; ++p)
@@ -64,7 +64,7 @@ namespace frystl
         }
         // copy constructors
         static_deque(const this_type &donor)
-            : _begin(Data()+Capacity-1-donor.size()/2)
+            : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             for (auto &m : donor)
@@ -72,7 +72,7 @@ namespace frystl
         }
         template <unsigned C1>
         static_deque(const static_deque<value_type, C1> &donor)
-            : _begin(Data()+Capacity-1-donor.size()/2)
+            : _begin(FirstSpace()+Capacity-1-donor.size()/2)
             , _end(_begin)
         {
             assert(donor.size() <= _trueCap);
@@ -85,7 +85,7 @@ namespace frystl
         // unchanged, aside from whatever changes moving its elements
         // made.
         static_deque(this_type &&donor)
-            : _begin(Data()+Capacity-1-donor.size()/2)
+            : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             for (auto &m : donor)
@@ -93,7 +93,7 @@ namespace frystl
         }
         template <unsigned C1>
         static_deque(static_deque<value_type, C1> &&donor)
-            : _begin(Data()+Capacity-1-donor.size()/2)
+            : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             assert(donor.size() <= _trueCap);
@@ -102,7 +102,7 @@ namespace frystl
         }
         // initializer list constructor
         static_deque(std::initializer_list<value_type> il)
-            : _begin(Data()+Capacity-1-il.size()/2)
+            : _begin(Centered(il.size()))
             , _end(_begin)
         {
             assert(il.size() <= _trueCap);
@@ -117,7 +117,7 @@ namespace frystl
         {
             for (reference elem : *this)
                 elem.~value_type(); // destruct all elements
-            _begin = _end = Data() + Capacity - 1;
+            _begin = _end = FirstSpace() + Capacity - 1;
         }
         size_type size() const noexcept
         {
@@ -130,7 +130,7 @@ namespace frystl
         template <class... Args>
         void emplace_front(Args... args)
         {
-            assert(Data() < _begin);
+            assert(FirstSpace() < _begin);
             new (_begin - 1) value_type(args...);
             _begin -= 1;
         }
@@ -147,7 +147,7 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args... args)
         {
-            assert(_end < Data() + _trueCap);
+            assert(_end < FirstSpace() + _trueCap);
             new (_end) value_type(args...);
             _end += 1;
         }
@@ -223,6 +223,36 @@ namespace frystl
             else 
                 (*p) = std::move(value_type(args...));
             return p;
+        }
+        //
+        //  Assignment functions
+        void assign(size_type n, const_reference val)
+        {
+            assert(n <= _trueCap);
+            clear(); 
+            _begin = _end = Centered(n);
+            while (size() < n)
+                push_back(val);
+        }
+        void assign(std::initializer_list<value_type> x)
+        {
+            assert(x.size() <= _trueCap);
+            clear();
+            _begin = _end = Centered(x.size());
+            for (auto &a : x)
+                push_back(a);
+        }
+        template <class Iter,
+                  typename = std::_RequireInputIter<Iter>> // TODO: not portable
+        void assign(Iter begin, Iter end)
+        {
+            clear();
+            Center(begin,end,
+                typename std::iterator_traits<Iter>::iterator_category());
+            for (Iter k = begin; k != end; ++k) {
+                assert(_end < FirstSpace()+_trueCap);
+                push_back(*k);
+            }
         }
         iterator begin() noexcept
         {
@@ -300,11 +330,11 @@ namespace frystl
         static constexpr unsigned _trueCap{2 * (Capacity-1) + 1};
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
-        value_type *_begin;
-        value_type *_end;
+        pointer _begin;
+        pointer _end;
         storage_type _elem[_trueCap];
 
-        pointer Data()
+        pointer FirstSpace()
         {
             return reinterpret_cast<pointer>(_elem);
         }
@@ -323,10 +353,11 @@ namespace frystl
             return begin() < it && it <= end();
         }
         // Slide cells at and behind p to the back by n spaces.
-        // Return an iterator pointing to the first cleared cell (p)
+        // Return an iterator pointing to the first cleared cell (p).
+        // Update _end.
         iterator MakeRoomAfter(iterator p, size_type n)
         {
-            assert(end()+n <= data()+_trueCap);
+            assert(end()+n <= FirstSpace()+_trueCap);
             iterator src = end();
             iterator tgt = src+n;
             // Fill the uninitialized target cells by move construction
@@ -338,12 +369,13 @@ namespace frystl
             return p;
         }
         // Slide cells before p to the front by n spaces.
-        // Return an iterator pointing to the first cleared cell (p-n)
+        // Return an iterator pointing to the first cleared cell (p-n).
+        // Update _begin.
         iterator MakeRoomBefore(iterator p, size_type n)
         {
             iterator src = begin();
             iterator tgt = src-n;
-            assert(Data() <= tgt);
+            assert(FirstSpace() <= tgt);
             // fill the uninitialized target cells by move construction
             while (src < p && tgt < begin())
                 new (tgt++) value_type(std::move(*(src++)));
@@ -353,7 +385,7 @@ namespace frystl
             return p-n;
         }
         // Slide cells toward the front or back to make room for n elements
-        // before p.  Choose the faster direction.
+        // before p.  Choose the faster direction. Update _begin or _end.
         // Return an iterator pointing to the first cleared space. 
         iterator MakeRoom(iterator p, size_type n)
         {
@@ -361,6 +393,23 @@ namespace frystl
                 return MakeRoomAfter(p, n);
             else
                 return MakeRoomBefore(p, n);
+        }
+        // Return a pointer to the front end of a range of n cells centered
+        // in the space.
+        pointer Centered(unsigned n)
+        {
+            return FirstSpace()+Capacity-1-n/2;
+        }
+        template <class RAIter>
+        void Center(RAIter begin, RAIter end,std::random_access_iterator_tag)
+        {
+            assert(end-begin <= _trueCap);
+            _begin = _end = Centered(end-begin);
+        }
+        template <class InpIter>
+        void Center(InpIter begin, InpIter end,std::input_iterator_tag)
+        {
+            // do nothing
         }
     };
 }
