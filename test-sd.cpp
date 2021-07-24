@@ -226,6 +226,7 @@ int main() {
         assert((*di50.emplace(di50.begin()+8,96))() == 96);
         assert(di50[9]() == 9);
         assert(di50.size() == 31);
+        assert(SelfCount::Count() == di50.size());
         assert(SelfCount::OwnerCount() == di50.size());
 
         // clear()
@@ -250,7 +251,6 @@ int main() {
         assert(i2>i1);
     }
     {
-/*
         // assign()
         // fill type
         static_deque<int,6> dv;
@@ -278,6 +278,7 @@ int main() {
         assert(dv.size() == 4);
         assert(dv[2] == 12);
     }{
+/*
         // assignment operators
         static_deque<SelfCount, 50> a, b;
         assert(SelfCount::Count() == 0);
