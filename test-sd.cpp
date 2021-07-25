@@ -259,19 +259,19 @@ int main() {
         for (auto i: dv) assert(i==-29);
     }{
         // range type
-        static_deque<int,10> dv;
+        static_deque<int,9> dv;
         std::list<unsigned> lst;
-        for (unsigned i = 9; i < 9+8; ++i){
+        for (unsigned i = 9; i < 9+9; ++i){
             lst.push_back(i);
         }
         dv.assign(lst.begin(),lst.end());
-        assert(dv.size() == 8);
-        for (unsigned i = 9; i < 9+8; ++i) {assert(dv[i-9]==i);}
+        assert(dv.size() == 9);
+        for (unsigned i = 9; i < 9+9; ++i) {assert(dv[i-9]==i);}
 
-        static_deque<int,9> dv2;
-        dv2.push_back(78);
+        static_deque<int,5> dv2;
         dv2.assign(dv.begin(),dv.end());
-        for (unsigned i = 9; i < 9+8; ++i) {assert(dv2[i-9]==i);}
+        assert(dv2.size() == 9);
+        for (unsigned i = 9; i < 9+9; ++i) {assert(dv2[i-9]==i);}
 
         // initializer list type
         dv.assign({-3, 27, 12, -397});
