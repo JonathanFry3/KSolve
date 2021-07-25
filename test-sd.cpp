@@ -463,6 +463,7 @@ int main() {
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
     }{
+        /*
         // swap() member
         assert(SelfCount::Count() == 0);
         static_deque<SelfCount, 99> va, vc;
@@ -505,6 +506,7 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
+        */
     }{
         // comparison functions
         static_deque<int,73> v0;
@@ -529,6 +531,5 @@ int main() {
         v1[16] = 235;
         assert(v0 < v1);
         assert(v0 != v1);
-    */
     }
 }

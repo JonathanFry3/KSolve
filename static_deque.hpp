@@ -412,4 +412,45 @@ namespace frystl
             // do nothing
         }
     };
+    //
+    //*******  Non-member overloads
+    //
+    template <class T, unsigned C0, unsigned C1>
+    bool operator==(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        if (lhs.size() != rhs.size())
+            return false;
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    }
+    template <class T, unsigned C0, unsigned C1>
+    bool operator!=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        return !(rhs == lhs);
+    }
+    template <class T, unsigned C0, unsigned C1>
+    bool operator<(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    }
+    template <class T, unsigned C0, unsigned C1>
+    bool operator<=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        return !(rhs < lhs);
+    }
+    template <class T, unsigned C0, unsigned C1>
+    bool operator>(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        return rhs < lhs;
+    }
+    template <class T, unsigned C0, unsigned C1>
+    bool operator>=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    {
+        return !(lhs < rhs);
+    }
+
+    template <class T, unsigned C>
+    void swap(static_deque<T, C> &a, static_deque<T, C> &b)
+    {
+        a.swap(b);
+    }
 }
