@@ -254,6 +254,29 @@ namespace frystl
                 push_back(*k);
             }
         }
+        this_type &operator=(const this_type &other) noexcept
+        {
+            if (this != &other)
+                assign(other.begin(), other.end());
+            return *this;
+        }
+        this_type &operator=(this_type &&other) noexcept
+        {
+            if (this != &other)
+            {
+                assert(other.size() <= _trueCap);
+                clear();
+                _end = _begin = Centered(other.size());
+                for (auto &o : other)
+                    new (_end++) value_type(std::move(o));
+            }
+            return *this;
+        }
+        this_type &operator=(std::initializer_list<value_type> il)
+        {
+            assign(il);
+            return *this;
+        }
         iterator begin() noexcept
         {
             return _begin;

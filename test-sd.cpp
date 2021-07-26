@@ -278,9 +278,8 @@ int main() {
         assert(dv.size() == 4);
         assert(dv[2] == 12);
     }{
-/*
         // assignment operators
-        static_deque<SelfCount, 50> a, b;
+        static_deque<SelfCount, 20> a, b;
         assert(SelfCount::Count() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
@@ -291,23 +290,28 @@ int main() {
         assert(a==b);
         assert(b.size() == 20);
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         a = a;
         assert(a.size() == 20);
         assert(a == b);
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
         a = b;
+        assert(SelfCount::OwnerCount() == 40);
         assert(SelfCount::Count() == 40);
 
         b = std::move(b);
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b);
 
@@ -315,40 +319,45 @@ int main() {
         b = {14, -293, 1200, -2, 0};
         assert(b.size() == 5);
         assert(b[3]() == -2);
+        assert(SelfCount::OwnerCount() == 25);
     }{
-        // assignment operators between vectors of different capacities
+        // assignment operators between deques of different capacities
         static_deque<SelfCount, 50> a;
         static_deque<SelfCount, 70> b;
         assert(SelfCount::Count() == 0);
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
         assert(SelfCount::Count() == 20);
+        
 
         // copy operator=()
         b = a;
         assert(a==b);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         a = a;
         assert(a.size() == 20);
         assert(a == b);
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         // move operator=()
         b = std::move(a);
         assert(b.size() == 20);
-        assert(SelfCount::Count() == 20);
+        assert(SelfCount::OwnerCount() == 20);
         assert(a != b);
 
         a = b;
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
 
         b = std::move(b);
         assert(SelfCount::Count() == 40);
+        assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
-        assert(a == b);
-    }{
+        assert(a == b); 
+/*
         // The many flavors of insert()
 
         assert(SelfCount::Count() == 0);
