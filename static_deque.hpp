@@ -277,12 +277,100 @@ namespace frystl
             assign(il);
             return *this;
         }
+        // single element insert()
+        iterator insert(const_iterator position, const value_type &val)
+        {
+            return insert(position, 1, val);
+        }
+        // move insert()
+        iterator insert(iterator position, value_type &&val)
+        {
+            assert(begin() <= position && position <= end());
+            iterator b = begin();
+            iterator e = end();
+            iterator t = MakeRoom(const_cast<iterator>(position), 1);
+            if (b <= t && t < e)
+                (*t) = std::move(val);
+            else 
+                new(t) value_type(val);
+            return t;
+        }
+        // fill insert
+        iterator insert(const_iterator position, size_type n, const value_type &val)
+        {
+            assert(begin() <= position && position <= end());
+            iterator b = begin();
+            iterator e = end();
+            iterator t = MakeRoom(const_cast<iterator>(position), n);
+            // copy val n times into newly available cells
+            for (iterator i = t; i < t + n; ++i)
+            {
+                FillCell(b, e, i, val);
+            }
+            return t;
+        }
+        // range insert()
+        private:
+            // implementation for iterators with no operator-()
+            template <class InpIter>
+            iterator insert(
+                const_iterator position, 
+                InpIter first, 
+                InpIter last,
+                std::input_iterator_tag)
+            {
+                while (first != last)
+                    insert(position++, *first++);
+                return const_cast<iterator>(position);
+            }
+            // Implementation for iterators having operator-()
+            template <class DAIter>
+            iterator insert(
+                const_iterator position, 
+                DAIter first, 
+                DAIter last,
+                std::random_access_iterator_tag)
+            {
+                iterator b = begin();
+                iterator e = end();
+                int n = last-first;
+                iterator t = MakeRoom(const_cast<iterator>(position),n);
+                iterator result = t;
+                while (first != last) {
+                    FillCell(b, e, t++, *first++);
+                }
+                return result;
+            }
+        public:
+        template <class Iter>
+        iterator insert(const_iterator position, Iter first, Iter last)
+        {
+            return insert(position,first,last,
+                typename std::iterator_traits<Iter>::iterator_category());
+        }
+        // initializer list insert()
+        iterator insert(const_iterator position, std::initializer_list<value_type> il)
+        {
+            size_type n = il.size();
+            assert(begin() <= position && position <= end());
+            iterator b = begin();
+            iterator e = end();
+            iterator t = MakeRoom(const_cast<iterator>(position), n);
+            // copy il into newly available cells
+            auto j = il.begin();
+            for (iterator i = t; i < t + n; ++i, ++j)
+            {
+                FillCell(b, e, i, *j);
+            }
+            return t;
+        }
         iterator begin() noexcept
         {
             return _begin;
         }
         iterator end()
         {
+
             return _end;
         }
         const_iterator begin() const noexcept
@@ -424,16 +512,27 @@ namespace frystl
             return FirstSpace()+Capacity-1-n/2;
         }
         template <class RAIter>
-        void Center(RAIter begin, RAIter end,std::random_access_iterator_tag)
+        void Center(RAIter begin, RAIter end, std::random_access_iterator_tag)
         {
             assert(end-begin <= _trueCap);
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
-        void Center(InpIter begin, InpIter end,std::input_iterator_tag)
+        void Center(InpIter begin, InpIter end, std::input_iterator_tag)
         {
             // do nothing
         }
+        template <class... Args>
+        void FillCell(iterator b, iterator e, iterator pos, Args... args)
+        {
+            if (b <= pos && pos < e)
+                // fill previously occupied cell using assignment
+                (*pos)  = value_type(args...);
+            else 
+                // fill unoccupied cell in place by constructon
+                new (pos) value_type(args...);
+        }
+
     };
     //
     //*******  Non-member overloads
