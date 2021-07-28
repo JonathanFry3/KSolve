@@ -7,28 +7,28 @@
 
 using namespace frystl;
 
-/*
 // Test fill insert.
-// Assumes vec is a static_deque of type SelfCount
-// such that vec[i]() == i for all vec[i].
+// Assumes deq is a static_deque of type SelfCount
+// such that deq[i]() == i for all deq[i].
 template <class C>
-static void TestFillInsert(C vec, unsigned iat, unsigned n)
+static void TestFillInsert(C deq, unsigned iat, unsigned n)
 {
     unsigned count0 = SelfCount::Count();
-    unsigned size = vec.size();
-    auto spot = vec.begin() + iat;
-    vec.insert(spot,n,SelfCount(843));
-    assert(vec.size() == size+n);
+    unsigned ocount0 = SelfCount::OwnerCount();
+    unsigned size = deq.size();
+    auto spot = deq.begin() + iat;
+    deq.insert(spot,n,SelfCount(843));
+    assert(deq.size() == size+n);
     assert(SelfCount::Count() == count0+n);
-    assert(vec[iat-1]() == iat-1);
-    assert(vec[iat]() == 843);
-    assert(vec[iat+n-1]() == 843);
+    assert(SelfCount::OwnerCount() == ocount0+n);
+    if (iat > 0) assert(deq[iat-1]() == iat-1);
+    assert(deq[iat]() == 843);
+    assert(deq[iat+n-1]() == 843);
     if (iat < size) {
-        assert(vec[iat+n]() == iat);
-        assert(vec[size+n-1]()== size-1);
+        assert(deq[iat+n]() == iat);
+        assert(deq[size+n-1]()== size-1);
     }
 }
-*/
 int main() {
 
     // Constructors.
@@ -235,9 +235,9 @@ int main() {
         assert(SelfCount::OwnerCount() == di50.size());
     }{
         // Operation on iterators
-        static_deque<int, 10> vec({0,1,2,3,4,5,6,7});
+        static_deque<int, 10> deq({0,1,2,3,4,5,6,7});
         using It = static_deque<int,5>::const_iterator;
-        It i1 = vec.cbegin()+3;
+        It i1 = deq.cbegin()+3;
         assert(*i1 == 3);
         assert(*(i1-2) == 1);
         i1 += 1;
@@ -246,7 +246,7 @@ int main() {
         assert(*i1 == 1);
         assert(i1[3] == 4);
 
-        It i2(vec.end());
+        It i2(deq.end());
         assert(i2-i1 == 7);
         assert(i2>i1);
     }
@@ -328,7 +328,7 @@ int main() {
         for (unsigned i = 0; i<20; ++i)
             a.emplace_back(i);
         assert(SelfCount::Count() == 20);
-        
+
 
         // copy operator=()
         b = a;
@@ -357,7 +357,7 @@ int main() {
         assert(SelfCount::OwnerCount() == 40);
         assert(b.size() == 20);
         assert(a == b); 
-/*
+    }{
         // The many flavors of insert()
 
         assert(SelfCount::Count() == 0);
@@ -367,19 +367,22 @@ int main() {
 
         // Move insert()
         assert(SelfCount::Count() == 47);
-        auto spot = roop.begin()+9;
-        roop.insert(spot,SelfCount(71));
+        roop.insert(roop.begin()+9,SelfCount(71));
         assert(roop.size() == 48);
         assert(SelfCount::Count() == 48);
+        assert(SelfCount::OwnerCount() == 48);
         assert(roop[8]() == 8);
         assert(roop[9]() == 71);
         assert(roop[10]() == 9);
         assert(roop[47]() == 46);
-        roop.erase(spot);
+        roop.erase(roop.begin()+9);
 
         // Fill insert()
         assert(roop.size() == 47);
         assert(SelfCount::Count() == 47);
+        assert(SelfCount::OwnerCount() == 47);
+        TestFillInsert(roop,0,14);
+        TestFillInsert(roop,9,13);
         TestFillInsert(roop,19,13);
         TestFillInsert(roop,43,13);
         TestFillInsert(roop,roop.size(),13);
@@ -391,7 +394,7 @@ int main() {
             for (int i = 0; i < 9; ++i) {
                 intList.push_back(i+173);
             }
-            static_vector<SelfCount,99> r2(roop);
+            static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
@@ -404,11 +407,11 @@ int main() {
         assert(SelfCount::Count() == 47);
         {
             // Range insert() from a range of random access iterators
-            static_vector<int,71> intList;
+            static_deque<int,71> intList;
             for (int i = 0; i < 9; ++i) {
                 intList.push_back(i+173);
             }
-            static_vector<SelfCount,99> r2(roop);
+            static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             r2.insert(r2.begin()+31, intList.begin(), intList.end());
@@ -421,7 +424,7 @@ int main() {
         assert(SelfCount::Count() == 47);
         {
             // Initializer list insert()
-            static_vector<SelfCount,99> r2(roop);
+            static_deque<SelfCount,99> r2(roop);
             assert(r2.size() == 47);
             assert(SelfCount::Count() == 47*2);
             using Z = SelfCount;
@@ -447,6 +450,7 @@ int main() {
             assert(r2[31+4]() == 31);
         }
         assert(SelfCount::Count() == 47);
+/*
     }
 
     {
