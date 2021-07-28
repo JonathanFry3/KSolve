@@ -306,6 +306,7 @@ namespace frystl
         }
         // range insert()
         private:
+            // implementation for iterators lacking operator-()
             template <class InpIter>
             iterator insert(
                 const_iterator position, 
@@ -318,6 +319,7 @@ namespace frystl
                     insert(p++, *first++);
                 return const_cast<iterator>(position);
             }
+            // Implementation for iterators with operator-()
             template <class DAIter>
             iterator insert(
                 const_iterator position, 
