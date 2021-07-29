@@ -370,7 +370,10 @@ namespace frystl
         }
         void resize(size_type n)
         {
-            resize(n, value_type());
+            while (n < size())
+                pop_back();
+            while (size() < n)
+                emplace_back(value_type());
         }
         void swap(this_type &x)
         {
