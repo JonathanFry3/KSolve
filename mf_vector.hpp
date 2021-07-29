@@ -17,7 +17,7 @@
 //
 // Performance: Generally similar to std::deque.
 // Adding an element at the end has amortized constant complexity.
-// Random access (operator[]) takes longer that for a std::vector or 
+// Random access (operator[]) takes longer than for a std::vector or 
 // array, as a lookup in the vector of storage block pointers is needed.
 // This extra lookup is far faster if B is a power of 2, as an optimizing
 // compiler will replace the division and remainder operations needed with
@@ -49,8 +49,10 @@
 // Contrast with std::vector:
 // + The memory required by std::vector is three time size() during
 //   reallocation. Mf_vector never requires more than B extra spaces.
+//   The copying of all the data can make the growing of a large
+//   std::vector relatively slower.
 // - Random access (operator[]) is faster with std::vector.
-
+//
 // Contrast with std::deque:
 // + Mf_vector's storage is much more customizable than std::deque's.  
 //   For some mutithreaded algorithms, read operations 
