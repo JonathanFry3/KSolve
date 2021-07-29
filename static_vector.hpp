@@ -10,8 +10,8 @@
 // The functions reserve() and shrink_to_fit() do nothing; the
 // function get_allocator() is not implemented.
 
-#ifndef STATIC_VECTOR
-#define STATIC_VECTOR
+#ifndef FRYSTL_STATIC_VECTOR
+#define FRYSTL_STATIC_VECTOR
 #include <cstdint> // for uint32_t
 #include <cassert>
 #include <iterator>  // std::reverse_iterator
@@ -462,4 +462,4 @@ namespace frystl
         a.swap(b);
     }
 };     // namespace frystl
-#endif // ndef STATIC_VECTOR
+#endif // ndef FRYSTL_STATIC_VECTOR
