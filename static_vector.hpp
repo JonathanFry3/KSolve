@@ -13,11 +13,11 @@
 #ifndef FRYSTL_STATIC_VECTOR
 #define FRYSTL_STATIC_VECTOR
 #include <cstdint> // for uint32_t
-#include <cassert>
 #include <iterator>  // std::reverse_iterator
 #include <algorithm> // for std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
+#include "frystl-assert.hpp"
 
 namespace frystl
 {
@@ -51,7 +51,7 @@ namespace frystl
         template <unsigned C1>
         static_vector(const static_vector<T, C1> &donor) : _size(0)
         {
-            assert(donor.size() <= Capacity);
+            FRYSTL_ASSERT(donor.size() <= Capacity);
             for (auto &m : donor)
                 new (data() + _size++) value_type(m);
         }
@@ -68,7 +68,7 @@ namespace frystl
         template <unsigned C1>
         static_vector(static_vector<T, C1> &&donor) : _size(0)
         {
-            assert(donor.size() <= Capacity);
+            FRYSTL_ASSERT(donor.size() <= Capacity);
             for (auto &m : donor)
                 new (data() + _size++) value_type(std::move(m));
         }
@@ -90,7 +90,7 @@ namespace frystl
         // initializer list constructor
         static_vector(std::initializer_list<value_type> il) : _size(il.size())
         {
-            assert(il.size() <= Capacity);
+            FRYSTL_ASSERT(il.size() <= Capacity);
             pointer p = data();
             for (auto &value : il)
                 new (p++) value_type(value);
@@ -105,7 +105,7 @@ namespace frystl
         }
         void assign(std::initializer_list<value_type> x)
         {
-            assert(x.size() <= capacity());
+            FRYSTL_ASSERT(x.size() <= capacity());
             clear();
             for (auto &a : x)
                 push_back(a);
@@ -152,7 +152,7 @@ namespace frystl
         }
         reference operator[](size_type i)
         {
-            assert(i < _size);
+            FRYSTL_ASSERT(i < _size);
             return data()[i];
         }
         const_reference at(size_type i) const
@@ -162,7 +162,7 @@ namespace frystl
         }
         const_reference operator[](size_type i) const
         {
-            assert(i < _size);
+            FRYSTL_ASSERT(i < _size);
             return data()[i];
         }
         const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(_elem); }
@@ -170,12 +170,12 @@ namespace frystl
         const_reference back() const noexcept { return data()[_size - 1]; }
         reference front() noexcept
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             return data()[0];
         }
         const_reference front() const noexcept
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             return data()[0];
         }
         //
@@ -200,14 +200,14 @@ namespace frystl
         constexpr std::size_t max_size() const noexcept { return Capacity; }
         size_type size() const noexcept { return _size; }
         bool empty() const noexcept { return _size == 0; }
-        void reserve(size_type n) { assert(n <= capacity()); }
+        void reserve(size_type n) { FRYSTL_ASSERT(n <= capacity()); }
         void shrink_to_fit() {}
         //
         //  Modifiers
         //
         void pop_back()
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             _size -= 1;
             end()->~value_type();
         }
@@ -220,7 +220,7 @@ namespace frystl
         }
         iterator erase(const_iterator position) noexcept
         {
-            assert(GoodIter(position + 1));
+            FRYSTL_ASSERT(GoodIter(position + 1));
             iterator x = const_cast<iterator>(position);
             x->~value_type();
             std::move(x + 1, end(), x);
@@ -233,9 +233,9 @@ namespace frystl
             iterator l = const_cast<iterator>(last);
             if (first != last)
             {
-                assert(GoodIter(first + 1));
-                assert(GoodIter(last));
-                assert(first < last);
+                FRYSTL_ASSERT(GoodIter(first + 1));
+                FRYSTL_ASSERT(GoodIter(last));
+                FRYSTL_ASSERT(first < last);
                 for (iterator it = f; it < l; ++it)
                     it->~value_type();
                 std::move(l, end(), f);
@@ -246,8 +246,8 @@ namespace frystl
         template <class... Args>
         iterator emplace(const_iterator position, Args &&...args)
         {
-            assert(_size < Capacity);
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(_size < Capacity);
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
             if (p < end())
@@ -260,7 +260,7 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args... args)
         {
-            assert(_size < Capacity);
+            FRYSTL_ASSERT(_size < Capacity);
             pointer p{data() + _size};
             new (p) value_type(args...);
             ++_size;
@@ -268,7 +268,7 @@ namespace frystl
         // single element insert()
         iterator insert(const_iterator position, const value_type &val)
         {
-            assert(GoodIter(position));
+            FRYSTL_ASSERT(GoodIter(position));
             iterator p = const_cast<iterator>(position);
             MakeRoom(p,1);
             FillCell(p, val);
@@ -278,8 +278,8 @@ namespace frystl
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            assert(_size < Capacity);
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(_size < Capacity);
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
             if (p < end())
@@ -292,8 +292,8 @@ namespace frystl
         // fill insert
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
-            assert(_size + n <= Capacity);
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(_size + n <= Capacity);
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, n);
             // copy val n times into newly available cells
@@ -348,8 +348,8 @@ namespace frystl
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
         {
             size_type n = il.size();
-            assert(_size + n <= Capacity);
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(_size + n <= Capacity);
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, n);
             // copy il into newly available cells

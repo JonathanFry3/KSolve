@@ -60,15 +60,15 @@
 //   and that the read operations do not use end(), so no searches.)
 // - Std::deque is a deque, i.e. elements can efficiently be pushed to
 //   and popped from the front.
-#ifndef MF_VECTOR
-#define MF_VECTOR
+#ifndef FRYSTL_MF_VECTOR
+#define FRYSTL_MF_VECTOR
 
 #include <utility>   // max
-#include <cassert>   // assert
 #include <stdexcept> // std::out_of_range
 #include <iterator>  // std::reverse_iterator
 #include <vector>
 #include <initializer_list>
+#include "frystl-assert.hpp"
 
 namespace frystl
 {
@@ -167,7 +167,7 @@ namespace frystl
             }
             reference operator*() const noexcept
             {
-                assert(_index < _vector->size());
+                FRYSTL_ASSERT(_index < _vector->size());
                 return *_location;
             }
             pointer operator->() const noexcept
@@ -194,7 +194,7 @@ namespace frystl
             }
             Iterator operator-=(std::ptrdiff_t i) noexcept
             {
-                assert(_index > 0);
+                FRYSTL_ASSERT(_index > 0);
                 if (i == 1)
                     Decrement();
                 else if (i == -1)
@@ -206,7 +206,7 @@ namespace frystl
             reference operator[](std::ptrdiff_t i) const noexcept
             {
                 std::ptrdiff_t j = i + _index;
-                assert(0 <= j && j < _vector->size());
+                FRYSTL_ASSERT(0 <= j && j < _vector->size());
                 return *Iterator(_vector, j);
             }
 
@@ -384,7 +384,7 @@ namespace frystl
         }
         void pop_back() noexcept
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             back().~T(); //destruct
             _size -= 1;
             if (_end._offset == 1)
@@ -398,24 +398,24 @@ namespace frystl
         }
         reference back() noexcept
         {
-            assert(_end._offset > 0);
-            assert(_end._block != nullptr);
+            FRYSTL_ASSERT(_end._offset > 0);
+            FRYSTL_ASSERT(_end._block != nullptr);
             return _end._block[_end._offset - 1];
         }
         const_reference back() const noexcept
         {
-            assert(_end._offset > 0);
-            assert(_end._block != nullptr);
+            FRYSTL_ASSERT(_end._offset > 0);
+            FRYSTL_ASSERT(_end._block != nullptr);
             return _end._block[_end._offset - 1];
         }
         reference front() noexcept
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             return (*this)[0];
         }
         const_reference front() const noexcept
         {
-            assert(_size);
+            FRYSTL_ASSERT(_size);
             return (*this)[0];
         }
 
@@ -433,20 +433,20 @@ namespace frystl
         }
         reference operator[](size_type index) noexcept
         {
-            assert(index < _size);
+            FRYSTL_ASSERT(index < _size);
             Locater d(GetLocater(index));
             return d._block[d._offset];
         }
         const_reference operator[](size_type index) const noexcept
         {
-            assert(index < _size);
+            FRYSTL_ASSERT(index < _size);
             Locater d(GetLocater(index));
             return d._block[d._offset];
         }
         iterator erase(const_iterator first, const_iterator last) noexcept
         {
             iterator f = MakeIterator(first);
-            assert(GoodRange(first, last));
+            FRYSTL_ASSERT(GoodRange(first, last));
             if (first < last)
             {
                 iterator l = MakeIterator(last);
@@ -526,13 +526,13 @@ namespace frystl
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            assert(GoodIter(position));
+            FRYSTL_ASSERT(GoodIter(position));
             return emplace(position, std::move(val));
         }
         // fill insert()
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
-            assert(GoodIter(position));
+            FRYSTL_ASSERT(GoodIter(position));
             iterator p = MakeIterator(position);
             MakeRoom(p, n);
             // copy val n times into newly available cells
@@ -555,7 +555,7 @@ namespace frystl
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
         {
             size_type n = il.size();
-            assert(GoodIter(position));
+            FRYSTL_ASSERT(GoodIter(position));
             iterator p = MakeIterator(position);
             MakeRoom(p, n);
             // copy il into newly available cells
@@ -648,7 +648,7 @@ namespace frystl
 
         Locater GetLocater(size_type index) const noexcept
         {
-            assert(index <= _size);
+            FRYSTL_ASSERT(index <= _size);
             if (index == _size)
             {
                 return _end;
@@ -664,7 +664,7 @@ namespace frystl
         // Grow capacity to newSize.  Adjust _end for new size.  Don't touch _size.
         void Grow(size_type newSize)
         {
-            assert(newSize);
+            FRYSTL_ASSERT(newSize);
             while (_blocks.size()*_blockSize < newSize)
             {
                 _end._block = reinterpret_cast<pointer>(new storage_type[_blockSize]);
@@ -692,7 +692,7 @@ namespace frystl
                 _end._block = nullptr;
                 _end._offset = 0;
             }
-            assert((_size + _blockSize - 1) / _blockSize == _blocks.size());
+            FRYSTL_ASSERT((_size + _blockSize - 1) / _blockSize == _blocks.size());
         }
         // Make n spaces available starting at pos.  Shift
         // all elements at and after pos right by n spaces.
@@ -774,4 +774,4 @@ namespace frystl
         a.swap(b);
     }
 }; // namespace frystl
-#endif      // ndef MF_VECTOR
+#endif      // ndef FRYSTL_MF_VECTOR

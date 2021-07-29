@@ -18,7 +18,7 @@
 #include <algorithm> // std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
-#include <cassert>
+#include "frystl-assert.hpp"
 
 namespace frystl
 {
@@ -46,14 +46,17 @@ namespace frystl
         static_deque(size_type count, const_reference value)
             : _begin(FirstSpace() + Capacity - 1 - count / 2), _end(_begin + count)
         {
-            assert(count <= 2 * Capacity - 1);
+            FRYSTL_ASSERT(count <= _trueCap);
             for (pointer p = _begin; p < _end; ++p)
                 new (p) value_type(value);
         }
         // fill c'tor with default value
         static_deque(size_type count)
-            : static_deque(count, value_type())
+            : _begin(FirstSpace() + Capacity - 1 - count / 2), _end(_begin + count)
         {
+            FRYSTL_ASSERT(count <= _trueCap);
+            for (pointer p = _begin; p < _end; ++p)
+                new (p) value_type();
         }
         // range c'tor
         template <class InputIterator,
@@ -77,7 +80,7 @@ namespace frystl
             : _begin(FirstSpace()+Capacity-1-donor.size()/2)
             , _end(_begin)
         {
-            assert(donor.size() <= _trueCap);
+            FRYSTL_ASSERT(donor.size() <= _trueCap);
             for (auto &m : donor)
                 emplace_back(m);
         }
@@ -98,7 +101,7 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            assert(donor.size() <= _trueCap);
+            FRYSTL_ASSERT(donor.size() <= _trueCap);
             for (auto &m : donor)
                 emplace_back(std::move(m));
         }
@@ -107,7 +110,7 @@ namespace frystl
             : _begin(Centered(il.size()))
             , _end(_begin)
         {
-            assert(il.size() <= _trueCap);
+            FRYSTL_ASSERT(il.size() <= _trueCap);
             for (auto &value : il)
                 emplace_back(value);
         }
@@ -132,7 +135,7 @@ namespace frystl
         template <class... Args>
         void emplace_front(Args... args)
         {
-            assert(FirstSpace() < _begin);
+            FRYSTL_ASSERT(FirstSpace() < _begin);
             new (_begin - 1) value_type(args...);
             _begin -= 1;
         }
@@ -142,14 +145,14 @@ namespace frystl
         }
         void pop_front()
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             _begin += 1;
             (_begin - 1)->~value_type(); //destruct
         }
         template <class... Args>
         void emplace_back(Args... args)
         {
-            assert(_end < FirstSpace() + _trueCap);
+            FRYSTL_ASSERT(_end < FirstSpace() + _trueCap);
             new (_end) value_type(args...);
             _end += 1;
         }
@@ -159,19 +162,19 @@ namespace frystl
         }
         void pop_back() noexcept
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             back().~value_type(); //destruct
             _end -= 1;
         }
 
         reference operator[](size_type index) noexcept
         {
-            assert(_begin + index < _end);
+            FRYSTL_ASSERT(_begin + index < _end);
             return *(_begin + index);
         }
         const_reference operator[](size_type index) const noexcept
         {
-            assert(_begin + index < _end);
+            FRYSTL_ASSERT(_begin + index < _end);
             return *(_begin + index);
         }
 
@@ -197,22 +200,22 @@ namespace frystl
         }
         reference front() noexcept
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             return *_begin;
         }
         const_reference front() const noexcept
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             return *_begin;
         }
         reference back() noexcept
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             return *(_end-1);
         }
         const_reference back() const noexcept
         {
-            assert(_begin < _end);
+            FRYSTL_ASSERT(_begin < _end);
             return *(_end-1);
         }
         template <class... Args>
@@ -230,7 +233,7 @@ namespace frystl
         //  Assignment functions
         void assign(size_type n, const_reference val)
         {
-            assert(n <= _trueCap);
+            FRYSTL_ASSERT(n <= _trueCap);
             clear(); 
             _begin = _end = Centered(n);
             while (size() < n)
@@ -238,7 +241,7 @@ namespace frystl
         }
         void assign(std::initializer_list<value_type> x)
         {
-            assert(x.size() <= _trueCap);
+            FRYSTL_ASSERT(x.size() <= _trueCap);
             clear();
             _begin = _end = Centered(x.size());
             for (auto &a : x)
@@ -252,7 +255,7 @@ namespace frystl
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
-                assert(_end < FirstSpace()+_trueCap);
+                FRYSTL_ASSERT(_end < FirstSpace()+_trueCap);
                 push_back(*k);
             }
         }
@@ -266,7 +269,7 @@ namespace frystl
         {
             if (this != &other)
             {
-                assert(other.size() <= _trueCap);
+                FRYSTL_ASSERT(other.size() <= _trueCap);
                 clear();
                 _end = _begin = Centered(other.size());
                 for (auto &o : other)
@@ -287,7 +290,7 @@ namespace frystl
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator b = begin();
             iterator e = end();
             iterator t = MakeRoom(const_cast<iterator>(position), 1);
@@ -300,7 +303,7 @@ namespace frystl
         // fill insert
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator b = begin();
             iterator e = end();
             iterator t = MakeRoom(const_cast<iterator>(position), n);
@@ -354,7 +357,7 @@ namespace frystl
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
         {
             size_type n = il.size();
-            assert(begin() <= position && position <= end());
+            FRYSTL_ASSERT(begin() <= position && position <= end());
             iterator b = begin();
             iterator e = end();
             iterator t = MakeRoom(const_cast<iterator>(position), n);
@@ -375,7 +378,7 @@ namespace frystl
         }
         void resize(size_type n)
         {
-            assert(end() + n-size() <= FirstSpace()+_trueCap);
+            FRYSTL_ASSERT(end() + n-size() <= FirstSpace()+_trueCap);
             while (n < size())
                 pop_back();
             while (size() < n)
@@ -433,9 +436,9 @@ namespace frystl
             iterator result;
             if (first != last)
             {
-                assert(GoodIter(first + 1));
-                assert(GoodIter(last));
-                assert(first < last);
+                FRYSTL_ASSERT(GoodIter(first + 1));
+                FRYSTL_ASSERT(GoodIter(last));
+                FRYSTL_ASSERT(first < last);
                 unsigned nToErase = last-first;
                 for (iterator it = f; it < l; ++it)
                     it->~value_type();
@@ -489,7 +492,7 @@ namespace frystl
         // Update _end.
         iterator MakeRoomAfter(iterator p, size_type n)
         {
-            assert(end()+n <= FirstSpace()+_trueCap);
+            FRYSTL_ASSERT(end()+n <= FirstSpace()+_trueCap);
             iterator src = end();
             iterator tgt = src+n;
             // Fill the uninitialized target cells by move construction
@@ -507,7 +510,7 @@ namespace frystl
         {
             iterator src = begin();
             iterator tgt = src-n;
-            assert(FirstSpace() <= tgt);
+            FRYSTL_ASSERT(FirstSpace() <= tgt);
             // fill the uninitialized target cells by move construction
             while (src < p && tgt < begin())
                 new (tgt++) value_type(std::move(*(src++)));
@@ -535,7 +538,7 @@ namespace frystl
         template <class RAIter>
         void Center(RAIter begin, RAIter end, std::random_access_iterator_tag)
         {
-            assert(end-begin <= _trueCap);
+            FRYSTL_ASSERT(end-begin <= _trueCap);
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
