@@ -4,16 +4,18 @@
 // The first elements added to it are placed in the middle, and it can
 // expand in either direction. The capacity specified in its definition
 // is the capacity in either direction, so if its capacity is x and one
-// element has been added (either way). x-1 more elements may be pushed
-// to the front and x-1 elements may be pushed to the back.
+// element has been added (either way), x-1 more elements may be pushed
+// to the front and x-1 more elements may be pushed to the back.
 //
-// Fill constructors and initializer list constructors center the
-// elements within the available space.  Range constructors fill
-// from the center toward the back. After the default constructor
-// is executed, the next insertion will be to the center cell.
-
-#include <iterator>  // std::reverse_iterator
-#include <algorithm> // for std::move...(), equal(), lexicographical_compare()
+// Whenever possible, constructors and assignment functions (assign() and 
+// operator=()) center the data in the available space.  The exceptions
+// are range operations using iterators that do not support a difference
+// function (operator-()); in those cases, the first element is in
+// the center space and the others follow.
+#ifndef FRYSTL_STATIC_DEQUE
+#define FRYSTL_STATIC_DEQUE
+#include <iterator>  // std::reverse_iterator, iterator_traits, input_iterator_tag, random_access_iterator_tag
+#include <algorithm> // std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
 #include <cassert>
@@ -594,4 +596,5 @@ namespace frystl
     {
         a.swap(b);
     }
-}
+}       // namespace frystl
+#endif  // ndef FRYSTL_STATIC_DEQUE
