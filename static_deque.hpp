@@ -364,7 +364,26 @@ namespace frystl
             }
             return t;
         }
-        iterator begin() noexcept
+        void resize(size_type n, const value_type &val)
+        {
+            while (n < size())
+                pop_back();
+            while (size() < n)
+                push_back(val);
+        }
+        void resize(size_type n)
+        {
+            assert(end() + n-size() <= FirstSpace()+_trueCap);
+            while (n < size())
+                pop_back();
+            while (size() < n)
+                emplace_back(value_type());
+        }
+        void swap(this_type &x)
+        {
+            std::swap(*this, x);
+        }
+    iterator begin() noexcept
         {
             return _begin;
         }

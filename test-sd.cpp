@@ -450,10 +450,7 @@ int main() {
             assert(r2[31+4]() == 31);
         }
         assert(SelfCount::Count() == 47);
-/*
-    }
-
-    {
+    }{
         // resize()
         assert(SelfCount::Count() == 0);
         static_deque<SelfCount, 99> v99;
@@ -476,7 +473,6 @@ int main() {
         assert(SelfCount::Count() == 56);
         assert(v99[55]() == 0);
     }{
-        /*
         // swap() member
         assert(SelfCount::Count() == 0);
         static_deque<SelfCount, 99> va, vc;
@@ -519,7 +515,6 @@ int main() {
         assert(SelfCount::Count() == 2*(19+57));
         assert(vd == va);
         assert(vc == vb);
-        */
     }{
         // comparison functions
         static_deque<int,73> v0;
