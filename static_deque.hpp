@@ -1,6 +1,9 @@
-// static_deque.hpp - implements fixed-capacity deque-like template class
+// static_deque.hpp - defines a fixed-capacity deque-like template class
 //
-// It implements (part of) the deque interface using a fixed-size array.
+// This file defines static_deque<value_type, Capacity>, where value_type
+// is the type of the elements and Capacity specifies its capacity,
+// using a fixed-size array.
+//
 // The first elements added to it are placed in the middle, and it can
 // expand in either direction. The capacity specified in its definition
 // is the capacity in either direction, so if its capacity is x and one
@@ -12,6 +15,18 @@
 // are range operations using iterators that do not support a difference
 // function (operator-()); in those cases, the first element is in
 // the center space and the others follow.
+//
+// The template implements the semantics of std::deque with the following
+// exceptions:
+//      shrink_to_fit() does nothing.
+//      get_allocator(), max_size() are not implemented.
+//      
+// Note that this template will not work for implementing queues, even
+// queues that remain quite small, because push_back() moves the end
+// back and pop_front() moves the front back.  After Capacity push_back()
+// calls with no pop_back() calls, the deque will overflow its space
+// even if its size() is much less than its Capacity.
+//
 #ifndef FRYSTL_STATIC_DEQUE
 #define FRYSTL_STATIC_DEQUE
 #include <iterator>  // std::reverse_iterator, iterator_traits, input_iterator_tag, random_access_iterator_tag
@@ -388,6 +403,8 @@ namespace frystl
         {
             std::swap(*this, x);
         }
+        void shrink_to_fit()
+        {}                  // does nothing
     iterator begin() noexcept
         {
             return _begin;
