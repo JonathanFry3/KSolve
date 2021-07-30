@@ -20,6 +20,8 @@
 // exceptions:
 //      shrink_to_fit() does nothing.
 //      get_allocator(), max_size() are not implemented.
+//      The function data() is added.  Like std::vector::data(), it
+//          returns a pointer to the front of the memory used.
 //      
 // Note that this template will not work for implementing queues, even
 // queues that remain quite small, because push_back() moves the end
@@ -54,12 +56,12 @@ namespace frystl
 
         // default c'tor
         static_deque() noexcept
-            : _begin(FirstSpace() + Capacity - 1), _end(FirstSpace() + Capacity - 1)
+            : _begin(Centered(1)), _end(_begin)
         {
         }
         // fill c'tor with explicit value
         static_deque(size_type count, const_reference value)
-            : _begin(FirstSpace() + Capacity - 1 - count / 2), _end(_begin + count)
+            : _begin(Centered(count)), _end(_begin + count)
         {
             FRYSTL_ASSERT(count <= _trueCap);
             for (pointer p = _begin; p < _end; ++p)
@@ -67,22 +69,26 @@ namespace frystl
         }
         // fill c'tor with default value
         static_deque(size_type count)
-            : _begin(FirstSpace() + Capacity - 1 - count / 2), _end(_begin + count)
+            : _begin(Centered(count)), _end(_begin + count)
         {
             FRYSTL_ASSERT(count <= _trueCap);
             for (pointer p = _begin; p < _end; ++p)
                 new (p) value_type();
         }
         // range c'tor
-        template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
-        static_deque(InputIterator begin, InputIterator end)
-            : static_deque()
+        template <class Iter,
+                  typename = std::_RequireInputIter<Iter>> // TODO: not portable
+        static_deque(Iter begin, Iter end)
         {
-            for (InputIterator k = begin; k != end; ++k)
-                emplace_back(*k);
+            Center(begin,end,
+                typename std::iterator_traits<Iter>::iterator_category());
+            for (Iter k = begin; k != end; ++k) {
+                FRYSTL_ASSERT(_end < FirstSpace()+_trueCap);
+                push_back(*k);
+            }
         }
         // copy constructors
+
         static_deque(const this_type &donor)
             : _begin(Centered(donor.size()))
             , _end(_begin)
@@ -92,7 +98,7 @@ namespace frystl
         }
         template <unsigned C1>
         static_deque(const static_deque<value_type, C1> &donor)
-            : _begin(FirstSpace()+Capacity-1-donor.size()/2)
+            : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             FRYSTL_ASSERT(donor.size() <= _trueCap);
@@ -131,13 +137,12 @@ namespace frystl
         }
         ~static_deque() noexcept
         {
-            clear();
+            DestructAll();
         }
         void clear() noexcept
         {
-            for (reference elem : *this)
-                elem.~value_type(); // destruct all elements
-            _begin = _end = FirstSpace() + Capacity - 1;
+            DestructAll();
+            _begin = _end = Centered(0);
         }
         size_type size() const noexcept
         {
@@ -249,7 +254,7 @@ namespace frystl
         void assign(size_type n, const_reference val)
         {
             FRYSTL_ASSERT(n <= _trueCap);
-            clear(); 
+            DestructAll(); 
             _begin = _end = Centered(n);
             while (size() < n)
                 push_back(val);
@@ -257,16 +262,16 @@ namespace frystl
         void assign(std::initializer_list<value_type> x)
         {
             FRYSTL_ASSERT(x.size() <= _trueCap);
-            clear();
+            DestructAll();
             _begin = _end = Centered(x.size());
             for (auto &a : x)
-                push_back(a);
+                emplace_back(a);
         }
         template <class Iter,
                   typename = std::_RequireInputIter<Iter>> // TODO: not portable
         void assign(Iter begin, Iter end)
         {
-            clear();
+            DestructAll();
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
@@ -285,7 +290,7 @@ namespace frystl
             if (this != &other)
             {
                 FRYSTL_ASSERT(other.size() <= _trueCap);
-                clear();
+                DestructAll();
                 _end = _begin = Centered(other.size());
                 for (auto &o : other)
                     new (_end++) value_type(std::move(o));
@@ -411,7 +416,6 @@ namespace frystl
         }
         iterator end()
         {
-
             return _end;
         }
         const_iterator begin() const noexcept
@@ -448,14 +452,14 @@ namespace frystl
         }
         iterator erase(const_iterator first, const_iterator last)
         {
-            const iterator f = const_cast<iterator>(first);
-            const iterator l = const_cast<iterator>(last);
-            iterator result;
+            iterator result = const_cast<iterator>(last);
             if (first != last)
             {
-                FRYSTL_ASSERT(GoodIter(first + 1));
-                FRYSTL_ASSERT(GoodIter(last));
                 FRYSTL_ASSERT(first < last);
+                FRYSTL_ASSERT(Dereferencable(first));
+                FRYSTL_ASSERT(Dereferencable(last-1));
+                const iterator f = const_cast<iterator>(first);
+                const iterator l = const_cast<iterator>(last);
                 unsigned nToErase = last-first;
                 for (iterator it = f; it < l; ++it)
                     it->~value_type();
@@ -499,10 +503,10 @@ namespace frystl
             if (!cond)
                 throw std::out_of_range("static_deque range error");
         }
-        // returns true iff it-1 can be dereferenced.
-        bool GoodIter(const const_iterator &it)
+        // returns true iff iter can be dereferenced.
+        bool Dereferencable(const const_iterator &iter)
         {
-            return begin() < it && it <= end();
+            return begin() <= iter && iter < end();
         }
         // Slide cells at and behind p to the back by n spaces.
         // Return an iterator pointing to the first cleared cell (p).
@@ -548,7 +552,7 @@ namespace frystl
         }
         // Return a pointer to the front end of a range of n cells centered
         // in the space.
-        pointer Centered(unsigned n)
+        constexpr pointer Centered(unsigned n)
         {
             return FirstSpace()+Capacity-1-n/2;
         }
@@ -561,7 +565,7 @@ namespace frystl
         template <class InpIter>
         void Center(InpIter begin, InpIter end, std::input_iterator_tag)
         {
-            // do nothing
+            _begin = _end = Centered(0);
         }
         template <class... Args>
         void FillCell(iterator b, iterator e, iterator pos, Args... args)
@@ -573,7 +577,11 @@ namespace frystl
                 // fill unoccupied cell in place by constructon
                 new (pos) value_type(args...);
         }
-
+        void DestructAll() noexcept
+        {
+            for (reference elem : *this)
+                elem.~value_type(); // destruct all elements
+        }
     };
     //
     //*******  Non-member overloads
