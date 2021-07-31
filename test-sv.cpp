@@ -1,5 +1,6 @@
 // Test driver for static_vector
 
+#define FRYSTL_DEBUG
 #include "static_vector.hpp"
 #include "SelfCount.hpp"
 #include <vector>

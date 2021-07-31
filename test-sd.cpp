@@ -1,5 +1,6 @@
 // Test driver for static_deque
 
+#define FRYSTL_DEBUG
 #include "static_deque.hpp"
 #include "SelfCount.hpp"
 #include <vector>

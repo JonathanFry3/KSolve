@@ -1,5 +1,6 @@
 // Test driver for mf_vector
 
+#define FRYSTL_DEBUG
 #include "mf_vector.hpp"
 #include "SelfCount.hpp"
 #include <vector>
