@@ -10,7 +10,8 @@
 			//	"-m32",
 			//	"-pg",
 				"-O3",
-			//	"-DNDEBUG",
+				"-DFRYSTL_DEBUG",
+				//	"-DNDEBUG",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -34,6 +35,7 @@
 			"label": "C/C++:  g++ build and run unittests",
 			"command": "g++",
 			"args": [
+				"-DFRYSTL_DEBUG",
 				"-g",
 				"-pthread",
 				"Game.cpp",
@@ -58,7 +60,6 @@
 			"label": "C/C++:  g++ build and run test-sv",
 			"command": "g++",
 			"args": [
-				"-DFRYSTL_DEBUG",
 				"-g",
 				"test-sv.cpp",
 				"-o","${workspaceFolder}/test-sv"
@@ -80,7 +81,6 @@
 			"label": "C/C++:  g++ build and run test-sd",
 			"command": "g++",
 			"args": [
-				"-DFRYSTL_DEBUG",
 				"-g",
 				"test-sd.cpp",
 				"-o","${workspaceFolder}/test-sd"
@@ -102,7 +102,6 @@
 			"label": "C/C++:  g++ build and run test-mfv",
 			"command": "g++",
 			"args": [
-				"-DFRYSTL_DEBUG",
 				"-g",
 				"test-mfv.cpp",
 				"-o","${workspaceFolder}/test-mfv"
