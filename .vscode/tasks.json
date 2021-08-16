@@ -126,7 +126,7 @@
 				"-g",
 				"-pthread",
 				"-O3",
-				"-DNDEBUG"		// comment out to activate assert()
+				"-DNDEBUG",		// comment out to activate assert()
 			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",
