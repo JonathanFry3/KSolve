@@ -327,8 +327,10 @@ namespace frystl
                 DAIter last,
                 std::random_access_iterator_tag)
             {
+                FRYSTL_ASSERT(first <= last);
                 iterator p = const_cast<iterator>(position);
                 int n = last-first;
+                FRYSTL_ASSERT(n <= Capacity);
                 MakeRoom(p,n);
                 iterator result = p;
                 while (first != last) {
