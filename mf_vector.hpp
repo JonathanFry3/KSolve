@@ -49,13 +49,13 @@
 // Contrast with std::vector:
 // + The memory required by std::vector is three time size() during
 //   reallocation. Mf_vector never requires more than B extra spaces.
-//   The copying of all the data can make the growing of a large
+// + The copying of all the data can make the growing of a large
 //   std::vector relatively slower.
 // - Random access (operator[]) is faster with std::vector.
 //
 // Contrast with std::deque:
 // + Mf_vector's storage is much more customizable than std::deque's.  
-//   For some mutithreaded algorithms, read operations 
+// + For some mutithreaded algorithms, read operations 
 //   do not need any synchronization if the mf_vector used never 
 //   reallocates the vector of block pointers. (Those are algorithms where
 //   the only write operations are appending elements to the back
@@ -75,7 +75,7 @@
 namespace frystl
 {
     template <
-        class T,
+        class T,           // Value type
         unsigned BlockSize // Number of T elements per block.
                            // Powers of 2 are faster.
         = std::max<unsigned>(4096 / sizeof(T), 16),
@@ -83,12 +83,12 @@ namespace frystl
     class mf_vector
     {
     public:
-        typedef const T *const_pointer;
-        typedef T value_type;
-        typedef T &reference;
-        typedef const T &const_reference;
-        typedef T *pointer;
-        typedef size_t size_type;
+        using value_type        = T;
+        using reference         = T&;
+        using pointer           = T*;
+        using const_pointer     = const T*;
+        using const_reference   = const T&;
+        using size_type         = size_t;
 
     private:
         struct Locater
@@ -106,18 +106,18 @@ namespace frystl
         struct Iterator
         {
             using iterator_category = std::random_access_iterator_tag;
-            using value_type = ValueType;
-            using difference_type = std::ptrdiff_t;
-            using pointer = value_type *;
-            using reference = value_type &;
+            using value_type        = ValueType;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = value_type *;
+            using reference         = value_type &;
             Iterator() = delete;
             Iterator(const Iterator &) = default;
-            // implicit conversion operator iterator -> const_iterator
+            // implicit conversion from iterator to const_iterator
             operator Iterator<ValueType const>()
             {
                 return Iterator<ValueType const>(_vector, _index, _offset, _location);
             }
-            Iterator operator++() noexcept  // prefix increment, as in ++iter
+            Iterator& operator++() noexcept  // prefix increment, as in ++iter
             {
                 Increment();
                 return *this;
@@ -128,7 +128,7 @@ namespace frystl
                 Increment();
                 return result;
             }
-            Iterator operator--() noexcept  // prefix decrement, as in --iter;
+            Iterator& operator--() noexcept  // prefix decrement, as in --iter;
             {
                 Decrement();
                 return *this;
@@ -141,6 +141,7 @@ namespace frystl
             }
             bool operator==(const Iterator &other) const noexcept
             {
+                FRYSTL_ASSERT(_vector == other._vector);
                 return _index == other._index;
             }
             bool operator!=(const Iterator &other) const noexcept
@@ -149,6 +150,7 @@ namespace frystl
             }
             bool operator<(const Iterator &other) const noexcept
             {
+                FRYSTL_ASSERT(_vector == other._vector);
                 return _index < other._index;
             }
             bool operator<=(const Iterator &other) const noexcept
@@ -165,6 +167,7 @@ namespace frystl
             }
             int operator-(const Iterator &o) const noexcept
             {
+                FRYSTL_ASSERT(_vector == o._vector);
                 return _index - o._index;
             }
             reference operator*() const noexcept
@@ -186,6 +189,7 @@ namespace frystl
             }
             Iterator operator+=(std::ptrdiff_t i) noexcept
             {
+                FRYSTL_ASSERT(_index+i > 0);
                 if (i == 1)
                     Increment();
                 else if (i == -1)
@@ -196,7 +200,7 @@ namespace frystl
             }
             Iterator operator-=(std::ptrdiff_t i) noexcept
             {
-                FRYSTL_ASSERT(_index > 0);
+                FRYSTL_ASSERT(_index-i > 0);
                 if (i == 1)
                     Decrement();
                 else if (i == -1)
@@ -222,6 +226,7 @@ namespace frystl
                 : _vector(vector)
                 , _index(index)
             {
+                FRYSTL_ASSERT(index <= vector->size());
                 Locater l = vector->GetLocater(index);
                 _offset = l._offset;
                 _location = l._block+l._offset;
