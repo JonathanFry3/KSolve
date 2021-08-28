@@ -309,11 +309,11 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     //
     // It's not quite that simple with more than one thread, but that's the idea.
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
-    for (nTries = 0; result == 0 && nTries < 5; nTries+=1) {
+    for (nTries = 0; result == 0 && nTries < 5; ++nTries) {
         {
             SharedGuard marilyn(_shared._fringeMutex);
             size = _shared._fringe.size();
-            for (offset = 0; offset < size && _shared._fringe[offset].empty(); offset += 1) {}
+            for (offset = 0; offset < size && _shared._fringe[offset].empty(); ++offset) {}
         }
         if (offset < size) {
             Guard methuselah(_shared._fringeStackMutexes[offset]);
@@ -330,9 +330,11 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     }
     if (result) {
         // Follow the links to recover all of its preceding moves in reverse order.
+        // Note that this operation requires no guard on _shared._moveTree only if 
+        // the block vector in that structure never needs reallocation.
         _currentSequence.clear();
         for (NodeX node = _leafIndex; node != -1U; node = _shared._moveTree[node]._prevNode){
-            const Move mv = _shared._moveTree[node]._move;
+            const Move &mv = _shared._moveTree[node]._move;
             _currentSequence.push_front(mv);
         }
     }
@@ -374,7 +376,7 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
         if (ABC_Move(*i,movesMade)) {
             availableMoves.erase(i);
         } else {
-            i += 1;
+            ++i;
         }
     }
     return availableMoves;
