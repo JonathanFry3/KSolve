@@ -55,7 +55,8 @@
         "iomanip": "cpp",
         "shared_mutex": "cpp",
         "forward_list": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "csignal": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"
