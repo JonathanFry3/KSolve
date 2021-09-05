@@ -63,7 +63,8 @@
 				"-g",
 				"test-sv.cpp",
 				"-o","${workspaceFolder}/test-sv"
-				,"&&","${workspaceFolder}/test-sv"
+				,"&&","(","${workspaceFolder}/test-sv"
+				,"||","echo","FAIL",")"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -84,7 +85,8 @@
 				"-g",
 				"test-sd.cpp",
 				"-o","${workspaceFolder}/test-sd"
-				,"&&","${workspaceFolder}/test-sd"
+				,"&&","(","${workspaceFolder}/test-sd"
+				,"||","echo","FAIL",")"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -105,7 +107,8 @@
 				"-g",
 				"test-mfv.cpp",
 				"-o","${workspaceFolder}/test-mfv"
-				,"&&","${workspaceFolder}/test-mfv"
+				,"&&","(","${workspaceFolder}/test-mfv"
+				,"||","echo","FAIL",")"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
