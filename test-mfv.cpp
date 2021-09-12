@@ -1,10 +1,10 @@
 // Test driver for mf_vector
 
 #define FRYSTL_DEBUG
-#include "mf_vector.hpp"
-#include "SelfCount.hpp"
 #include <vector>
 #include <list>
+#include "mf_vector.hpp"
+#include "SelfCount.hpp"
 
 using namespace frystl;
 
@@ -51,12 +51,13 @@ int main() {
         // fill
         {
             mf_vector<int,8> i20(17);
-            assert(i20.capacity() == 64);
+            assert(i20.capacity() == 8*8);
             assert(i20.size() == 17);
             for (int k:i20) assert(k==0);
+            mf_vector<int,8>::const_iterator x = i20.begin();
 
             mf_vector<int,16,3> i23(17, -6);
-            assert(i23.capacity() == 48);
+            assert(i23.capacity() == 16*3);
             assert(i23.size() == 17);
             for (int k:i23) assert(k==-6);
         }
@@ -64,10 +65,13 @@ int main() {
         assert(SelfCount::OwnerCount() == 0);
         std::list<int> li;
         for (int i = 0; i < 30; ++i) li.push_back(i-13);
-        mf_vector<SelfCount,95> sv(li.begin(),li.end());
+        mf_vector<SelfCount,30> sv(li.begin(),li.end());
         assert(SelfCount::OwnerCount() == 30);
         assert(sv.size() == 30);
         for (int i = 0; i < 30; ++i) assert(sv[i]() == i-13);
+        for (int i = 0; i < 30; ++i) assert(*(sv.begin()+i) == i-13);
+        for (int i = 0; i < 30; ++i) 
+            assert(*(sv.end()-(30-i)) == i-13);
         {
             // copy
             assert(SelfCount::OwnerCount() == 30);
@@ -220,8 +224,9 @@ int main() {
     assert(SelfCount::OwnerCount() == 0);
     {
         // Operation on iterators
-        using It = mf_vector<int,5>::const_iterator;
-        mf_vector<int, 5> vec({0,1,2,3,4,5,6,7});
+        using Vec = mf_vector<int,5>;
+        using It  = Vec::const_iterator;
+        Vec vec({0,1,2,3,4,5,6,7});
         It i1 = vec.cbegin()+3;
         assert(*i1 == 3);
         assert(*(i1-2) == 1);
