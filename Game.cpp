@@ -457,7 +457,7 @@ QMoves Game::AvailableMoves() noexcept
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
                         result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
-                    } else {
+                    } else if (moveCount < upCount || upCount < fromPile.Size()) {
                         const Card exposed = *(fromCds.end()-moveCount-1);
                         if (exposed.Rank() == _foundation[exposed.Suit()].Size()){
                             // This move will expose a card that can be moved to 
