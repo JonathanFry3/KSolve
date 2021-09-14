@@ -372,8 +372,9 @@ namespace frystl
         void emplace_back(Args... args)
         {
             Grow(_size + 1);
-            iterator e = end() - 1;
+            iterator e = End();
             new (e._current) value_type(args...);
+            ++_size;
         }
         template <class... Args>
         iterator emplace(const_iterator position, Args... args)
@@ -386,8 +387,9 @@ namespace frystl
         void push_back(const_reference t)
         {
             Grow(_size + 1);
-            iterator e = end() - 1;
+            iterator e = End();
             new (e.operator->()) value_type(t);
+            ++_size;
         }
         void pop_back() noexcept
         {
@@ -642,7 +644,7 @@ namespace frystl
         std::vector<pointer> _blocks;
         size_type _size;
 
-        // Grow capacity to newSize.  Update _size.
+        // Grow capacity to newSize..
         void Grow(size_type newSize)
         {
             FRYSTL_ASSERT(newSize);
@@ -652,9 +654,8 @@ namespace frystl
                 _blocks.push_back(_blocks.back());
                 *(_blocks.end() - 2) = b;
             }
-            _size = newSize;
         }
-        // Release any no-longer-needed storage blocks.  Adjust _end to new _size;
+        // Release any no-longer-needed storage blocks.
         // Expects _size already reflects the value(s) just erased.
         void Shrink() noexcept
         {
@@ -677,13 +678,15 @@ namespace frystl
         {
             iterator oldEnd = end();
             Grow(_size + n);
-            std::move_backward(pos, oldEnd, end());
+            std::move_backward(pos, oldEnd, begin()+_size + n);
+            _size += n;
         }
         void MovePushBack(T&& value)
         {
             Grow(_size + 1);
-            iterator e = end() - 1;
+            iterator e = End();
             new (e.operator->()) T(std::move(value));
+            ++_size;
         }
         iterator Begin() const noexcept
         {
