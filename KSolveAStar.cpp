@@ -1,7 +1,7 @@
 #include "KSolveAStar.hpp"
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
-#include <shared_mutex>		// for std::shared_mutex, std::shared_lock
+#include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h" 
 #include "mf_vector.hpp"
