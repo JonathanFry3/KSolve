@@ -157,16 +157,18 @@ namespace frystl
         {
             FRYSTL_ASSERT(FirstSpace() < _begin);
             new (_begin - 1) value_type(args...);
-            _begin -= 1;
+            --_begin;
         }
         void push_front(const_reference t)
         {
-            emplace_front(t);
+            FRYSTL_ASSERT(FirstSpace() < _begin);
+            new (_begin - 1) value_type(t);
+            --_begin;
         }
         void pop_front()
         {
             FRYSTL_ASSERT(_begin < _end);
-            _begin += 1;
+            ++_begin;
             (_begin - 1)->~value_type(); //destruct
         }
         template <class... Args>
@@ -174,17 +176,19 @@ namespace frystl
         {
             FRYSTL_ASSERT(_end < FirstSpace() + _trueCap);
             new (_end) value_type(args...);
-            _end += 1;
+            ++_end;
         }
         void push_back(const_reference t) noexcept
         {
-            emplace_back(t);
+            FRYSTL_ASSERT(_end < FirstSpace() + _trueCap);
+            new (_end) value_type(t);
+            ++_end;
         }
         void pop_back() noexcept
         {
             FRYSTL_ASSERT(_begin < _end);
             back().~value_type(); //destruct
-            _end -= 1;
+            --_end;
         }
 
         reference operator[](size_type index) noexcept
