@@ -130,7 +130,7 @@
 				"-pthread",
 				"-O3",
 			//	"-DNDEBUG",		// comment out to activate assert()
-				"-DFRYSTL_DEBUG"// uncomment to activate FRYSTL_ASSERT()
+				"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
 			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",

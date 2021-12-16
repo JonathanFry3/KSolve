@@ -40,7 +40,7 @@ class SharedMoveStorage
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
-    mf_vector<LeafNodeStack> _fringe;
+    mf_vector<LeafNodeStack,128> _fringe;
     SharedMutex _fringeMutex;
     mf_vector<Mutex,128> _fringeStackMutexes;
     unsigned _startStackIndex;
