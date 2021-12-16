@@ -146,6 +146,9 @@ struct WorkerState {
     void CheckForMinSolution();
     bool IsShortPathToState(unsigned minMoveCount);
     QMoves FilteredAvailableMoves()noexcept;
+    void CompleteSolution();
+private:
+    void PlayTopOnMatch(unsigned rank, Pile& pile);
 };
 unsigned WorkerState::k_minSolutionCount(-1);
 Mutex WorkerState::k_minSolutionMutex;
@@ -189,10 +192,11 @@ KSolveAStarResult KSolveAStar(
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._minSolution.size()) { 
+    } else if (solution.size()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
+        state.CompleteSolution();
     } else {
         outcome = state._closedList.size() >= maxStates 
                 ? GaveUp
@@ -412,4 +416,42 @@ bool WorkerState::IsShortPathToState(unsigned moveCount)
         moveCount 					// c'tor run behind lock when key not found
     );
     return isNewKey || valueChanged;
+}
+
+// The minimum solution is often left incomplete, as it can be 
+// shown that a solution exists in K_minSolutionCount moves that
+// this function can execute.  This version will finish the game
+// iff the stock, waste, and all tableau piles are in ascending
+// order by rank, from back to front.
+void WorkerState::CompleteSolution()
+{
+    _game.Deal();
+    for (auto move:_minSolution) {
+        _game.MakeMove(move);
+    }
+    for (unsigned rank = Ace; rank <= King; ++rank) {
+        PlayTopOnMatch(rank,_game.WastePile());
+        PlayTopOnMatch(rank, _game.StockPile());
+        for (auto & pile: _game.Tableau()) {
+            PlayTopOnMatch(rank, pile);
+        }
+    }
+    assert(_game.GameOver());
+    assert(k_minSolutionCount == MoveCount(_minSolution));
+}
+
+// If the top card in a pile has the given rank, add a move
+// to _minSolution that moves that card to its foundation pile, 
+// and make that move, which pops that top card.
+void WorkerState::PlayTopOnMatch(unsigned rank, Pile& pile)
+{
+    if (!pile.Empty()){
+        const Card top = pile.Top();
+        if (top.Rank() == rank) {
+            const Pile& toPile = _game.Foundation()[top.Suit()];
+            assert(toPile.Size() == rank);
+            _minSolution.emplace_back(pile.Code(),toPile.Code(),1,pile.UpCount());
+            _game.MakeMove(_minSolution.back());
+        }
+    }
 }

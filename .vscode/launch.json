@@ -31,17 +31,17 @@
                 }
             ]
         },
-        //
+        */
         {
             "name": "Launch ran",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ran",
             "args": [
-                "-e", "1"
-                ,"-t","4"
-                ,"-s","4"
-            //    ,"-st","10000000"
+                "--seed", "29347",
+                "--incr", "2349",  
+                "--end", "3", 
+                "--states", "10000000"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -94,7 +94,7 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        */
+        //
 		{
 			"name": "(gdb) Launch test-mfv",
             "type": "cppdbg",
@@ -108,6 +108,6 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        //
+        */
     ]
 }
