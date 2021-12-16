@@ -35,12 +35,12 @@ class SharedMoveStorage
     mf_vector<MoveNode,16*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    typedef std::vector<NodeX> LeafNodeStack;
+    typedef mf_vector<NodeX> LeafNodeStack;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
-    std::vector<LeafNodeStack> _fringe;
+    mf_vector<LeafNodeStack,128> _fringe;
     SharedMutex _fringeMutex;
     mf_vector<Mutex,128> _fringeStackMutexes;
     unsigned _startStackIndex;

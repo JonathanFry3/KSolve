@@ -56,7 +56,17 @@
         "shared_mutex": "cpp",
         "forward_list": "cpp",
         "list": "cpp",
-        "csignal": "cpp"
+        "csignal": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "cinttypes": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "map": "cpp",
+        "unordered_set": "cpp",
+        "ranges": "cpp",
+        "scoped_allocator": "cpp",
+        "stop_token": "cpp"
     },
     "terminal.explorerKind": "external",
     "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe"
