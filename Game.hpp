@@ -215,8 +215,8 @@ private:
 
 public:
     Move() = default;
-    // Construct a talon move.  Represents 'nMoves'-1 draws
-    // Their cumulative effect is to draw 'draw' cards (may be negative)
+    // Construct a talon move. Counts as nMoves moves.
+    // The cumulative effect is to draw 'draw' cards (may be negative)
     // from stock. One card is then moved from the waste pile to the "to" pile.
     // All talon moves, and only talon moves, are from the stock pile.
     Move(unsigned to, unsigned nMoves, int draw) noexcept
@@ -355,6 +355,7 @@ class Game
     std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
     bool NeedKingSpace() const noexcept;
+    bool NonDescending(const Pile& p) const noexcept;
 
 public:
     Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24, unsigned recyleLimit=-1);
@@ -380,6 +381,7 @@ public:
     void  MakeMove(Move mv) noexcept;
     void  UnMakeMove(Move mv) noexcept;
     unsigned MinimumMovesLeft() const noexcept;
+    bool MinMoveSeqExists() const noexcept;
     void MakeMove(const XMove& xmv) noexcept;
     unsigned MinFoundationPileSize() const noexcept;
     bool GameOver() const noexcept;

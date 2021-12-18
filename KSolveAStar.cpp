@@ -228,12 +228,10 @@ void Worker(
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
-            if (availableMoves.empty()) {
-                if (state._game.GameOver()) {
-                    // We have a solution.  See if it is a new champion
-                    state.CheckForMinSolution();
-                }
-            } else {
+            if (state._game.MinMoveSeqExists()) {
+                // We have a solution.  See if it is a new champion
+                state.CheckForMinSolution();
+            } else if (!availableMoves.empty()) {
                 const unsigned movesMadeCount = 
                     MoveCount(state._moveStorage.MoveSequence());
 
@@ -389,11 +387,11 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
 void WorkerState::CheckForMinSolution() {
-    const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
+    const unsigned nmv = MoveCount(_moveStorage.MoveSequence())
+                         + _game.MinimumMovesLeft();
     {
         Guard karen(k_minSolutionMutex);
-        const unsigned x = _minSolution.size();
-        if (x == 0 || nmv < k_minSolutionCount) {
+        if (nmv < k_minSolutionCount) {
             _minSolution = _moveStorage.MovesVector();
             k_minSolutionCount = nmv;
         }
@@ -419,19 +417,19 @@ bool WorkerState::IsShortPathToState(unsigned moveCount)
 }
 
 // The minimum solution is often left incomplete, as it can be 
-// shown that a solution exists in K_minSolutionCount moves that
+// shown that a solution exists in k_minSolutionCount moves that
 // this function can execute.  This version will finish the game
-// iff the stock, waste, and all tableau piles are in ascending
+// iff the stock, waste, and all tableau piles are in nondescending
 // order by rank, from back to front.
 void WorkerState::CompleteSolution()
 {
     _game.Deal();
-    for (auto move:_minSolution) {
+    for (auto move: _minSolution) {
         _game.MakeMove(move);
     }
     for (unsigned rank = Ace; rank <= King; ++rank) {
-        PlayTopOnMatch(rank,_game.WastePile());
         PlayTopOnMatch(rank, _game.StockPile());
+        PlayTopOnMatch(rank, _game.WastePile());
         for (auto & pile: _game.Tableau()) {
             PlayTopOnMatch(rank, pile);
         }
@@ -443,15 +441,18 @@ void WorkerState::CompleteSolution()
 // If the top card in a pile has the given rank, add a move
 // to _minSolution that moves that card to its foundation pile, 
 // and make that move, which pops that top card.
-void WorkerState::PlayTopOnMatch(unsigned rank, Pile& pile)
+void WorkerState::PlayTopOnMatch(const unsigned rank, Pile& pile)
 {
-    if (!pile.Empty()){
-        const Card top = pile.Top();
-        if (top.Rank() == rank) {
-            const Pile& toPile = _game.Foundation()[top.Suit()];
-            assert(toPile.Size() == rank);
+    while (!pile.Empty()){
+        const Card top = pile.Back();
+        if (top.Rank() != rank) return;
+        const Pile& toPile = _game.Foundation()[top.Suit()];
+        assert(toPile.Size() == rank);
+        if (pile.Code() == Stock) {
+            _minSolution.emplace_back(toPile.Code(),2,1);  // talon move
+        } else {
             _minSolution.emplace_back(pile.Code(),toPile.Code(),1,pile.UpCount());
-            _game.MakeMove(_minSolution.back());
         }
+        _game.MakeMove(_minSolution.back());
     }
 }

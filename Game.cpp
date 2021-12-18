@@ -589,6 +589,32 @@ unsigned Game::MinimumMovesLeft() const noexcept
     return result;
 }
 
+// Return true if it is clear that the game can be completed in the number of
+// moves returned by MinimumMovesLeft()
+bool Game::MinMoveSeqExists() const noexcept
+{
+    if ((_drawSetting!=1 && !_stock.Empty()) || 
+        (_drawSetting==1 && !NonDescending(_stock))) return false;
+    if (!NonDescending(_waste)) return false;
+    for (auto& p: _tableau) {
+        if (!NonDescending(p)) return false;
+    }
+    return true;
+}
+
+// Return true if the cards in a pile are in non-descending order by rank
+// when scanned from back to front (top to bottom)
+bool Game::NonDescending(const Pile& p) const noexcept
+{
+    const PileVec& cards = p.Cards();
+    if (cards.size() < 2) return true;
+    for (auto cd = cards.begin()+1; cd < cards.end(); ++cd) {
+        if ((cd-1)->Rank() < cd->Rank()) return false;
+    }
+    return true;
+}
+
+
 // Enumerate the moves in a vector of Moves.
 std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 {

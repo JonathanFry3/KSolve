@@ -3,7 +3,7 @@ import os
 # print(os.getcwd()) printed .../KSolve
 base = pd.read_csv("tests/base1000.txt", sep="\t")
 # print(base.loc[0:5])
-test = pd.read_csv("tests/test10.txt", sep="\t")
+test = pd.read_csv("tests/test20.txt", sep="\t")
 # print(test.loc[0:5])
 # print(test.moves)
 # print(test.shape[0])
@@ -25,3 +25,8 @@ timePlus = filter(lambda i:  basex.time[i] < test.time[i], indexes)
 print("  Time+:",len(list(test.row[timePlus])))
 timeMinus = filter(lambda i:  basex.time[i] > test.time[i], indexes)
 print("  Time-:",len(list(test.row[timeMinus])))
+form = "{:12.2f}"
+print("Base time:", form.format(sum(basex.time)))
+print("Test time:", form.format(sum(test.time)))
+print ("Base states:", sum(basex.states))
+print ("Test states:", sum(test.states))
