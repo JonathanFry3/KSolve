@@ -1,12 +1,8 @@
 import pandas as pd
 import os
 # print(os.getcwd()) printed .../KSolve
-base = pd.read_csv("tests/base1000.txt", sep="\t")
-# print(base.loc[0:5])
-test = pd.read_csv("tests/test20.txt", sep="\t")
-# print(test.loc[0:5])
-# print(test.moves)
-# print(test.shape[0])
+base = pd.read_csv("tests/base3-100.txt", sep="\t")
+test = pd.read_csv("tests/test3-100.txt", sep="\t")
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]

@@ -427,9 +427,22 @@ void WorkerState::CompleteSolution()
     for (auto move: _minSolution) {
         _game.MakeMove(move);
     }
-    for (unsigned rank = Ace; rank <= King; ++rank) {
-        PlayTopOnMatch(rank, _game.StockPile());
-        PlayTopOnMatch(rank, _game.WastePile());
+    auto & wst = _game.WastePile();
+    auto & stk = _game.StockPile();
+    auto & stCds = stk.Cards();
+    auto drawSet = _game.DrawSetting();
+    for (unsigned rank = _game.MinFoundationPileSize(); 
+         rank <= King; ++rank) {
+        int draw;
+        unsigned wstTop = (wst.Empty()) ? King+1 : wst.Back().Rank();
+        while ((draw = std::min(drawSet,stk.Size())) > 0
+                && (stk.Cards().end()-draw)->Rank() < wstTop)
+        {
+            _minSolution.emplace_back(Waste, 1, draw);
+            _game.MakeMove(_minSolution.back());
+            wstTop = wst.Back().Rank();
+        }
+        PlayTopOnMatch(rank, wst);
         for (auto & pile: _game.Tableau()) {
             PlayTopOnMatch(rank, pile);
         }
@@ -443,16 +456,14 @@ void WorkerState::CompleteSolution()
 // and make that move, which pops that top card.
 void WorkerState::PlayTopOnMatch(const unsigned rank, Pile& pile)
 {
+    assert(pile.Code() != Stock);
     while (!pile.Empty()){
         const Card top = pile.Back();
+        assert(rank <= top.Rank());
         if (top.Rank() != rank) return;
         const Pile& toPile = _game.Foundation()[top.Suit()];
         assert(toPile.Size() == rank);
-        if (pile.Code() == Stock) {
-            _minSolution.emplace_back(toPile.Code(),2,1);  // talon move
-        } else {
-            _minSolution.emplace_back(pile.Code(),toPile.Code(),1,pile.UpCount());
-        }
+        _minSolution.emplace_back(pile.Code(),toPile.Code(),1,pile.UpCount());
         _game.MakeMove(_minSolution.back());
     }
 }

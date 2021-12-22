@@ -355,7 +355,7 @@ class Game
     std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
     bool NeedKingSpace() const noexcept;
-    bool NonDescending(const Pile& p) const noexcept;
+    bool IsStockReady() const noexcept;
 
 public:
     Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24, unsigned recyleLimit=-1);

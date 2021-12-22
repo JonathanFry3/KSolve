@@ -589,29 +589,91 @@ unsigned Game::MinimumMovesLeft() const noexcept
     return result;
 }
 
-// Return true if it is clear that the game can be completed in the number of
-// moves returned by MinimumMovesLeft()
-bool Game::MinMoveSeqExists() const noexcept
+// Return true if the cards in a sequence are in non-descending order by rank.
+template <class Iter>
+bool NonDescending(Iter begin, Iter end) noexcept
 {
-    if ((_drawSetting!=1 && !_stock.Empty()) || 
-        (_drawSetting==1 && !NonDescending(_stock))) return false;
-    if (!NonDescending(_waste)) return false;
-    for (auto& p: _tableau) {
-        if (!NonDescending(p)) return false;
+    if (end < begin+2) return true;
+    for (auto cd = begin+1; cd < end; ++cd) {
+        if ((cd-1)->Rank() > cd->Rank()) return false;
     }
     return true;
 }
 
-// Return true if the cards in a pile are in non-descending order by rank
-// when scanned from back to front (top to bottom)
-bool Game::NonDescending(const Pile& p) const noexcept
+// Return true if the cards in a Pile are in non-descending order when
+// scanned from back to front.
+static bool NonDescending(const Pile & pile)
 {
-    const PileVec& cards = p.Cards();
-    if (cards.size() < 2) return true;
-    for (auto cd = cards.begin()+1; cd < cards.end(); ++cd) {
-        if ((cd-1)->Rank() < cd->Rank()) return false;
+    auto& cards = pile.Cards();
+    return NonDescending(cards.rbegin(),cards.rend());
+}
+
+// Copy a container into another container reversing its order
+template <class T1, class T2>
+static void Reverse(const T1& from, T2& to)
+{
+    for (auto iter = from.crbegin(); iter != from.crend(); ++iter)
+    {
+        to.emplace_back(*iter);
     }
-    return true;
+}
+
+// Return true only if it is clear that the game can be completed in the number of
+// moves returned by MinimumMovesLeft().  False negatives are allowed.
+bool Game::MinMoveSeqExists() const noexcept
+{
+    if (!NonDescending(_waste)) return false;
+    for (auto& p: _tableau) {
+        if (!NonDescending(p)) return false;
+    }
+    return IsStockReady();
+}
+
+// Returns true if we can tell that the talon cards can all be
+// moved to the foundation without recycling or moving any
+// cards onto the tableau.  
+// Assumes waste pile is in nondescending order.
+bool Game::IsStockReady() const noexcept
+{
+    if (_stock.Size() < 2) {
+        return true;
+    } else if (_drawSetting < 2) {
+        return NonDescending(_stock);
+    } else {
+        // Test whether code to play from the talon in minimum moves
+        // will work with a non-trivial stock pile and
+        // _drawSetting > 1.  
+        PileVec wst(_waste.Cards());
+        PileVec stk(_stock.Cards());
+        unsigned lastRank = Ace;
+        while (!stk.empty()) {
+            int draw = std::min(DrawSetting(),stk.size());
+            unsigned peek = (stk.empty()) 
+                            ? King+1 
+                            : (stk.end()-draw)->Rank();
+            // Check for first draw card too low
+            if (peek < lastRank) return false;
+            // Play waste cards until stack card is lower 
+            // than next waste card.
+            while (!wst.empty() && wst.back().Rank() <= peek) {
+                lastRank = wst.back().Rank();
+                wst.pop_back();
+            }
+            // check order of next draw
+            if (!NonDescending(stk.end()-draw, stk.end()))
+                return false;
+            // check for draw bracketing top waste card
+            if (!wst.empty() && peek < wst.back().Rank()) 
+                return false;
+            // draw from stock
+            for (int i = 0; i < draw; ++i)
+            {
+                wst.push_back(stk.back());
+                stk.pop_back();
+            }
+        }
+        return true;
+    }
 }
 
 
