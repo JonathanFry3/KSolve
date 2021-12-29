@@ -38,11 +38,11 @@
             "request": "launch",
             "program": "${workspaceFolder}/ran",
             "args": [
-                "--seed", "116260",
-                "--incr", "0",  
-                "--end", "10", 
-                "--draw", "1",
-                "--threads", "1",
+                "--seed", "29337",
+                "--incr", "2349",  
+                "--end", "100", 
+                "--draw", "3",
+                "--threads", "8",
                 "--states", "10000000"
             ],
             "stopAtEntry": false,

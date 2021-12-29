@@ -608,23 +608,16 @@ static bool NonDescending(const Pile & pile)
     return NonDescending(cards.rbegin(),cards.rend());
 }
 
-// Copy a container into another container reversing its order
-template <class T1, class T2>
-static void Reverse(const T1& from, T2& to)
-{
-    for (auto iter = from.crbegin(); iter != from.crend(); ++iter)
-    {
-        to.emplace_back(*iter);
-    }
-}
-
 // Return true only if it is clear that the game can be completed in the number of
 // moves returned by MinimumMovesLeft().  False negatives are allowed.
 bool Game::MinMoveSeqExists() const noexcept
 {
     if (!NonDescending(_waste)) return false;
     for (auto& p: _tableau) {
-        if (!NonDescending(p)) return false;
+        auto cds = p.Cards();
+        if (p.UpCount() < p.Size() && 
+            !NonDescending(cds.rbegin()+p.UpCount()-1, cds.rend())) 
+            return false;
     }
     return IsStockReady();
 }
@@ -637,7 +630,7 @@ bool Game::IsStockReady() const noexcept
 {
     if (_stock.Size() < 2) {
         return true;
-    } else if (_drawSetting < 2) {
+    } else if (_drawSetting == 1) {
         return NonDescending(_stock);
     } else {
         // Test whether code to play from the talon in minimum moves
@@ -648,9 +641,7 @@ bool Game::IsStockReady() const noexcept
         unsigned lastRank = Ace;
         while (!stk.empty()) {
             int draw = std::min(DrawSetting(),stk.size());
-            unsigned peek = (stk.empty()) 
-                            ? King+1 
-                            : (stk.end()-draw)->Rank();
+            unsigned peek = (stk.end()-draw)->Rank();
             // Check for first draw card too low
             if (peek < lastRank) return false;
             // Play waste cards until stack card is lower 
@@ -663,7 +654,7 @@ bool Game::IsStockReady() const noexcept
             if (!NonDescending(stk.end()-draw, stk.end()))
                 return false;
             // check for draw bracketing top waste card
-            if (!wst.empty() && peek < wst.back().Rank()) 
+            if (!wst.empty() && stk.back().Rank() > wst.back().Rank()) 
                 return false;
             // draw from stock
             for (int i = 0; i < draw; ++i)
