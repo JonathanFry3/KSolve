@@ -613,7 +613,7 @@ bool Game::MinMoveSeqExists() const noexcept
     if (!NonDescending(_waste)) return false;
     for (auto& p: _tableau) {
         auto cds = p.Cards();
-        if (p.UpCount() < p.Size() && 
+        if (p.UpCount() < p.size() && 
             !NonDescending(cds.rbegin()+p.UpCount()-1, cds.rend())) 
             return false;
     }
@@ -626,10 +626,10 @@ bool Game::MinMoveSeqExists() const noexcept
 // Assumes waste pile is in nondescending order.
 bool Game::IsStockReady() const noexcept
 {
-    if (_stock.Size() < 2) {
+    if (_stock.size() < 2) {
         return true;
     } else if (_drawSetting == 1) {
-        return NonDescending(_stock);
+        return NonDescending(_stock.begin(),_stock.end());
     } else {
         // Test whether code to play from the talon in minimum moves
         // will work with a non-trivial stock pile and
