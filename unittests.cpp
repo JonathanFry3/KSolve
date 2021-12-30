@@ -43,12 +43,12 @@ static string PileNames[]
 static void PrintPile(const Pile & pile) 
 {
 	cout << PileNames[pile.Code()] << ":";
-	for (auto ip = pile.Cards().begin(); ip < pile.Cards().end(); ++ip)
+	for (auto ip = pile.begin(); ip < pile.end(); ++ip)
 	{
 		char sep(' ');
 		if (pile.IsTableau())
 		{
-			if (ip == pile.Cards().end()-pile.UpCount()) {sep = '|';}
+			if (ip == pile.end()-pile.UpCount()) {sep = '|';}
 		}
 		cout << sep << ip->AsString();
 	}
@@ -66,7 +66,7 @@ static void PrintGame(const Game& game)
 
 static void CheckCards(const Pile & pile, array<bool,52>& present)
 {
-	for (auto card: pile.Cards()){
+	for (auto card: pile){
 		assert(!present[card.Value()]);
 		present[card.Value()] = true;
 	}
@@ -77,7 +77,7 @@ static void Validate(const Game & game)
 	// See if we have 52 cards
 	unsigned nCards = 0;
 	for (auto ip = game.AllPiles().begin(); ip < game.AllPiles().end(); ++ip)	{
-		nCards += (*ip)->Size();
+		nCards += (*ip)->size();
 	}
 	assert(nCards == 52);
 
@@ -92,10 +92,10 @@ static void Validate(const Game & game)
 	const auto& tableau = game.Tableau();
 	for(unsigned i = 0; i < 7; ++i){
 		const Pile & tab = tableau[i];
-		assert(tab.UpCount() <= tab.Size());
+		assert(tab.UpCount() <= tab.size());
 		if (tab.UpCount() > 1){
-			for (unsigned i = tab.Size()-tab.UpCount()+1; i<tab.Size(); ++i){
-				assert((tab.Cards()[i].Covers(tab.Cards()[i-1])));
+			for (unsigned i = tab.size()-tab.UpCount()+1; i<tab.size(); ++i){
+				assert((tab[i].Covers(tab[i-1])));
 			}
 		}
 	}
@@ -104,7 +104,7 @@ static void Validate(const Game & game)
 	const auto& fnd = game.Foundation();
 	for (unsigned suit = 0; suit<4; ++suit){
 		const Pile & pile = fnd[suit];
-		for (unsigned rank = 0; rank < pile.Size(); ++rank){
+		for (unsigned rank = 0; rank < pile.size(); ++rank){
 			auto card = pile[rank];
 			assert (suit == card.Suit() && rank==card.Rank());
 		}
@@ -116,7 +116,7 @@ static unsigned FoundationCardCount(const Game& game)
 {
 	unsigned result = 0;
 	for (const Pile& fPile : game.Foundation()) {
-		result += fPile.Size();
+		result += fPile.size();
 	}
 	return result;
 }
@@ -174,8 +174,7 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 
 bool operator==(const Pile&a, const Pile&b)
 {
-	return     (a.Code()==b.Code() 
-			&& a.Cards()==b.Cards());
+	return     (a.Code()==b.Code() && a==b);
 }
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
@@ -192,7 +191,7 @@ bool operator==(const Game& a, const Game& b)
 		// piles' cards and up counts are equal after rearrangement.
 		int found = -1;
 		for (unsigned j = 0; found == -1 && j < 7; ++j) {
-			if (taba[i].Cards() == tabb[j].Cards()) found = j;
+			if (taba[i] == tabb[j]) found = j;
 		}
 		if (found == -1 || taba[i].UpCount() != tabb[found].UpCount()) 
 			return false;
@@ -233,7 +232,7 @@ int main()
 	// Test Game::Deal()
 	{
 		Game sol(deck);
-		assert (sol.Tableau()[5].Size() == 6);
+		assert (sol.Tableau()[5].size() == 6);
 		assert (sol.StockPile()[0].AsString() == "d5");
 		assert (sol.Tableau()[6][6] == deck[27]);
 		assert (sol.Tableau()[6][5] == deck[26]);
@@ -243,18 +242,18 @@ int main()
 
 		// Test Game::MakeMove
 		sol.MakeMove(Move(Tableau1,Tableau2,1,0));
-		assert (sol.Tableau()[0].Empty());
-		assert (sol.Tableau()[1].Size() == 3);
+		assert (sol.Tableau()[0].empty());
+		assert (sol.Tableau()[1].size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
 		assert (sol.Tableau()[1].UpCount() == 2);
 
-		assert (sol.StockPile().Size() == 24);
+		assert (sol.StockPile().size() == 24);
 		sol.MakeMove(Move(Foundation2D,4,4));
-		assert (sol.StockPile().Size()==20);
-		assert (sol.WastePile().Size()==3);
-		assert (sol.Foundation()[1].Back().AsString()=="d6");
-		assert (sol.WastePile().Back().AsString()=="s7");
-		assert (sol.StockPile().Back().AsString()=="ct");
+		assert (sol.StockPile().size()==20);
+		assert (sol.WastePile().size()==3);
+		assert (sol.Foundation()[1].back().AsString()=="d6");
+		assert (sol.WastePile().back().AsString()=="s7");
+		assert (sol.StockPile().back().AsString()=="ct");
 		sol.MakeMove(Move(Waste,Tableau1,1,0));
 		assert (sol.Tableau()[0].UpCount() == 1);
 	}
@@ -266,7 +265,7 @@ int main()
 		PileVec svwaste = sol.WastePile().Cards();
 		vector<PileVec> svtableau;
 		for (unsigned itab = 0; itab<7; ++itab){
-			svtableau.push_back(sol.Tableau()[itab].Cards());
+			svtableau.push_back(sol.Tableau()[itab]);
 		}
 		unsigned nreps = 20;
 		Moves movesMade;
@@ -283,7 +282,7 @@ int main()
 		assert (svstock == sol.StockPile().Cards());
 		assert (svwaste == sol.WastePile().Cards());
 		for (unsigned p = 0; p<7; ++p) {
-			assert(sol.Tableau()[p].Cards() == svtableau[p]);
+			assert(sol.Tableau()[p] == svtableau[p]);
 		}
 		assert (FoundationCardCount(sol) == 0);
 	}
