@@ -479,8 +479,8 @@ string GameDiagram(const Game& game) {
     for (int i = 0; i < 13; i++) {
         ss << pilestring[i] << ": ";
         Pile & p = *(game.AllPiles()[i]);
-        int downsize = p.Size() - p.UpCount();
-        for (int j = p.Size() - 1; j >= 0; j--) {
+        int downsize = p.size() - p.UpCount();
+        for (int j = p.size() - 1; j >= 0; j--) {
             Card c = p[j];
             char rank = RANKS[c.Rank()];
             char suit = SUITS[c.Suit()];
@@ -505,7 +505,7 @@ string UpCaseString(Card cd)
 
 char PFndString(const Game& game, unsigned suit)
 {
-    unsigned n = game.Foundation()[suit].Size();
+    unsigned n = game.Foundation()[suit].size();
     if (n == 0) return '0';
     else return RANKS[n-1];
 }
@@ -519,13 +519,13 @@ string GameDiagramPysol(const Game& game) {
     ss << "\nTalon: ";
 
     const Pile & waste = game.WastePile();
-    int size = waste.Size();
+    int size = waste.size();
     for (int j = size - 1; j >= 0; j--) {
         ss << UpCaseString(waste[j]) << ' ';
     }
 
     const Pile & stock = game.StockPile();
-    size = stock.Size();
+    size = stock.size();
     for (int j = size - 1; j >= 0; j--) {
         ss << UpCaseString(stock[j]) << ' ';
     }
@@ -533,7 +533,7 @@ string GameDiagramPysol(const Game& game) {
     for (const Pile& p: game.Tableau()) {
         ss << "\n:";
         unsigned up = p.UpCount();
-        size = p.Size();
+        size = p.size();
         for (int j = 0; j < size; j++) {
             if (j+up < size)
                 ss << " <" << UpCaseString(p[j]) << ">";
@@ -574,7 +574,7 @@ string GetMoveInfo(XMove move, const Game& game) {
         } else if (xto == Waste) {
             ss << "Draw ";
             if (xnum == 1) {
-                ss << CardString(game.StockPile().Back());
+                ss << CardString(game.StockPile().back());
             } else {
                 ss << xnum << " cards";
             }
@@ -582,7 +582,7 @@ string GetMoveInfo(XMove move, const Game& game) {
         } else {
             ss << "Move ";
             if (xnum == 1) {
-                ss << CardString((*game.AllPiles()[xfrom]).Back());
+                ss << CardString((*game.AllPiles()[xfrom]).back());
             } else {
                 ss << xnum << " cards";
             }

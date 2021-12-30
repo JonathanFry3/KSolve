@@ -129,10 +129,9 @@ static bool IsTableau(unsigned pile) noexcept
     return TableauBase <= pile && pile < TableauBase+7;
 }
 
-class Pile
+class Pile : public PileVec
 {
 private:
-    PileVec _cards;
     unsigned short _code;
     unsigned short _upCount;
     bool _isTableau;
@@ -150,39 +149,35 @@ public:
     unsigned UpCount() const noexcept				{return _upCount;}
     bool IsTableau() const noexcept					{return _isTableau;}
     bool IsFoundation() const noexcept				{return _isFoundation;}
-    unsigned Size() const noexcept					{return _cards.size();}
-    bool Empty() const noexcept 					{return _cards.empty();}
 
     void SetUpCount(unsigned up) noexcept			{_upCount = up;}
     void IncrUpCount(int c) noexcept				{_upCount += c;}
-    const Card & operator[](unsigned which) const noexcept  {return _cards[which];}
-    const PileVec& Cards() const noexcept			{return _cards;}
-    Card Pop() noexcept			{Card r = _cards.back(); _cards.pop_back(); return r;}
-    void Push(Card c) noexcept             			{_cards.push_back(c);}
-    Card Top() const  noexcept              {return *(_cards.end()-_upCount);}
-    Card Back() const noexcept				{return _cards.back();}
-    void ClearCards() noexcept              {_cards.clear(); _upCount = 0;}
+    const PileVec& Cards() const noexcept			{return *this;}
+    Card Pop() noexcept			{Card r = back(); pop_back(); return r;}
+    void Push(Card c) noexcept             			{push_back(c);}
+    Card Top() const  noexcept              {return *(end()-_upCount);}
+    void ClearCards() noexcept              {clear(); _upCount = 0;}
     void Take(Pile& donor, unsigned n) noexcept // Take the last n cards from donor preserving order	
     {
-        assert(n <= donor.Size());
-        for (auto p = donor._cards.end()-n; p < donor._cards.end(); ++p)
-            _cards.push_back(*p);
+        assert(n <= donor.size());
+        for (auto p = donor.end()-n; p < donor.end(); ++p)
+            push_back(*p);
         for (unsigned i = 0; i < n; ++i)
-            donor._cards.pop_back();
+            donor.pop_back();
     }
     void Draw(Pile& other, int n) noexcept
     {
         if (n < 0) {
-            assert(-n <= int(Size()));
+            assert(-n <= int(size()));
             for (int i = 0; i < -n; ++i)
                 other.Draw(*this);
         } else {
-            assert(n <= int(other.Size()));
+            assert(n <= int(other.size()));
             for (int i = 0; i < n; ++i)
                 Draw(other);
         }
     }
-    void Draw(Pile & from) noexcept			{_cards.push_back(from._cards.back()); from._cards.pop_back();}
+    void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
 };
 
 
