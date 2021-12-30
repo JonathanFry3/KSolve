@@ -2,7 +2,7 @@ import pandas as pd
 import os
 # print(os.getcwd()) printed .../KSolve
 base = pd.read_csv("tests/base1000.txt", sep="\t")
-test = pd.read_csv("tests/rebase100.txt", sep="\t")
+test = pd.read_csv("tests/test1000.txt", sep="\t")
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]
