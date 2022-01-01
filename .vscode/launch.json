@@ -23,6 +23,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -48,6 +49,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -56,7 +58,7 @@
                 }
             ]
         }
-        /*
+        */
 		{
 			"name": "(Windows) Launch unittests",
             "type": "cppdbg",
@@ -65,9 +67,11 @@
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
 			"environment": [],
 			"externalConsole": false
 		}
+        /*
 		{
 			"name": "(Windows) Launch test-sd",
             "type": "cppdbg",
@@ -94,7 +98,7 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        */
+        //
 		{
 			"name": "(gdb) Launch test-mfv",
             "type": "cppdbg",
@@ -108,6 +112,6 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
             "showDisplayString": true
         }
-        //
+        */
     ]
 }
