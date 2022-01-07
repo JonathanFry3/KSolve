@@ -372,9 +372,9 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
     QMoves availableMoves = _game.AvailableMoves();
     const auto& movesMade{_moveStorage.MoveSequence()};
-    for (auto i = availableMoves.begin(); i < availableMoves.end(); ){
+    for (auto i = availableMoves.begin(); i != availableMoves.end(); ) {
         if (ABC_Move(*i,movesMade)) {
-            availableMoves.erase(i);
+            i = availableMoves.erase(i);
         } else {
             ++i;
         }
