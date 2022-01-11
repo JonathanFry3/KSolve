@@ -19,7 +19,7 @@
 #include <cassert>
 #include <sstream> 		// for stringstream
 
-#include "static_vector.hpp"
+#include "frystl/static_vector.hpp"
 
 
 enum Rank_t : unsigned char

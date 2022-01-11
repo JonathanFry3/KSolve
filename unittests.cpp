@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <algorithm>  // for find()
 #include <random>
-#include "mf_vector.hpp"
+#include "frystl/mf_vector.hpp"
 
 using namespace std;
 

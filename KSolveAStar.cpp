@@ -4,8 +4,8 @@
 #include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include "parallel_hashmap/phmap_base.h" 
-#include "mf_vector.hpp"
-#include "static_deque.hpp"
+#include "frystl/mf_vector.hpp"
+#include "frystl/static_deque.hpp"
 #include <thread>
 
 typedef std::mutex Mutex;
