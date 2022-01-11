@@ -16,4 +16,4 @@ test-mfv
 *.pdb
 test-sv
 test-sd
-frystl
+frystl/tests
