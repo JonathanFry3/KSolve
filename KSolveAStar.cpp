@@ -404,10 +404,11 @@ bool WorkerState::IsShortPathToState(unsigned moveCount)
     bool valueChanged{false};
     const bool isNewKey = _closedList.try_emplace_l(
         state,						// key
-        [&](auto& mappedValue) {	// run behind lock when key found
-            valueChanged = moveCount < mappedValue;
-            if (valueChanged) 
-                mappedValue = moveCount;
+        [&](auto& keyValuePair) {	// run behind lock when key found
+            if (moveCount < keyValuePair.second) {
+                keyValuePair.second = moveCount;
+                valueChanged = true;
+            }
         },
         moveCount 					// c'tor run behind lock when key not found
     );
