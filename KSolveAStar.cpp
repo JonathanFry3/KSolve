@@ -284,15 +284,12 @@ void MoveStorage::EnqueueMoveSequence(unsigned index)
     }
     assert(_shared._startStackIndex <= index);
     const unsigned offset = index - _shared._startStackIndex;
-    if (!(offset < _shared._fringe.size())) {
+    if (_shared._fringe.size() <= offset) {
         // Grow the fringe as needed.
         ExclusiveGuard freddie(_shared._fringeMutex);
-        while (!(offset < _shared._fringe.size())){
-            _shared._fringeStackMutexes.emplace_back();
-            _shared._fringe.emplace_back();
-        }
+        _shared._fringeStackMutexes.resize(offset+1);
+        _shared._fringe.resize(offset+1);
     }
-    assert(offset < _shared._fringe.size());
     {
         Guard clyde(_shared._fringeStackMutexes[offset]);
         _shared._fringe[offset].push_back(_leafIndex);
