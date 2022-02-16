@@ -17,7 +17,7 @@
 #include <algorithm> // for std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
-#include "frystl-assert.hpp"
+#include "frystl-defines.hpp"
 
 namespace frystl
 {
@@ -51,7 +51,8 @@ namespace frystl
         template <unsigned C1>
         static_vector(const static_vector<T, C1> &donor) : _size(0)
         {
-            FRYSTL_ASSERT(donor.size() <= Capacity);
+            FRYSTL_ASSERT2(donor.size() <= Capacity,
+                    "static_vector: construction from a too-large object");
             for (auto &m : donor)
                 new (data() + _size++) value_type(m);
         }
@@ -68,7 +69,8 @@ namespace frystl
         template <unsigned C1>
         static_vector(static_vector<T, C1> &&donor) : _size(0)
         {
-            FRYSTL_ASSERT(donor.size() <= Capacity);
+            FRYSTL_ASSERT2(donor.size() <= Capacity,
+                    "static_vector: construction from a too-large object");
             for (auto &m : donor)
                 new (data() + _size++) value_type(std::move(m));
         }
@@ -81,7 +83,7 @@ namespace frystl
         static_vector(size_type n) : static_vector(n, T()) {}
         // range constructor
         template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
+                  typename = RequireInputIter<InputIterator>>
         static_vector(InputIterator begin, InputIterator end) : _size(0)
         {
             for (InputIterator k = begin; k != end; ++k)
@@ -90,7 +92,8 @@ namespace frystl
         // initializer list constructor
         static_vector(std::initializer_list<value_type> il) : _size(il.size())
         {
-            FRYSTL_ASSERT(il.size() <= Capacity);
+            FRYSTL_ASSERT2(il.size() <= Capacity,
+                    "static_vector: construction from a too-large list");
             pointer p = data();
             for (auto &value : il)
                 new (p++) value_type(value);
@@ -105,13 +108,14 @@ namespace frystl
         }
         void assign(std::initializer_list<value_type> x)
         {
-            FRYSTL_ASSERT(x.size() <= capacity());
+            FRYSTL_ASSERT2(x.size() <= Capacity,
+                    "static_vector: assign() from a too-large list");
             clear();
             for (auto &a : x)
                 push_back(a);
         }
         template <class InputIterator,
-                  typename = std::_RequireInputIter<InputIterator>> // TODO: not portable
+                  typename = RequireInputIter<InputIterator>> 
         void assign(InputIterator begin, InputIterator end)
         {
             clear();
@@ -152,7 +156,7 @@ namespace frystl
         }
         reference operator[](size_type i)
         {
-            FRYSTL_ASSERT(i < _size);
+            FRYSTL_ASSERT2(i < _size,"static_vector: index out of range");
             return data()[i];
         }
         const_reference at(size_type i) const
@@ -162,7 +166,7 @@ namespace frystl
         }
         const_reference operator[](size_type i) const
         {
-            FRYSTL_ASSERT(i < _size);
+            FRYSTL_ASSERT2(i < _size,"static_vector: index out of range");
             return data()[i];
         }
         const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(_elem); }
@@ -170,12 +174,12 @@ namespace frystl
         const_reference back() const noexcept { return data()[_size - 1]; }
         reference front() noexcept
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size,"front() called on empty static_vector");
             return data()[0];
         }
         const_reference front() const noexcept
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size,"front() called on empty static_vector");
             return data()[0];
         }
         //
@@ -200,14 +204,16 @@ namespace frystl
         constexpr std::size_t max_size() const noexcept { return Capacity; }
         size_type size() const noexcept { return _size; }
         bool empty() const noexcept { return _size == 0; }
-        void reserve(size_type n) { FRYSTL_ASSERT(n <= capacity()); }
+        void reserve(size_type n) { 
+            FRYSTL_ASSERT2(n <= capacity(), "static_vector::reserve() argument too large"); 
+        }
         void shrink_to_fit() {}
         //
         //  Modifiers
         //
         void pop_back()
         {
-            FRYSTL_ASSERT(_size);
+            FRYSTL_ASSERT2(_size, "static_vector::pop_back() on empty vector");
             _size -= 1;
             end()->~value_type();
         }
@@ -220,7 +226,8 @@ namespace frystl
         }
         iterator erase(const_iterator position) noexcept
         {
-            FRYSTL_ASSERT(GoodIter(position + 1));
+            FRYSTL_ASSERT2(GoodIter(position + 1), 
+                "static_vector::erase(pos): pos out of range");
             iterator x = const_cast<iterator>(position);
             x->~value_type();
             std::move(x + 1, end(), x);
@@ -233,9 +240,12 @@ namespace frystl
             iterator l = const_cast<iterator>(last);
             if (first != last)
             {
-                FRYSTL_ASSERT(GoodIter(first + 1));
-                FRYSTL_ASSERT(GoodIter(last));
-                FRYSTL_ASSERT(first < last);
+                FRYSTL_ASSERT2(GoodIter(first + 1),
+                    "static_vector::erase(first,last): bad first");
+                FRYSTL_ASSERT2(GoodIter(last),
+                    "static_vector::erase(first,last): bad last");
+                FRYSTL_ASSERT2(first < last,
+                    "static_vector::erase(first,last): last < first");
                 for (iterator it = f; it < l; ++it)
                     it->~value_type();
                 std::move(l, end(), f);
@@ -246,8 +256,9 @@ namespace frystl
         template <class... Args>
         iterator emplace(const_iterator position, Args &&...args)
         {
-            FRYSTL_ASSERT(_size < Capacity);
-            FRYSTL_ASSERT(begin() <= position && position <= end());
+            FRYSTL_ASSERT2(_size < Capacity,"static_vector::emplace() overflow");
+            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+                "static_vector::emplace(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
             if (p < end())
@@ -260,7 +271,7 @@ namespace frystl
         template <class... Args>
         void emplace_back(Args... args)
         {
-            FRYSTL_ASSERT(_size < Capacity);
+            FRYSTL_ASSERT2(_size < Capacity,"static_vector::emplace_back() overflow");
             pointer p{data() + _size};
             new (p) value_type(args...);
             ++_size;
@@ -268,7 +279,8 @@ namespace frystl
         // single element insert()
         iterator insert(const_iterator position, const value_type &val)
         {
-            FRYSTL_ASSERT(GoodIter(position));
+            FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
+            FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p,1);
             FillCell(p, val);
@@ -278,8 +290,8 @@ namespace frystl
         // move insert()
         iterator insert(iterator position, value_type &&val)
         {
-            FRYSTL_ASSERT(_size < Capacity);
-            FRYSTL_ASSERT(begin() <= position && position <= end());
+            FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
+            FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, 1);
             if (p < end())
@@ -292,8 +304,9 @@ namespace frystl
         // fill insert
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
-            FRYSTL_ASSERT(_size + n <= Capacity);
-            FRYSTL_ASSERT(begin() <= position && position <= end());
+            FRYSTL_ASSERT2(_size + n <= Capacity, "static_vector::insert: overflow");
+            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+                "static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, n);
             // copy val n times into newly available cells
@@ -327,10 +340,10 @@ namespace frystl
                 DAIter last,
                 std::random_access_iterator_tag)
             {
-                FRYSTL_ASSERT(first <= last);
+                FRYSTL_ASSERT2(first <= last,"static_vector::insert(): last < first");
                 iterator p = const_cast<iterator>(position);
                 int n = last-first;
-                FRYSTL_ASSERT(n <= Capacity);
+                FRYSTL_ASSERT2(_size + n <= Capacity, "static_vector::insert: overflow");
                 MakeRoom(p,n);
                 iterator result = p;
                 while (first != last) {
@@ -350,8 +363,9 @@ namespace frystl
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
         {
             size_type n = il.size();
-            FRYSTL_ASSERT(_size + n <= Capacity);
-            FRYSTL_ASSERT(begin() <= position && position <= end());
+            FRYSTL_ASSERT2(_size + n <= Capacity, "static_vector::insert: overflow");
+            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+                "static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, n);
             // copy il into newly available cells

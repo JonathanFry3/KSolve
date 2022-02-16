@@ -44,7 +44,7 @@
 #include <algorithm> // std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
-#include "frystl-assert.hpp"
+#include "frystl-defines.hpp"
 
 namespace frystl
 {
@@ -82,7 +82,7 @@ namespace frystl
         {}
         // range c'tor
         template <class Iter,
-                  typename = std::_RequireInputIter<Iter>> // TODO: not portable
+                  typename = RequireInputIter<Iter> > 
         static_deque(Iter begin, Iter end)
         {
             Center(begin,end,
@@ -295,7 +295,7 @@ public:
                 emplace_back(a);
         }
         template <class Iter,
-                  typename = std::_RequireInputIter<Iter>> // TODO: not portable
+                  typename = RequireInputIter<Iter>>
         void assign(Iter begin, Iter end)
         {
             DestructAll();
