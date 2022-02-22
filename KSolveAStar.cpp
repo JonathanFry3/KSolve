@@ -40,9 +40,12 @@ class SharedMoveStorage
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
-    mf_vector<LeafNodeStack,128> _fringe;
+    struct FringeElement {
+        Mutex _mutex;
+        LeafNodeStack _stack;
+    };
+    mf_vector<FringeElement,128> _fringe;
     SharedMutex _fringeMutex;
-    mf_vector<Mutex,128> _fringeStackMutexes;
     unsigned _startStackIndex;
     bool _firstTime;
     friend class MoveStorage;
@@ -287,12 +290,12 @@ void MoveStorage::EnqueueMoveSequence(unsigned index)
     if (_shared._fringe.size() <= offset) {
         // Grow the fringe as needed.
         ExclusiveGuard freddie(_shared._fringeMutex);
-        _shared._fringeStackMutexes.resize(offset+1);
-        _shared._fringe.resize(offset+1);
+        if (_shared._fringe.size() <= offset)
+            _shared._fringe.resize(offset+1);
     }
     {
-        Guard clyde(_shared._fringeStackMutexes[offset]);
-        _shared._fringe[offset].push_back(_leafIndex);
+        Guard clyde(_shared._fringe[offset]._mutex);
+        _shared._fringe[offset]._stack.push_back(_leafIndex);
     }
 }
 unsigned MoveStorage::DequeueMoveSequence() noexcept
@@ -310,11 +313,11 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
         {
             SharedGuard marilyn(_shared._fringeMutex);
             size = _shared._fringe.size();
-            for (offset = 0; offset < size && _shared._fringe[offset].empty(); ++offset) {}
+            for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
         }
         if (offset < size) {
-            Guard methuselah(_shared._fringeStackMutexes[offset]);
-            auto & stack = _shared._fringe[offset];
+            Guard methuselah(_shared._fringe[offset]._mutex);
+            auto & stack = _shared._fringe[offset]._stack;
             if (stack.size()) {
                 _leafIndex = stack.back();
                 stack.pop_back();
