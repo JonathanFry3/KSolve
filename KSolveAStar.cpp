@@ -237,10 +237,10 @@ void Worker(
                 for (auto mv: availableMoves){
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
-                    const unsigned remaining = 
-                        state._game.MinimumMovesLeft();
-                    assert(minMoves0 <= made+remaining);
                     if (state.IsShortPathToState(made)) {       // <- side effect
+                        const unsigned remaining = 
+                            state._game.MinimumMovesLeft();
+                        assert(minMoves0 <= made+remaining);
                         state._moveStorage.Push(mv);
                         state._moveStorage.EnqueueMoveSequence(made+remaining); 
                         state._moveStorage.Pop();
