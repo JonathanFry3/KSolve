@@ -74,15 +74,14 @@ class MoveStorage
     struct MovePair
     {
         Move _mv;
-        std::uint32_t _nMoves;
-        MovePair(Move mv, unsigned nMoves)
+        std::uint32_t _offset;
+        MovePair(Move mv, unsigned offset)
             : _mv(mv)
-            , _nMoves(nMoves)
+            , _offset(offset)
         {}
-        // Descending compare
-        bool operator < (const MovePair& rhs)
+        bool operator< (const MovePair& rhs) const
         {
-            return _nMoves > rhs._nMoves;
+            return _offset < rhs._offset;
         }
     };
     static_vector<MovePair,128> _branches;
@@ -132,7 +131,7 @@ struct WorkerState {
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
             phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
-            4U, 									// log2(n of submaps)
+            7U, 									// log2(n of submaps)
             Mutex									// mutex type
         > MapType;
     MapType& _closedList;
@@ -293,11 +292,13 @@ void MoveStorage::PushStem(Move move)
 }
 void MoveStorage::PushBranch(Move mv, unsigned nMoves)
 {
-    _branches.emplace_back(mv,nMoves);
+    assert(_shared._startStackIndex <= nMoves);
+    _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
 }
 void MoveStorage::ShareMoves()
 {
-    std::sort(_branches.begin(), _branches.end());
+    //std::sort(_branches.begin(), _branches.end());
+    NodeX branchIndex;      // index in _moveTree of branch
     {
         Guard rupert(_shared._moveTreeMutex);
         // copy all the stem moves into the move tree
@@ -308,7 +309,8 @@ void MoveStorage::ShareMoves()
             _shared._moveTree.emplace_back(*mvi, _leafIndex);
             _leafIndex = ind;
         }
-        // Now all the branch moves
+        // Now all the branches
+        branchIndex = _shared._moveTree.size();
         for (const auto& br:_branches) {
             _shared._moveTree.emplace_back(br._mv, _leafIndex);
         }
@@ -316,21 +318,19 @@ void MoveStorage::ShareMoves()
     // update the fringe
     if (_branches.size()) {
         // Enlarge the fringe if needed
-        assert(_shared._startStackIndex <= _branches.front()._nMoves);
-        unsigned offset = _branches.front()._nMoves - _shared._startStackIndex;
-        if (_shared._fringe.size() <= offset) {
+        unsigned maxOffset = 
+            std::max_element(_branches.cbegin(),_branches.cend())->_offset;
+        if (_shared._fringe.size() <= maxOffset) {
             ExclusiveGuard freddie(_shared._fringeMutex);
-            // Another thread could have grown the fringe
-            if (_shared._fringe.size() <= offset)
-                _shared._fringe.resize(offset+1);
+            while (_shared._fringe.size() <= maxOffset)
+                _shared._fringe.emplace_back();
         }
         for (const auto &br: _branches)
         {
-            offset = br._nMoves - _shared._startStackIndex;
-            auto & elem = _shared._fringe[offset];
+            auto & elem = _shared._fringe[br._offset];
             {
                 Guard clyde(elem._mutex);
-                elem._stack.push_back(++_leafIndex);
+                elem._stack.push_back(branchIndex++);
             }
         }
     }
@@ -375,9 +375,9 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
             const Move &mv = _shared._moveTree[node]._move;
             _currentSequence.push_front(mv);
         }
+        _startSize = _currentSequence.size();
         _branches.clear();
     }
-    _startSize = _currentSequence.size();
     return result;
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
