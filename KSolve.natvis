@@ -31,7 +31,13 @@
           </ArrayItems>
       </Expand>
   </Type>
+  <Type Name="frystl::mf_vector&lt;*,*,*&gt;">
+    <DisplayString>size = {_size}</DisplayString>
+  </Type>
   <Type Name="Card">
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
+  </Type>
+  <Type Name="Move">
+    <DisplayString>Move from {_from} to {_to} {_nMoves} moves draw {_drawCount} n {_n} up {_fromUpCount} </DisplayString>
   </Type>
 </AutoVisualizer>
