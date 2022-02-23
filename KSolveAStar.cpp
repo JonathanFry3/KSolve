@@ -47,13 +47,19 @@ class SharedMoveStorage
     mf_vector<FringeElement,128> _fringe;
     SharedMutex _fringeMutex;
     unsigned _startStackIndex;
-    bool _firstTime;
     friend class MoveStorage;
 public:
     SharedMoveStorage() 
         : _startStackIndex(-1)
-        , _firstTime(true)
     {
+    }
+    // Start move storage with the minimum number of moves from
+    // the dealt deck before the first move.
+    void Start(unsigned minMoves)
+    {
+        _startStackIndex = minMoves;
+        _fringe.emplace_back();
+        _fringe[0]._stack.push_back(-1);
     }
 };
 class MoveStorage
@@ -64,19 +70,36 @@ class MoveStorage
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
     NodeX _leafIndex;			// index of current sequence's leaf node in _moveTree
+    unsigned _startSize;
+    struct MovePair
+    {
+        Move _mv;
+        std::uint32_t _nMoves;
+        MovePair(Move mv, unsigned nMoves)
+            : _mv(mv)
+            , _nMoves(nMoves)
+        {}
+        // Descending compare
+        bool operator < (const MovePair& rhs)
+        {
+            return _nMoves > rhs._nMoves;
+        }
+    };
+    static_vector<MovePair,128> _branches;
 public:
     // Constructor.
     MoveStorage(SharedMoveStorage& shared);
     // Return a reference to the storage shared among threads
     SharedMoveStorage& Shared() const noexcept {return _shared;}
-    // Push the given move to the back of the current sequence of moves.
-    void Push(Move move);
-    // Remove the last move from the current move sequence.
-    void Pop() noexcept;
-    // File the current move sequence under the given index number.
-    // Calls after the first may not use an index less than the first.
-    // Expects index > 0.
-    void EnqueueMoveSequence(unsigned index);
+    // Push a move to the back of the current stem.
+    void PushStem(Move move);
+    // Push the first move of a new branch off the current stem,
+    // along with the total number of moves to reach the end state
+    // that move produces.
+    void PushBranch(Move move, unsigned moveCount);
+    // Push all the moves (stem and branch) from this trip
+    // through the main loop into shared storage.
+    void ShareMoves();
     // Fetch a move sequence with the lowest available index, make it
     // the current move sequence and remove it from the queue.  
     // Return its index number, or zero if no more sequences are available.
@@ -169,7 +192,7 @@ KSolveAStarResult KSolveAStar(
 
     const unsigned startMoves = state._game.MinimumMovesLeft();
 
-    state._moveStorage.EnqueueMoveSequence(startMoves);	// pump priming
+    state._moveStorage.Shared().Start(startMoves);	// pump priming
     
     if (nThreads == 0)
         nThreads = std::thread::hardware_concurrency();
@@ -244,13 +267,13 @@ void Worker(
                         const unsigned remaining = 
                             state._game.MinimumMovesLeft();
                         assert(minMoves0 <= made+remaining);
-                        state._moveStorage.Push(mv);
-                        state._moveStorage.EnqueueMoveSequence(made+remaining); 
-                        state._moveStorage.Pop();
+                        state._moveStorage.PushBranch(mv,made+remaining);
                     }
                     state._game.UnMakeMove(mv);
                 }
             }
+            // Share the moves made here
+            state._moveStorage.ShareMoves();
         }
     } 
     catch(std::bad_alloc&) {
@@ -262,41 +285,56 @@ void Worker(
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
     : _shared(shared)
     , _leafIndex(-1)
+    , _startSize(0)
     {}
-void MoveStorage::Push(Move move)
+void MoveStorage::PushStem(Move move)
 {
     _currentSequence.push_back(move);
-    NodeX ind;
+}
+void MoveStorage::PushBranch(Move mv, unsigned nMoves)
+{
+    _branches.emplace_back(mv,nMoves);
+}
+void MoveStorage::ShareMoves()
+{
+    std::sort(_branches.begin(), _branches.end());
     {
         Guard rupert(_shared._moveTreeMutex);
-        ind = _shared._moveTree.size();
-        _shared._moveTree.emplace_back(move, _leafIndex);
+        // copy all the stem moves into the move tree
+        for (auto mvi = _currentSequence.begin()+_startSize;
+                mvi != _currentSequence.end();
+                ++mvi) {
+            NodeX ind = _shared._moveTree.size();
+            _shared._moveTree.emplace_back(*mvi, _leafIndex);
+            _leafIndex = ind;
+        }
+        // Now all the branch moves
+        for (const auto& br:_branches) {
+            _shared._moveTree.emplace_back(br._mv, _leafIndex);
+        }
     }
-    _leafIndex = ind;
-}
-void MoveStorage::Pop() noexcept
-{
-    _currentSequence.pop_back();
-    _leafIndex = _shared._moveTree[_leafIndex]._prevNode;
-}
-void MoveStorage::EnqueueMoveSequence(unsigned index)
-{
-    if (_shared._firstTime) {
-        _shared._firstTime = false;
-        _shared._startStackIndex = index;
+    // update the fringe
+    if (_branches.size()) {
+        // Enlarge the fringe if needed
+        assert(_shared._startStackIndex <= _branches.front()._nMoves);
+        unsigned offset = _branches.front()._nMoves - _shared._startStackIndex;
+        if (_shared._fringe.size() <= offset) {
+            ExclusiveGuard freddie(_shared._fringeMutex);
+            // Another thread could have grown the fringe
+            if (_shared._fringe.size() <= offset)
+                _shared._fringe.resize(offset+1);
+        }
+        for (const auto &br: _branches)
+        {
+            offset = br._nMoves - _shared._startStackIndex;
+            auto & elem = _shared._fringe[offset];
+            {
+                Guard clyde(elem._mutex);
+                elem._stack.push_back(++_leafIndex);
+            }
+        }
     }
-    assert(_shared._startStackIndex <= index);
-    const unsigned offset = index - _shared._startStackIndex;
-    if (_shared._fringe.size() <= offset) {
-        // Grow the fringe as needed.
-        ExclusiveGuard freddie(_shared._fringeMutex);
-        if (_shared._fringe.size() <= offset)
-            _shared._fringe.resize(offset+1);
-    }
-    {
-        Guard clyde(_shared._fringe[offset]._mutex);
-        _shared._fringe[offset]._stack.push_back(_leafIndex);
-    }
+
 }
 unsigned MoveStorage::DequeueMoveSequence() noexcept
 {
@@ -337,7 +375,9 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
             const Move &mv = _shared._moveTree[node]._move;
             _currentSequence.push_front(mv);
         }
+        _branches.clear();
     }
+    _startSize = _currentSequence.size();
     return result;
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
@@ -361,7 +401,7 @@ QMoves WorkerState::MakeAutoMoves() noexcept
     QMoves availableMoves;
     while ((availableMoves = FilteredAvailableMoves()).size() == 1)
     {
-        _moveStorage.Push(availableMoves[0]);
+        _moveStorage.PushStem(availableMoves[0]);
         _game.MakeMove(availableMoves[0]);
     }
     return availableMoves;
