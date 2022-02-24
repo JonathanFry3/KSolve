@@ -298,7 +298,7 @@ void MoveStorage::PushBranch(Move mv, unsigned nMoves)
 void MoveStorage::ShareMoves()
 {
     // If _branches is empty, a dead end has been reached.  There
-    // is no need to store any stem nodes that let to it.
+    // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
         NodeX branchIndex;      // index in _moveTree of branch
         {
