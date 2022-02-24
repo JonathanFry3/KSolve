@@ -109,7 +109,7 @@ struct WorkerState {
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
             phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
-            4U, 									// log2(n of submaps)
+            7U, 									// log2(n of submaps)
             Mutex									// mutex type
         > MapType;
     MapType& _closedList;
