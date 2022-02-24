@@ -31,6 +31,9 @@
           </ArrayItems>
       </Expand>
   </Type>
+  <Type Name="frystl::mf_vector&lt;*,*,*&gt;">
+    <DisplayString>size = {_size}</DisplayString>
+  </Type>
   <Type Name="Card">
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
   <!-- flat map/set  -->
@@ -167,5 +170,8 @@
 
   <Type Name="phmap::priv::parallel_hash_set&lt;*,*,*,*,*,*,*&gt;::iterator">
        <DisplayString>{it_,na}</DisplayString>
+  </Type>
+  <Type Name="Move">
+    <DisplayString>Move from {_from} to {_to} {_nMoves} moves draw {_drawCount} n {_n} up {_fromUpCount} </DisplayString>
   </Type>
 </AutoVisualizer>
