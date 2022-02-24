@@ -245,7 +245,7 @@ void Worker(
             state._game.Deal();
             state._moveStorage.MakeSequenceMoves(state._game);
 
-            // Make all the no-choice moves.  Returns the first choice of moves
+            // Make all the no-choice (stem) moves.  Returns the first choice of moves
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
@@ -297,27 +297,29 @@ void MoveStorage::PushBranch(Move mv, unsigned nMoves)
 }
 void MoveStorage::ShareMoves()
 {
-    NodeX branchIndex;      // index in _moveTree of branch
-    {
-        Guard rupert(_shared._moveTreeMutex);
-        // Copy all the stem moves into the move tree.
-        for (auto mvi = _currentSequence.begin()+_startSize;
-                mvi != _currentSequence.end();
-                ++mvi) {
-            // Each stem node points to the previous node.
-            NodeX ind = _shared._moveTree.size();
-            _shared._moveTree.emplace_back(*mvi, _leafIndex);
-            _leafIndex = ind;
-        }
-        // Now all the branches
-        branchIndex = _shared._moveTree.size();
-        for (const auto& br:_branches) {
-            // Each branch node points to the last stem node.
-            _shared._moveTree.emplace_back(br._mv, _leafIndex);
-        }
-    }
-    // Update the fringe.
+    // If _branches is empty, a dead end has been reached.  There
+    // is no need to store any stem nodes that let to it.
     if (_branches.size()) {
+        NodeX branchIndex;      // index in _moveTree of branch
+        {
+            Guard rupert(_shared._moveTreeMutex);
+            // Copy all the stem moves into the move tree.
+            for (auto mvi = _currentSequence.begin()+_startSize;
+                    mvi != _currentSequence.end();
+                    ++mvi) {
+                // Each stem node points to the previous node.
+                NodeX ind = _shared._moveTree.size();
+                _shared._moveTree.emplace_back(*mvi, _leafIndex);
+                _leafIndex = ind;
+            }
+            // Now all the branches
+            branchIndex = _shared._moveTree.size();
+            for (const auto& br:_branches) {
+                // Each branch node points to the last stem node.
+                _shared._moveTree.emplace_back(br._mv, _leafIndex);
+            }
+        }
+        // Update the fringe.
         auto & fringe = _shared._fringe;
         // Enlarge the fringe if needed.
         unsigned maxOffset = 
@@ -335,7 +337,6 @@ void MoveStorage::ShareMoves()
             }
         }
     }
-
 }
 unsigned MoveStorage::DequeueMoveSequence() noexcept
 {
