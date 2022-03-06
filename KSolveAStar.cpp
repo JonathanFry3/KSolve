@@ -201,7 +201,7 @@ KSolveAStarResult KSolveAStar(
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     // Run one more worker in this (main) thread
