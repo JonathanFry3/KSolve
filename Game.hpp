@@ -411,10 +411,7 @@ struct Hasher
         return 	  gs._part[0]
                 ^ gs._part[1]
                 ^ gs._part[2]
-                ^ gs._part[0]>>13
-                ^ gs._part[0]>>26
-                ^ gs._part[1]>>13
-                ^ gs._part[1]>>26;
+                ;
     }
 };
 
