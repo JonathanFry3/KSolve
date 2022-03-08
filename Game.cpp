@@ -735,18 +735,17 @@ GameState::GameState(const Game& game) noexcept
     TabStateT tableauState;
     const auto& tableau = game.Tableau();
     for (unsigned i = 0; i<7; i+=1) {
-        const auto& pile = tableau[i];
-        const unsigned upCount = pile.UpCount();
+        const auto& cards = tableau[i];
+        const unsigned upCount = cards.UpCount();
         if (upCount == 0) {
             tableauState[i] = 0;
         } else {
-            const auto& cards = pile;
             unsigned isMajor = 0;
             for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
                 isMajor = isMajor<<1 | unsigned(j->IsMajor());
             }
-            const Card top = pile.Top();
-            tableauState[i] = ((isMajor<<4 | upCount)<<4 | top.Rank())<<2 | top.Suit();
+            const Card top = cards.Top();
+            tableauState[i] = ((top.Suit()<<4 | top.Rank())<<11 | isMajor)<<4 | upCount;
         }
     }
     std::sort(tableauState.begin(),tableauState.end());
