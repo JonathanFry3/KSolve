@@ -382,12 +382,6 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool re
     qm.back().SetRecycle(recycle);
 }
 
-// Return true if any more empty columns are needed for kings
-bool Game::NeedKingSpace() const noexcept
-{
-    return _kingSpaces < 4;
-}
-
 // If any short-foundation moves exist, returns one of those.
 // Otherwise, returns a list of moves that are legal and not
 // known to be wasted.  Rather than generate individual draws from

@@ -80,7 +80,7 @@ public:
     bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 
-    // Make from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
+    // Make a Card from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
     // Ignores characters that cannot appear in a valid card string.
     // Suit may come before or after rank, and letters may be in
     // upper or lower case, or mixed.
@@ -110,7 +110,7 @@ enum PileCode {
     Stock = 0,
     Waste,
     TableauBase = 2,
-    Tableau1 = 2,
+    Tableau1 = TableauBase,
     Tableau2,
     Tableau3,
     Tableau4,
@@ -118,7 +118,7 @@ enum PileCode {
     Tableau6,
     Tableau7,
     FoundationBase = 9,
-    Foundation1C = 9,
+    Foundation1C = FoundationBase,
     Foundation2D,
     Foundation3S,
     Foundation4H
@@ -145,39 +145,36 @@ public:
     , _isFoundation(FoundationBase <= code && code < FoundationBase+4)
     {}
 
-    unsigned Code() const noexcept					{return _code;}
-    unsigned UpCount() const noexcept				{return _upCount;}
-    bool IsTableau() const noexcept					{return _isTableau;}
-    bool IsFoundation() const noexcept				{return _isFoundation;}
+    unsigned Code() const noexcept			{return _code;}
+    unsigned UpCount() const noexcept		{return _upCount;}
+    bool IsTableau() const noexcept			{return _isTableau;}
+    bool IsFoundation() const noexcept		{return _isFoundation;}
 
-    void SetUpCount(unsigned up) noexcept			{_upCount = up;}
-    void IncrUpCount(int c) noexcept				{_upCount += c;}
-    const PileVec& Cards() const noexcept			{return *this;}
-    Card Pop() noexcept			{Card r = back(); pop_back(); return r;}
-    void Push(Card c) noexcept             			{push_back(c);}
+    void SetUpCount(unsigned up) noexcept	{_upCount = up;}
+    void IncrUpCount(int c) noexcept		{_upCount += c;}
+    const PileVec& Cards() const noexcept	{return *this;}
+    void Push(Card c) noexcept             	{push_back(c);}
+    Card Pop() noexcept			            {Card r = back(); pop_back(); return r;}
+    void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
     Card Top() const  noexcept              {return *(end()-_upCount);}
     void ClearCards() noexcept              {clear(); _upCount = 0;}
-    void Take(Pile& donor, unsigned n) noexcept // Take the last n cards from donor preserving order	
+    // Take the last n cards from donor preserving order	
+    void Take(Pile& donor, unsigned n) noexcept 
     {
         assert(n <= donor.size());
         for (auto p = donor.end()-n; p < donor.end(); ++p)
             push_back(*p);
-        for (unsigned i = 0; i < n; ++i)
+        while (n--)
             donor.pop_back();
     }
     void Draw(Pile& other, int n) noexcept
     {
         if (n < 0) {
-            assert(-n <= int(size()));
-            for (int i = 0; i < -n; ++i)
-                other.Draw(*this);
+            while (n++) other.Draw(*this);
         } else {
-            assert(n <= int(other.size()));
-            for (int i = 0; i < n; ++i)
-                Draw(other);
+            while (n--) Draw(other);
         }
     }
-    void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
 };
 
 
@@ -349,7 +346,8 @@ class Game
     std::array<Pile,4> _foundation;
     std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
 
-    bool NeedKingSpace() const noexcept;
+    // Return true if any more empty columns are needed for kings
+    bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
 
 public:
     Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24, unsigned recyleLimit=-1);
@@ -436,8 +434,10 @@ bool ABC_Move(Move trial, const V& movesMade) noexcept
 
     // Was the move from A to C possible at T0? Yes if pile
     // C has not changed since the cards moved at T0 were
-    // lifted off pile C.  If the T0 move caused a face-down card
-    // on pile C to be turned up, that changed pile C.
+    // lifted off pile A.  If the T0 move caused a face-down card
+    // on pile C to be turned up (i.e., A==C, pile A is a tableau
+    // pile, and the T0 move resulted in a flip of a face-down card), 
+    // that changed pile C.
 
     // Since nothing says A cannot equal C, this test catches 
     // moves that exactly reverse previous moves.
