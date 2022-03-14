@@ -369,7 +369,7 @@ public:
     unsigned RecycleCount() const                   {return _recycleCount;}
 
     void Deal();
-    QMoves AvailableMoves() noexcept;
+    QMoves AvailableMoves() const noexcept;
     void  MakeMove(Move mv) noexcept;
     void  UnMakeMove(Move mv) noexcept;
     unsigned MinimumMovesLeft() const noexcept;
@@ -420,8 +420,8 @@ template <class V>
 bool ABC_Move(Move trial, const V& movesMade) noexcept
 {
     // Consider a move at time T0 from A to B and the next move
-    // from B, which goes to C at time Tn.  The move at Tn is
-    // skippable if the same result could have been achieved 
+    // from B, which goes to C at time Tn.  The move at Tn can
+    // be skipped if the same result could have been achieved 
     // at T0 by moving the same cards directly from A to C.
 
     // We are now at Tn looking back for a T0 move.  B is our from pile
@@ -466,9 +466,9 @@ bool ABC_Move(Move trial, const V& movesMade) noexcept
     return false;
 
     // AvailableMoves() generates moves among tableau files for only two purposes:
-    // to move all the face-up cards, or to expose a card that can be moved to the 
+    // to move all the face-up cards, or to uncover a card that can be moved to the 
     // foundation.  I have tried filtering out later moves that would re-cover a 
-    // card that had been exposed in that fashion.  That did not break anything, but
+    // card that had been uncovered in that fashion.  That did not break anything, but
     // cost more time than it saved.
     // Jonathan Fry 7/12/2020
 }

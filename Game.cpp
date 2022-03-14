@@ -350,6 +350,7 @@ static TalonFutureVec TalonCards(const Game & game)
     const unsigned drawSetting = game.DrawSetting();
     unsigned nMoves = 0;
     unsigned nRecycles = 0;
+    unsigned maxRecycles = std::min(2U, game.RecycleLimit()-game.RecycleCount());
 
     do {
         if (talon.WasteSize()) {
@@ -361,15 +362,11 @@ static TalonFutureVec TalonCards(const Game & game)
             nMoves += 1;
             talon.Draw( std::min<unsigned>(drawSetting,talon.StockSize()));
         } else {
-            if (game.RecycleCount() < game.RecycleLimit()){
-                // Recycle the waste pile
-                nRecycles += 1;
-                talon.Cycle();
-            } else {
-                nRecycles = 3;      // kluge to end loop
-            }
+            // Recycle the waste pile
+            nRecycles += 1;
+            talon.Cycle();
         }
-    } while (talon.WasteSize() != originalWasteSize && nRecycles < 2);
+    } while (talon.WasteSize() != originalWasteSize && nRecycles < maxRecycles);
     return result;
 }
 
@@ -387,7 +384,7 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool re
 // known to be wasted.  Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-QMoves Game::AvailableMoves() noexcept
+QMoves Game::AvailableMoves() const noexcept
 {
     QMoves result;
 
@@ -430,12 +427,11 @@ QMoves Game::AvailableMoves() noexcept
                 // Other moves follow the opposite-color-and-next-lower-rank rule.
                 // We move from one tableau pile to another only to 
                 // (a) move all the face-up cards on the from pile to 
-                //		(1) expose a face-down card, or
+                //		(1) flip a face-down card, or
                 //		(2) make an empty column, or
-                // (b) expose a card on the from pile that can be moved to a foundation
-                // 	   pile.
+                // (b) uncover a face-up card on the from pile that can be moved
+                // 	   to a foundation pile.
                 const Card cardToCover = toPile.back();
-                const auto& fromCds = fromPile;
                 // See whether any of the from pile's up cards can be moved
                 // to the to pile.
                 const unsigned toRank = cardToCover.Rank();
@@ -446,17 +442,17 @@ QMoves Game::AvailableMoves() noexcept
                     const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
                     assert(moveCount <= upCount);
                     if (moveCount==upCount && (upCount<fromPile.size() || NeedKingSpace())){
-                        // This move will expose a face-down card or
+                        // This move will flip a face-down card or
                         // clear a column that's needed for a king.
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
                         result.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
                     } else if (moveCount < upCount || upCount < fromPile.size()) {
-                        const Card exposed = *(fromCds.end()-moveCount-1);
-                        if (exposed.Rank() == _foundation[exposed.Suit()].size()){
-                            // This move will expose a card that can be moved to 
+                        const Card uncovered = *(fromPile.end()-moveCount-1);
+                        if (uncovered.Rank() == _foundation[uncovered.Suit()].size()){
+                            // This move will uncover a card that can be moved to 
                             // its foundation pile.
-                            assert((fromCds.end()-moveCount)->Covers(cardToCover));
+                            assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             result.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
                         }
                     }
@@ -505,8 +501,7 @@ QMoves Game::AvailableMoves() noexcept
         }
     }
 
-    // Look for moves from foundation piles to tableau piles,
-    // even though they rarely appear in optimal solutions.
+    // Look for moves from foundation piles to tableau piles.
     for (const Pile& fPile: _foundation) {
         if (fPile.size() > minFoundationSize+1) {  
             const Card& top = fPile.back();
