@@ -109,7 +109,7 @@ CardDeck NumberedDeal(uint32_t seed);
 enum PileCode {
     Stock = 0,
     Waste,
-    TableauBase = 2,
+    TableauBase,  // == 2.  Must == Waste+1
     Tableau1 = TableauBase,
     Tableau2,
     Tableau3,
@@ -117,7 +117,7 @@ enum PileCode {
     Tableau5,
     Tableau6,
     Tableau7,
-    FoundationBase = 9,
+    FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,
     Foundation3S,
@@ -237,7 +237,7 @@ public:
     unsigned From() const noexcept		{return _from;}
     unsigned To()   const noexcept		{return _to;}
     unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
-    unsigned FromUpCount() const noexcept{return _fromUpCount;}
+    unsigned FromUpCount()const noexcept{return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{return _drawCount;}
@@ -350,7 +350,10 @@ class Game
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
 
 public:
-    Game(CardDeck deck,unsigned draw=1,unsigned talonLookAheadLimit=24, unsigned recyleLimit=-1);
+    Game(CardDeck deck,
+         unsigned draw=1,
+         unsigned talonLookAheadLimit=24, 
+         unsigned recyleLimit=-1);
     Game(const Game&);
 
     Pile& WastePile()       						{return _waste;}
@@ -368,14 +371,14 @@ public:
     unsigned RecycleLimit() const                   {return _recycleLimit;}
     unsigned RecycleCount() const                   {return _recycleCount;}
 
-    void Deal();
-    QMoves AvailableMoves() const noexcept;
-    void  MakeMove(Move mv) noexcept;
-    void  UnMakeMove(Move mv) noexcept;
-    unsigned MinimumMovesLeft() const noexcept;
-    void MakeMove(const XMove& xmv) noexcept;
-    unsigned MinFoundationPileSize() const noexcept;
-    bool GameOver() const noexcept;
+    void        Deal();
+    QMoves      AvailableMoves() const noexcept;
+    void        MakeMove(Move mv) noexcept;
+    void        UnMakeMove(Move mv) noexcept;
+    unsigned    MinimumMovesLeft() const noexcept;
+    void        MakeMove(const XMove& xmv) noexcept;
+    unsigned    MinFoundationPileSize() const noexcept;
+    bool        GameOver() const noexcept;
 };
 
 // Return a string to visualize the state of a game
