@@ -351,8 +351,8 @@ class Game
     // Parts of AvailableMoves()
     void ShortFoundationMove(QMoves & moves, unsigned minFndSize) const noexcept;
     void FromTableauMoves(QMoves & moves) const noexcept;
-    void FromTalonMoves(QMoves & moves) const noexcept;
-    void FromFoundationMoves(QMoves & moves) const noexcept;
+    void FromTalonMoves(QMoves & moves, unsigned minFndSize) const noexcept;
+    void FromFoundationMoves(QMoves & moves, unsigned minFndSize) const noexcept;
 public:
     Game(CardDeck deck,
          unsigned draw=1,
