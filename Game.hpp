@@ -334,7 +334,7 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 class Game
 {
-    CardDeck _deck;
+    const CardDeck _deck;
     Pile _waste;
     Pile _stock;
     unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)

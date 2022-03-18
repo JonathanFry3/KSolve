@@ -150,15 +150,16 @@ void Game::Deal()
     }
     unsigned ideck = 0;
     for (unsigned i = 0; i<7; i+=1) {
-        for (unsigned icd = i; icd < 7; icd+=1)	{
+        for (unsigned icd = i; icd < 7; ++icd)	{
             _tableau[icd].Push(_deck[ideck]);
             ideck += 1;
         }
         _tableau[i].SetUpCount(1);      // turn up the top card
         _kingSpaces += _tableau[i][0].Rank() == King;	// count kings at base
     }
-    for (unsigned ic = 51; ic >= 28; ic-=1)
-        _stock.Push(_deck[ic]);
+    assert(ideck == 28);
+    for (unsigned ic = 51; _stock.size() < 24;)
+        _stock.Push(_deck[ic--]);
 }
 
 void Game::MakeMove(Move mv) noexcept
