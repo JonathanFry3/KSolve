@@ -148,18 +148,18 @@ void Game::Deal()
     for (auto pile: _allPiles)	{
         pile->ClearCards();
     }
+    // Deal 28 cards to the tableau
     unsigned ideck = 0;
     for (unsigned i = 0; i<7; i+=1) {
-        for (unsigned icd = i; icd < 7; ++icd)	{
-            _tableau[icd].Push(_deck[ideck]);
-            ideck += 1;
-        }
+        for (unsigned icd = i; icd < 7; ++icd)	
+            _tableau[icd].push_back(_deck[ideck++]);
         _tableau[i].SetUpCount(1);      // turn up the top card
         _kingSpaces += _tableau[i][0].Rank() == King;	// count kings at base
     }
     assert(ideck == 28);
+    // Deal 24 cards to stock
     for (unsigned ic = 51; _stock.size() < 24;)
-        _stock.Push(_deck[ic--]);
+        _stock.push_back(_deck[ic--]);
 }
 
 void Game::MakeMove(Move mv) noexcept
