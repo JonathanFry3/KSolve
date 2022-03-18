@@ -107,9 +107,8 @@ struct CardDeck : frystl::static_vector<Card,52>
 CardDeck NumberedDeal(uint32_t seed);
 
 enum PileCode {
-    Stock = 0,
-    Waste,
-    TableauBase,  // == 2.  Must == Waste+1
+    Waste = 0, 
+    TableauBase,  // == 1.  Must == Waste+1
     Tableau1 = TableauBase,
     Tableau2,
     Tableau3,
@@ -117,6 +116,7 @@ enum PileCode {
     Tableau5,
     Tableau6,
     Tableau7,
+    Stock,       // must == TableauBase+8.  See ShortFoundationMove
     FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,
@@ -348,7 +348,11 @@ class Game
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
-
+    // Parts of AvailableMoves()
+    void ShortFoundationMove(QMoves & moves, unsigned minFndSize) const noexcept;
+    void FromTableauMoves(QMoves & moves) const noexcept;
+    void FromTalonMoves(QMoves & moves) const noexcept;
+    void FromFoundationMoves(QMoves & moves) const noexcept;
 public:
     Game(CardDeck deck,
          unsigned draw=1,

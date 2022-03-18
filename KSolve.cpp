@@ -462,7 +462,6 @@ vector<Card> SolitaireDeck(string const& cardSet) {
 string GameDiagram(const Game& game) {
     stringstream ss;
     vector<string> pilestring{
-        "STOCK    ",
         "WASTE    ",
         "TABLEAU 1",
         "TABLEAU 2",
@@ -471,6 +470,7 @@ string GameDiagram(const Game& game) {
         "TABLEAU 5",
         "TABLEAU 6",
         "TABLEAU 7",
+        "STOCK    ",
         "CLUBS    ",
         "DIAMONDS ",
         "SPADES   ",
@@ -550,7 +550,6 @@ string CardString(Card cd)
 string GetMoveInfo(XMove move, const Game& game) {
     stringstream ss;
     string pileNames[] {
-        "stock",
         "waste",
         "tableau 1",
         "tableau 2",
@@ -559,6 +558,7 @@ string GetMoveInfo(XMove move, const Game& game) {
         "tableau 5",
         "tableau 6",
         "tableau 7",
+        "stock",
         "clubs",
         "diamonds",
         "spades",

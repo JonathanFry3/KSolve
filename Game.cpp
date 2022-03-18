@@ -256,25 +256,28 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // For the same reason that putting an ace or deuce on its foundation pile 
 // is always right, these are, too. Returns a Moves vector that may be empty 
 // or contain one such move.
-static QMoves ShortFoundationMove(const Game & gm, unsigned minFoundationSize)
+void Game::ShortFoundationMove(QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
-    QMoves result;
-    const auto & fnd = gm.Foundation();
-    const auto & allPiles = gm.AllPiles();
-    for (int iPile = Waste; iPile<TableauBase+7 && result.empty(); iPile+=1) {
-        const Pile &pile = *allPiles[iPile] ;
+    const auto & fnd = Foundation();
+    const auto & _allPiles = AllPiles();
+    // Loop over Waste, all Tableau piles, and Stock
+    for (int iPile = Waste; iPile<=Stock && moves.empty(); iPile+=1) {
+        const Pile &pile = *_allPiles[iPile] ;
         if (pile.size()) {
             const Card& card = pile.back();
             const unsigned suit = card.Suit();
-            if (card.Rank() <= minFoundationSize+1) {
-                if (fnd[suit].size() == card.Rank()) {
+            if (card.Rank() <= minFoundationSize+1 
+                && fnd[suit].size() == card.Rank()) {
+                if (iPile == Stock) {
+                    // Talon move: draw one card, move it to foundation
+                    moves.emplace_back(FoundationBase+suit,2,1);
+                } else {
                     const unsigned up = (iPile == Waste) ? 0 : pile.UpCount();
-                    result.emplace_back(iPile,FoundationBase+suit,1,up);
+                    moves.emplace_back(iPile,FoundationBase+suit,1,up);
                 }
             }
         }
     }
-    return result;
 }
 
 struct TalonFuture {
@@ -391,7 +394,7 @@ QMoves Game::AvailableMoves() const noexcept
 
     const unsigned minFoundationSize = MinFoundationPileSize();
     if (minFoundationSize == 13) return result;		// game over
-    result = ShortFoundationMove(*this,minFoundationSize);
+    ShortFoundationMove(result,minFoundationSize);
     if (result.size()) return result;
 
     // Look for moves from tableau piles.
@@ -482,7 +485,6 @@ QMoves Game::AvailableMoves() const noexcept
                 if (_drawSetting == 1) {
                     // This is a short-foundation move that ShortFoundationMove()
                     // can't find.
-                    if (result.size() == 1) return result;
                     break;		// This is best next move from among the remaining talon cards
                 }
                 else
@@ -659,7 +661,6 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 
 static std::string PileNames[] 
 {
-    "st",
     "wa",
     "t1",
     "t2",
@@ -668,6 +669,7 @@ static std::string PileNames[]
     "t5",
     "t6",
     "t7",
+    "st",
     "cb",
     "di",
     "sp",
