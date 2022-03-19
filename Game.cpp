@@ -455,7 +455,8 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool re
 }
 
 // Append to "moves" any available moves from the talon.
-void Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noexcept
+// Returns true if the one move in moves is a short foundation move, otherwise false.
+bool Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     // Look for move from waste to tableau or foundation, including moves that become available 
     // after one or more draws.  
@@ -476,6 +477,7 @@ void Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noex
             PushTalonMove(talonCard, pileNo, recycle, moves);
             if (cardRank <= minFoundationSize+1){
                 if (_drawSetting == 1) {
+                    if (moves.size() == 1) return true;
                     break;		// This is best next move from among the remaining talon cards
                 }
                 else
@@ -494,6 +496,7 @@ void Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noex
             }
         }
     }
+    return false;
 }
 
 // Look for moves from foundation piles to tableau piles.
@@ -533,8 +536,10 @@ QMoves Game::AvailableMoves() const noexcept
     if (moves.size()) return moves;
 
     FromTableauMoves(moves);
-    FromTalonMoves(moves, minFoundationSize);
-    FromFoundationMoves(moves, minFoundationSize);
+    // FromTalonMoves returns true if it finds a short foundation move
+    // when no other moves have been found.
+    if (!FromTalonMoves(moves, minFoundationSize)) 
+        FromFoundationMoves(moves, minFoundationSize);
 
     return moves;
 }
