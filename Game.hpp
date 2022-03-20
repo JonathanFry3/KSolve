@@ -116,7 +116,7 @@ enum PileCode {
     Tableau5,
     Tableau6,
     Tableau7,
-    Stock,       // must == TableauBase+8.  See ShortFoundationMove
+    Stock,       // must == TableauBase+8.  See MovesToShortFoundationPile
     FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,
@@ -349,10 +349,10 @@ class Game
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
     // Parts of AvailableMoves()
-    void ShortFoundationMove(QMoves & moves, unsigned minFndSize) const noexcept;
-    void FromTableauMoves(QMoves & moves) const noexcept;
-    bool FromTalonMoves(QMoves & moves, unsigned minFndSize) const noexcept;
-    void FromFoundationMoves(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromTableau(QMoves & moves) const noexcept;
+    bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
 public:
     Game(CardDeck deck,
          unsigned draw=1,

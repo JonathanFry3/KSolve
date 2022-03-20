@@ -256,7 +256,8 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // For the same reason that putting an ace or deuce on its foundation pile 
 // is always right, these are, too. Returns a Moves vector that may be empty 
 // or contain one such move.
-void Game::ShortFoundationMove(QMoves& moves, unsigned minFoundationSize) const  noexcept
+void Game::MovesToShortFoundationPile(
+    QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
     const auto & fnd = Foundation();
     const auto & _allPiles = AllPiles();
@@ -281,7 +282,7 @@ void Game::ShortFoundationMove(QMoves& moves, unsigned minFoundationSize) const 
 }
 
 // Append to "moves" any available moves from tableau piles.
-void Game::FromTableauMoves(QMoves & moves) const noexcept
+void Game::MovesFromTableau(QMoves & moves) const noexcept
 {
     for (const Pile& fromPile: _tableau) {
         // skip empty from piles
@@ -304,9 +305,9 @@ void Game::FromTableauMoves(QMoves & moves) const noexcept
             if (&fromPile == &toPile) continue;
 
             if (toPile.empty()) { 
-                if (!kingMoved 
-                        && fromBase.Rank() == King 
-                        && fromPile.size() > upCount) {
+                if (  !kingMoved 
+                    && fromBase.Rank() == King 
+                    && fromPile.size() > upCount) {
                     // toPile is empty, a king sits atop fromPile's face-up
                     // cards, and it is covering at least one face-down card.
                     moves.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
@@ -456,7 +457,7 @@ static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool re
 
 // Append to "moves" any available moves from the talon.
 // Returns true if the one move in moves is a short foundation move, otherwise false.
-bool Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noexcept
+bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     // Look for move from waste to tableau or foundation, including moves that become available 
     // after one or more draws.  
@@ -500,7 +501,7 @@ bool Game::FromTalonMoves(QMoves & moves, unsigned minFoundationSize) const noex
 }
 
 // Look for moves from foundation piles to tableau piles.
-void Game::FromFoundationMoves(QMoves & moves, unsigned minFoundationSize) const noexcept
+void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     for (const Pile& fPile: _foundation) {
         if (fPile.size() > minFoundationSize+1) {  
@@ -532,14 +533,14 @@ QMoves Game::AvailableMoves() const noexcept
 
     const unsigned minFoundationSize = MinFoundationPileSize();
     if (minFoundationSize == 13) return moves;		// game over
-    ShortFoundationMove(moves,minFoundationSize);
+    MovesToShortFoundationPile(moves,minFoundationSize);
     if (moves.size()) return moves;
 
-    FromTableauMoves(moves);
-    // FromTalonMoves returns true if it finds a short foundation move
+    MovesFromTableau(moves);
+    // MovesFromTalon returns true if it finds a short foundation move
     // when no other moves have been found.
-    if (!FromTalonMoves(moves, minFoundationSize)) 
-        FromFoundationMoves(moves, minFoundationSize);
+    if (!MovesFromTalon(moves, minFoundationSize)) 
+        MovesFromFoundation(moves, minFoundationSize);
 
     return moves;
 }
