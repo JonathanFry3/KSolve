@@ -32,11 +32,11 @@ copies or substantial portions of the Software.
 using namespace std;
 using namespace std::chrono;
 
-vector<Card> PysolDeck(const string& s);
-vector<Card> ReversedPysolDeck(const string& s);
-vector<Card> DeckLoader(string const& cardSet, const int order[52]);
-vector<Card> Shuffle1(int &seed);
-vector<Card> SolitaireDeck(const string& s);
+CardDeck PysolDeck(const string& s);
+CardDeck ReversedPysolDeck(const string& s);
+CardDeck DeckLoader(string const& cardSet, const int order[52]);
+CardDeck Shuffle1(int &seed);
+CardDeck SolitaireDeck(const string& s);
 string GameDiagram(const Game& game);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
@@ -46,8 +46,8 @@ const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
 
 
-vector<Card> LoadDeck(string const& f, unsigned int & index) {
-    vector<Card> deck;
+CardDeck LoadDeck(string const& f, unsigned int & index) {
+    CardDeck deck;
     while (index < f.size() && f[index] == '\r' || f[index] == '\n' || f[index] == '\t' || f[index] == ' ') { index++; }
     if (index >= f.size()) { return deck; }
     int gameType = 0;
@@ -70,6 +70,12 @@ vector<Card> LoadDeck(string const& f, unsigned int & index) {
         while (index < f.size() && f[index++] != '\n') {}
         int seed = stoi(f.substr(startIndex, index - startIndex));
         deck = Shuffle1(seed);
+    } else if (f[index] == 'R' || f[index] == 'r') {
+        while (index < f.size() && f[index++] != ' ') {}
+        startIndex = index;
+        while (index < f.size() && f[index++] != '\n') {}
+        int seed = stoi(f.substr(startIndex, index - startIndex));
+        deck = NumberedDeal(seed);
     } else {
         while (index < f.size() && f[index++] != '\n') {}
         deck = SolitaireDeck(f.substr(startIndex, index - startIndex));
@@ -87,7 +93,7 @@ int main(int argc, char * argv[]) {
     string fileContents;
     bool replay = false;
     bool showMoves = false;
-    vector<Card> deck;
+    CardDeck deck;
     int drawCount = 1;
     unsigned fastOption = 24;
 
@@ -110,6 +116,13 @@ int main(int argc, char * argv[]) {
             commandLoaded = true;
             int seed = atoi(argv[i + 1]);
             deck = Shuffle1(seed);
+            i++;
+        } else if (_stricmp(argv[i], "-ran") == 0 || _stricmp(argv[i], "/ran") == 0) {
+            if (i + 1 >= argc) { cerr << "You must specify a game number to load. Any integeral number.\n"; return 100; }
+            if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
+            commandLoaded = true;
+            int seed = atoi(argv[i + 1]);
+            deck = NumberedDeal(seed);
             i++;
         } else if (_stricmp(argv[i], "-out") == 0 || _stricmp(argv[i], "/out") == 0 || _stricmp(argv[i], "-o") == 0 || _stricmp(argv[i], "/o") == 0) {
             if (i + 1 >= argc) { cerr << "You must specify a valid output method. 0 or 1 or 2.\n"; return 100; }
@@ -141,15 +154,16 @@ int main(int argc, char * argv[]) {
             cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
             cout << "  -deck str [-d str]    Loads the deck specified by the string.\n\n";
             cout << "  -game # [-g #]        Loads a random game with seed #.\n\n";
+            cout << "  -ran #                Loads a random game with seed # using the ran programs\'s generator.\n\n";
             cout << "  Path                  Solves deals specified in the file.\n\n";
             cout << "  -r                    Replays solution to output if one is found.\n\n";
             cout << "  -out # [-o #]         Sets the output method of the solver.\n";
-            cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n";
+            cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n\n";
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
-            cout << "                        solution is found.";
+            cout << "                        solution is found.\n\n";
             cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
-            cout << "                        before terminating. Defaults to 20,000,000.\n";
-            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to 2.\n";
+            cout << "                        before terminating. Defaults to 20,000,000.\n\n";
+            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to 2.\n\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
             cout << "                        no result for a solvable deal. 24 is like leaving this out.\n\n";
@@ -293,7 +307,7 @@ pair<bool,Card> CardFromString(const string& str)
     return result;
 }
 
-vector<Card> PysolDeck(string const& cardSet)
+CardDeck PysolDeck(string const& cardSet)
 {
     // Pysol expects the cards within each pile to be in the 
     // order they were dealt.
@@ -310,7 +324,7 @@ vector<Card> PysolDeck(string const& cardSet)
     return DeckLoader(cardSet, order);
 }
 
-vector<Card> ReversedPysolDeck(string const& cardSet)
+CardDeck ReversedPysolDeck(string const& cardSet)
 {
     // In ReversePysol, the cards in each pile are in the order
     // in which the player would discover them while playing.
@@ -327,9 +341,9 @@ vector<Card> ReversedPysolDeck(string const& cardSet)
     return DeckLoader(cardSet, order);
 }
 
-vector<Card> DeckLoader(string const& cardSet, const int order[52]) {
-    vector<Card> result(52,Card());
-    vector<Card> empty;
+CardDeck DeckLoader(string const& cardSet, const int order[52]) {
+    CardDeck result(52);
+    CardDeck empty;
     DuplicateCardChecker dupchk;
     string eyeCandy{"<> \t\n\r:-"};
     unsigned int j = 7;  // skips "Talon: " or "nolaT: "
@@ -369,7 +383,7 @@ public:
 
 Random rng;
 
-vector<Card> Shuffle1(int &dealNumber) {
+CardDeck Shuffle1(int &dealNumber) {
     if (dealNumber != -1) {
         rng.SetSeed(dealNumber);
     } else {
@@ -377,7 +391,7 @@ vector<Card> Shuffle1(int &dealNumber) {
         rng.SetSeed(dealNumber);
     }
 
-    vector<Card> result;
+    CardDeck result;
     for (int i = 0; i < 52; i++) { result.push_back(Card(i)); }
 
     for (int x = 0; x < 269; ++x) {
@@ -427,9 +441,9 @@ int Random::Next1() {
     CalculateNext();
     return value & 0x7fffffff;
 }
-vector<Card> SolitaireDeck(string const& cardSet) {
-    vector<Card> result;
-    vector<Card> empty;
+CardDeck SolitaireDeck(string const& cardSet) {
+    CardDeck result;
+    CardDeck empty;
     DuplicateCardChecker dupchk;
     result.reserve(52);
     if (cardSet.size() < 156) { 
@@ -598,7 +612,7 @@ string GetMoveInfo(XMove move, const Game& game) {
 string MovesMade(const XMoves& moves)
 {
     stringstream ss;
-    char PileNames[] {"?W1234567CDSH"};
+    char PileNames[] {"W1234567?CDSH"};
     for (XMove mv: moves) {
         if (mv.To() == Stock) ss << "NEW ";
         else if (mv.From() == Stock) ss << "DR" << mv.NCards() << " ";

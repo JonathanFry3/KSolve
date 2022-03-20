@@ -101,6 +101,11 @@ struct CardDeck : frystl::static_vector<Card,52>
     {
         assert(vec.size() == 52);
     }
+    CardDeck(const frystl::static_vector<Card,52> &v)
+        : static_vector<Card,52>(v)
+    {
+        assert(v.size() == 52);
+    }
 };
 
 // Function to generate a randomly shuffled deck
