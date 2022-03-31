@@ -261,8 +261,9 @@ void Game::MovesToShortFoundationPile(
 {
     const auto & fnd = Foundation();
     const auto & _allPiles = AllPiles();
-    // Loop over Waste, all Tableau piles, and Stock
-    for (int iPile = Waste; iPile<=Stock && moves.empty(); iPile+=1) {
+    // Loop over Waste, all Tableau piles, and Stock if DrawSetting()==1
+    int end = (_drawSetting==1) ? Stock : Stock-1;
+    for (int iPile = Waste; iPile<=end && moves.empty(); iPile+=1) {
         const Pile &pile = *_allPiles[iPile] ;
         if (pile.size()) {
             const Card& card = pile.back();
@@ -425,8 +426,8 @@ static TalonFutureVec TalonCards(const Game & game)
     const unsigned originalWasteSize = talon.WasteSize();
     const unsigned drawSetting = game.DrawSetting();
     unsigned nMoves = 0;
-    unsigned nRecycles = 0;
-    unsigned maxRecycles = std::min(2U, game.RecycleLimit()-game.RecycleCount());
+    unsigned nRecycles = game.RecycleCount();
+    unsigned maxRecycles = std::min(2U, game.RecycleLimit());
 
     do {
         if (talon.WasteSize()) {
@@ -442,7 +443,7 @@ static TalonFutureVec TalonCards(const Game & game)
             nRecycles += 1;
             talon.Cycle();
         }
-    } while (talon.WasteSize() != originalWasteSize && nRecycles < maxRecycles);
+    } while (talon.WasteSize() != originalWasteSize && nRecycles <= maxRecycles);
     return result;
 }
 
@@ -597,6 +598,52 @@ unsigned Game::MinimumMovesLeft() const noexcept
         }
     }
     return result;
+}
+
+static bool Valid(const Game& gm, 
+                  unsigned from, 
+                  unsigned to, 
+                  unsigned which)
+{
+    if (from >= gm.AllPiles().size()) return false;
+    if (to >= gm.AllPiles().size()) return false;
+    const Pile& fromPile = *gm.AllPiles()[from];
+    const Pile& toPile = *gm.AllPiles()[to];
+    if (which > fromPile.size()) return false;
+    Card coverCard = *(fromPile.end()-which);
+    if (toPile.IsTableau()) {
+        if (toPile.empty()) {
+            if (coverCard.Rank()!=King) return false;
+        } else {
+            if (!coverCard.Covers(toPile.back())) return false;
+        }
+    } else if (toPile.IsFoundation()) {
+        if (coverCard.Suit() != to-FoundationBase) return false;
+        if (coverCard.Rank() != toPile.size()) return false;
+    }
+    return true;
+}
+
+bool Game::IsValid(Move mv) const noexcept
+{
+    Card drawn;
+    if (mv.IsTalonMove()) {
+        int draw = mv.DrawCount();
+        if (draw > 0) {
+            unsigned ds = DrawSetting();
+            unsigned rem = draw%ds;
+            if (rem != 0 && rem != _stock.size()) return false;
+            return Valid(*this,Stock,mv.To(),draw);
+        } else {
+            return Valid(*this,Waste,mv.To(),-draw+1);
+        }
+    }
+    return Valid(*this, mv.From(), mv.To(), mv.NCards());
+}
+
+bool Game::IsValid(XMove mv) const noexcept
+{
+    return Valid(*this, mv.From(), mv.To(), mv.NCards());
 }
 
 // Enumerate the moves in a vector of Moves.

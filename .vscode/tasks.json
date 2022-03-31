@@ -43,6 +43,7 @@
 				"unittests.cpp",
 				"-o","${workspaceFolder}/unittests"
 				,"&&","./unittests"
+				,"||","echo","'<<<FAILED>>>'"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"

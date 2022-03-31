@@ -386,6 +386,8 @@ public:
     void        UnMakeMove(Move mv) noexcept;
     unsigned    MinimumMovesLeft() const noexcept;
     void        MakeMove(const XMove& xmv) noexcept;
+    bool        IsValid(Move mv) const noexcept;
+    bool        IsValid(XMove xmv) const noexcept;
     unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
 };

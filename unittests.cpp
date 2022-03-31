@@ -25,7 +25,6 @@ std::vector<Card> Cards(const std::vector<std::string>& strings)
 }
 static string PileNames[] 
 {
-	"stock",
 	"waste",
 	"tableau 1",
 	"tableau 2",
@@ -34,6 +33,7 @@ static string PileNames[]
 	"tableau 5",
 	"tableau 6",
 	"tableau 7",
+	"stock",
 	"foundation c",
 	"foundation d",
 	"foundation s",
@@ -126,7 +126,6 @@ static unsigned FoundationCardCount(const Game& game)
 void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 {
 	vector<string> pilestring{
-		"stock    ",
 		"waste    ",
 		"tableau 1",
 		"tableau 2",
@@ -135,6 +134,7 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 		"tableau 5",
 		"tableau 6",
 		"tableau 7",
+		"stock    ",
 		"clubs    ",
 		"diamonds ",
 		"spades   ",
@@ -174,7 +174,8 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 
 bool operator==(const Pile&a, const Pile&b)
 {
-	return     (a.Code()==b.Code() && a==b);
+	return     (a.Code()==b.Code() && 
+				PileVec(a)==PileVec(b));
 }
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
@@ -199,6 +200,18 @@ bool operator==(const Game& a, const Game& b)
 	return true;
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
+
+void CheckMoves(Game& game, const XMoves& mvs)
+{
+	game.Deal();
+	for (unsigned i = 0; i != mvs.size(); ++i) {
+		if (!game.IsValid(mvs[i])) {
+			std::cerr << "Move " << mvs[i].MoveNum() << " invalid!" << std::endl;
+			return;
+		}
+		game.MakeMove(mvs[i]);
+	}
+}
 
 std::minstd_rand rng;
 
@@ -477,12 +490,13 @@ int main()
 		assert(outcome._code == Impossible);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
 	}
+	//
 	{
 		Game game(Cards(deal3), 1, 24, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
-		assert(outcome._code == SolvedMinimal);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(outcome._code == SolvedMinimal);
 		assert(MoveCount(outcome._solution) == 99);
 	}
 	{
@@ -498,9 +512,22 @@ int main()
 		// in two passes, it takes 87 moves.
 		Game game(Cards(deal3), 3, 24, 1);
 		// PrintGame(game);
-		auto outcome = KSolveAStar(game,9'600'000); 
+		auto outcome = KSolveAStar(game,9'600'000,0); 
 		assert(outcome._code == SolvedMinimal);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
 		assert(MoveCount(outcome._solution) == 87);
+	}
+	{
+		// Test IsValid(Move m) and IsValid(XMove xm)
+		// Game 36394, drawing 1, can be solved in 112 moves
+		Game game(NumberedDeal(36394), 1, 24, 8);
+		auto outcome = KSolveAStar(game,960'000);
+		assert(MoveCount(outcome._solution) == 112);
+		game.Deal();
+		// PrintGame(game);
+		for (auto mv: outcome._solution) {
+			// std::cerr << Peek(mv) << std::endl;
+			assert(game.IsValid(mv));
+			game.MakeMove(mv);
+		}
 	}
 }
