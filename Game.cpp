@@ -357,12 +357,14 @@ struct TalonFuture {
     Card _card;
     unsigned short _nMoves;
     signed short _drawCount;
+    bool _recycle;
 
     TalonFuture() {};
-    TalonFuture(const Card& card, unsigned nMoves, int draw)
+    TalonFuture(const Card& card, unsigned nMoves, int draw, bool recycle)
         : _card(card)
         , _nMoves(nMoves)
         , _drawCount(draw)
+        , _recycle(recycle)
         {}
 };
 
@@ -426,13 +428,13 @@ static TalonFutureVec TalonCards(const Game & game)
     const unsigned originalWasteSize = talon.WasteSize();
     const unsigned drawSetting = game.DrawSetting();
     unsigned nMoves = 0;
-    unsigned nRecycles = game.RecycleCount();
-    unsigned maxRecycles = std::min(2U, game.RecycleLimit());
+    unsigned nRecycles = 0;
+    unsigned maxRecycles = std::min(1U, game.RecycleLimit()-game.RecycleCount());
 
     do {
         if (talon.WasteSize()) {
             result.emplace_back(talon.TopCard(), nMoves, 
-                talon.WasteSize()-originalWasteSize);
+                talon.WasteSize()-originalWasteSize, nRecycles>0);
         }	
         if (talon.StockSize()) {
             // Draw from the stock pile
@@ -473,7 +475,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
 
         const unsigned cardSuit = talonCard._card.Suit();
         const unsigned cardRank = talonCard._card.Rank();
-        bool recycle = talonCard._drawCount != int(talonCard._nMoves*DrawSetting());
+        bool recycle = talonCard._recycle;
         if (cardRank == _foundation[cardSuit].size()) {
             const unsigned pileNo = FoundationBase+cardSuit;
             PushTalonMove(talonCard, pileNo, recycle, moves);

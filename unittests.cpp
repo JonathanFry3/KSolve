@@ -506,6 +506,7 @@ int main()
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == SolvedMinimal);
 		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(RecycleCount(outcome._solution) == 2);
 		assert(MoveCount(outcome._solution) == 84);
 	}
 	{
@@ -514,6 +515,8 @@ int main()
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000,0); 
 		assert(outcome._code == SolvedMinimal);
+		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		assert(RecycleCount(outcome._solution) == 1);
 		assert(MoveCount(outcome._solution) == 87);
 	}
 	{
