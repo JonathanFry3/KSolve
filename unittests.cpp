@@ -123,7 +123,7 @@ static unsigned FoundationCardCount(const Game& game)
 
 
 // enum KSolveAStarResult {SolvedMinimal, Solved, GaveUp, Impossible,MemoryExceeded};
-void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
+void PrintOutcome(Game& game, const KSolveAStarResult& rslt)
 {
 	vector<string> pilestring{
 		"waste    ",
@@ -142,13 +142,16 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 	};
 	vector<string> outcomeWords{"Minimal Solution","Solution may not be minimal",
 									"Gave up without solving", "Impossible", "Memory Exceeded"};
-	cout << "Outcome: " << outcomeWords[outcome];
+	cout << "Outcome: " << outcomeWords[rslt._code];
+	XMoves moves = MakeXMoves(rslt._solution,game.DrawSetting());
+
 	if (moves.size()){
 		cout << " in " << moves.back().MoveNum() << " moves";
 	}
 	cout  << endl;
 
 	unsigned passes(1);
+	game.Deal();
 	for (auto mv : moves){
 		unsigned from = mv.From();
 		unsigned to = mv.To();
@@ -162,6 +165,9 @@ void PrintOutcome(KSolveAStarCode outcome, const vector<XMove>& moves)
 		} else {
 			cout << setw(3) << mv.MoveNum() << " Draw " << mv.NCards() << endl;
 		}
+
+		assert(game.IsValid(mv));
+		game.MakeMove(mv);
 	}
 	if (moves.size()) {
 		if (passes == 1) {
@@ -377,7 +383,7 @@ int main()
 			auto out = KSolveAStar(game); 
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
-			// PrintOutcome(outcome, MakeXMoves(solution, game.Draw()));
+			// PrintOutcome(game, outcome);
 			assert(outcome == SolvedMinimal);
 			assert(MoveCount(solution) == 76);
 		}
@@ -488,14 +494,14 @@ int main()
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == Impossible);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		// PrintOutcome(game, outcome);
 	}
 	//
 	{
 		Game game(Cards(deal3), 1, 24, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		// PrintOutcome(game, outcome);
 		assert(outcome._code == SolvedMinimal);
 		assert(MoveCount(outcome._solution) == 99);
 	}
@@ -505,7 +511,7 @@ int main()
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == SolvedMinimal);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		// PrintOutcome(game, outcome);
 		assert(RecycleCount(outcome._solution) == 2);
 		assert(MoveCount(outcome._solution) == 84);
 	}
@@ -515,7 +521,7 @@ int main()
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000,0); 
 		assert(outcome._code == SolvedMinimal);
-		// PrintOutcome(outcome._code, MakeXMoves(outcome._solution, game.DrawSetting()));
+		// PrintOutcome(game, outcome);
 		assert(RecycleCount(outcome._solution) == 1);
 		assert(MoveCount(outcome._solution) == 87);
 	}
@@ -531,6 +537,14 @@ int main()
 			// std::cerr << Peek(mv) << std::endl;
 			assert(game.IsValid(mv));
 			game.MakeMove(mv);
+		}
+		// PrintGame(game);
+		// PrintOutcome(game, outcome);
+		game.Deal();
+		XMoves xms = MakeXMoves(outcome._solution,game.DrawSetting());
+		for (const XMove& xm: xms){
+			assert(game.IsValid(xm));
+			game.MakeMove(xm);
 		}
 	}
 }
