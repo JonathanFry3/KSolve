@@ -87,7 +87,7 @@ int main(int argc, char * argv[]) {
 
     bool commandLoaded = false;
     int outputMethod = 0;
-    int threads = 2;
+    int threads = 0;
     int maxClosedCount = 0;
     bool fastMode = false;
     string fileContents;
@@ -163,7 +163,7 @@ int main(int argc, char * argv[]) {
             cout << "                        solution is found.\n\n";
             cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
             cout << "                        before terminating. Defaults to 20,000,000.\n\n";
-            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to 2.\n\n";
+            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
             cout << "                        no result for a solvable deal. 24 is like leaving this out.\n\n";
