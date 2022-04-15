@@ -1,0 +1,9 @@
+# 108 moves per app, 109 per KSolve, 2 passes, 1.901M states
+nolat: s4 h3 h2 s9 s8 h5 s5 hq sq sk d9 d2 d4 ct h6 sj c5 h7 c6 c9 h8 st h9 ca 
+s6
+sa c2
+cj c8 d3
+ck c8 s2 dj
+d8 c4 hk h4 ht
+d7 cq c3 hj d6 dq
+dt ha s3 da s7 d5 hk

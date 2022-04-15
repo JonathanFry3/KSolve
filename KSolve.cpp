@@ -343,19 +343,19 @@ CardDeck ReversedPysolDeck(string const& cardSet)
 
 CardDeck DeckLoader(string const& cardSet, const int order[52]) {
     CardDeck result(52);
-    CardDeck empty;
     DuplicateCardChecker dupchk;
     string eyeCandy{"<> \t\n\r:-"};
     unsigned int j = 7;  // skips "Talon: " or "nolaT: "
 
     int i;
+    bool valid = true;
     for (i = 0; i < 52 && j < cardSet.size(); i++) {
         // skip over punctuation and white space
         while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
         if (j+1 < cardSet.size()){
             pair<bool,Card> cd = CardFromString(cardSet.substr(j,2));
             if (!cd.first || dupchk(cd.second)) {
-                return empty;
+                valid = false;
             } else {
                 result[order[i]] = cd.second;
             }
@@ -363,8 +363,9 @@ CardDeck DeckLoader(string const& cardSet, const int order[52]) {
         j += 2;
     }
     if (dupchk.MissingCards()) {
-        return empty;
+        valid = false;
     }
+    if (!valid) result.clear();
     return result;
 }
 
