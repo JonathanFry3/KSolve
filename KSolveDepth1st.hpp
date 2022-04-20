@@ -1,9 +1,9 @@
-// KSolveAStar.hpp declares a Klondike Solitaire solver function and auxiliaries.
-// This solver function uses the A* search algorithm.
+// KSolveDepth1st.hpp declares a Klondike Solitaire solver function and auxiliaries.
+// This solver function uses the depth-first search algorithm.
 
 // MIT License
 
-// Copyright (c) 2020 Jonathan B. Fry (@JonathanFry3)
+// Copyright (c) 2022 Jonathan B. Fry (@JonathanFry3)
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@
 //
 // For some insight into how it works, look up the A* algorithm.
 
-KSolveResult KSolveAStar(
+KSolveResult KSolveDepth1st(
         Game& gm, 						// The game to be played
         unsigned maxStates=10'000'000,	// Give up if the number of unique game states
                                         // examined exceeds this before any solution is found.

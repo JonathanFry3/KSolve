@@ -145,7 +145,7 @@ int main(int argc, char * argv[])
             << spec._threads << "\t"			 
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
-        KSolveAStarResult result = KSolveAStar(game,spec._maxStates,spec._threads);
+        KSolveResult result = KSolveAStar(game,spec._maxStates,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         unsigned nMoves = MoveCount(result._solution);
         cout << result._code << "\t"

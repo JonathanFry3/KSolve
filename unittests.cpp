@@ -123,7 +123,7 @@ static unsigned FoundationCardCount(const Game& game)
 
 
 // enum KSolveAStarResult {SolvedMinimal, Solved, GaveUp, Impossible,MemoryExceeded};
-void PrintOutcome(Game& game, const KSolveAStarResult& rslt)
+void PrintOutcome(Game& game, const KSolveResult& rslt)
 {
 	vector<string> pilestring{
 		"waste    ",

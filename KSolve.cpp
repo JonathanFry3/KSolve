@@ -198,7 +198,7 @@ int main(int argc, char * argv[]) {
         }
 
         auto startTime = steady_clock::now();
-        KSolveAStarResult outcome = KSolveAStar(game, maxClosedCount, threads);
+        KSolveResult outcome = KSolveAStar(game, maxClosedCount, threads);
         auto & result(outcome._code);
         Moves & moves(outcome._solution); 
         unsigned moveCount = MoveCount(moves);
