@@ -1,4 +1,5 @@
 #include "KSolveAStar.hpp"
+#include "FilteredAvailableMoves.hpp"
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
@@ -170,7 +171,6 @@ struct WorkerState {
     QMoves MakeAutoMoves() noexcept;
     void CheckForMinSolution();
     bool IsShortPathToState(unsigned minMoveCount);
-    QMoves FilteredAvailableMoves()noexcept;
 };
 unsigned WorkerState::k_minSolutionCount(-1);
 Mutex WorkerState::k_minSolutionMutex;
@@ -401,25 +401,11 @@ Moves MoveStorage::MovesVector() const
 QMoves WorkerState::MakeAutoMoves() noexcept
 {
     QMoves availableMoves;
-    while ((availableMoves = FilteredAvailableMoves()).size() == 1)
+    auto & moves{_moveStorage.MoveSequence()};
+    while ((availableMoves = FilteredAvailableMoves(_game, moves)).size() == 1)
     {
         _moveStorage.PushStem(availableMoves[0]);
         _game.MakeMove(availableMoves[0]);
-    }
-    return availableMoves;
-}
-
-// Return a vector of the available moves that pass the ABC_Move filter
-QMoves WorkerState::FilteredAvailableMoves() noexcept
-{
-    QMoves availableMoves = _game.AvailableMoves();
-    const auto& movesMade{_moveStorage.MoveSequence()};
-    for (auto i = availableMoves.begin(); i != availableMoves.end(); ) {
-        if (ABC_Move(*i,movesMade)) {
-            i = availableMoves.erase(i);
-        } else {
-            ++i;
-        }
     }
     return availableMoves;
 }
