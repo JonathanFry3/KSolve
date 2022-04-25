@@ -273,6 +273,42 @@ unsigned RecycleCount(const SeqType& moves) noexcept
     return result;
 }
 
+// Mix-in to make any sequence container an automatic move counter.
+template <class Container>
+class MoveCounter : public Container
+{
+    unsigned _nMoves;
+    using Base = Container;
+public:
+    unsigned MoveCount() const           {return _nMoves;}
+
+    void clear()
+    {
+        _nMoves = 0;
+        Base::clear();
+    }
+    void push_front(const Move& mv)
+    {
+        _nMoves += mv.NMoves();
+        Base::push_front(mv);
+    }
+    void pop_front() noexcept
+    {
+        _nMoves -= Base::front().NMoves();
+        Base::pop_front();
+    }
+
+    void push_back(const Move& mv)
+    {
+        _nMoves += mv.NMoves();
+        Base::push_back(mv);
+    }
+    void pop_back() noexcept
+    {
+        _nMoves -= Base::back().NMoves();
+        Base::pop_back();
+    }
+};
 // Return a string to visualize a move for debugging
 std::string Peek(const Move& mv);
 

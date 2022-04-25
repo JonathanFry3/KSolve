@@ -17,7 +17,7 @@ typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 using namespace frystl;
 
 enum {maxMoves = 512};
-typedef static_deque<Move,maxMoves> MoveSequenceType;
+typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
 class SharedMoveStorage
 {
@@ -256,7 +256,7 @@ void Worker(
                 }
             } else {
                 const unsigned movesMadeCount = 
-                    MoveCount(state._moveStorage.MoveSequence());
+                    state._moveStorage.MoveSequence().MoveCount();
 
                 // Save the result of each of the possible next moves.
                 for (auto mv: availableMoves){
@@ -427,7 +427,7 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 // A solution has been found.  If it's the first, or shorter than
 // the current champion, we have a new champion
 void WorkerState::CheckForMinSolution() {
-    const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
+    const unsigned nmv = _moveStorage.MoveSequence().MoveCount();
     {
         Guard karen(k_minSolutionMutex);
         const unsigned x = _minSolution.size();
