@@ -4,7 +4,6 @@
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        /*
         {
             "name": "(gdb) Launch KSolve",
             "type": "cppdbg",
@@ -32,18 +31,17 @@
                 }
             ]
         },
-        //
         {
             "name": "Launch ran",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ran",
             "args": [
-                "--end", "100"
+                "--end", "1"
                 ,"--threads","8"
-                ,"--seed","29347"
+                ,"--seed","31696"
                 ,"--incr","2349"
-                ,"--states","10000000"
+                ,"--states","30000000"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -58,8 +56,7 @@
                     "ignoreFailures": true
                 }
             ]
-        }
-        */
+        },
 		{
 			"name": "(Windows) Launch unittests",
             "type": "cppdbg",
@@ -71,7 +68,6 @@
             "visualizerFile": "${workspaceFolder}/KSolve.natvis",
 			"environment": [],
 			"externalConsole": false
-		}
-        //
+		},
     ]
 }
