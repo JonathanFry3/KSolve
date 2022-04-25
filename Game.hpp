@@ -431,38 +431,6 @@ public:
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
 
-// A compact representation of the current game state.
-// It is possible, although tedious, to reconstruct the
-// game state from one of these and the original deck.
-//
-// The basic requirements for GameState are:
-// 1.  Any difference in the foundation piles, the face-up cards
-//     in the tableau piles, or in the stock pile length
-//     should be reflected in the GameState.
-// 2.  It should be quite compact, as we will usually be storing
-//     millions or tens of millions of instances.
-struct GameState {
-    typedef std::uint_fast64_t PartType;
-    std::array<PartType,3> _part;
-    GameState(const Game& game) noexcept;
-    bool operator==(const GameState& other) const noexcept
-    {
-        return _part[0] == other._part[0]
-            && _part[1] == other._part[1]
-            && _part[2] == other._part[2];
-    }
-};
-struct Hasher
-{
-    size_t operator() (const GameState & gs) const noexcept
-    {
-        return 	  gs._part[0]
-                ^ gs._part[1]
-                ^ gs._part[2]
-                ;
-    }
-};
-
 
 
 // Return true if this move cannot be in a minimum solution.

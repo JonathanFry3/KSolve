@@ -1,9 +1,8 @@
 #include "KSolveAStar.hpp"
+#include "GameStateMemory.hpp"
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
-#include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
-#include "parallel_hashmap/phmap_base.h" 
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
 #include <thread>
@@ -125,17 +124,7 @@ struct WorkerState {
     // move count. If it is lower than the stored count, we keep our current node and store
     // its move count here.  If not, we forget the current node - we already have a
     // way to get to the same state that is at least as short.
-    typedef phmap::parallel_flat_hash_map< 
-            GameState, 								// key type
-            unsigned short, 						// mapped type
-            Hasher,									// hash function
-            phmap::priv::hash_default_eq<GameState>,// == function
-            phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
-            7U, 									// log2(n of submaps)
-            Mutex									// mutex type
-        > MapType;
-    MapType& _closedList;
-    unsigned _maxStates;
+    GameStateMemory& _closedList;
 
     Moves & _minSolution;
     static unsigned k_minSolutionCount;
@@ -146,15 +135,12 @@ struct WorkerState {
     explicit WorkerState(  Game & gm, 
             Moves& solution,
             SharedMoveStorage& sharedMoveStorage,
-            MapType& map,
-            unsigned maxStates)
+            GameStateMemory& map)
         : _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
-        , _maxStates(maxStates)
         , _minSolution(solution)
         {
-            _closedList.reserve(maxStates);
             _minSolution.clear();
             k_minSolutionCount = -1;
             k_blewMemory = false;
@@ -163,13 +149,11 @@ struct WorkerState {
         : _game(orig._game)
         , _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
-        , _maxStates(orig._maxStates)
         , _minSolution(orig._minSolution)
         {}
             
     QMoves MakeAutoMoves() noexcept;
     void CheckForMinSolution();
-    bool IsShortPathToState(unsigned minMoveCount);
     QMoves FilteredAvailableMoves()noexcept;
 };
 unsigned WorkerState::k_minSolutionCount(-1);
@@ -186,8 +170,8 @@ KSolveAStarResult KSolveAStar(
 {
     Moves solution;
     SharedMoveStorage sharedMoveStorage;
-    WorkerState::MapType map;
-    WorkerState state(game,solution,sharedMoveStorage,map,maxStates);
+    GameStateMemory map(maxStates);
+    WorkerState state(game,solution,sharedMoveStorage,map);
 
     const unsigned startMoves = state._game.MinimumMovesLeft();
 
@@ -219,7 +203,7 @@ KSolveAStarResult KSolveAStar(
                 ? Solved
                 : SolvedMinimal;
     } else {
-        outcome = state._closedList.size() >= maxStates 
+        outcome = state._closedList.OverLimit()
                 ? GaveUp
                 : Impossible;
     }
@@ -234,7 +218,7 @@ void Worker(
     try {
         // Main loop
         unsigned minMoves0;
-        while ( (state._closedList.size() < state._maxStates 
+        while ( (!state._closedList.OverLimit()
                 || state.k_minSolutionCount != -1U)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
@@ -262,7 +246,7 @@ void Worker(
                 for (auto mv: availableMoves){
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
-                    if (state.IsShortPathToState(made)) {       // <- side effect
+                    if (state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
                         const unsigned remaining = 
                             state._game.MinimumMovesLeft();
                         assert(minMoves0 <= made+remaining);
@@ -436,23 +420,4 @@ void WorkerState::CheckForMinSolution() {
             k_minSolutionCount = nmv;
         }
     }
-}
-
-// Returns true if the current move sequence is the shortest path found
-// so far to the current game state.
-bool WorkerState::IsShortPathToState(unsigned moveCount)
-{
-    const GameState state{_game};
-    bool valueChanged{false};
-    const bool isNewKey = _closedList.try_emplace_l(
-        state,						// key
-        [&](auto& keyValuePair) {	// run behind lock when key found
-            if (moveCount < keyValuePair.second) {
-                keyValuePair.second = moveCount;
-                valueChanged = true;
-            }
-        },
-        moveCount 					// c'tor run behind lock when key not found
-    );
-    return isNewKey || valueChanged;
 }
