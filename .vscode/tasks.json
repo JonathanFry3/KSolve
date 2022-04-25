@@ -15,6 +15,7 @@
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
 				"KSolve.cpp", 
 				"-o",
 				"${workspaceFolder}/KSolve"
@@ -40,76 +41,11 @@
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
 				"unittests.cpp",
 				"-o","${workspaceFolder}/unittests"
 				,"&&","./unittests"
 				,"||","echo","'<<<FAILED>>>'"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"type": "shell",
-			"label": "C/C++:  g++ build and run test-sv",
-			"command": "g++",
-			"args": [
-				"-g",
-				"test-sv.cpp",
-				"-o","${workspaceFolder}/test-sv"
-				,"&&","(","${workspaceFolder}/test-sv"
-				,"||","echo","FAIL",")"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"type": "shell",
-			"label": "C/C++:  g++ build and run test-sd",
-			"command": "g++",
-			"args": [
-				"-g",
-				"test-sd.cpp",
-				"-o","${workspaceFolder}/test-sd"
-				,"&&","(","${workspaceFolder}/test-sd"
-				,"||","echo","FAIL",")"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"type": "shell",
-			"label": "C/C++:  g++ build and run test-mfv",
-			"command": "g++",
-			"args": [
-				"-g",
-				"test-mfv.cpp",
-				"-o","${workspaceFolder}/test-mfv"
-				,"&&","(","${workspaceFolder}/test-mfv"
-				,"||","echo","FAIL",")"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -136,6 +72,7 @@
 			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
 				"ran.cpp",
 				"-o",
 				"${workspaceFolder}/ran"
@@ -183,6 +120,7 @@
 				"${workspaceFolder}\\unittests.exe",
 				"Game.cpp",
 				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
 				"unittests.cpp" 
 			],
 			"options": {
@@ -210,6 +148,7 @@
 			"${workspaceFolder}\\KSolve.exe",
 			"Game.cpp",
 			"KSolveAStar.cpp",
+			"GameStateMemory.cpp",
 			"KSolve.cpp" 
 		],
 		"options": {
@@ -237,6 +176,7 @@
 			"${workspaceFolder}\\ran.exe",
 			"Game.cpp",
 			"KSolveAStar.cpp",
+			"GameStateMemory.cpp",
 			"ran.cpp" 
 		],
 		"options": {

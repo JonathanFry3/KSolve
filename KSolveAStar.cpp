@@ -1,13 +1,14 @@
 #include "KSolveAStar.hpp"
 #include "FilteredAvailableMoves.hpp"
+#include "SolutionStore.hpp"
+#include "GameStateMemory.hpp"
 #include <algorithm>        // for sort
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
-#include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
-#include "parallel_hashmap/phmap_base.h" 
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
 #include <thread>
+#include <atomic>
 
 typedef std::mutex Mutex;
 typedef std::shared_timed_mutex SharedMutex;
@@ -18,7 +19,7 @@ typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 using namespace frystl;
 
 enum {maxMoves = 512};
-typedef static_deque<Move,maxMoves> MoveSequenceType;
+typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
 class SharedMoveStorage
 {
@@ -47,11 +48,13 @@ class SharedMoveStorage
     };
     mf_vector<FringeElement,128> _fringe;
     SharedMutex _fringeMutex;
+    std::atomic_uint _fringeSize;
     unsigned _startStackIndex;
     friend class MoveStorage;
 public:
     SharedMoveStorage() 
         : _startStackIndex(-1)
+        , _fringeSize(0)
     {
     }
     // Start move storage with the minimum number of moves from
@@ -61,6 +64,7 @@ public:
         _startStackIndex = minMoves;
         _fringe.emplace_back();
         _fringe[0]._stack.push_back(-1);
+        ++_fringeSize;
     }
 };
 class MoveStorage
@@ -126,55 +130,34 @@ struct WorkerState {
     // move count. If it is lower than the stored count, we keep our current node and store
     // its move count here.  If not, we forget the current node - we already have a
     // way to get to the same state that is at least as short.
-    typedef phmap::parallel_flat_hash_map< 
-            GameState, 								// key type
-            unsigned short, 						// mapped type
-            Hasher,									// hash function
-            phmap::priv::hash_default_eq<GameState>,// == function
-            phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
-            7U, 									// log2(n of submaps)
-            Mutex									// mutex type
-        > MapType;
-    MapType& _closedList;
-    unsigned _maxStates;
+    GameStateMemory& _closedList;
 
-    Moves & _minSolution;
-    static unsigned k_minSolutionCount;
-    static Mutex k_minSolutionMutex;
+    SolutionStore &_solutionStore;
 
-    static bool k_blewMemory;
+    bool & _blewMemory;
 
     explicit WorkerState(  Game & gm, 
-            Moves& solution,
+            SolutionStore& solution,
             SharedMoveStorage& sharedMoveStorage,
-            MapType& map,
-            unsigned maxStates)
+            GameStateMemory& map,
+            bool blewMemory)
         : _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
-        , _maxStates(maxStates)
-        , _minSolution(solution)
-        {
-            _closedList.reserve(maxStates);
-            _minSolution.clear();
-            k_minSolutionCount = -1;
-            k_blewMemory = false;
-        }
+        , _solutionStore(solution)
+        , _blewMemory(blewMemory)
+        {}
     explicit WorkerState(const WorkerState& orig)
         : _game(orig._game)
         , _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
-        , _maxStates(orig._maxStates)
-        , _minSolution(orig._minSolution)
+        , _solutionStore(orig._solutionStore)
+        , _blewMemory(orig._blewMemory)
         {}
             
     QMoves MakeAutoMoves() noexcept;
-    void CheckForMinSolution();
-    bool IsShortPathToState(unsigned minMoveCount);
 };
-unsigned WorkerState::k_minSolutionCount(-1);
-Mutex WorkerState::k_minSolutionMutex;
-bool WorkerState::k_blewMemory(false);
+
 
 static void Worker(
         WorkerState* pMasterState);
@@ -184,10 +167,13 @@ KSolveResult KSolveAStar(
         unsigned maxStates,
         unsigned nThreads)
 {
-    Moves solution;
+    // References to these object are all shared among threads through a WorkerState copy
+    SolutionStore solution;
+    bool blewMemory(false);
     SharedMoveStorage sharedMoveStorage;
-    WorkerState::MapType map;
-    WorkerState state(game,solution,sharedMoveStorage,map,maxStates);
+    GameStateMemory map(maxStates);
+
+    WorkerState state(game,solution,sharedMoveStorage,map,blewMemory);
 
     const unsigned startMoves = state._game.MinimumMovesLeft();
 
@@ -212,33 +198,37 @@ KSolveResult KSolveAStar(
     // Everybody's finished
 
     KSolveResultCode outcome;
-    if (state.k_blewMemory) {
+    if (blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._minSolution.size()) { 
+    } else if (solution.AnySolution()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
     } else {
-        outcome = state._closedList.size() >= maxStates 
+        outcome = state._closedList.OverLimit()
                 ? GaveUp
                 : Impossible;
     }
-    return KSolveResult(outcome,state._closedList.size(),solution);
+    return KSolveResult(outcome,
+                        state._closedList.size(),
+                        solution.MinimumSolution());
 }
 
 void Worker(
         WorkerState* pMasterState)
 {
     WorkerState state(*pMasterState);
+    static int nTrips = 0;
+    ++nTrips;
 
     try {
         // Main loop
         unsigned minMoves0;
-        while ( (state._closedList.size() < state._maxStates 
-                || state.k_minSolutionCount != -1U)
-                && !state.k_blewMemory
+        while ( (!state._closedList.OverLimit()
+                || state._solutionStore.AnySolution())
+                && !state._blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
-                && minMoves0 < state.k_minSolutionCount) { 
+                && minMoves0 < state._solutionStore.MinMoves()) { 
 
             // Restore state._game to the state it had when this move
             // sequence was enqueued.
@@ -252,17 +242,20 @@ void Worker(
             if (availableMoves.empty()) {
                 if (state._game.GameOver()) {
                     // We have a solution.  See if it is a new champion
-                    state.CheckForMinSolution();
+                    state._solutionStore.CheckSolution(
+                        state._moveStorage.MoveSequence(),
+                        state._moveStorage.MoveSequence().MoveCount());
                 }
+                // else dead end
             } else {
                 const unsigned movesMadeCount = 
-                    MoveCount(state._moveStorage.MoveSequence());
+                    state._moveStorage.MoveSequence().MoveCount();
 
                 // Save the result of each of the possible next moves.
                 for (auto mv: availableMoves){
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
-                    if (state.IsShortPathToState(made)) {       // <- side effect
+                    if (state._closedList.IsShortPathToState(state._game,made)) { // <- side effect
                         const unsigned remaining = 
                             state._game.MinimumMovesLeft();
                         assert(minMoves0 <= made+remaining);
@@ -276,7 +269,7 @@ void Worker(
         }
     } 
     catch(std::bad_alloc&) {
-        state.k_blewMemory = true;
+        state._blewMemory = true;
     }
     return;
 }
@@ -334,6 +327,7 @@ void MoveStorage::ShareMoves()
             {
                 Guard clyde(elem._mutex);
                 elem._stack.push_back(branchIndex++);
+                ++_shared._fringeSize;
             }
         }
     }
@@ -353,7 +347,8 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
         {
             SharedGuard marilyn(_shared._fringeMutex);
             size = _shared._fringe.size();
-            for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
+            for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) 
+            {}
         }
         if (offset < size) {
             Guard methuselah(_shared._fringe[offset]._mutex);
@@ -361,6 +356,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
             if (stack.size()) {
                 _leafIndex = stack.back();
                 stack.pop_back();
+                --_shared._fringeSize;
                 result = offset+_shared._startStackIndex;
             }
         } 
@@ -408,37 +404,4 @@ QMoves WorkerState::MakeAutoMoves() noexcept
         _game.MakeMove(availableMoves[0]);
     }
     return availableMoves;
-}
-
-// A solution has been found.  If it's the first, or shorter than
-// the current champion, we have a new champion
-void WorkerState::CheckForMinSolution() {
-    const unsigned nmv = MoveCount(_moveStorage.MoveSequence());
-    {
-        Guard karen(k_minSolutionMutex);
-        const unsigned x = _minSolution.size();
-        if (x == 0 || nmv < k_minSolutionCount) {
-            _minSolution = _moveStorage.MovesVector();
-            k_minSolutionCount = nmv;
-        }
-    }
-}
-
-// Returns true if the current move sequence is the shortest path found
-// so far to the current game state.
-bool WorkerState::IsShortPathToState(unsigned moveCount)
-{
-    const GameState state{_game};
-    bool valueChanged{false};
-    const bool isNewKey = _closedList.try_emplace_l(
-        state,						// key
-        [&](auto& keyValuePair) {	// run behind lock when key found
-            if (moveCount < keyValuePair.second) {
-                keyValuePair.second = moveCount;
-                valueChanged = true;
-            }
-        },
-        moveCount 					// c'tor run behind lock when key not found
-    );
-    return isNewKey || valueChanged;
 }

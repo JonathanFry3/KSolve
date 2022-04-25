@@ -23,8 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef KSOLVEASTAR_HPP
-#define KSOLVEASTAR_HPP
+#ifndef KSOLVEDEPTH1ST_HPP
+#define KSOLVEDEPTH1ST_HPP
 
 #include "KSolveResult.hpp"		// for Game, KSolveResult, Moves
 
@@ -37,8 +37,6 @@
 // This function uses an unpredictable amount of main memory. You can
 // control this behavior to some degree by specifying maxStates. The number
 // of unique game states stored is returned in _stateCount.
-//
-// For some insight into how it works, look up the A* algorithm.
 
 KSolveResult KSolveDepth1st(
         Game& gm, 						// The game to be played
@@ -46,4 +44,4 @@ KSolveResult KSolveDepth1st(
                                         // examined exceeds this before any solution is found.
         unsigned threads=0);            // Default to machine thread capacity
 
-#endif    // KSOLVEASTAR_HPP
+#endif    // KSOLVEDEPTH1ST_HPP

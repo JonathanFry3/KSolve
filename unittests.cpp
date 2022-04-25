@@ -1,6 +1,7 @@
 // Tests for Game.cpp KSolveAStar.cpp
 
 #include "KSolveAStar.hpp"
+#include "KSolveDepth1st.hpp"
 #include <cassert>
 #include <iostream>
 #include <iomanip>	  // for setw()
@@ -380,7 +381,7 @@ int main()
 		{
 			Game game(Cards(quick),1);
 			// PrintGame(game);
-			auto out = KSolveAStar(game); 
+			auto out = KSolveAStar(game,10'000'000,1); 
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(game, outcome);
@@ -492,7 +493,7 @@ int main()
 		// deal3 can be solved in two passes but not in one drawing one card.
 		Game game(Cards(deal3), 1, 24, 0);
 		// PrintGame(game);
-		auto outcome = KSolveAStar(game,9'600'000); 
+		auto outcome = KSolveDepth1st(game,20'000'000); 
 		assert(outcome._code == Impossible);
 		// PrintOutcome(game, outcome);
 	}
@@ -500,7 +501,7 @@ int main()
 	{
 		Game game(Cards(deal3), 1, 24, 1);
 		// PrintGame(game);
-		auto outcome = KSolveAStar(game,9'600'000); 
+		auto outcome = KSolveDepth1st(game,9'600'000); 
 		// PrintOutcome(game, outcome);
 		assert(outcome._code == SolvedMinimal);
 		assert(MoveCount(outcome._solution) == 99);
