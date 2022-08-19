@@ -24,15 +24,16 @@
 // The template implements the semantics of std::deque with the following
 // exceptions:
 //      shrink_to_fit() does nothing.
-//      get_allocator(), max_size() are not implemented.
+//      get_allocator() is not implemented.
+//      max_size() returns the maximum size, 2*Capacity-1.
 //      The function data() is added.  Like std::vector::data(), it
 //          returns a pointer to the front element.  The pointer it
-//          returns can be used like the iterator retured by begin().
+//          returns can be used like the iterator returned by begin().
 //      
-// Note that this template can work for implementing small queues, 
+// Note that this container can work for implementing small queues, 
 // since the push_... and emplace_... functions recenter the data 
-// rather than overflowing, but it may be slower than std::deque in
-// that role.
+// rather than overflowing, but it may be slower than std::deque 
+// or std::list in that role.
 //
 // Iterators, references, and pointers to elements remain valid 
 // through all operations except erase() unless the operation 
@@ -155,6 +156,10 @@ namespace frystl
         bool empty() const noexcept
         {
             return _begin == _end;
+        }
+        size_type max_size() const noexcept
+        {
+            return 2*Capacity - 1;
         }
 private:
         // Slide the data left or right to center it.
@@ -433,7 +438,7 @@ public:
             while (n < size())
                 pop_back();
             while (size() < n)
-                emplace_back(value_type());
+                emplace_back();
         }
         void swap(this_type &x)
         {
@@ -514,7 +519,7 @@ public:
         }
 
     private:
-        static constexpr unsigned _trueCap{2 * (Capacity-1) + 1};
+        static constexpr unsigned _trueCap{2*Capacity -1};
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
         pointer _begin;

@@ -530,9 +530,14 @@ namespace frystl
         }
 
         // move insert()
-        iterator insert(iterator position, value_type&& val)
+        iterator insert(const_iterator position, value_type&& val)
         {
             return emplace(position, std::move(val));
+        }       
+        // copy insert()
+        iterator insert(const_iterator position, value_type& val)
+        {
+            return emplace(position, val);
         }
         // fill insert()
         iterator insert(const_iterator position, size_type n, const value_type& val)
