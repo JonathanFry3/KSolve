@@ -10,6 +10,7 @@
 			//	"-m32",
 			//	"-pg",
 				"-O3",
+				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
 				//	"-DNDEBUG",
 				"-pthread",
@@ -38,6 +39,7 @@
 			"args": [
 				"-DFRYSTL_DEBUG",
 				"-g",
+				"-Wno-placement-new",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -67,6 +69,7 @@
 			//	"-pg", "-O1",	// gprof profiling
 				"-pthread",
 				"-O3",
+				"-Wno-placement-new",
 			//	"-DNDEBUG",		// comment out to activate assert()
 				"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
 			//	"-O","-Wall",	// for valgrind builds
