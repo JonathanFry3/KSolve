@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
- <Type Name="frystl::static_vector&lt;*,*&gt;">
+  <Type Name="frystl::static_vector&lt;*,*&gt;">
     <DisplayString>size = {_size}</DisplayString>
     <Expand>
       <Item Name="[capacity]">$T2</Item>
@@ -11,7 +11,7 @@
       </ArrayItems>
     </Expand>
   </Type>
- <Type Name="frystl::static_deque&lt;*,*&gt;">
+  <Type Name="frystl::static_deque&lt;*,*&gt;">
     <DisplayString>size = {_end-_begin}</DisplayString>
     <Expand>
       <Item Name="[Capacity]">$T2</Item>
@@ -37,6 +37,7 @@
   </Type>
   <Type Name="Card">
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
+  </Type>
   <!-- flat map/set  -->
   <Type            Name="phmap::flat_hash_set&lt;*,*,*,*&gt;">  
   <AlternativeType Name="phmap::flat_hash_map&lt;*,*,*,*,*&gt;" />  
