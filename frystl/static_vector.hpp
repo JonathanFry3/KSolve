@@ -45,6 +45,8 @@ namespace frystl
         // copy constructors
         static_vector(const this_type &donor) : _size(0)
         {
+            FRYSTL_ASSERT2(donor.size() <= Capacity,
+                    "static_vector: construction from a too-large object");
             for (auto &m : donor)
                 new (data() + _size++) value_type(m);
         }
@@ -59,20 +61,15 @@ namespace frystl
         // move constructors
         // Constructs the new static_vector by moving all the elements of
         // the existing static_vector.  It leaves the moved-from object
-        // unchanged, aside from whatever changes moving its elements
-        // made.
-        static_vector(this_type &&donor) : _size(0)
-        {
-            for (auto &m : donor)
-                new (data() + _size++) value_type(std::move(m));
-        }
+        // empty.
         template <unsigned C1>
         static_vector(static_vector<T, C1> &&donor) : _size(0)
         {
             FRYSTL_ASSERT2(donor.size() <= Capacity,
-                    "static_vector: construction from a too-large object");
+                    "static_vector: overflow on move construction");
             for (auto &m : donor)
                 new (data() + _size++) value_type(std::move(m));
+            donor.clear();
         }
         // fill constructors
         static_vector(size_type n, const_reference value) : _size(0)
@@ -122,13 +119,19 @@ namespace frystl
             for (InputIterator k = begin; k != end; ++k)
                 push_back(*k);
         }
-        this_type &operator=(const this_type &other) noexcept
+        // Copy operator=.
+        template <unsigned C2>
+        this_type &operator=(static_vector<T,C2> &other) noexcept
         {
-            if (this != &other)
+            if (data() != other.data()) {
                 assign(other.begin(), other.end());
+            }
             return *this;
         }
-        this_type &operator=(this_type &&other) noexcept
+        // Move operator=.  Except for self-assignments, source
+        // will be left empty.
+        template <unsigned C2>
+        this_type &operator=(static_vector<T,C2> &&other) noexcept
         {
             if (data() != other.data())
             {
@@ -137,6 +140,7 @@ namespace frystl
                 for (auto &o : other)
                     new (p++) value_type(std::move(o));
                 _size = other.size();
+                other.clear();
             }
             return *this;
         }
@@ -149,6 +153,7 @@ namespace frystl
         //  Element access functions
         //
         pointer data() noexcept { return reinterpret_cast<pointer>(_elem); }
+        const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(_elem); }
         reference at(size_type i)
         {
             Verify(i < _size);
@@ -169,7 +174,6 @@ namespace frystl
             FRYSTL_ASSERT2(i < _size,"static_vector: index out of range");
             return data()[i];
         }
-        const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(_elem); }
         reference back() noexcept { return data()[_size - 1]; }
         const_reference back() const noexcept { return data()[_size - 1]; }
         reference front() noexcept
@@ -327,7 +331,7 @@ namespace frystl
                 InpIter last,
                 std::input_iterator_tag)
             {
-                iterator p = const_cast<iterator>(position);
+                auto p = position;
                 while (first != last)
                     insert(p++, *first++);
                 return const_cast<iterator>(position);

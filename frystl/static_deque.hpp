@@ -340,7 +340,7 @@ public:
             return insert(position, 1, val);
         }
         // move insert()
-        iterator insert(iterator position, value_type &&val)
+        iterator insert(const_iterator position, value_type &&val)
         {
             FRYSTL_ASSERT2(begin() <= position && position <= end(),
                 "Bad position argument in static_deque::insert()");
