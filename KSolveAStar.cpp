@@ -281,6 +281,7 @@ void MoveStorage::PushBranch(Move mv, unsigned nMoves)
 }
 void MoveStorage::ShareMoves()
 {
+    NodeX stemEnd = _leafIndex;
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
@@ -293,14 +294,14 @@ void MoveStorage::ShareMoves()
                     ++mvi) {
                 // Each stem node points to the previous node.
                 NodeX ind = _shared._moveTree.size();
-                _shared._moveTree.emplace_back(*mvi, _leafIndex);
-                _leafIndex = ind;
+                _shared._moveTree.emplace_back(*mvi, stemEnd);
+                stemEnd = ind;
             }
             // Now all the branches
             branchIndex = _shared._moveTree.size();
             for (const auto& br:_branches) {
                 // Each branch node points to the last stem node.
-                _shared._moveTree.emplace_back(br._mv, _leafIndex);
+                _shared._moveTree.emplace_back(br._mv, stemEnd);
             }
         }
         // Update the fringe.
