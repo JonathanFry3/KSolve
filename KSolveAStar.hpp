@@ -26,7 +26,7 @@
 #ifndef KSOLVEASTAR_HPP
 #define KSOLVEASTAR_HPP
 
-#include "Game.hpp"		// for Game
+#include "Game.hpp"		// for Game, Card, Pile, Move etc.
 
 // Solves the game of Klondike Solitaire for minimum moves if possible.
 // Returns a result code and a Moves vector.  The vector contains
@@ -54,9 +54,9 @@ struct KSolveAStarResult
         {}
 };
 KSolveAStarResult KSolveAStar(
-        Game& gm, 						// The game to be played
+        Game& gm, 			// The game to be played
         unsigned maxStates=10'000'000,	// Give up if the number of unique game states
                                         // examined exceeds this before any solution is found.
-        unsigned threads=2);
+        unsigned threads=0);            // Use as many threads as the hardware will run together
 
-#endif    // KSOLVEASTAR_HPP
+#endif    // KSOLVEASTAR_HPP 

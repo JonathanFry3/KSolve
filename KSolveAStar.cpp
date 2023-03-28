@@ -163,6 +163,7 @@ bool WorkerState::k_blewMemory(false);
 static void Worker(
         WorkerState* pMasterState);
 
+/** Entrance ***************/
 KSolveAStarResult KSolveAStar(
         Game& game,
         unsigned maxStates,
