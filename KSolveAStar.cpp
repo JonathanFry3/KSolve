@@ -104,11 +104,36 @@ public:
     unsigned DequeueMoveSequence() noexcept; 
     // Make all the moves in the current sequence
     void MakeSequenceMoves(Game&game) const noexcept;
-    // Return the current move sequence in a vector.
-    Moves MovesVector() const;
     // Return a const reference to the current move sequence in its
     // native type.
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
+};
+
+class CandidateSolution
+{
+    Moves _sol;
+    unsigned _count;
+    Mutex _mutex;
+public:
+    CandidateSolution()
+        : _count(-1)
+        {}
+    const Moves & Moves() const
+    {
+        return _sol;
+    }
+    unsigned MoveCount() const{
+        return _count;
+    }
+    template <class Container>
+    void ReplaceIfShorter(const Container& source, unsigned count)
+    {
+        Guard nikita(_mutex);
+        if (_sol.size() == -1U || count < _count){
+            _sol = source;
+            _count = count;
+        }
+    }
 };
 
 struct WorkerState {
@@ -125,15 +150,12 @@ struct WorkerState {
     // its move count here.  If not, we forget the current node - we already have a
     // way to get to the same state that is at least as short.
     GameStateMemory& _closedList;
-
-    Moves & _minSolution;
-    static unsigned k_minSolutionCount;
-    static Mutex k_minSolutionMutex;
+    CandidateSolution & _minSolution;
 
     static bool k_blewMemory;
 
     explicit WorkerState(  Game & gm, 
-            Moves& solution,
+            CandidateSolution& solution,
             SharedMoveStorage& sharedMoveStorage,
             GameStateMemory& map)
         : _game(gm)
@@ -141,8 +163,6 @@ struct WorkerState {
         , _closedList(map)
         , _minSolution(solution)
         {
-            _minSolution.clear();
-            k_minSolutionCount = -1;
             k_blewMemory = false;
         }
     explicit WorkerState(const WorkerState& orig)
@@ -156,8 +176,6 @@ struct WorkerState {
     void CheckForMinSolution();
     QMoves FilteredAvailableMoves()noexcept;
 };
-unsigned WorkerState::k_minSolutionCount(-1);
-Mutex WorkerState::k_minSolutionMutex;
 bool WorkerState::k_blewMemory(false);
 
 static void Worker(
@@ -169,9 +187,9 @@ KSolveAStarResult KSolveAStar(
         unsigned maxStates,
         unsigned nThreads)
 {
-    Moves solution;
     SharedMoveStorage sharedMoveStorage;
     GameStateMemory map(maxStates);
+    CandidateSolution solution;
     WorkerState state(game,solution,sharedMoveStorage,map);
 
     const unsigned startMoves = state._game.MinimumMovesLeft();
@@ -195,11 +213,12 @@ KSolveAStarResult KSolveAStar(
     for (auto& thread: threads) 
         thread.join();
     // Everybody's finished
+    
 
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (state._minSolution.size()) { 
+    } else if (solution.Moves().size()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
@@ -208,7 +227,7 @@ KSolveAStarResult KSolveAStar(
                 ? GaveUp
                 : Impossible;
     }
-    return KSolveAStarResult(outcome,state._closedList.size(),solution);
+    return KSolveAStarResult(outcome,state._closedList.size(),solution.Moves());
 }
 
 void Worker(
@@ -220,10 +239,10 @@ void Worker(
         // Main loop
         unsigned minMoves0;
         while ( (!state._closedList.OverLimit()
-                || state.k_minSolutionCount != -1U)
+                || state._minSolution.MoveCount() != -1U)
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
-                && minMoves0 < state.k_minSolutionCount) { 
+                && minMoves0 < state._minSolution.MoveCount()) { 
 
             // Restore state._game to the state it had when this move
             // sequence was enqueued.
@@ -374,11 +393,6 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
         game.MakeMove(move);
     }
 }
-Moves MoveStorage::MovesVector() const
-{
-    Moves result(_currentSequence.begin(), _currentSequence.end());
-    return result;
-}
 
 // Make available moves until a branching node or an empty one is encountered.
 // If more than one move is available but order will make no difference
@@ -414,12 +428,5 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 // the current champion, we have a new champion
 void WorkerState::CheckForMinSolution() {
     const unsigned nmv = _moveStorage.MoveSequence().MoveCount();
-    {
-        Guard karen(k_minSolutionMutex);
-        const unsigned x = _minSolution.size();
-        if (x == 0 || nmv < k_minSolutionCount) {
-            _minSolution = _moveStorage.MovesVector();
-            k_minSolutionCount = nmv;
-        }
-    }
+    _minSolution.ReplaceIfShorter(_moveStorage.MoveSequence(), nmv);
 }
