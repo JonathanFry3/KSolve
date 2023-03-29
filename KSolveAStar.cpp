@@ -118,7 +118,7 @@ public:
     CandidateSolution()
         : _count(-1)
         {}
-    const Moves & Moves() const
+    const Moves & GetMoves() const
     {
         return _sol;
     }
@@ -130,7 +130,7 @@ public:
     {
         Guard nikita(_mutex);
         if (_sol.size() == -1U || count < _count){
-            _sol = source;
+            _sol.assign(source.begin(), source.end());
             _count = count;
         }
     }
@@ -218,7 +218,7 @@ KSolveAStarResult KSolveAStar(
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
-    } else if (solution.Moves().size()) { 
+    } else if (solution.GetMoves().size()) { 
         outcome = game.TalonLookAheadLimit() < 24
                 ? Solved
                 : SolvedMinimal;
@@ -227,7 +227,7 @@ KSolveAStarResult KSolveAStar(
                 ? GaveUp
                 : Impossible;
     }
-    return KSolveAStarResult(outcome,state._closedList.size(),solution.Moves());
+    return KSolveAStarResult(outcome,state._closedList.size(),solution.GetMoves());
 }
 
 void Worker(
