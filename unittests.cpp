@@ -208,16 +208,18 @@ bool operator==(const Game& a, const Game& b)
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
 
-void CheckMoves(Game& game, const XMoves& mvs)
+template <class Container>
+void TestSolution(Game game, const Container& mvs)
 {
-	game.Deal();
-	for (unsigned i = 0; i != mvs.size(); ++i) {
-		if (!game.IsValid(mvs[i])) {
-			std::cerr << "Move " << mvs[i].MoveNum() << " invalid!" << std::endl;
-			return;
+		game.Deal();
+		// PrintGame(game);
+		for (auto mv: mvs) {
+			// std::cerr << Peek(mv) << std::endl;
+			assert(game.IsValid(mv));
+			game.MakeMove(mv);
 		}
-		game.MakeMove(mvs[i]);
-	}
+		// PrintGame(game);
+		assert(game.GameOver());
 }
 
 std::minstd_rand rng;
@@ -532,20 +534,16 @@ int main()
 		Game game(NumberedDeal(36394), 1, 24, 8);
 		auto outcome = KSolveAStar(game,960'000);
 		assert(MoveCount(outcome._solution) == 112);
-		game.Deal();
-		// PrintGame(game);
-		for (auto mv: outcome._solution) {
-			// std::cerr << Peek(mv) << std::endl;
-			assert(game.IsValid(mv));
-			game.MakeMove(mv);
-		}
 		// PrintGame(game);
 		// PrintOutcome(game, outcome);
-		game.Deal();
+		TestSolution(game, outcome._solution);
 		XMoves xms = MakeXMoves(outcome._solution,game.DrawSetting());
-		for (const XMove& xm: xms){
-			assert(game.IsValid(xm));
-			game.MakeMove(xm);
-		}
+		TestSolution(game, xms);
+
+		Game g515(NumberedDeal(1236733));
+		outcome = KSolveAStar(g515,2'000'000);
+		TestSolution(g515, outcome._solution);
+		//cout << "g515 move count = " << MoveCount(outcome._solution) << endl;
+		assert(MoveCount(outcome._solution) == 114);
 	}
 }
