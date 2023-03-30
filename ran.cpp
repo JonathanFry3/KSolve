@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <ctime>
 #include <chrono>
+#include <thread>
 #include "KSolveAStar.hpp"
 
 using namespace std;
@@ -140,9 +141,12 @@ int main(int argc, char * argv[])
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
         CardDeck deck(NumberedDeal(seed));
         Game game(deck, spec._drawSpec,spec._lookAhead,recycleLimit);
+        unsigned threads = (spec._threads > 0)
+                            ? spec._threads
+                            :std::thread::hardware_concurrency();
         cout << sample << "\t"
             << seed << "\t"
-            << spec._threads << "\t"			 
+            << threads << "\t"			 
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
         KSolveAStarResult result = KSolveAStar(game,spec._maxStates,spec._threads);
