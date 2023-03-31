@@ -160,7 +160,7 @@ public:
     const PileVec& Cards() const noexcept	{return *this;}
     void Push(Card c) noexcept             	{push_back(c);}
     Card Pop() noexcept			            {Card r = back(); pop_back(); return r;}
-    void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
+    void Draw(Pile & from) noexcept			{emplace_back(std::move(from.back())); from.pop_back();}
     Card Top() const  noexcept              {return *(end()-_upCount);}
     void ClearCards() noexcept              {clear(); _upCount = 0;}
     // Take the last n cards from donor preserving order	
@@ -168,10 +168,12 @@ public:
     {
         assert(n <= donor.size());
         for (auto p = donor.end()-n; p < donor.end(); ++p)
-            push_back(*p);
-        while (n--)
-            donor.pop_back();
+            emplace_back(std::move(*p));
+        donor.resize(donor.size() - n);
     }
+    // If n > 0, move the last n cards in other to the end of 
+    // this pile reversing order. 
+    // If n < 0, do the reverse.
     void Draw(Pile& other, int n) noexcept
     {
         if (n < 0) {
