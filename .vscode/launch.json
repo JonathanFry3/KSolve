@@ -60,7 +60,7 @@
             ]
         },
 		{
-			"name": "(Windows) Launch unittests",
+			"name": "Launch unittests",
             "type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/unittests",
