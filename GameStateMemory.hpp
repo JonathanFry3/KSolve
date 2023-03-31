@@ -13,13 +13,18 @@
 #include <atomic>
 
 // A compact representation of the current game state.
-// It is possible, although tedious, to reconstruct the
-// game state from one of these and the original deck.
+//
+// For game play purposes, two tableaus that are identical except
+// that one or more piles are in different spots are considered
+// equal.  Two game states are defined as equal here if their
+// foundation piles and stock and waste piles are the same and
+// their tableaus are equal except for order of piles.
 //
 // The basic requirements for GameState are:
-// 1.  Any difference in the foundation piles, the face-up cards
-//     in the tableau piles, or in the stock pile length
-//     should be reflected in the GameState.
+// 1.  Any difference in between game states as defined above
+//     must be reflected in the corresponding GameState objects.
+//     A GameState is a perfect hash of the game state given
+//     that equivalence relation.
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
 struct GameState {
@@ -63,18 +68,21 @@ private:
 public:
     // The implementation uses a hash map which will base its initial
     // capacity on the maxStates argument.  It can grow past 
-    // that size, but a performance penalty will be paid.
+    // that size, but a there may be a performance penalty.
     GameStateMemory(unsigned maxStates);
     // Returns true if the map has more states than the specified maximum
     inline bool OverLimit() const noexcept
     {
         return size() > _maxStates;
     }
-    // Returns true if the game argument has not been presented before
+    // Returns true if no equal Game argument has been presented before
     // to this object or the moveCount argument is lower than that
-    // associated with previous calls with equivalent states.
+    // associated with previous calls with equal states.
     bool IsShortPathToState(const Game& game, unsigned moveCount);
-    // Returns the number of states stored
+    // Returns the number of states stored.  We track size rather than
+    // using the hash map objects size() because the hash map class
+    // computes it size by summing the sizes of its submaps, and
+    // we call this function often and from many threads.
     inline unsigned size() const noexcept
     {
         return _size;
