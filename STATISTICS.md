@@ -30,7 +30,7 @@ State Limit|Draw 1 |Draw 3
  ## How Much Memory is Needed
  These figures were acquired by running a deal too complex to be decided with any of the 
  state limits tested and observing the peak memory used.  They were run on a Windows 10 machine
- with the _ran_ programcompiled with the Microsoft MVSC compiler, although the compiler used 
+ with the _ran_ program compiled with the Microsoft MVSC compiler, although the compiler used 
  will make little difference. The figures would be nearly the same for the _KSolve_ program.
 
  State Limit|Peak Memory
