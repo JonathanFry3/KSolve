@@ -1,5 +1,6 @@
 // GameStateMemory.cpp implements the GameStateMemory class.
 
+#include <algorithm>        // max
 #include "GameStateMemory.hpp"
 
 GameState::GameState(const Game& game) noexcept
@@ -47,7 +48,7 @@ GameStateMemory::GameStateMemory(unsigned maxStates)
     , _maxStates(maxStates)
     , _size(0)
 {
-    _states.reserve(maxStates);
+    _states.reserve(std::max(maxStates,MinCapacity));
 }
 
 bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
