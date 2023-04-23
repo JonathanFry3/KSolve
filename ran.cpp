@@ -154,7 +154,7 @@ int main(int argc, char * argv[])
         unsigned nMoves = MoveCount(result._solution);
         cout << result._code << "\t"
             << nMoves << "\t"
-            << result._stateCount << "\t"
+            << result._branchCount << "\t"
             << elapsed.count()/1000. << "\t";
         int passes = 0;
         if (result._solution.size()) passes = RecycleCount(result._solution) + 1;

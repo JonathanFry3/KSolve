@@ -68,6 +68,8 @@ This is like the Pysol format explained above, except that the cards are in the 
 ## What to Expect
 This program uses lots of memory.  
 One of its largest data structures contains a representation of the first game state at the each branch (meaning a sequence of states where all but the last has exactly one child).  
+The median number of branches is around five million, and about 99% of deals can be solved using
+a limit of less than 100 million branches.
 You can limit or expand the space (and time) used by using the -BRANCHES flag.  
 If that data structure becomes larger than the specified limit, the program will quit
 unless it has already found a solution. In that case, it will continue until it finds an optimal solution.

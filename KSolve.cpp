@@ -226,7 +226,7 @@ int main(int argc, char * argv[]) {
         }
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
-        cout << setprecision(4) << outcome._stateCount/1e6 << " million branches.\n";
+        cout << setprecision(4) << outcome._branchCount/1e6 << " million branches.\n";
         if (outputMethod < 2 && replay && canReplay) {
             game.Deal();
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
