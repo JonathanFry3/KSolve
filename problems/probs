@@ -1,0 +1,45 @@
+# 110 moves from KSolve, 109 moves on phone (2 solvers)
+naloT: c2 st d5 s2 ct c4 d2 s8 dt sq h5 h8 s4 hk s7 sj h6 sa d8 dj hq d7 c6 c5 
+d9 
+h2 sk 
+hj d4 cj 
+c9 c7 h9 dk
+ha ca s9 s5 d6
+dq h4 h3 ck c8 s6
+cq da s3 d3 ht h7 c3 
+# 114 moves from KSolve, 89 moves on phone - one solver, 114 was 2nd place
+naloT: s4 ha st h6 c7 s3 s6 d8 sq c3 c8 h7 d4 d9 c2 sa ck hj cq dt d2 d3 s7 h5 
+s2 
+h3 dk 
+d5 c9 s9 
+s8 cj sj s5
+h8 dj c4 da h4
+ca h9 c6 ct c5 sk 
+h2 d6 ht hk hq dq d7
+# 130 moves in KSolve (6 solvers), 131 moves on phone.  Use -s 24000000
+naloT: c3 d2 h9 h8 dq ht sa d9 d3 d4 d6 dj s7 s8 h5 c5 h2 st s9 s5 dt dk s4 c7 
+hk 
+ck d8
+c9 c6 da 
+c4 cj h6 sj 
+hq hj sq h7 h3
+sk s6 s3 ca ct s2 
+c8 cq d5 c2 d7 h4 ha 
+# 104 moves in KSolve, 103 moves on phone (1 solver)
+naloT: dt s3 ct h9 d6 h4 c8 sa s5 d2 sk d4 ck s2 d9 ca d7 s9 c9 hk c6 hq d5 s4 
+dj 
+h8 dq
+dk d3 c2
+st c3 da h5
+s6 hj h3 ht cj 
+sq s7 cq c5 h2 ha
+c7 h7 c4 d8 s8 sj h6# 130 moves by KSolve, 129 on phone
+naloT: hq s2 s9 d8 c7 h8 s7 s8 sk h9 c8 ct h6 c3 ha sj c9 s5 d9 s3 d4 h3 cj c4
+h4 
+s4 da
+d3 cq sa
+sq h2 c6 hk 
+ck d5 h5 hj d7
+ht dq dj c2 dk st 
+d6 h7 s6 c5 dt d2 ca
+#DR1 W5 DR14 WH DR1 W5 DR1 W6 65-2 F6 DR1 W7 DR2 W1 DR3 W6 W2 DR1 NEW DR1 W2 DR4 W5 DR1 W5 17-2 51-7 F5 25-3 F2 2D DR2 W2 62-2 F6 64 F6 63 F6 46-2 F4 4H F4 71-4 F7 54-4 F5 DR8 W5 35-2 F3 47-5 F4 34 F3 3S 7S 7H 1S 1H W1 63-3 F6 W6 7S 57-3 5H F5 W1 WH W5 W6 76-6 F7 54-2 F5 75 F7 17-2 1S 71-3 F7 72 F7 7D F7 7C 6C 1C 6D 1D 6C 1C 5S 6D 1D 1S 5D 6C 6H 1H WH WS WC WD WS 6C 1C 1H 4C 6D 2D 2C 3D 4H 6S 1S 1H 2D 3S 2S 3D 4C 1C 4H 
