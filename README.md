@@ -63,14 +63,24 @@ Case does not matter, and the characters in "<>:-" plus tabs will be ignored.
 
 After the first line, enter a line for each tableau pile (the seven piles dealt first), starting with the one-card pile.  Enter the cards in the order they were dealt, so the one dealt face-up comes last.
 ### Reverse Pysol Format
-This is like the Pysol format explained above, except that the cards are in the order a player discovers them while playing the game rather than the order they were dealt.  Start the first line with "naloT: " and follow with the talon cards.  Those are in the same order as in Talon format, since the deal order is the same as the discovery order.  Follow with seven lines containing the tableau piles.  These are in the reverse of their order in a Pysol game - the card dealt face-up is first, since that's the one the player sees first.
+This is like the Pysol format explained above, except that the cards are in the order a player discovers them while playing the game rather than the order they were dealt.  Start the first line with "naloT: " and follow with the talon cards.  Those are in the same order as in Talon format, since the deal order is the same as the discovery order.  Follow with seven lines containing the tableau piles.  These are in the reverse of their order in a Pysol file - the card dealt face-up is first, since that's the one the player sees first.
 
 ## What to Expect
-This program uses lots of memory.  Since one of the largest data structures contains representations of all the unique states the program has generated, you can limit or expand the space (and time) used by using the -STATES flag.  If that is set too high, the program will be unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
+This program uses lots of memory.  
+One of its largest data structures contains a representation of the first game state at the each branch (meaning a sequence of states where all but the last has exactly one child).  
+The median number of branches is around five million, and about 99% of deals can be solved using
+a limit of less than 100 million branches.
+You can limit or expand the space (and time) used by using the -BRANCHES flag.  
+If that data structure becomes larger than the specified limit, the program will quit
+unless it has already found a solution. In that case, it will continue until it finds an optimal solution.
+If -BRANCHES is set too high, the program may become unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
 
-There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 unique states). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
+There is no performance penalty for specifying a higher branch limit than is needed.
 
-See ACKNOWLEDGEMENT.md.  This work is substantially derived from the repository Klondike-Solver
+There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 branches). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
+
+## Acknowledgements
+See ACKNOWLEDGEMENT.md.  This work is substantially derived from the Github repository Klondike-Solver
 by @ShootMe. Their license follows:
 
 Copyright (c) 2013 ShootMe
@@ -85,4 +95,5 @@ subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-
+# ran
+*ran* is a program for generating statistical data about any number of random deals.  

@@ -1,4 +1,4 @@
-row	seed	threads	draw	outcome	moves	states	time	passes
+row	seed	threads	draw	outcome	moves	branches	time	passes
 1	29337	8	3	0	99	1487326	0.805747	2
 2	31686	8	3	2	0	5629683	4.59172	0
 3	34035	8	3	3	0	10000015	5.46629	0

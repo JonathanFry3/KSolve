@@ -129,10 +129,10 @@ int main(int argc, char * argv[]) {
             outputMethod = atoi(argv[i + 1]);
             if (outputMethod < 0 || outputMethod > 2) { cerr << "You must specify a valid output method. 0, 1, or 2.\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-states") == 0 || _stricmp(argv[i], "/states") == 0 || _stricmp(argv[i], "-s") == 0 || _stricmp(argv[i], "/s") == 0) {
-            if (i + 1 >= argc) { cerr << "You must specify max states.\n"; return 100; }
+        } else if (_stricmp(argv[i], "-branches") == 0 || _stricmp(argv[i], "/branches") == 0 || _stricmp(argv[i], "-b") == 0 || _stricmp(argv[i], "/b") == 0) {
+            if (i + 1 >= argc) { cerr << "You must specify max branches.\n"; return 100; }
             maxClosedCount = atoi(argv[i + 1]);
-            if (maxClosedCount < 0) { cerr << "You must specify a valid max number of states.\n"; return 100; }
+            if (maxClosedCount < 0) { cerr << "You must specify a valid max number of branches.\n"; return 100; }
             i++;
         } else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "/mvs") == 0 || _stricmp(argv[i], "-moves") == 0 || _stricmp(argv[i], "/moves") == 0) {
             showMoves = true;
@@ -161,7 +161,7 @@ int main(int argc, char * argv[]) {
             cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n\n";
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
             cout << "                        solution is found.\n\n";
-            cout << "  -states # [-s #]      Sets the maximum number of game states to evaluate\n";
+            cout << "  -branches # [-b #]    Sets the maximum number of branches to evaluate\n";
             cout << "                        before terminating. Defaults to 20,000,000.\n\n";
             cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
@@ -226,7 +226,7 @@ int main(int argc, char * argv[]) {
         }
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
-        cout << setprecision(4) << outcome._stateCount/1e6 << " million unique states.\n";
+        cout << setprecision(4) << outcome._branchCount/1e6 << " million branches.\n";
         if (outputMethod < 2 && replay && canReplay) {
             game.Deal();
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
