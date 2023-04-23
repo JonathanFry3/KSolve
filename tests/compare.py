@@ -2,7 +2,7 @@ import pandas as pd
 import os
 # print(os.getcwd()) printed .../KSolve
 base = pd.read_csv("/home/jon/prj/KSolve/tests/base1000.txt", sep="\t")
-test = pd.read_csv("/home/jon/prj/KSolve/tests/test1000.txt", sep="\t")
+test = pd.read_csv("/home/jon/prj/KSolve/tests/test10.txt", sep="\t")
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]
@@ -28,5 +28,5 @@ print("  Time-:",len(list(test.row[timeMinus])))
 form = "{:12.2f}"
 print("Base time:", form.format(sum(basex.time)))
 print("Test time:", form.format(sum(test.time)))
-print ("Base states:", sum(basex.states))
-print ("Test states:", sum(test.states))
+print ("Base branches:", sum(basex.branches))
+print ("Test branches:", sum(test.branches))
