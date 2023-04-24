@@ -152,13 +152,14 @@ int main(int argc, char * argv[])
         KSolveAStarResult result = KSolveAStar(game,spec._maxBranches,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         unsigned nMoves = MoveCount(result._solution);
-        cout << result._code << "\t"
-            << nMoves << "\t"
-            << result._branchCount << "\t"
+        cout << result._code << "\t";
+        if (result._solution.size())
+            cout << nMoves;
+        cout << "\t" << result._branchCount << "\t"
             << elapsed.count()/1000. << "\t";
-        int passes = 0;
-        if (result._solution.size()) passes = RecycleCount(result._solution) + 1;
-        cout << passes << endl;
+        if (result._solution.size()) 
+            cout << RecycleCount(result._solution) + 1;
+        cout << endl;
         seed +=  spec._incr;
     }
 }
