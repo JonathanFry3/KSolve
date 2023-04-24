@@ -65,6 +65,9 @@ private:
         > MapType;
     MapType _states;
 
+    // Starting minimum capacity for hash map
+    const unsigned MinCapacity = 4096*1024;
+
 public:
     // The implementation uses a hash map which will base its initial
     // capacity on the maxStates argument.  It can grow past 

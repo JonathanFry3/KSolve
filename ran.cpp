@@ -1,11 +1,8 @@
 // ran - Runs many random deals through the KSolveAStar solver, 
 // writes a file of results, one line per deal.
 
-#include <fstream>
 #include <iostream>			// cout
 #include <string>
-#include <algorithm>		// shuffle
-#include <random>
 #include <cstdint>
 #include <ctime>
 #include <chrono>
@@ -13,14 +10,14 @@
 #include "KSolveAStar.hpp"
 
 using namespace std;
-using namespace  chrono;
+using namespace chrono;
 
 struct Specification
 {
     unsigned _begin;
     unsigned _end;
     unsigned _threads;
-    unsigned _maxStates;
+    unsigned _maxBranches;
     unsigned _drawSpec;
     unsigned _lookAhead;
     uint32_t _seed0;
@@ -52,7 +49,7 @@ Specification GetSpec(int argc, char * argv[])
     // Set defaults
     spec._begin = 1;
     spec._end = 10;
-    spec._maxStates = 30'000'000;
+    spec._maxBranches = 30'000'000;
     spec._seed0 = 1;
     spec._incr = 1;
     spec._drawSpec = 1;
@@ -72,17 +69,17 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-e # or --end #       Sets the last row number (default 10)." << endl;
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
             cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
-            cout << "-st # or --states #   Set the maximum number of unique states (default 30 million)." << endl;
+            cout << "-b # or --branches #  Set the maximum number of branches (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (default 2)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
             cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
             cout << "the number of moves in the solution or zero if no solution found," << endl;
-            cout << "the number of unique states generated, the clock time required in seconds," << endl;
+            cout << "the number of branches of the move tree generated, the clock time required in seconds," << endl;
             cout << "the number of talon passes in the solution or zero if no solution found." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
-            cout << "3 = too many states, 4 = exceeded memory." << endl;
+            cout << "3 = too many branches, 4 = exceeded memory." << endl;
             cout << flush;
             exit(0);
         } else if (flag == "-s" || flag == "--seed") {
@@ -107,10 +104,10 @@ Specification GetSpec(int argc, char * argv[])
             spec._drawSpec = GetNumber(argv[iarg]);
         } else if (flag == "-v" || flag == "--vegas") {
             spec._vegas = true;
-        } else if (flag == "-st" || flag == "--states") {
+        } else if (flag == "-b" || flag == "--branches") {
             iarg += 1;
-            if (iarg > argc) Error("No number after --states");
-            spec._maxStates = GetNumber(argv[iarg]);
+            if (iarg > argc) Error("No number after --branches");
+            spec._maxBranches = GetNumber(argv[iarg]);
         } else if (flag == "-t" || flag == "--threads") {
             iarg += 1;
             if (iarg > argc) Error("No number after --threads");
@@ -135,7 +132,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tstates\ttime\tpasses" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tbranches\ttime\tpasses" << endl;
     
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
@@ -149,16 +146,17 @@ int main(int argc, char * argv[])
             << threads << "\t"			 
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
-        KSolveAStarResult result = KSolveAStar(game,spec._maxStates,spec._threads);
+        KSolveAStarResult result = KSolveAStar(game,spec._maxBranches,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         unsigned nMoves = MoveCount(result._solution);
-        cout << result._code << "\t"
-            << nMoves << "\t"
-            << result._stateCount << "\t"
+        cout << result._code << "\t";
+        if (result._solution.size())
+            cout << nMoves;
+        cout << "\t" << result._branchCount << "\t"
             << elapsed.count()/1000. << "\t";
-        int passes = 0;
-        if (result._solution.size()) passes = RecycleCount(result._solution) + 1;
-        cout << passes << endl;
+        if (result._solution.size()) 
+            cout << RecycleCount(result._solution) + 1;
+        cout << endl;
         seed +=  spec._incr;
     }
 }
