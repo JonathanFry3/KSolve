@@ -1,11 +1,8 @@
 // ran - Runs many random deals through the KSolveAStar solver, 
 // writes a file of results, one line per deal.
 
-#include <fstream>
 #include <iostream>			// cout
 #include <string>
-#include <algorithm>		// shuffle
-#include <random>
 #include <cstdint>
 #include <ctime>
 #include <chrono>
@@ -13,7 +10,7 @@
 #include "KSolveAStar.hpp"
 
 using namespace std;
-using namespace  chrono;
+using namespace chrono;
 
 struct Specification
 {
