@@ -36,7 +36,7 @@
 //
 // This function uses an unpredictable amount of main memory. You can
 // control this behavior to some degree by specifying maxBranches. The number
-// of unique game states stored is returned in _branchCount.
+// of branches stored is returned in _branchCount.
 //
 // For some insight into how it works, look up the A* algorithm.
 
@@ -44,13 +44,21 @@ enum KSolveAStarCode {SolvedMinimal, Solved, Impossible, GaveUp, MemoryExceeded}
 struct KSolveAStarResult
 {
     KSolveAStarCode _code;
-    unsigned _branchCount;
     Moves _solution;
+    unsigned _branchCount;
+    unsigned _moveCount;
+    unsigned _maxFringeStackSize;
 
-    KSolveAStarResult(KSolveAStarCode code, unsigned stateCount, const Moves& moves)
+    KSolveAStarResult(KSolveAStarCode code, 
+                const Moves& moves, 
+                unsigned branchCount,
+                unsigned moveCount,
+                unsigned maxFringeStackSize)
         : _code(code)
-        , _branchCount(stateCount)
         , _solution(moves)
+        , _branchCount(branchCount)
+        , _moveCount(moveCount)
+        , _maxFringeStackSize(maxFringeStackSize)
         {}
 };
 KSolveAStarResult KSolveAStar(
