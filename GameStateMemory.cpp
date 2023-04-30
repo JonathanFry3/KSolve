@@ -48,7 +48,7 @@ GameStateMemory::GameStateMemory(unsigned maxStates)
     , _maxStates(maxStates)
     , _size(0)
 {
-    _states.reserve(std::max(maxStates,MinCapacity));
+    _states.reserve(std::min(maxStates,MinCapacity));
 }
 
 bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
