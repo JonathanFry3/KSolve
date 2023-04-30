@@ -75,9 +75,10 @@ Specification GetSpec(int argc, char * argv[])
             cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
-            cout << "the number of moves in the solution or zero if no solution found," << endl;
-            cout << "the number of branches of the move tree generated, the clock time required in seconds," << endl;
-            cout << "the number of talon passes in the solution or zero if no solution found." << endl;
+            cout << "the number of moves in the solution if a solution is found," << endl;
+            cout << "the number of talon passes in the solution if a solution is found." << endl;
+            cout << "the clock time required in seconds, the number of branches of the move tree generated," << endl;
+            cout << "the number of moves in the move tree, and the size of the largest fringe element";
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
             cout << "3 = too many branches, 4 = exceeded memory." << endl;
             cout << flush;
@@ -132,7 +133,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tbranches\ttime\tpasses" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tbranches\ttreemoves\tfrmax" << endl;
     
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
@@ -149,14 +150,28 @@ int main(int argc, char * argv[])
         KSolveAStarResult result = KSolveAStar(game,spec._maxBranches,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         unsigned nMoves = MoveCount(result._solution);
+
         cout << result._code << "\t";
+
         if (result._solution.size())
             cout << nMoves;
-        cout << "\t" << result._branchCount << "\t"
-            << elapsed.count()/1000. << "\t";
+        cout << "\t";
+
         if (result._solution.size()) 
             cout << RecycleCount(result._solution) + 1;
+        cout << "\t";
+
+        cout.precision(4);
+        cout << elapsed.count()/1000. << "\t";
+
+        cout << result._branchCount << "\t";
+
+        cout << result._moveCount << "\t";
+
+        cout << result._maxFringeStackSize << "\t";
+
         cout << endl;
+
         seed +=  spec._incr;
     }
 }
