@@ -18,6 +18,29 @@ using namespace frystl;
 enum {maxMoves = 512};
 typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
+// Mix-in to measure max size
+template <class VectorType>
+struct MaxSizeCollector : public VectorType
+{
+    using size_type = typename VectorType::size_type;
+    MaxSizeCollector() = default;
+
+    size_type MaxSize() const {
+        return std::max(VectorType::size(),_maxSize);
+    }
+    void pop_back()
+    {
+        Remember();
+        VectorType::pop_back();
+    }
+private:
+    size_type _maxSize;
+    void Remember()
+    {
+        _maxSize = std::max(VectorType::size(),_maxSize);
+    }
+};
+
 class SharedMoveStorage
 {
     typedef std::uint32_t NodeX;
@@ -34,7 +57,8 @@ class SharedMoveStorage
     mf_vector<MoveNode,16*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    typedef mf_vector<NodeX> LeafNodeStack;
+    typedef MaxSizeCollector<mf_vector<NodeX> >LeafNodeStack;
+    using FringeSizeType = MaxSizeCollector<mf_vector<NodeX> >::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
@@ -59,6 +83,16 @@ public:
         _startStackIndex = minMoves;
         _fringe.emplace_back();
         _fringe[0]._stack.push_back(-1);
+    }
+    FringeSizeType MaxFringeElementSize() const{
+        FringeSizeType result = 0;
+        for (auto const & f: _fringe) {
+            result = std::max(result, f._stack.MaxSize());
+        }
+        return result;
+    }
+    unsigned MoveCount() const{
+        return _moveTree.size();
     }
 };
 class MoveStorage
@@ -227,7 +261,13 @@ KSolveAStarResult KSolveAStar(
                 ? GaveUp
                 : Impossible;
     }
-    return KSolveAStarResult(outcome,state._closedList.size(),solution.GetMoves());
+    return KSolveAStarResult(
+        outcome,
+        solution.GetMoves(),
+        state._closedList.size(),
+        sharedMoveStorage.MoveCount(),
+        sharedMoveStorage.MaxFringeElementSize());
+    ;
 }
 
 void Worker(
