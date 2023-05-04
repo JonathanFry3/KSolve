@@ -1,0 +1,9 @@
+Klondike,1
+2s,kd,9s,5s,4h,ks,7d,
+3h,9c,js,ad,5c,qd,
+5d,jc,4c,10c,qh,
+8s,jd,6c,kh,
+8h,9h,10h,
+ac,6d,
+2h,
+4s,ah,10s,6h,7c,3s,6s,8d,qs,3c,8c,7h,4d,9d,2c,as,kc,jh,qc,10d,2d,3d,7s,5h
