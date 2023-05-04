@@ -133,7 +133,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tbranches\ttreemoves\tfrmax" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfrmax\tbranches\ttreemoves" << endl;
     
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
@@ -164,11 +164,11 @@ int main(int argc, char * argv[])
         cout.precision(4);
         cout << elapsed.count()/1000. << "\t";
 
+        cout << result._maxFringeStackSize << "\t";
+
         cout << result._branchCount << "\t";
 
-        cout << result._moveCount << "\t";
-
-        cout << result._maxFringeStackSize << "\t";
+        cout << result._moveCount;
 
         cout << endl;
 
