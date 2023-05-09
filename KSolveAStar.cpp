@@ -233,27 +233,21 @@ KSolveAStarResult KSolveAStar(
     if (nThreads == 0)
         nThreads = std::thread::hardware_concurrency();
 
-    try {
-
-        // Start workers in their own threads
-        std::vector<std::thread> threads;
-        threads.reserve(nThreads-1);
-        for (unsigned t = 0; t < nThreads-1; ++t) {
-            threads.emplace_back(&Worker, &state);
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
-        }
-
-        // Run one more worker in this (main) thread
-        Worker(&state);
-
-        for (auto& thread: threads) 
-            thread.join();
-        // Everybody's finished
-    
-    } 
-    catch(std::bad_alloc&) {
-        state.k_blewMemory = true;
+    // Start workers in their own threads
+    std::vector<std::thread> threads;
+    threads.reserve(nThreads-1);
+    for (unsigned t = 0; t < nThreads-1; ++t) {
+        threads.emplace_back(&Worker, &state);
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
+
+    // Run one more worker in this (main) thread
+    Worker(&state);
+
+    for (auto& thread: threads) 
+        thread.join();
+    // Everybody's finished
+    
 
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
@@ -273,12 +267,15 @@ KSolveAStarResult KSolveAStar(
         state._closedList.size(),
         sharedMoveStorage.MoveCount(),
         sharedMoveStorage.MaxFringeElementSize());
+    ;
 }
 
 void Worker(
         WorkerState* pMasterState)
 {
     WorkerState state(*pMasterState);
+
+    try {
         // Main loop
         unsigned minMoves0;
         while ( (!state._closedList.OverLimit()
@@ -321,6 +318,10 @@ void Worker(
             // Share the moves made here
             state._moveStorage.ShareMoves();
         }
+    } 
+    catch(std::bad_alloc&) {
+        state.k_blewMemory = true;
+    }
     return;
 }
 
