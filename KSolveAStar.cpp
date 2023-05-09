@@ -163,7 +163,7 @@ public:
     void ReplaceIfShorter(const Container& source, unsigned count)
     {
         Guard nikita(_mutex);
-        if (_sol.size() == -1U || count < _count){
+        if (_sol.empty() || count < _count){
             _sol.assign(source.begin(), source.end());
             _count = count;
         }
