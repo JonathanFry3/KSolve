@@ -35,8 +35,7 @@
 // Otherwise, it will be empty.
 //
 // This function uses an unpredictable amount of main memory. You can
-// control this behavior to some degree by specifying maxBranches. The number
-// of branches stored is returned in _branchCount.
+// control this behavior to some degree by specifying MoveTreeLimit. 
 //
 // For some insight into how it works, look up the A* algorithm.
 
@@ -46,7 +45,7 @@ struct KSolveAStarResult
     KSolveAStarCode _code;
     Moves _solution;
     unsigned _branchCount;
-    unsigned _moveCount;
+    unsigned _moveTreeSize;
     unsigned _maxFringeStackSize;
 
     KSolveAStarResult(KSolveAStarCode code, 
@@ -57,14 +56,14 @@ struct KSolveAStarResult
         : _code(code)
         , _solution(moves)
         , _branchCount(branchCount)
-        , _moveCount(moveCount)
+        , _moveTreeSize(moveCount)
         , _maxFringeStackSize(maxFringeStackSize)
         {}
 };
 KSolveAStarResult KSolveAStar(
         Game& gm, 			// The game to be played
-        unsigned maxBranches=10'000'000,// Give up if the number of branches
-                                        // examined exceeds this before any solution is found.
+        unsigned MoveTreeLimit=12'000'000,// Give up if the size of the move tree
+                                        // exceeds this before any solution is found.
         unsigned threads=0);            // Use as many threads as the hardware will run together
 
 #endif    // KSOLVEASTAR_HPP 

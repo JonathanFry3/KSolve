@@ -43,6 +43,7 @@ private:
 
 class SharedMoveStorage
 {
+    size_t _moveTreeSizeLimit;
     typedef std::uint32_t NodeX;
     struct MoveNode
     {
@@ -78,8 +79,9 @@ public:
     }
     // Start move storage with the minimum number of moves from
     // the dealt deck before the first move.
-    void Start(unsigned minMoves)
+    void Start(size_t moveTreeSizeLimit, unsigned minMoves)
     {
+        _moveTreeSizeLimit = moveTreeSizeLimit;
         _startStackIndex = minMoves;
         _fringe.emplace_back();
         _fringe[0]._stack.push_back(-1);
@@ -93,6 +95,9 @@ public:
     }
     unsigned MoveCount() const{
         return _moveTree.size();
+    }
+    bool OverLimit() const{
+        return _moveTree.size() > _moveTreeSizeLimit;
     }
 };
 class MoveStorage
@@ -218,17 +223,17 @@ static void Worker(
 /** Entrance ***************/
 KSolveAStarResult KSolveAStar(
         Game& game,
-        unsigned maxStates,
+        unsigned moveTreeLimit,
         unsigned nThreads)
 {
     SharedMoveStorage sharedMoveStorage;
-    GameStateMemory map(maxStates);
+    GameStateMemory map;
     CandidateSolution solution;
     WorkerState state(game,solution,sharedMoveStorage,map);
 
     const unsigned startMoves = state._game.MinimumMovesLeft();
 
-    state._moveStorage.Shared().Start(startMoves);	// pump priming
+    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);	// pump priming
     
     if (nThreads == 0)
         nThreads = std::thread::hardware_concurrency();
@@ -253,18 +258,19 @@ KSolveAStarResult KSolveAStar(
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
     } else if (solution.GetMoves().size()) { 
-        outcome = game.TalonLookAheadLimit() < 24
+        outcome = game.TalonLookAheadLimit() < 24 
+                  || sharedMoveStorage.OverLimit()
                 ? Solved
                 : SolvedMinimal;
     } else {
-        outcome = state._closedList.OverLimit()
+        outcome = sharedMoveStorage.OverLimit()
                 ? GaveUp
                 : Impossible;
     }
     return KSolveAStarResult(
         outcome,
         solution.GetMoves(),
-        state._closedList.size(),
+        state._closedList.Size(),
         sharedMoveStorage.MoveCount(),
         sharedMoveStorage.MaxFringeElementSize());
     ;
@@ -278,8 +284,7 @@ void Worker(
     try {
         // Main loop
         unsigned minMoves0;
-        while ( (!state._closedList.OverLimit()
-                || state._minSolution.MoveCount() != -1U)
+        while ( !state._moveStorage.Shared().OverLimit()
                 && !state.k_blewMemory
                 && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
                 && minMoves0 < state._minSolution.MoveCount()) { 

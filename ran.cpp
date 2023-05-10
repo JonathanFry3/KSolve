@@ -169,7 +169,7 @@ int main(int argc, char * argv[])
 
         cout << result._branchCount << "\t";
 
-        cout << result._moveCount;
+        cout << result._moveTreeSize;
 
         cout << endl;
 
