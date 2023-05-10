@@ -53,7 +53,7 @@ Specification GetSpec(int argc, char * argv[])
     spec._seed0 = 1;
     spec._incr = 1;
     spec._drawSpec = 1;
-    spec._threads = 2;
+    spec._threads = 0;
     spec._lookAhead = 24;
     spec._vegas = false;
 
@@ -70,8 +70,9 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
             cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
             cout << "-br # or --branches #  Set the maximum number of branches (default 30 million)." << endl;
-            cout << "-t # or --threads #   Sets the number of threads (default 2)." << endl;
+            cout << "-t # or --threads #   Sets the number of threads (see below for default)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
+            cout << "The default number of threads is the number the hardware will run concurrently." << endl;
             cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
@@ -164,11 +165,11 @@ int main(int argc, char * argv[])
         cout.precision(4);
         cout << elapsed.count()/1000. << "\t";
 
+        cout << result._maxFringeStackSize << "\t";
+
         cout << result._branchCount << "\t";
 
-        cout << result._moveCount << "\t";
-
-        cout << result._maxFringeStackSize << "\t";
+        cout << result._moveCount;
 
         cout << endl;
 
