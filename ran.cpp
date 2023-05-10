@@ -17,7 +17,7 @@ struct Specification
     unsigned _begin;
     unsigned _end;
     unsigned _threads;
-    unsigned _maxBranches;
+    unsigned _mvLimit;
     unsigned _drawSpec;
     unsigned _lookAhead;
     uint32_t _seed0;
@@ -49,7 +49,7 @@ Specification GetSpec(int argc, char * argv[])
     // Set defaults
     spec._begin = 1;
     spec._end = 10;
-    spec._maxBranches = 30'000'000;
+    spec._mvLimit = 30'000'000;
     spec._seed0 = 1;
     spec._incr = 1;
     spec._drawSpec = 1;
@@ -69,7 +69,7 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-e # or --end #       Sets the last row number (default 10)." << endl;
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
             cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
-            cout << "-br # or --branches #  Set the maximum number of branches (default 30 million)." << endl;
+            cout << "-mv # or --mvlimit    Set the maximum size of the move tree (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (see below for default)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
             cout << "The default number of threads is the number the hardware will run concurrently." << endl;
@@ -78,10 +78,10 @@ Specification GetSpec(int argc, char * argv[])
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
             cout << "the number of moves in the solution if a solution is found," << endl;
             cout << "the number of talon passes in the solution if a solution is found." << endl;
-            cout << "the clock time required in seconds, the number of branches of the move tree generated," << endl;
-            cout << "the number of moves in the move tree, and the size of the largest fringe element" << endl;
+            cout << "the clock time required in seconds, the size of the largest fringe element," << endl;
+            cout << "the number of moves in the move tree, and the number of branches of the move tree." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
-            cout << "3 = too many branches, 4 = exceeded memory." << endl;
+            cout << "3 = too many moves in the tree, 4 = exceeded memory." << endl;
             cout << flush;
             exit(0);
         } else if (flag == "-s" || flag == "--seed") {
@@ -106,10 +106,10 @@ Specification GetSpec(int argc, char * argv[])
             spec._drawSpec = GetNumber(argv[iarg]);
         } else if (flag == "-v" || flag == "--vegas") {
             spec._vegas = true;
-        } else if (flag == "-br" || flag == "--branches") {
+        } else if (flag == "-mv" || flag == "--mvlimit") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --branches");
-            spec._maxBranches = GetNumber(argv[iarg]);
+            if (iarg == argc) Error("No number after --mvlimit");
+            spec._mvLimit = GetNumber(argv[iarg]);
         } else if (flag == "-t" || flag == "--threads") {
             iarg += 1;
             if (iarg == argc) Error("No number after --threads");
@@ -148,7 +148,7 @@ int main(int argc, char * argv[])
             << threads << "\t"			 
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
-        KSolveAStarResult result = KSolveAStar(game,spec._maxBranches,spec._threads);
+        KSolveAStarResult result = KSolveAStar(game,spec._mvLimit,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         unsigned nMoves = MoveCount(result._solution);
 
