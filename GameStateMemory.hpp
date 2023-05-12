@@ -52,8 +52,6 @@ struct Hasher
 class GameStateMemory
 {
 private:
-    unsigned _maxStates;
-    std::atomic_uint _size;
     typedef phmap::parallel_flat_hash_map< 
             GameState, 								// key type
             unsigned short, 						// mapped type
@@ -69,25 +67,11 @@ private:
     const unsigned MinCapacity = 4096*1024;
 
 public:
-    // The implementation uses a hash map which will base its initial
-    // capacity on the maxStates argument.  It can grow past 
-    // that size, but a there may be a performance penalty.
-    GameStateMemory(unsigned maxStates);
-    // Returns true if the map has more states than the specified maximum
-    inline bool OverLimit() const noexcept
-    {
-        return size() > _maxStates;
-    }
+    GameStateMemory();
     // Returns true if no equal Game argument has been presented before
     // to this object or the moveCount argument is lower than that
     // associated with previous calls with equal states.
     bool IsShortPathToState(const Game& game, unsigned moveCount);
-    // Returns the number of states stored.  We track size rather than
-    // using the hash map objects size() because the hash map class
-    // computes it size by summing the sizes of its submaps, and
-    // we call this function often and from many threads.
-    inline unsigned size() const noexcept
-    {
-        return _size;
-    }
+    // Returns the number of states stored.  
+    size_t Size() {return _states.size();}
 };

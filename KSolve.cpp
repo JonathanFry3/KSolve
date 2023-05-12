@@ -88,7 +88,7 @@ int main(int argc, char * argv[]) {
     bool commandLoaded = false;
     int outputMethod = 0;
     int threads = 0;
-    int maxClosedCount = 0;
+    int moveLimit = 0;
     bool fastMode = false;
     string fileContents;
     bool replay = false;
@@ -129,10 +129,10 @@ int main(int argc, char * argv[]) {
             outputMethod = atoi(argv[i + 1]);
             if (outputMethod < 0 || outputMethod > 2) { cerr << "You must specify a valid output method. 0, 1, or 2.\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-branches") == 0 || _stricmp(argv[i], "/branches") == 0 || _stricmp(argv[i], "-b") == 0 || _stricmp(argv[i], "/b") == 0) {
-            if (i + 1 >= argc) { cerr << "You must specify max branches.\n"; return 100; }
-            maxClosedCount = atoi(argv[i + 1]);
-            if (maxClosedCount < 0) { cerr << "You must specify a valid max number of branches.\n"; return 100; }
+        } else if (_stricmp(argv[i], "-mvlimit") == 0 || _stricmp(argv[i], "/mvlimit") == 0 || _stricmp(argv[i], "-mxm") == 0 || _stricmp(argv[i], "/b") == 0) {
+            if (i + 1 >= argc) { cerr << "Move tree size limit missing.\n"; return 100; }
+            moveLimit = atoi(argv[i + 1]);
+            if (moveLimit < 0) { cerr << "Invalid move tree size limit.\n"; return 100; }
             i++;
         } else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "/mvs") == 0 || _stricmp(argv[i], "-moves") == 0 || _stricmp(argv[i], "/moves") == 0) {
             showMoves = true;
@@ -150,7 +150,7 @@ int main(int argc, char * argv[]) {
             i++;
     } else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
             cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
-            cout << "KSolver [-dc] [-d] [-g] [-o] [-s] [-r] [-mvs] [-t] [-f] [Path]\n\n";
+            cout << "KSolver [-dc] [-d] [-ran] [-g] [-o] [-mxm] [-r] [-mvs] [-t] [-f] [Path]\n\n";
             cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
             cout << "  -deck str [-d str]    Loads the deck specified by the string.\n\n";
             cout << "  -game # [-g #]        Loads a random game with seed #.\n\n";
@@ -161,8 +161,8 @@ int main(int argc, char * argv[]) {
             cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n\n";
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
             cout << "                        solution is found.\n\n";
-            cout << "  -branches # [-b #]    Sets the maximum number of branches to evaluate\n";
-            cout << "                        before terminating. Defaults to 20,000,000.\n\n";
+            cout << "  -mvlimit # [-mxm #]  Sets the maximum size of the move tree\n";
+            cout << "                        Defaults to 20 million moves.\n\n";
             cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
@@ -181,7 +181,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (maxClosedCount == 0) { maxClosedCount = 20'000'000; }
+    if (moveLimit == 0) { moveLimit = 20'000'000; }
 
     unsigned int fileIndex = 0;
     do {
@@ -198,7 +198,7 @@ int main(int argc, char * argv[]) {
         }
 
         auto startTime = steady_clock::now();
-        KSolveAStarResult outcome = KSolveAStar(game, maxClosedCount, threads);
+        KSolveAStarResult outcome = KSolveAStar(game, moveLimit, threads);
         auto & result(outcome._code);
         Moves & moves(outcome._solution); 
         unsigned moveCount = MoveCount(moves);
@@ -226,7 +226,7 @@ int main(int argc, char * argv[]) {
         }
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
-        cout << setprecision(4) << outcome._branchCount/1e6 << " million branches.\n";
+        cout << setprecision(4) << outcome._moveTreeSize/1e6 << " million moves generated.\n";
         if (outputMethod < 2 && replay && canReplay) {
             game.Deal();
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));

@@ -43,12 +43,10 @@ GameState::GameState(const Game& game) noexcept
     }
 }
 
-GameStateMemory::GameStateMemory(unsigned maxStates)
+GameStateMemory::GameStateMemory()
     : _states()
-    , _maxStates(maxStates)
-    , _size(0)
 {
-    _states.reserve(std::min(maxStates,MinCapacity));
+    _states.reserve(MinCapacity);
 }
 
 bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
@@ -65,6 +63,5 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
         },
         moveCount 					// c'tor run behind lock when key not found
     );
-    if (isNewKey) ++_size;
     return isNewKey || valueChanged;
 }
