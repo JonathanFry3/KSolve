@@ -37,14 +37,14 @@ The -DECK format is in the order a deck of cards is dealt to the board.  Each ca
 01 for an ace, 02 for a 2, 11 for a jack, 13 for a king.  The third digit represents the suit. 1 for clubs, 2 for diamonds, 3 for hearts, 4 for spades.
 Therefore an Ace of spaces is 014.  A 4 of diamonds is represented by 042.
 
-When using the -MOVES command, the program will produce the moves neccesary such that you could execute the winning condition.  The codex for moves is as follows:
-	DR# is a draw move that is done # number of times. ie) DR2 means draw twice.
+When using the -MOVES command, the program will print the moves neccesary such that you could execute to the winning condition.  The codex for moves is as follows:
+	DR# is a draw move that is done # number of times. ie) DR2 means draw two cards.
 	NEW is to represent the recycling of cards from the waste pile back to the stock pile (a new round).
 	F# means to flip the card on tableau pile #. 
 	XY means to move the top card from pile X to pile Y.
 		X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
 		Y will be 1 through 7 or the foundation suit character.
-	XY-# is the same as above except you are moving # number of cards from X to Y.
+	XY-Z is the same as above except you are moving Z cards from X to Y.
 	
 This program does not count flips or recycles of the stock pile in its move count.
 ## Input File
@@ -67,14 +67,14 @@ This is like the Pysol format explained above, except that the cards are in the 
 
 ## What to Expect
 This program uses lots of memory.  
-One of its largest data structures contains a representation of the first game state at the each branch (meaning a sequence of states where all but the last has exactly one child).  
-The median number of branches is around five million, and about 1% of deals 
-have more than 100 million branches.
-You can limit or expand the space (and time) used by using the -BRANCHES flag.  
-If that data structure becomes larger than the specified limit, the program will quit
-unless it has already found a solution. In that case, it will continue until it finds an optimal solution.
-If -BRANCHES is set too high, the program may become unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
+One of its larger data structures contains a representation of the move tree - a tree structure in 
+which the nodes are game states and the arcs are moves.
+The median number of moves in that structure is around five million, and about 2% of deals 
+need more than 110 million moves.
+You can limit or expand the space (and time) used by using the -MVLIMIT flag.  
+If that data structure becomes larger than the specified limit, the program will give up.
+If -MVLIMIT is set too high, the program may become unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
 
-There is no performance penalty for specifying a higher branch limit than is needed.
+There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves but only 140,000 branches). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
+There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 tree moves). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  

@@ -41,6 +41,7 @@ string GameDiagram(const Game& game);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
 string MovesMade(const XMoves & xmoves);
+bool IsNumber (const char * a);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
@@ -88,7 +89,7 @@ int main(int argc, char * argv[]) {
     bool commandLoaded = false;
     int outputMethod = 0;
     int threads = 0;
-    int moveLimit = 0;
+    int moveLimit = 20'000'000;
     bool fastMode = false;
     string fileContents;
     bool replay = false;
@@ -98,81 +99,92 @@ int main(int argc, char * argv[]) {
     unsigned fastOption = 24;
 
     for (int i = 1; i < argc; i++) {
-        if (_stricmp(argv[i], "-draw") == 0 || _stricmp(argv[i], "/draw") == 0 || _stricmp(argv[i], "-dc") == 0 || _stricmp(argv[i], "/dc") == 0) {
+        if (_stricmp(argv[i], "-draw") == 0 || _stricmp(argv[i], "-dc") == 0) {
             if (i + 1 >= argc) { cerr  << "You must specify draw count.\n"; return 100; }
             drawCount = atoi(argv[i + 1]);
             if (drawCount < 1 || drawCount > 12) { cerr  << "Please specify a valid draw count from 1 to 12.\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-deck") == 0 || _stricmp(argv[i], "/deck") == 0 || _stricmp(argv[i], "-d") == 0 || _stricmp(argv[i], "/d") == 0) {
-            if (i + 1 >= argc) { cerr  << "You must specify deck to load.\n"; return 100; }
+        } else if (_stricmp(argv[i], "-deck") == 0 || _stricmp(argv[i], "-d") == 0) {
+            if (i + 1 >= argc) { cerr  << "A deck specification must follow -d or -deck\n"; return 100; }
             if (commandLoaded) { cerr  << "Only one method can be specified (deck/game/file).\n"; return 100; }
             deck = SolitaireDeck(argv[i+1]);
             if (deck.empty()) { return 100; }
             commandLoaded = true;
             i++;
-        } else if (_stricmp(argv[i], "-game") == 0 || _stricmp(argv[i], "/game") == 0 || _stricmp(argv[i], "-g") == 0 || _stricmp(argv[i], "/g") == 0) {
+        } else if (_stricmp(argv[i], "-game") == 0 || _stricmp(argv[i], "-g") == 0) {
             if (i + 1 >= argc) { cerr << "You must specify a game number to load. Any integeral number.\n"; return 100; }
             if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
             commandLoaded = true;
+            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
+                    << "\" A number must  be specified. \n"; return 100;}
             int seed = atoi(argv[i + 1]);
             deck = Shuffle1(seed);
             i++;
-        } else if (_stricmp(argv[i], "-ran") == 0 || _stricmp(argv[i], "/ran") == 0) {
+        } else if (_stricmp(argv[i], "-ran") == 0) {
             if (i + 1 >= argc) { cerr << "You must specify a game number to load. Any integeral number.\n"; return 100; }
             if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
             commandLoaded = true;
+            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
+                    << "\" A number must be specified. \n"; return 100;}
             int seed = atoi(argv[i + 1]);
-            deck = NumberedDeal(seed);
+            deck = NumberedDeal(seed); 
             i++;
-        } else if (_stricmp(argv[i], "-out") == 0 || _stricmp(argv[i], "/out") == 0 || _stricmp(argv[i], "-o") == 0 || _stricmp(argv[i], "/o") == 0) {
+        } else if (_stricmp(argv[i], "-out") == 0 || _stricmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) { cerr << "You must specify a valid output method. 0 or 1 or 2.\n"; return 100; }
             outputMethod = atoi(argv[i + 1]);
-            if (outputMethod < 0 || outputMethod > 2) { cerr << "You must specify a valid output method. 0, 1, or 2.\n"; return 100; }
+            if (outputMethod < 0 || outputMethod > 2) 
+                { cerr << "You must specify a valid output method. 0, 1, or 2.\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-mvlimit") == 0 || _stricmp(argv[i], "/mvlimit") == 0 || _stricmp(argv[i], "-mxm") == 0 || _stricmp(argv[i], "/b") == 0) {
+        } else if (_stricmp(argv[i], "-mvlimit") == 0 || _stricmp(argv[i], "-mxm") == 0) {
             if (i + 1 >= argc) { cerr << "Move tree size limit missing.\n"; return 100; }
+            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
+                    << "\" A non-negative number must be specified. \n"; return 100;}
             moveLimit = atoi(argv[i + 1]);
-            if (moveLimit < 0) { cerr << "Invalid move tree size limit.\n"; return 100; }
+            if (moveLimit < 0) { cerr << "Negative move tree size limit.\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "/mvs") == 0 || _stricmp(argv[i], "-moves") == 0 || _stricmp(argv[i], "/moves") == 0) {
+        } else if (_stricmp(argv[i], "-mvs") == 0 || _stricmp(argv[i], "-moves") == 0) {
             showMoves = true;
         } else if (_stricmp(argv[i], "-r") == 0 || _stricmp(argv[i], "/r") == 0) {
             replay = true;
-        } else if (_stricmp(argv[i], "-thread") == 0 || _stricmp(argv[i], "/thread") == 0 || _stricmp(argv[i], "-t") == 0 || _stricmp(argv[i], "/f") == 0) {
-            if (i + 1 >= argc) { cerr << "-THREAD option requires a number.\n"; return 100; }
+        } else if (_stricmp(argv[i], "-threads") == 0  || _stricmp(argv[i], "-t") == 0) {
+            if (i + 1 >= argc) { cerr << "No number after -THREADS.\n"; return 100; }
+            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
+                    << "\" A non-negative number must be specified. \n"; return 100;}
             threads = atoi(argv[i + 1]);
             if (threads < 0) { cerr << "-THREADS requires a non-negative number\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "/fast") == 0 || _stricmp(argv[i], "-f") == 0 || _stricmp(argv[i], "/f") == 0) {
-            if (i + 1 >= argc) { cerr << "-FAST option requires a number from 1 to 24.\n"; return 100; }
+        } else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "-f") == 0) {
+            if (i + 1 >= argc) { cerr << "No number follows -FAST.\n"; return 100; }
+            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
+                    << "\" A non-negative number must be specified. \n"; return 100;}
             fastOption = atoi(argv[i + 1]);
             if (fastOption < 1 || fastOption > 24) { cerr << "-FAST option requires a number from 1 to 24\n"; return 100; }
             i++;
-    } else if (_stricmp(argv[i], "-?") == 0 || _stricmp(argv[i], "/?") == 0 || _stricmp(argv[i], "?") == 0 || _stricmp(argv[i], "/help") == 0 || _stricmp(argv[i], "-help") == 0) {
-            cout << "Klondike Solver\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
-            cout << "KSolver [-dc] [-d] [-ran] [-g] [-o] [-mxm] [-r] [-mvs] [-t] [-f] [Path]\n\n";
-            cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n\n";
-            cout << "  -deck str [-d str]    Loads the deck specified by the string.\n\n";
-            cout << "  -game # [-g #]        Loads a random game with seed #.\n\n";
-            cout << "  -ran #                Loads a random game with seed # using the ran programs\'s generator.\n\n";
-            cout << "  Path                  Solves deals specified in the file.\n\n";
-            cout << "  -r                    Replays solution to output if one is found.\n\n";
+    } else if (argv[i][0] == '-') {
+            cout << "KSolve\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
+            cout << "KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Path]\n\n";
+            cout << "  -draw # [-dc #]       Sets the draw count to use when solving. Defaults to 1.\n";
+            cout << "  -deck str [-d str]    Loads the deck specified by the string.\n";
+            cout << "  -game # [-g #]        Loads a random game with seed #.\n";
+            cout << "  -ran #                Loads a random game with seed # using the ran programs\'s generator.\n";
+            cout << "  -r                    Replays solution to output if one is found.\n";
             cout << "  -out # [-o #]         Sets the output method of the solver.\n";
-            cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n\n";
+            cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n";
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
-            cout << "                        solution is found.\n\n";
+            cout << "                        solution is found.\n";
             cout << "  -mvlimit # [-mxm #]  Sets the maximum size of the move tree\n";
-            cout << "                        Defaults to 20 million moves.\n\n";
-            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n\n";
+            cout << "                        Defaults to 20 million moves.\n";
+            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
-            cout << "                        no result for a solvable deal. 24 is like leaving this out.\n\n";
-            return 0;
+            cout << "                        no result for a solvable deal. 24 is like leaving this out.\n";
+            cout << "  Path                  Solves deals specified in the file.\n";
+            return 100;
         } else {
             if (commandLoaded) { cerr << "Only one method can be specified (deck/game/file).\n"; return 100; }
             commandLoaded = true;
             ifstream file(argv[i], ios::in | ios::binary);
-            if (!file) { cerr << "Could not open file\"" << argv[i] << "\"\n"; return 100; }
+            if (!file) { cerr << "Could not open file \"" << argv[i] << "\"\n"; return 100; }
             file.seekg(0, ios::end);
             fileContents.resize((unsigned int)file.tellg());
             file.seekg(0, ios::beg);
@@ -181,7 +193,8 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    if (moveLimit == 0) { moveLimit = 20'000'000; }
+    if (!commandLoaded) 
+        {cerr << "No game is specified (-deck, -game, -ran, or a file name)\n"; return 100;}
 
     unsigned int fileIndex = 0;
     do {
@@ -367,6 +380,17 @@ CardDeck DeckLoader(string const& cardSet, const int order[52]) {
     }
     if (!valid) result.clear();
     return result;
+}
+
+// Test whether the string presented represents an integer
+bool IsNumber(const char* a)
+{
+    if (*a == '-' || *a == '+') ++a;    // skip leading sign
+    if (*a == 0) return false;          // empty string or just sign
+    for (;*a != 0; ++a) {
+        if (*a < '0' || *a > '9') return false;
+    }
+    return true;
 }
 
 class Random {
