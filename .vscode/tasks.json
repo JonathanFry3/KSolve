@@ -146,10 +146,10 @@
 			"label": "C/C++: cl.exe build unittests",
 			"command": "cl.exe",
 			"args": [
-				"/Zi",			// debug information format
-				"/EHsc",		// Exception handling options
-				"/Fe:",			// name EXE file
-				"${workspaceFolder}\\unittests.exe",
+				"-Zi",			// debug information format
+				"-EHsc",		// Exception handling options
+				"-Fe:",			// name EXE file
+				"unittests.exe",
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
@@ -171,13 +171,13 @@
 		"label": "C/C++: cl.exe build KSolve",
 		"command": "cl.exe",
 		"args": [
-			"/Zi",			// debug information format
-			"/EHsc",		// Exception handling options
-			"/O2",			// maximize speed
-			"/utf-8",
-			"/GL",			// Optimize across whole program
-			"/Fe:",			// name EXE file
-			"${workspaceFolder}\\KSolve.exe",
+			"-Zi",			// debug information format
+			"-EHsc",		// Exception handling options
+			"-O2",			// maximize speed
+			"-utf-8",
+			"-GL",			// Optimize across whole program
+			"-Fe:",			// name EXE file
+			"KSolve.exe",
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
@@ -199,13 +199,12 @@
 		"label": "C/C++: cl.exe build ran",
 		"command": "cl.exe",
 		"args": [
-			"/Zi",			// debug information format
-			"/EHsc",		// Exception handling options
-			"/O2",			// maximize speed
-			"/utf-8",
-			"/GL",			// Optimize across whole program
-			"/Fe:",			// name EXE file
-			"${workspaceFolder}\\ran.exe",
+			"-Zi",			// debug information format
+			"-EHsc",		// Exception handling options
+			"-O2",			// maximize speed
+			"-utf-8",
+			"-GL",			// Optimize across whole program
+			"-Fe:",	"ran.exe", // name EXE file
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
