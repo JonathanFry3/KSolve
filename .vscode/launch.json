@@ -36,10 +36,8 @@
             "args": [
             //    "-out", "2"
             //  ,
-                "-r"
-                ,"-t","1"
-                ,"11.29.20.txt"
-                ,">" ,"11.29.20.out"
+                "-o", "2"
+                ,"-g","123"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
