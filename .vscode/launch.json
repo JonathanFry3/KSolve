@@ -34,8 +34,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/KSolve",
             "args": [
-            //    "-out", "2"
-            //  ,
                 "-o", "2"
                 ,"-g","123"
             ],
