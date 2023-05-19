@@ -31,7 +31,7 @@ for more detailed information.
 *ran* is a program which generates random deals and solves them using 
 the KSolveAStar function. Its purpose is to generate statistical data
 about, for example, the winability of deals or the resource use of 
-the function. After building it, run *ran -?" for detailed information on
+the function. After building it, run *ran -?* for detailed information on
 its options.  See tests/base* for some sample output.
 ## unittests
 *unittests* is a program to run unit tests on the various parts of the 
