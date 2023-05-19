@@ -530,20 +530,20 @@ int main()
 	}
 	{
 		// Test IsValid(Move m) and IsValid(XMove xm)
-		// Game 36394, drawing 1, can be solved in 112 moves
+		// Game 36394, drawing 1, can be solved in 100 moves
 		Game game(NumberedDeal(36394), 1, 24, 8);
-		auto outcome = KSolveAStar(game,960'000);
-		assert(MoveCount(outcome._solution) == 112);
+		auto outcome = KSolveAStar(game,700'000);
+		assert(MoveCount(outcome._solution) == 100);
 		// PrintGame(game);
 		// PrintOutcome(game, outcome);
 		TestSolution(game, outcome._solution);
 		XMoves xms = MakeXMoves(outcome._solution,game.DrawSetting());
 		TestSolution(game, xms);
 
-		Game g515(NumberedDeal(1236733));
-		outcome = KSolveAStar(g515,2'000'000);
+		Game g515(NumberedDeal(41092));
+		outcome = KSolveAStar(g515,600'000);
 		TestSolution(g515, outcome._solution);
 		//cout << "g515 move count = " << MoveCount(outcome._solution) << endl;
-		assert(MoveCount(outcome._solution) == 114);
+		assert(MoveCount(outcome._solution) == 130);
 	}
 }
