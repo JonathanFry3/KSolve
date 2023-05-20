@@ -315,6 +315,9 @@ void Worker(
                     if (state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
                         const unsigned remaining = 
                             state._game.MinimumMovesLeft();
+                        // The following assert tests the consistency of
+                        // Game::MinimumMovesLeft(), our heuristic.  
+                        // Never remove it.
                         assert(minMoves0 <= made+remaining);
                         state._moveStorage.PushBranch(mv,made+remaining);
                     }

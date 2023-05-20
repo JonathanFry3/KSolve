@@ -142,6 +142,7 @@ Game::Game(const Game& orig)
 // Deal the cards for Klondike Solitaire.
 void Game::Deal()
 {
+    assert(_deck.size() == 52);
     _kingSpaces = 0;
     _recycleCount = 0;
 
@@ -149,17 +150,16 @@ void Game::Deal()
         pile->ClearCards();
     }
     // Deal 28 cards to the tableau
-    unsigned ideck = 0;
-    for (unsigned i = 0; i<7; i+=1) {
-        for (unsigned icd = i; icd < 7; ++icd)	
-            _tableau[icd].push_back(_deck[ideck++]);
-        _tableau[i].SetUpCount(1);      // turn up the top card
-        _kingSpaces += _tableau[i][0].Rank() == King;	// count kings at base
+    auto iDeck = _deck.cbegin();
+    for (unsigned iPile = 0; iPile<7; iPile+=1) {
+        for (unsigned icd = iPile; icd < 7; ++icd)	
+            _tableau[icd].push_back(*iDeck++);
+        _tableau[iPile].SetUpCount(1);      // turn up the top card
+        _kingSpaces += _tableau[iPile][0].Rank() == King;	// count kings at base
     }
-    assert(ideck == 28);
-    // Deal 24 cards to stock
-    for (unsigned ic = 51; _stock.size() < 24;)
-        _stock.push_back(_deck[ic--]);
+    // Deal last 24 cards to stock
+    for (iDeck = _deck.cend(); _stock.size() < 24;)
+        _stock.push_back(*--iDeck);
 }
 
 void Game::MakeMove(Move mv) noexcept
@@ -252,10 +252,16 @@ unsigned Game::MinFoundationPileSize() const noexcept
     return result;
 }
 
-// Look for a move to the shortest foundation pile or one one card higher.  
-// For the same reason that putting an ace or deuce on its foundation pile 
-// is always right, these are, too. Returns a Moves vector that may be empty 
-// or contain one such move.
+// If there are any available moves from waste, tableau, or
+// top of the stock to a short foundation pile, append one
+// such move to the moves vector.  A short foundation pile
+// here is a foundation pile than which no foundation pile
+// is more than one card shorter.
+//
+// Such a move is called "dominant", meaning that, if the
+// game can be won from this position, no sequence that
+// does not start with such a move can be shorter than
+// the shortest sequences that start with it.
 void Game::MovesToShortFoundationPile(
     QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
@@ -483,8 +489,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
                 if (_drawSetting == 1) {
                     if (moves.size() == 1) return true;
                     break;		// This is best next move from among the remaining talon cards
-                }
-                else
+                } else
                     continue;  	// This is best move for this card.  A card further on might be a better move.
             }
         }
@@ -571,7 +576,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 // decrease by more than one after any single move.  The sum of 
 // this result plus the number of moves made (from MoveCount())
 // must never decrease when a new move is made (consistency).
-// If it does, we won't know when to stop.
+// If it does, we may stop too soon.
 //
 // From https://en.wikipedia.org/wiki/Consistent_heuristic:
 //

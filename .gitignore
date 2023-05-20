@@ -13,6 +13,7 @@ g++
 *.exe
 *.obj
 *.pdb
+*.ilk
 frystl/tests
 frystl/.vscode
 frystl/.editorconfig
