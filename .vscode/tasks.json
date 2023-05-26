@@ -156,11 +156,11 @@
 			"label": "C/C++: cl.exe build active file",
 			"command": "cl.exe",
 			"args": [
-				"/Zi",
-				"/EHsc",
-				"/Fe:",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe",
-				"${file}"
+				"-Zi",
+				"-EHsc",
+				"-Fe:",
+				"${fileBasenameNoExtension}.exe",
+				"ranbug.cpp"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -172,7 +172,8 @@
 				"kind": "build",
 				"isDefault": true
 			}
-		},		{
+		},		
+		{
 			"type": "shell",
 			"label": "C/C++: cl.exe build unittests",
 			"command": "cl.exe",
