@@ -6,7 +6,11 @@ class Binomial:
         self.tot = yes+no
         self.p_hat = float(self.y)/self.tot
     # Return a Wilson confidence intereval in the form of
-    # its center and half-width.
+    # a dictionary containing
+    #   lower: the interval's lower bound
+    #   upper: the interval's upper bound
+    #   mid:   the interval's midpoint
+    #   width: the interval's width
     def wilson_ci(self,alpha):
         from scipy.stats import norm
         from numpy import sqrt
@@ -20,4 +24,4 @@ class Binomial:
         l = bound(norm.ppf(alpha/2.))
         u = bound(norm.ppf(1.-alpha/2.))
         c = (l+u)/2.
-        return [c, u-c]
+        return  {"mid":c, "lower":l, "upper":u, "width":u-l}

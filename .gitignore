@@ -17,4 +17,5 @@ g++
 frystl/tests
 frystl/.vscode
 frystl/.editorconfig
+statistics/__pycache__/*
 frystl/.gitignore
