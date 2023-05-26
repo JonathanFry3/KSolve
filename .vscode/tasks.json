@@ -122,6 +122,37 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  g++ build TestAvailMoves",
+			"command": "g++",
+			"args": [
+				"-g",
+			//	"-pg", "-O1",	// gprof profiling
+				"-pthread",
+				"-O3",
+				"-Wno-placement-new",
+			//	"-DNDEBUG",		// comment out to activate assert()
+				"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+			//	"-O","-Wall",	// for valgrind builds
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"TestAvailMoves.cpp",
+				"-o",
+				"${workspaceFolder}/TestAvailMoves"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++: cl.exe build active file",
 			"command": "cl.exe",
 			"args": [

@@ -248,6 +248,12 @@ public:
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{return _drawCount;}
+    bool operator==(const Move& m) const noexcept
+    {
+        return  _from == m._from && _to == m._to &&
+                _nMoves == m._nMoves && _recycle == m._recycle &&
+                _drawCount ==  m._drawCount;
+    }
 };
 
 typedef std::vector<Move> Moves;
