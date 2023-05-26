@@ -55,11 +55,11 @@ class SharedMoveStorage
             , _prevNode(prevNode)
             {}
     };
-    mf_vector<MoveNode,2*1024> _moveTree;
+    mf_vector<MoveNode,8*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    typedef MaxSizeCollector<mf_vector<NodeX> >LeafNodeStack;
-    using FringeSizeType = MaxSizeCollector<mf_vector<NodeX> >::size_type;
+    typedef MaxSizeCollector<mf_vector<NodeX,4*1024> >LeafNodeStack;
+    using FringeSizeType = LeafNodeStack::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
