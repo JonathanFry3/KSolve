@@ -208,20 +208,6 @@ bool operator==(const Game& a, const Game& b)
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
 
-template <class Container>
-void TestSolution(Game game, const Container& mvs)
-{
-		game.Deal();
-		// PrintGame(game);
-		for (auto mv: mvs) {
-			// std::cerr << Peek(mv) << std::endl;
-			assert(game.IsValid(mv));
-			game.MakeMove(mv);
-		}
-		// PrintGame(game);
-		assert(game.GameOver());
-}
-
 std::minstd_rand rng;
 
 int main()
