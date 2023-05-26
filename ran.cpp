@@ -150,6 +150,10 @@ int main(int argc, char * argv[])
         auto startTime = steady_clock::now();
         KSolveAStarResult result = KSolveAStar(game,spec._mvLimit,spec._threads);
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
+
+        if (result._solution.size()) 
+            TestSolution(game, result._solution);
+
         unsigned nMoves = MoveCount(result._solution);
 
         cout << result._code << "\t";
