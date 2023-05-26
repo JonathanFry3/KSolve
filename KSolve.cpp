@@ -172,7 +172,7 @@ int main(int argc, char * argv[]) {
             cout << "                        Defaults to 0, 1 for Pysol, and 2 for minimal output.\n";
             cout << "  -moves [-mvs]         Will also output a compact list of moves made when a\n";
             cout << "                        solution is found.\n";
-            cout << "  -mvlimit # [-mxm #]  Sets the maximum size of the move tree\n";
+            cout << "  -mvlimit # [-mxm #]   Sets the maximum size of the move tree\n";
             cout << "                        Defaults to 20 million moves.\n";
             cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";

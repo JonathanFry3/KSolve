@@ -4,31 +4,21 @@
 
 Klondike (Patience) Solver that finds minimal length solutions.
 
-KSolve [-DC] [-D] [-G] [-O] [-S] [-R] [FilePath]
+KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Path]
 
--DRAW # [-DC #] - Sets the draw count to use when solving. Defaults to 1.
-
--DECK str [-D str] - Loads the deck specified by the string.
-
--GAME # [-G #] - Loads a pseudo-random game with seed #.
-
-FilePath - Solves deals specified in the file.
-
--R - Replays solution to output if one is found.
-
--MOVES -MVS - Will output a compact list of moves made when a solution is found.
-
--OUT # [-O #] - Sets the output method of the solver. Defaults to 0, 1 for Pysol, 2 for minimal output.
-
--STATES # [-S #] - Sets the maximum number of game states to evaluate before terminating. Defaults to 
-20,000,000.  At this setting, the program will use around 1,280MB of memory.  If the program finds a solution 
-which it cannot conclude is minimal before reaching this limit, it will continue until it finds a minimal 
-solution, which may use even more memory.
-
--FAST # [-F #] - Fast mode, which limits talon look-ahead.  Enter a number from 1 to 24. 24 will act like -F was
-not used, 1 will be very fast and use less memory but may give a non-minimal result or even no result for a solvable game.  Intermediate values give intermediate results.
-When alternative moves are available, the code will not look ahead in the talon more than this number of moves.
-
+  Flag                  | Meaning
+--------------------------|---------------------------------------------------------------------
+  -draw # [-dc #]       |Sets the draw count to use when solving. Defaults to 1.
+  -deck str [-d str]    |Loads the deck specified by the string.
+  -game # [-g #]        |Loads a random game with seed #.
+  -ran #                |Loads a random game with seed # using the ran programs's generator.
+  -r                    |Replays solution to output if one is found.
+  -out # [-o #]         |Sets the output method of the solver. Defaults to 0, 1 for Pysol, and 2 for minimal output.
+  -moves [-mvs]         |Will also output a compact list of moves made when a solution is found.
+  -mvlimit # [-mxm #]   |Sets the maximum size of the move tree.  Defaults to 20 million moves.
+  -threads # [-t #]     |Sets the number of threads. Defaults to hardware threads.
+  -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24.  1 is fastest, and most likely to give a non-minimal result or even no result for a solvable deal. 24 is like leaving this out.
+  Path                  |Solves deals specified in the file.
 ### Notes:
 
 Options may be written in upper or lower case and can be prefixed with a dash ("-") or a slash ("/").
@@ -38,14 +28,14 @@ The -DECK format is in the order a deck of cards is dealt to the board.  Each ca
 Therefore an Ace of spaces is 014.  A 4 of diamonds is represented by 042.
 
 When using the -MOVES command, the program will print the moves neccesary such that you could execute to the winning condition.  The codex for moves is as follows:
-	DR# is a draw move that is done # number of times. ie) DR2 means draw two cards.
-	NEW is to represent the recycling of cards from the waste pile back to the stock pile (a new round).
-	F# means to flip the card on tableau pile #. 
-	XY means to move the top card from pile X to pile Y.
-		X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
-		Y will be 1 through 7 or the foundation suit character.
-	XY-Z is the same as above except you are moving Z cards from X to Y.
-	
+* DR# is a draw move that is done # number of times, i.e. DR2 means draw two cards.
+* NEW is to represent the recycling of cards from the waste pile back to the stock pile (a new round).
+* F# means to flip the card on tableau pile #. 
+* XY means to move the top card from pile X to pile Y.
+	* X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
+	* Y will be 1 through 7 or the foundation suit character.
+* XY-Z is the same as above except you are moving Z cards from X to Y.
+
 This program does not count flips or recycles of the stock pile in its move count.
 ## Input File
 Problems can be entered four different ways in an input file.  The file SampleDeals.txt shows examples of each.
