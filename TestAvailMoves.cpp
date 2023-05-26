@@ -1,6 +1,5 @@
 #include "Game.hpp"
 #include "KSolveAStar.hpp"
-#include <algorithm>        // none_of()
 #include <iostream>
 
 using namespace std;
@@ -83,6 +82,20 @@ bool NoMatch(const Move &mv, const QMoves& mvs)
     }
     return true;
 }
+
+// Return a vector of the available moves that pass the ABC_Move filter
+QMoves FilteredAvailableMoves(const Game& game, const QMoves&movesMade) noexcept
+{
+    QMoves availableMoves = game.AvailableMoves();
+    for (auto i = availableMoves.begin(); i != availableMoves.end(); ) {
+        if (ABC_Move(*i,movesMade)) {
+            i = availableMoves.erase(i);
+        } else {
+            ++i;
+        }
+    }
+    return availableMoves;
+}
 int main()
 {
     // Set lookahead to 2
@@ -100,14 +113,16 @@ int main()
     // from AvailableMoves. If one is found that is not,
     // print the game state and that move.
     game2.Deal();
+    QMoves movesMade;
     for (const auto & mv: res._solution) {
         assert(game2.IsValid(mv));
-        QMoves av = game2.AvailableMoves();
+        QMoves av = FilteredAvailableMoves(game2, movesMade);
         if (NoMatch(mv, av)) {
             PrintNugget(game2, mv);
             cout << endl;
         }
         game2.MakeMove(mv);
+        movesMade.push_back(mv);
     }
     return 0;
 }
