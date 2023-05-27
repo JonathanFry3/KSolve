@@ -15,6 +15,7 @@ g++
 *.pdb
 *.ilk
 statistics/__pycache__/*
+TestAvailMoves
 frystl/tests
 frystl/.vscode
 frystl/.editorconfig

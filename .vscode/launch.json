@@ -126,5 +126,18 @@
 			"environment": [],
 			"externalConsole": false
 		},
+		{
+			"name": "Launch TestAvailMoves",
+            "type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/TestAvailMoves",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+            "visualizerFile": "${workspaceFolder}/KSolve.natvis",
+            "showDisplayString": true,
+			"environment": [],
+			"externalConsole": false
+		},
     ]
 }

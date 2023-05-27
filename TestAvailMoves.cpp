@@ -99,12 +99,13 @@ QMoves FilteredAvailableMoves(const Game& game, const QMoves&movesMade) noexcept
 int main()
 {
     // Set lookahead to 2
-    // Solve problem 174985
-    CardDeck deck(NumberedDeal(174985));
+    // Solve problem 618946
+    CardDeck deck(NumberedDeal(618946));
     Game game(deck, 1, 2);
     auto res = KSolveAStar(game);
     assert(res._code == Solved);
-    assert(MoveCount(res._solution) == 112);
+    auto n = MoveCount(res._solution);
+    assert(n == 101);
 
     // Set lookahead back to 24
     Game game2(deck, 1, 24);
