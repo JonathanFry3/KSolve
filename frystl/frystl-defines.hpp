@@ -20,6 +20,7 @@ namespace frystl {
 
 #else       // FRYSTL_DEBUG
 #define FRYSTL_ASSERT(assertion)    // empty
+#define FRYSTL_ASSERT2(assertion,description)  // empty
 #endif      // FRYSTL_DEBUG
 
 #include <type_traits>          // enable_if, is_convertible

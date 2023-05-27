@@ -430,6 +430,22 @@ public:
     bool        GameOver() const noexcept;
 };
 
+// Validate a solution
+template <class Container>
+void TestSolution(Game game, const Container& mvs)
+{
+		game.Deal();
+		// PrintGame(game);
+		for (auto mv: mvs) {
+			// std::cerr << Peek(mv) << std::endl;
+			assert(game.IsValid(mv));
+			game.MakeMove(mv);
+		}
+		// PrintGame(game);
+		assert(game.GameOver());
+}
+
+
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
 
@@ -492,6 +508,5 @@ bool ABC_Move(Move trial, const V& movesMade) noexcept
     // cost more time than it saved.
     // Jonathan Fry 7/12/2020
 }
-
 
 #endif      // GAME_HPP

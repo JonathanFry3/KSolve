@@ -403,7 +403,7 @@ namespace frystl
         {
             FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = end() - 1;
-            back().~T(); //destruct
+            back().~T(); //destruct.
             _size -= 1;
             if (e._first == e.operator->())
                 Shrink();
