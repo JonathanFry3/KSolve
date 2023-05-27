@@ -4,7 +4,7 @@
 
 #include "Game.hpp"
 #include <cassert>
-#include <algorithm>		// shuffle
+#include <algorithm>		// swap
 #include <random>
 
 const std::string suits("cdsh");
@@ -86,19 +86,34 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
     return std::pair<bool,Card>(ok,card);
 }
 
-CardDeck NumberedDeal(uint32_t seed)
+// A reproducible shuffle function.
+// Results from std::shuffle() differ between g++ and MSVC
+static void Shuffle(CardDeck & deck, uint32_t seed)
 {
+    assert(deck.size() == 52);
+
     // Create and seed a random number generator
     std::mt19937 engine;
     engine.seed(seed);
 
+    // Create a uniform random distribution of integers 0-51.
+    std::uniform_int_distribution<unsigned> distribution(0,51);
+
+    // Swap each card with a randomly chosen card.
+    for (unsigned i = 0; i < 52; ++i) {
+        std::swap(deck[i], deck[distribution(engine)]);
+    }
+}
+
+CardDeck NumberedDeal(uint32_t seed)
+{
     // Create a new sorted pack of cards
     CardDeck deck;
     for (unsigned i = 0; i < 52; ++i){
         deck.emplace_back(i);
     }
     // Randomly shuffle the deck
-    std::shuffle(deck.begin(),deck.end(),engine);
+    Shuffle(deck, seed);
     return deck;
 }
 
