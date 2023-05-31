@@ -67,4 +67,5 @@ If -MVLIMIT is set too high, the program may become unable to allocate memory it
 
 There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 tree moves). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4.  
+There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 tree moves). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4. If KSolve with the -FAST option solves that deal,
+well and good, but if it calls it Impossible, it might or not actually be impossible.
