@@ -121,7 +121,7 @@ enum PileCode {
     Tableau5,
     Tableau6,
     Tableau7,
-    Stock,       // must == TableauBase+8.  See MovesToShortFoundationPile
+    Stock,       // must == TableauBase+7.  See MovesToShortFoundationPile
     FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,

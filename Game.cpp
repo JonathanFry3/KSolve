@@ -648,19 +648,15 @@ static bool Valid(const Game& gm,
 
 bool Game::IsValid(Move mv) const noexcept
 {
-    Card drawn;
     if (mv.IsTalonMove()) {
         int draw = mv.DrawCount();
         if (draw > 0) {
-            unsigned ds = DrawSetting();
-            unsigned rem = draw%ds;
-            if (rem != 0 && rem != _stock.size()) return false;
             return Valid(*this,Stock,mv.To(),draw);
         } else {
             return Valid(*this,Waste,mv.To(),-draw+1);
         }
-    }
-    return Valid(*this, mv.From(), mv.To(), mv.NCards());
+    } else
+        return Valid(*this, mv.From(), mv.To(), mv.NCards());
 }
 
 bool Game::IsValid(XMove mv) const noexcept
