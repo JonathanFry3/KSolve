@@ -14,8 +14,9 @@ uses the A* algorithm, which involves a breadth-first search of the
 state space created by all non-silly moves starting with the initial deal.
 It uses a variety of techniques to select non-silly moves and a variety
 of techniques to narrow the state space explored, but still frequently generates
-trees with tens of millions of moves.  About 98% of deals can be solved
+trees with tens of millions of moves.  About 98% of draw-1 deals can be solved
 within 110,000,000 moves; the other 2% would require more space.
+The file STATISTICS.md has more informaton about memory use.
 
 This function is fully multi-threaded. The method of multithreading selected
 makes its path over the state space non-deterministic, so,for example, two
@@ -40,7 +41,7 @@ run silently unless it encounters an error, so don't worry if it produces
 no output.  If it ran, that's a good test.
 ## KSolve2Solvitaire
 *KSolve2Solvitaire* accepts the same flags and input types as KSolve. Instead
-of solving each deal, it generates a file that the program *Solvitaire*.
+of solving each deal, it generates a file for the program *Solvitaire*.
 
 # Acknowledgements
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the Github repository Klondike-Solver
