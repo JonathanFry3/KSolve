@@ -21,7 +21,6 @@
 
 #include "frystl/static_vector.hpp"
 
-
 enum Rank_t : unsigned char
  {
     Ace = 0,
@@ -244,10 +243,10 @@ public:
     unsigned From() const noexcept		{return _from;}
     unsigned To()   const noexcept		{return _to;}
     unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
-    unsigned FromUpCount()const noexcept{return _fromUpCount;}
+    unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
-    int DrawCount() const noexcept		{return _drawCount;}
+    int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
 };
 
 typedef std::vector<Move> Moves;
@@ -445,11 +444,8 @@ void TestSolution(Game game, const Container& mvs)
 		assert(game.GameOver());
 }
 
-
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
-
-
 
 // Return true if this move cannot be in a minimum solution.
 template <class V>
