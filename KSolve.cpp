@@ -46,6 +46,17 @@ bool IsNumber (const char * a);
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
 
+struct GuessCard {
+    static Card Make()
+    {
+        return Card(Hearts,King+1);
+    }
+    static bool IsGuess(Card c)
+    {
+        return c.Suit() == Hearts && c.Rank() == King+1;
+    }
+};
+
 
 CardDeck LoadDeck(string const& f, unsigned int & index) {
     CardDeck deck;
@@ -273,20 +284,22 @@ int main(int argc, char * argv[]) {
 
 // Check for the same card appearing twice in a deck. 
 // Prints an error message and returns true if that is found.
-class DuplicateCardChecker {
-    bool used[52];
-public:
+struct  DuplicateCardChecker {
+    array<bool,52> used;
+
     DuplicateCardChecker()
         : used{false*52} {};
 
     bool operator()(const Card & card)
     {
         bool result = false;
-        if (used[card.Value()]) {
-            cerr << "The " << card.AsString() <<" appears twice." << endl;
-            result = true;
-        } else {
-            used[card.Value()] = true;
+        if (!GuessCard::IsGuess(card)) {
+            if (used[card.Value()]) {
+                cerr << "The " << card.AsString() <<" appears twice." << endl;
+                result = true;
+            } else {
+                used[card.Value()] = true;
+            }
         }
         return result;
     }
@@ -313,9 +326,15 @@ public:
 // or false and garbage if it fails.
 pair<bool,Card> CardFromString(const string& str)
 {
-    pair<bool,Card> result = Card::FromString(str);
-    if (!result.first) {
-        cerr << "Invalid card '" << str <<"'" << endl;
+    pair<bool,Card> result;
+    if (str == "??") {
+        result = make_pair(true, GuessCard::Make());
+    }
+    else {
+        result = Card::FromString(str);
+        if (!result.first) {
+            cerr << "Invalid card '" << str <<"'" << endl;
+        }
     }
     return result;
 }
@@ -354,15 +373,42 @@ CardDeck ReversedPysolDeck(string const& cardSet)
     return DeckLoader(cardSet, order);
 }
 
+// If the input is missing the same number of cards as 
+// it has ?? cards, guess the ?? cards are the missing cards.
+static void GuessCards(CardDeck& result, DuplicateCardChecker & dupchk)
+{
+    Card guessed{GuessCard::Make()};
+    unsigned nGuess = 0;
+    nGuess = count(result.begin(), result.end(), guessed);
+    if (nGuess == 0 || nGuess !=
+        count(dupchk.used.begin(), dupchk.used.end(), false)) return;
+    CardDeck missing;
+    cerr << "Guessing the location of:";
+    for (unsigned i = 0; i < 52; ++i) {
+        if (!dupchk.used[i]) {
+            missing.emplace_back(i);
+            cerr << " " << missing.back().AsString();
+            dupchk.used[i] = true;
+        }
+    }
+    cerr << endl;
+    for (auto & cd : result) {
+        if (GuessCard::IsGuess(cd)) {
+            cd = missing.back();
+            missing.pop_back();
+        }
+    }
+}
+
 CardDeck DeckLoader(string const& cardSet, const int order[52]) {
     CardDeck result(52);
     DuplicateCardChecker dupchk;
     string eyeCandy{"<> \t\n\r:-"};
     unsigned int j = 7;  // skips "Talon: " or "nolaT: "
 
-    int i;
+    int seqNo;
     bool valid = true;
-    for (i = 0; i < 52 && j < cardSet.size(); i++) {
+    for (seqNo = 0; seqNo < 52 && j < cardSet.size(); seqNo++) {
         // skip over punctuation and white space
         while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
         if (j+1 < cardSet.size()){
@@ -370,11 +416,12 @@ CardDeck DeckLoader(string const& cardSet, const int order[52]) {
             if (!cd.first || dupchk(cd.second)) {
                 valid = false;
             } else {
-                result[order[i]] = cd.second;
+                result[order[seqNo]] = cd.second;
             }
         }
         j += 2;
     }
+    if (seqNo == 52) GuessCards(result, dupchk);
     if (dupchk.MissingCards()) {
         valid = false;
     }
