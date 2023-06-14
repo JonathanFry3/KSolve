@@ -1,15 +1,8 @@
-7.14.20.txt
-7.15.20.txt
-7.16.20.txt
-randoms.out
-randoms.txt
-speeder
 gmon.out
 ran
 unittests
 KSolve2Solvitaire
 KSolve
-g++
 *.exe
 *.obj
 *.pdb
@@ -17,4 +10,5 @@ g++
 frystl/tests
 frystl/.vscode
 frystl/.editorconfig
+statistics/__pycache__/*
 frystl/.gitignore
