@@ -90,6 +90,5 @@
         "xutility": "cpp"
     },
     "terminal.explorerKind": "external",
-    "terminal.integrated.automationShell.windows": "c:\\Program Files\\git\\bin\\bash.exe",
     "cmake.configureOnOpen": false
 }
