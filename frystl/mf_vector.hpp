@@ -25,7 +25,7 @@
 // This extra lookup is far faster if B is a power of 2, as an optimizing
 // compiler will replace the division and remainder operations needed with
 // shift and mask operations.
-// Sequential access (using iterators) is faster than random access, as 
+// Sequential access (using an iterator) is faster than random access, as 
 // lookup is not needed except between storage blocks.
 // Like std::vector, mf_vector has an efficient swap() member function
 // and non-member override that exchange implementations but do not copy
@@ -69,6 +69,29 @@
 //   and that the read operations do not use end(), so no searches.)
 // - Std::deque is a deque, i.e. elements can efficiently be pushed to
 //   and popped from the front.
+/*
+MIT License
+
+Copyright (c) 2020-2023 by Jonathan Fry
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 #ifndef FRYSTL_MF_VECTOR
 #define FRYSTL_MF_VECTOR
 
@@ -403,7 +426,7 @@ namespace frystl
         {
             FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = end() - 1;
-            back().~T(); //destruct.
+            back().~T(); //destruct
             _size -= 1;
             if (e._first == e.operator->())
                 Shrink();
