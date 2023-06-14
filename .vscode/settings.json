@@ -90,5 +90,6 @@
         "xutility": "cpp"
     },
     "terminal.explorerKind": "external",
+    "workbench.editor.enablePreview": false,
     "cmake.configureOnOpen": false
 }
