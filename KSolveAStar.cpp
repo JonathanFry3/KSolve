@@ -458,13 +458,13 @@ QMoves WorkerState::MakeAutoMoves() noexcept
     return availableMoves;
 }
 
-// Return a vector of the available moves that pass the ABC_Move filter
+// Return a vector of the available moves that pass the XYZ_Move filter
 QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
     QMoves availableMoves = _game.AvailableMoves();
     const auto& movesMade{_moveStorage.MoveSequence()};
     for (auto i = availableMoves.begin(); i != availableMoves.end(); ) {
-        if (ABC_Move(*i,movesMade)) {
+        if (XYZ_Move(*i,movesMade)) {
             i = availableMoves.erase(i);
         } else {
             ++i;

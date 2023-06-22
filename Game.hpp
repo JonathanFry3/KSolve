@@ -449,50 +449,50 @@ std::string Peek (const Game& game);
 
 // Return true if this move cannot be in a minimum solution.
 template <class V>
-bool ABC_Move(Move trial, const V& movesMade) noexcept
+bool XYZ_Move(Move trial, const V& movesMade) noexcept
 {
-    // Consider a move at time T0 from A to B and the next move
-    // from B, which goes to C at time Tn.  The move at Tn can
+    // Consider a move at time T0 from X to Y and the next move
+    // from Y, which goes to Z at time Tn.  The move at Tn can
     // be skipped if the same result could have been achieved 
-    // at T0 by moving the same cards directly from A to C.
+    // at T0 by moving the same cards directly from X to Z.
 
-    // We are now at Tn looking back for a T0 move.  B is our from pile
-    // and C is our to pile.  A candidate T0 move is one that moves
-    // to our from pile (pile B).
+    // We are now at Tn looking back for a T0 move.  Y is our from pile
+    // and Z is our to pile.  A candidate T0 move is one that moves
+    // to our from pile (pile Y).
 
     // Do those two moves move the same set of cards?.  Yes if
-    // no intervening move has changed pile B and the two moves
+    // no intervening move has changed pile Y and the two moves
     // move the same number of cards.
 
-    // Was the move from A to C possible at T0? Yes if pile
-    // C has not changed since the cards moved at T0 were
-    // lifted off pile A.  If the T0 move caused a face-down card
-    // on pile C to be turned up (i.e., A==C, pile A is a tableau
+    // Was the move from X to Z possible at T0? Yes if pile
+    // Z has not changed since the cards moved at T0 were
+    // lifted off pile X.  If the T0 move caused a face-down card
+    // on pile Z to be turned up (i.e., X==Z, pile X is a tableau
     // pile, and the T0 move resulted in a flip of a face-down card), 
-    // that changed pile C.
+    // that changed pile Z.
 
-    // Since nothing says A cannot equal C, this test catches 
+    // Since nothing says X cannot equal Z, this test catches 
     // moves that exactly reverse previous moves.
-    const auto B = trial.From();
-    if (B == Stock || B == Waste) return false; 
-    const auto C = trial.To();
+    const auto Y = trial.From();
+    if (Y == Stock || Y == Waste) return false; 
+    const auto Z = trial.To();
     for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){
         const Move mv = *imv;
-        if (mv.To() == B){
+        if (mv.To() == Y){
             // candidate T0 move
-            if (mv.From() == C) {
-                // If A=C and the A to B move flipped a tableau card
-                // face up, then it changed C.
-                if (IsTableau(C) && mv.NCards() == mv.FromUpCount())
+            if (mv.From() == Z) {
+                // If X=Z and the X to Y move flipped a tableau card
+                // face up, then it changed Z.
+                if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
                     return false;
             }
             return  mv.NCards() == trial.NCards();
         } else {
             // intervening move
-            if (mv.To() == C || mv.From() == C)
-                return false;			// trial move's to pile (C) has changed
-            if (mv.From() == B) 
-                return false;			// trial move's from pile (B) has changed
+            if (mv.To() == Z || mv.From() == Z)
+                return false;			// trial move's to pile (Z) has changed
+            if (mv.From() == Y) 
+                return false;			// trial move's from pile (Y) has changed
         }
     }
     return false;

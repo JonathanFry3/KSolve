@@ -344,12 +344,12 @@ int main()
 		made.emplace_back(Tableau4,Tableau1,3,3);	// E.
 
 		// Test various candidate moves 
-		assert(ABC_Move(Move(Tableau5,Tableau7,1,6),made));		// direct reversal of C
-		assert(ABC_Move(Move(Tableau5,Tableau3,1,6),made));		// could have been done at C
-		assert(!ABC_Move(Move(Tableau5,Tableau3,2,6),made));	// only one card was moved at C
-		assert(!ABC_Move(Move(Tableau6,Tableau7,2,6),made));	// Tableau7 was changed at move C.
-		assert(!ABC_Move(Move(Tableau2,Tableau4,3,4),made));	// Tableau4 was changed at E
-		assert(!ABC_Move(Move(Tableau1,Tableau4,3,4),made));	// E flipped Tableau4
+		assert(XYZ_Move(Move(Tableau5,Tableau7,1,6),made));		// direct reversal of C
+		assert(XYZ_Move(Move(Tableau5,Tableau3,1,6),made));		// could have been done at C
+		assert(!XYZ_Move(Move(Tableau5,Tableau3,2,6),made));	// only one card was moved at C
+		assert(!XYZ_Move(Move(Tableau6,Tableau7,2,6),made));	// Tableau7 was changed at move C.
+		assert(!XYZ_Move(Move(Tableau2,Tableau4,3,4),made));	// Tableau4 was changed at E
+		assert(!XYZ_Move(Move(Tableau1,Tableau4,3,4),made));	// E flipped Tableau4
 	}
 	{
 		// Test GameState creation.
