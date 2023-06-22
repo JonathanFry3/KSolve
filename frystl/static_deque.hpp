@@ -469,7 +469,7 @@ public:
         }
         void shrink_to_fit()
         {}                  // does nothing
-    iterator begin() noexcept
+        iterator begin() noexcept
         {
             return _begin;
         }
