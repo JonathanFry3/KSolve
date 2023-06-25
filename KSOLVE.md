@@ -17,15 +17,14 @@ KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Pat
   -moves [-mvs]         |Will also output a compact list of moves made when a solution is found.
   -mvlimit # [-mxm #]   |Sets the maximum size of the move tree.  Defaults to 20 million moves.
   -threads # [-t #]     |Sets the number of threads. Defaults to hardware threads.
-  -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24.  1 is fastest, and most likely to give a non-minimal result or even no result for a solvable deal. 24 is like leaving this out.
+  -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24. Defaults to 24. See the notes below.
   Path                  |Solves deals specified in the file.
 ### Notes:
-
 Options may be written in upper or lower case and can be prefixed with a dash ("-") or a slash ("/").
 
 The -DECK format is in the order a deck of cards is dealt to the board.  Each card is represented by 3 digits.  The first two digits are the value of the card:
 01 for an ace, 02 for a 2, 11 for a jack, 13 for a king.  The third digit represents the suit. 1 for clubs, 2 for diamonds, 3 for hearts, 4 for spades.
-Therefore an Ace of spaces is 014.  A 4 of diamonds is represented by 042.
+Therefore an Ace of spades is 014.  A 4 of diamonds is represented by 042.
 
 When using the -MOVES command, the program will print the moves neccesary such that you could execute to the winning condition.  The codex for moves is as follows:
 * DR# is a draw move that is done # number of times, i.e. DR2 means draw two cards.
@@ -35,6 +34,15 @@ When using the -MOVES command, the program will print the moves neccesary such t
 	* X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
 	* Y will be 1 through 7 or the foundation suit character.
 * XY-Z is the same as above except you are moving Z cards from X to Y.
+
+By limiting talon look-ahead, the -FAST option can speed up solution a great deal and greatly reduce the memory needed. 
+However, if the program
+finds a solution using this option, it may not be minimal and the program cannot tell whether it is or not.
+If the program decides a deal is unsolvable, it might be solvable but limiting translation look-ahead caused
+it to miss the solution.  A low setting is fastest, uses the least memory, and is most likely to give a 
+misleading result.  The higher the setting, the better the result and the greater it's cost. A setting of
+3 or 4 seems a good starting point. The default is 24, and that is the only setting at which the program
+will declare a solution to be minimal and an "Impossible" result can be trusted.
 
 This program does not count flips or recycles of the stock pile in its move count.
 ## Input File
@@ -67,5 +75,4 @@ If -MVLIMIT is set too high, the program may become unable to allocate memory it
 
 There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have (AI guys, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 tree moves). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, with an argument around 3 or 4. If KSolve with the -FAST option solves that deal,
-well and good, but if it calls it Impossible, it might or not actually be impossible.
+There is no way to predict, based on the deal, how large a problem you have (AI folks, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, starting with an argument of 3 or 4. 
