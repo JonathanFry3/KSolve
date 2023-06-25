@@ -8,10 +8,7 @@
 #include <thread>
 
 typedef std::mutex Mutex;
-typedef std::shared_timed_mutex SharedMutex;
 typedef std::lock_guard<Mutex> Guard;
-typedef std::shared_lock<SharedMutex> SharedGuard;
-typedef std::lock_guard<SharedMutex> ExclusiveGuard;
 
 using namespace frystl;
 
@@ -58,8 +55,8 @@ class SharedMoveStorage
     mf_vector<MoveNode,2*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    typedef MaxSizeCollector<mf_vector<NodeX> >LeafNodeStack;
-    using FringeSizeType = MaxSizeCollector<mf_vector<NodeX> >::size_type;
+    using LeafNodeStack  = MaxSizeCollector<mf_vector<NodeX,2*1024> >;
+    using FringeSizeType = MaxSizeCollector<mf_vector<NodeX,2*1024> >::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
@@ -69,13 +66,14 @@ class SharedMoveStorage
         LeafNodeStack _stack;
     };
     mf_vector<FringeElement,128> _fringe;
-    SharedMutex _fringeMutex;
+    Mutex _fringeMutex;
     unsigned _startStackIndex;
     friend class MoveStorage;
 public:
     SharedMoveStorage() 
         : _startStackIndex(-1)
     {
+        _fringe.reserve(512);
     }
     // Start move storage with the minimum number of moves from
     // the dealt deck before the first move.
@@ -254,7 +252,6 @@ KSolveAStarResult KSolveAStar(
         thread.join();
     // Everybody's finished
     
-
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
@@ -378,9 +375,8 @@ void MoveStorage::ShareMoves()
         unsigned maxOffset = 
             std::max_element(_branches.cbegin(),_branches.cend())->_offset;
         if (fringe.size() <= maxOffset) {
-            ExclusiveGuard freddie(_shared._fringeMutex);
-            while (fringe.size() <= maxOffset)
-                fringe.emplace_back();
+            Guard freddie(_shared._fringeMutex);
+            fringe.resize(maxOffset+1);
         }
         for (const auto &br: _branches) {
             auto & elem = fringe[br._offset];
@@ -395,19 +391,17 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
 {
     unsigned offset;
     unsigned size;
-    unsigned nTries;
     unsigned result = 0;
     _leafIndex = -1;
     // Find the first non-empty leaf node stack, pop its top into _leafIndex.
     //
     // It's not quite that simple with more than one thread, but that's the idea.
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
-    for (nTries = 0; result == 0 && nTries < 5; ++nTries) {
-        {
-            SharedGuard marilyn(_shared._fringeMutex);
-            size = _shared._fringe.size();
-            for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
-        }
+    for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
+    {
+        size = _shared._fringe.size();
+        for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
+
         if (offset < size) {
             Guard methuselah(_shared._fringe[offset]._mutex);
             auto & stack = _shared._fringe[offset]._stack;
