@@ -532,4 +532,5 @@ int main()
 		//cout << "g515 move count = " << MoveCount(outcome._solution) << endl;
 		assert(MoveCount(outcome._solution) == 130);
 	}
+	cout << "unittests finished OK" << endl;
 }

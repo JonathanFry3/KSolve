@@ -323,9 +323,9 @@ void Worker(
                     }
                     state._game.UnMakeMove(mv);
                 }
+                // Share the moves made here
+                state._moveStorage.ShareMoves();
             }
-            // Share the moves made here
-            state._moveStorage.ShareMoves();
         }
     } 
     catch(std::bad_alloc&) {
@@ -362,9 +362,8 @@ void MoveStorage::ShareMoves()
                     mvi != _currentSequence.end();
                     ++mvi) {
                 // Each stem node points to the previous node.
-                NodeX ind = _shared._moveTree.size();
                 _shared._moveTree.emplace_back(*mvi, stemEnd);
-                stemEnd = ind;
+                stemEnd =  _shared._moveTree.size() - 1;
             }
             // Now all the branches
             branchIndex = _shared._moveTree.size();

@@ -16,6 +16,20 @@
             "console": "externalTerminal"
         },
         {
+            "name": "(Windows) Launch ran",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/ran.exe",
+            "args": [
+                "-s", "29347",
+                "-e", "1"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
