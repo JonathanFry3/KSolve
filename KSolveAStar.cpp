@@ -376,7 +376,8 @@ void MoveStorage::ShareMoves()
             std::max_element(_branches.cbegin(),_branches.cend())->_offset;
         if (fringe.size() <= maxOffset) {
             Guard freddie(_shared._fringeMutex);
-            fringe.resize(maxOffset+1);
+            if (fringe.size() <= maxOffset)
+                fringe.resize(maxOffset+1);
         }
         for (const auto &br: _branches) {
             auto & elem = fringe[br._offset];
