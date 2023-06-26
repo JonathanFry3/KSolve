@@ -65,7 +65,7 @@ class SharedMoveStorage
         Mutex _mutex;
         LeafNodeStack _stack;
     };
-    mf_vector<FringeElement,128> _fringe;
+    static_vector<FringeElement,256> _fringe;
     Mutex _fringeMutex;
     unsigned _startStackIndex;
     friend class MoveStorage;
@@ -73,7 +73,6 @@ public:
     SharedMoveStorage() 
         : _startStackIndex(-1)
     {
-        _fringe.reserve(512);
     }
     // Start move storage with the minimum number of moves from
     // the dealt deck before the first move.
