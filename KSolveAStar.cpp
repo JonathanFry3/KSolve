@@ -1,10 +1,8 @@
 #include "KSolveAStar.hpp"
 #include "GameStateMemory.hpp"
-#include <algorithm>        // for sort
-#include <mutex>          	// for std::mutex, std::lock_guard
-#include <shared_mutex>		// for std::shared_timed_mutex, std::shared_lock
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
+#include <mutex>          	// for std::mutex, std::lock_guard
 #include <thread>
 
 typedef std::mutex Mutex;
@@ -12,7 +10,7 @@ typedef std::lock_guard<Mutex> Guard;
 
 using namespace frystl;
 
-enum {maxMoves = 512};
+enum {maxMoves = 256};
 typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
 // Mix-in to measure max size
