@@ -16,7 +16,7 @@ KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Pat
   -out # [-o #]         |Sets the output method of the solver. Defaults to 0, 1 for Pysol, and 2 for minimal output.
   -moves [-mvs]         |Will also output a compact list of moves made when a solution is found.
   -mvlimit # [-mxm #]   |Sets the maximum size of the move tree.  Defaults to 20 million moves.
-  -threads # [-t #]     |Sets the number of threads. Defaults to hardware threads.
+  -threads # [-t #]     |Sets the number of threads. Defaults to twice the hardware threads.
   -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24. Defaults to 24. See the notes below.
   Path                  |Solves deals specified in the file.
 ### Notes:

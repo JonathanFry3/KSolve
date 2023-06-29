@@ -215,8 +215,9 @@ bool WorkerState::k_blewMemory(false);
 
 static void Worker(
         WorkerState* pMasterState);
-
-/** Entrance ***************/
+/*************************************************************************/
+/*************************** Entrance ************************************/
+/*************************************************************************/
 KSolveAStarResult KSolveAStar(
         Game& game,
         unsigned moveTreeLimit,
@@ -232,7 +233,7 @@ KSolveAStarResult KSolveAStar(
     state._moveStorage.Shared().Start(moveTreeLimit,startMoves);	// pump priming
     
     if (nThreads == 0)
-        nThreads = std::thread::hardware_concurrency();
+        nThreads = 2*std::thread::hardware_concurrency();
 
     // Start workers in their own threads
     std::vector<std::thread> threads;
