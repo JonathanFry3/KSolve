@@ -67,7 +67,8 @@ This is like the Pysol format explained above, except that the cards are in the 
 This program uses lots of memory.  
 One of its larger data structures contains a representation of the move tree - a tree structure in 
 which the nodes are game states and the arcs are moves.
-The median number of moves in that structure is around five million, and about 2% of deals 
+Playing draw one,
+the median number of moves in that structure is around five million, and about 2% of deals 
 need more than 110 million moves.
 You can limit or expand the space (and time) used by using the -MVLIMIT flag.  
 If that data structure becomes larger than the specified limit, the program will give up.
@@ -75,4 +76,4 @@ If -MVLIMIT is set too high, the program may become unable to allocate memory it
 
 There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have (AI folks, there's a challenge).  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, starting with an argument of 3 or 4. 
+There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, starting with an argument of 3 or 4. 

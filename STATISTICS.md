@@ -1,3 +1,4 @@
+# Statistics
 These statistics were based on 2000 random deals run once with draw 1 specified 
 and once with draw 3 specified.  The commands required to reproduce the sample 
 using the _ran_ program from this repository are:

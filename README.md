@@ -36,9 +36,8 @@ the function. After building it, run *ran -?* for detailed information on
 its options.  See tests/base* for some sample output.
 ## unittests
 *unittests* is a program to run unit tests on the various parts of the 
-KSolveAStar function and on the function itself.  It is intended to
-run silently unless it encounters an error, so don't worry if it produces
-no output.  If it ran, that's a good test.
+KSolveAStar function and on the function itself.  It will print "unittests finished OK"
+on successful completion.  Errors are detected using the *assert()* macro.
 ## KSolve2Solvitaire
 *KSolve2Solvitaire* accepts the same flags and input types as KSolve. Instead
 of solving each deal, it generates a file for the program *Solvitaire*.
