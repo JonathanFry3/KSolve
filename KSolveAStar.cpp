@@ -313,8 +313,7 @@ void Worker(
                     // Game::MinimumMovesLeft(), our heuristic.  
                     // Never remove it.
                     assert(minMoves0 <= minMoves);
-                    if (minMoves < state._minSolution.MoveCount() && 
-                            state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
+                    if ( state._closedList.IsShortPathToState(state._game, made)) {  // <- side effect
                         state._moveStorage.PushBranch(mv,minMoves);
                     }
                     state._game.UnMakeMove(mv);
