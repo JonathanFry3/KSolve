@@ -455,13 +455,9 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
     QMoves availableMoves = _game.AvailableMoves();
     const auto& movesMade{_moveStorage.MoveSequence()};
-    for (auto i = availableMoves.begin(); i != availableMoves.end(); ) {
-        if (XYZ_Move(*i,movesMade)) {
-            i = availableMoves.erase(i);
-        } else {
-            ++i;
-        }
-    }
+    auto newEnd = std::remove_if(availableMoves.begin(), availableMoves.end(),
+        [&movesMade] (Move& move) {return XYZ_Move(move, movesMade);});
+    availableMoves.resize(newEnd - availableMoves.begin());
     return availableMoves;
 }
 
