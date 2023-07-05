@@ -418,6 +418,7 @@ public:
     }
     void Draw(unsigned n)
     {
+        n = std::min<unsigned>(n, _sSize);
         _wSize += n;
         _sSize -= n;
     }
@@ -460,7 +461,7 @@ static TalonFutureVec TalonCards(const Game & game)
         if (talon.StockSize()) {
             // Draw from the stock pile
             nMoves += 1;
-            talon.Draw( std::min<unsigned>(drawSetting,talon.StockSize()));
+            talon.Draw(drawSetting);
         } else {
             // Recycle the waste pile
             nRecycles += 1;
