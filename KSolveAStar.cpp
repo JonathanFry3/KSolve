@@ -63,7 +63,7 @@ class SharedMoveStorage
         Mutex _mutex;
         LeafNodeStack _stack;
     };
-    static_vector<FringeElement,256> _fringe;
+    static_vector<FringeElement,256*2> _fringe;
     Mutex _fringeMutex;
     unsigned _startStackIndex;
     friend class MoveStorage;
@@ -282,8 +282,7 @@ void Worker(
         unsigned minMoves0;
         while ( !state._moveStorage.Shared().OverLimit()
                 && !state.k_blewMemory
-                && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
-                && minMoves0 < state._minSolution.MoveCount()) { 
+                && (minMoves0 = state._moveStorage.DequeueMoveSequence())){  // <- side effect
 
             // Restore state._game to the state it had when this move
             // sequence was enqueued.

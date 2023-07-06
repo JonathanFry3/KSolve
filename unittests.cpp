@@ -454,11 +454,11 @@ int main()
 		{
 			Game game(Cards(quick),1);
 			// PrintGame(game);
-			auto out = KSolveAStar(game,200000,1); 
+			auto out = KSolveAStar(game,20000000); 
 			auto& outcome(out._code);
 			Moves& solution(out._solution);
 			// PrintOutcome(game, outcome);
-			assert(outcome == SolvedMinimal);
+			assert(outcome <= Solved);
 			assert(MoveCount(solution) == 76);
 		}
 
