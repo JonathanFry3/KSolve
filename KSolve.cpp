@@ -174,7 +174,7 @@ int main(int argc, char * argv[]) {
             cout << "                        solution is found.\n";
             cout << "  -mvlimit # [-mxm #]   Sets the maximum size of the move tree\n";
             cout << "                        Defaults to 20 million moves.\n";
-            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to hardware threads.\n";
+            cout << "  -threads # [-t #]     Sets the number of threads. Defaults to twice hardware threads.\n";
             cout << "  -fast # [-f #]        Limits talon look-ahead.  Enter 1 to 24.  1 is fastest,\n";
             cout << "                        and most likely to give a non-minimal result or even\n";
             cout << "                        no result for a solvable deal. 24 is like leaving this out.\n";
