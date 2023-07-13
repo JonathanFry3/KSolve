@@ -100,13 +100,19 @@ SOFTWARE.
 #include <iterator>  // reverse_iterator
 #include <vector>
 #include <type_traits> // conditional
+#include <algorithm>   // rotate
 #include <initializer_list>
 #include "frystl-defines.hpp"
 
 namespace frystl
 {
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  Iterator Implementation  **********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
     template <class T, bool IsConst>
-        struct MFV_Iterator
+        struct MFV_Iterator: std::random_access_iterator_tag
         {
         using iterator_category = std::random_access_iterator_tag;
         using value_type        = T;
@@ -279,8 +285,18 @@ namespace frystl
             + (a._current - a._first) + (b._last - b._current);
     }
 
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  mf_vector Implementation  *********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+
+
     // A dummy to give the final pointer in any mf_vector a valid
     // data address to use.
+    //
+    // This is an ugly kluge.  Before changing it, consider how to
+    // increment an iterator to end() when the last block is full.
     static long MFVectorDummyEnd = 0;
 
     template <
@@ -310,7 +326,7 @@ namespace frystl
             : _size(0)
         {
             _blocks.reserve(NBlocks + 1);
-            _blocks.push_back(pointer(&MFVectorDummyEnd));
+            _blocks.push_back(reinterpret_cast<pointer>(&MFVectorDummyEnd));
         }
         // Fill constructors
         explicit mf_vector(size_type count, const_reference value)
@@ -385,7 +401,7 @@ namespace frystl
 
         void reserve(size_type newCap)
         {
-            size_type nBlocks = QuotientRoundedUp(newCap, BlockSize);
+            size_type nBlocks = Ceiling(newCap, BlockSize);
             _blocks.reserve(nBlocks+1);
         }
         size_type size() const noexcept
@@ -433,10 +449,12 @@ namespace frystl
         }
         reference back() noexcept
         {
+            FRYSTL_ASSERT2(_size,"mf_vector::back() on empty vector");
             return *(end() - 1);
         }
         const_reference back() const noexcept
         {
+            FRYSTL_ASSERT2(_size,"mf_vector::back() on empty vector");
             return *(cend() - 1);
         }
         reference front() noexcept
@@ -574,14 +592,23 @@ namespace frystl
             return p;
         }
         // Range insert()
-        template <class InputIterator>
+        template <class InputIterator,
+                  typename = RequireInputIter<InputIterator>> 
         iterator insert(const_iterator position, InputIterator first, InputIterator last)
         {
-            iterator result = MakeIterator(position);
-            iterator p = result;
-            while (first != last)
-                emplace(p++, *first++);
-            return result;
+            size_type posIndex = position-begin();
+            size_type oldSize = _size;   
+            try {
+                // append(first,last);
+                while (first != last) {
+                    push_back(*first++);
+                }
+                std::rotate(begin()+posIndex, begin()+oldSize, end());
+            } catch (std::bad_alloc){
+                _size = oldSize;
+                Shrink();
+            }
+            return begin()+posIndex;
         }
         // initializer list insert()
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
@@ -685,11 +712,17 @@ namespace frystl
         // Invalidates iterators.
         void Grow(size_type newSize)
         {
-            while ((_blocks.size() - 1) * _blockSize < newSize)
-            {
-                pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-                _blocks.push_back(_blocks.back());
-                *(_blocks.end() - 2) = b;
+            try {
+                while ((_blocks.size() - 1) * _blockSize < newSize)
+                {
+                    pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+                    _blocks.push_back(_blocks.back());
+                    *(_blocks.end() - 2) = b;
+                }
+            }
+            catch (...) {
+                Shrink();
+                throw;
             }
         }
         // Release any no-longer-needed storage blocks.
@@ -701,12 +734,12 @@ namespace frystl
                 auto ender = _blocks.back();
                 do {
                     delete[] reinterpret_cast<storage_type*>(*(_blocks.end() - 2));
-                _blocks.pop_back();
-                cap -= _blockSize;
+                    _blocks.pop_back();
+                    cap -= _blockSize;
                 } while (_size + _blockSize <= cap);
                 _blocks.back() = ender;
             }
-            FRYSTL_ASSERT2((_size + _blockSize - 1) / _blockSize + 1 == _blocks.size(),
+            FRYSTL_ASSERT2(Ceiling(_size,BlockSize) + 1 == _blocks.size(),
                 "mf_vector: internal error in Shrink()");
         }
         // Make n spaces available starting at pos.  Shift

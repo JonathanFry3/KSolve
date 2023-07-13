@@ -36,7 +36,7 @@ SOFTWARE.
 #define FRYSTL_STATIC_VECTOR
 #include <cstdint> // for uint32_t
 #include <iterator>  // std::reverse_iterator
-#include <algorithm> // for std::move...(), equal(), lexicographical_compare()
+#include <algorithm> // for std::move...(), equal(), lexicographical_compare(), rotate()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
 #include "frystl-defines.hpp"
@@ -353,10 +353,13 @@ namespace frystl
                 InpIter last,
                 std::input_iterator_tag)
             {
-                auto p = position;
-                while (first != last)
-                    insert(p++, *first++);
-                return const_cast<iterator>(position);
+                iterator result = const_cast<iterator>(position);
+                size_type oldSize = size();
+                while (first != last) {
+                    push_back(*first++);
+                }
+                std::rotate(result, begin()+oldSize, end());
+                return result;
             }
             // Implementation for iterators with operator-()
             template <class DAIter>
@@ -373,7 +376,7 @@ namespace frystl
                 MakeRoom(p,n);
                 iterator result = p;
                 while (first != last) {
-                    FillCell(p++, *first++);
+                    new(p++) value_type(*first++);
                 }
                 _size += n;
                 return result;
@@ -457,7 +460,7 @@ namespace frystl
                 // fill previously occupied cell using assignment
                 (*pos)  = value_type(args...);
             else 
-                // fill unoccupied cell in place by constructon
+                // fill unoccupied cell in place by copy constructon
                 new (pos) value_type(args...);
         }
         //

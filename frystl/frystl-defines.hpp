@@ -35,7 +35,8 @@ namespace frystl {
         typename std::iterator_traits<InIter>::iterator_category,
         std::input_iterator_tag>::value>::type;
 
-    static size_t QuotientRoundedUp(size_t num, size_t denom)
+    // Return the quotient num/denom rounded up
+    static size_t Ceiling(size_t num, size_t denom)
     {
         return (num+denom-1)/denom;
     }
