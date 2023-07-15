@@ -626,14 +626,15 @@ unsigned Game::MinimumMovesLeft() const noexcept
 static bool Valid(const Game& gm, 
                   unsigned from, 
                   unsigned to, 
-                  unsigned which)
+                  unsigned nCardsToMove)
 {
     if (from >= gm.AllPiles().size()) return false;
     if (to >= gm.AllPiles().size()) return false;
+    if (nCardsToMove == 0 || nCardsToMove > 23) return false;
     const Pile& fromPile = *gm.AllPiles()[from];
     const Pile& toPile = *gm.AllPiles()[to];
-    if (which > fromPile.size()) return false;
-    Card coverCard = *(fromPile.end()-which);
+    if (nCardsToMove > fromPile.size()) return false;
+    Card coverCard = *(fromPile.end()-nCardsToMove);
     if (toPile.IsTableau()) {
         if (toPile.empty()) {
             if (coverCard.Rank()!=King) return false;
