@@ -345,10 +345,10 @@ void MoveStorage::PushBranch(Move mv, unsigned nMoves)
 }
 void MoveStorage::ShareMoves()
 {
-    NodeX stemEnd = _leafIndex;
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
+        NodeX stemEnd = _leafIndex;
         NodeX branchIndex;      // index in _moveTree of branch
         {
             Guard rupert(_shared._moveTreeMutex);
@@ -455,8 +455,11 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
     QMoves availableMoves = _game.AvailableMoves();
     const auto& movesMade{_moveStorage.MoveSequence()};
-    auto newEnd = std::remove_if(availableMoves.begin(), availableMoves.end(),
-        [&movesMade] (Move& move) {return XYZ_Move(move, movesMade);});
+    auto newEnd = std::remove_if(
+        availableMoves.begin(), 
+        availableMoves.end(),
+        [&movesMade] (Move& move) 
+            {return XYZ_Move(move, movesMade);});
     availableMoves.resize(newEnd - availableMoves.begin());
     return availableMoves;
 }
