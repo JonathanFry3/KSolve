@@ -5,39 +5,29 @@
 // using a fixed-size array.
 //
 // The first elements added to it are placed in the middle, and it can
-// expand in either direction. The capacity specified in its definition
-// is the capacity in either direction, so if its capacity is x and one
-// element has been added (either way), there is space for x-1 more
-// elements on either side of it.
+// expand in either direction. 
 //
-// Whenever possible, constructors and assignment functions (assign() and 
-// operator=()) center the data in the available space.  The exceptions
-// are range operations using iterators that do not support a difference
-// function (operator-()); in those cases, the first element is in
-// the center space and the others follow.
-//
-// All the operations that add data (push_...(), emplace...(), insert(), 
-// assignments and constructors) avoid overflow if possible by sliding data 
-// away from the end that is being approached. This can be costly and
+// Whenever a static_deque runs out of space on one end, it slides all
+// of the data to the other end. This can be costly and
 // invalidate iterators, pointers, and references.
 //
 // The template implements the semantics of std::deque with the following
 // exceptions:
 //      shrink_to_fit() does nothing.
 //      get_allocator() is not implemented.
-//      max_size() returns the maximum size, 2*Capacity-1.
+//      capacity() returns the maximum size.
 //      The function data() is added.  Like std::vector::data(), it
 //          returns a pointer to the front element.  The pointer it
 //          returns can be used like the iterator returned by begin().
 //      
 // Note that this container can work for implementing small queues, 
-// since the push_... and emplace_... functions recenter the data 
+// since the push_... and emplace_... functions slide the data 
 // rather than overflowing, but it may be slower than std::deque 
 // or std::list in that role.
 //
 // Iterators, references, and pointers to elements remain valid 
-// through all operations except erase() unless the operation 
-// slides data to avoid overflow.
+// through all operations except erase() and insert() unless the
+// operation slides data to avoid overflow.
 //
 /*
 MIT License
@@ -96,7 +86,7 @@ namespace frystl
         static_deque(size_type count, const_reference value)
             : _begin(Centered(count)), _end(_begin + count)
         {
-            FRYSTL_ASSERT2(count <= _trueCap,"Overflow in static_deque");
+            FRYSTL_ASSERT2(count <= capacity(),"Overflow in static_deque");
             for (pointer p = _begin; p < _end; ++p)
                 new (p) value_type(value);
         }
@@ -112,7 +102,7 @@ namespace frystl
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
-                push_back(*k);
+                emplace_back(*k);
             }
         }
         // copy constructors
@@ -129,48 +119,49 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= _trueCap, "Too big");
+            FRYSTL_ASSERT2(donor.size() <= capacity(), "Too big");
             for (auto &m : donor)
                 emplace_back(m);
         }
         // move constructors
         // Constructs the new static_deque by moving all the elements of
         // the existing static_deque.  It leaves the moved-from object
-        // unchanged, aside from whatever changes moving its elements
-        // made.
+        // empty.
         static_deque(this_type &&donor)
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
             for (auto &m : donor)
                 emplace_back(std::move(m));
+            donor.clear();
         }
         template <unsigned C1>
         static_deque(static_deque<value_type, C1> &&donor)
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= _trueCap,"Overflow");
+            FRYSTL_ASSERT2(donor.size() <= capacity(),"Overflow");
             for (auto &m : donor)
                 emplace_back(std::move(m));
+            donor.clear();
         }
         // initializer list constructor
         static_deque(std::initializer_list<value_type> il)
             : _begin(Centered(il.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(il.size() <= _trueCap,"Overflow");
+            FRYSTL_ASSERT2(il.size() <= capacity(),"Overflow");
             for (auto &value : il)
                 emplace_back(value);
         }
         ~static_deque() noexcept
         {
-            DestructAll();
+            DestroyAll();
         }
         void clear() noexcept
         {
-            DestructAll();
-            _begin = _end = Centered(0);
+            DestroyAll();
+            _begin = _end = Centered(1);
         }
         size_type size() const noexcept
         {
@@ -180,66 +171,65 @@ namespace frystl
         {
             return _begin == _end;
         }
-        size_type max_size() const noexcept
+        size_type capacity() const noexcept
         {
-            return 2*Capacity - 1;
+            return Capacity;
         }
-private:
-        // Slide the data left or right to center it.
-        void Recenter()
-        {
-            size_type sz = size();
-            auto begin = Centered(sz);
-            FRYSTL_ASSERT2(FirstSpace() <= begin,"static_deque overflow");
-            if (begin < _begin) 
-                std::move(_begin,_end,begin);
-            else if  (_begin < begin) 
-                std::move_backward(_begin,_end,begin+sz);
-            _begin = begin;
-            _end = _begin+sz;
-        }
-public:
         template <class... Args>
-        void emplace_front(Args... args)
+        void emplace_front(Args&&... args)
         {
-            if (_begin == FirstSpace()) 
-                Recenter();
-            new (_begin - 1) value_type(args...);
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, std::forward<Args>(args)...);
             --_begin;
         }
         void push_front(const_reference t)
         {
-            if (_begin == FirstSpace()) 
-                Recenter();
-            new (_begin - 1) value_type(t);
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, t);
+            --_begin;
+        }
+        void push_front(value_type&& t)
+        {
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_begin == FirstSpace()) SlideAllToBack();
+            Construct(_begin-1, std::move(t));
             --_begin;
         }
         void pop_front()
         {
             FRYSTL_ASSERT2(_begin < _end, "pop_front called on empty static_deque");
             ++_begin;
-            (_begin - 1)->~value_type(); //destruct
+            Destroy(_begin-1);
         }
         template <class... Args>
-        void emplace_back(Args... args)
+        void emplace_back(Args&&... args)
         {
-            if (_end == FirstSpace() + _trueCap)
-                Recenter();
-            new (_end) value_type(args...);
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end,std::forward<Args>(args)...);
             ++_end;
         }
         void push_back(const_reference t) noexcept
         {
-            if (_end == FirstSpace() + _trueCap)
-                Recenter();
-            new (_end) value_type(t);
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end, t);
+            ++_end;
+        }
+        void push_back(value_type && t) noexcept
+        {
+            FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
+            if (_end == PastLastSpace()) SlideAllToFront();
+            Construct(_end, std::move(t));
             ++_end;
         }
         void pop_back() noexcept
         {
             FRYSTL_ASSERT2(_begin < _end,"pop_back() called on empty static_deque");
-            back().~value_type(); //destruct
             --_end;
+            Destroy(_end);
         }
 
         reference operator[](size_type index) noexcept
@@ -294,30 +284,33 @@ public:
             return *(_end-1);
         }
         template <class... Args>
-        iterator emplace(const_iterator pos, Args...args)
+        iterator emplace(const_iterator pos, Args && ... args)
         {
-            bool atEdge = pos==cbegin() || pos==cend();
-            iterator p = MakeRoom(pos,1);
-            if (atEdge)
-                new(p) value_type(args...);
-            else 
-                (*p) = std::move(value_type(args...));
-            return p;
+            FRYSTL_ASSERT2(cbegin() <= pos && pos <= cend(),
+                "Invalid position in static_deque::emplace()");
+            unsigned offset = pos - cbegin();
+            if (pos == _begin) emplace_front(std::forward<Args>(args)...);
+            else if (pos == _end) emplace_back(std::forward<Args>(args)...);
+            else {
+                iterator p = MakeRoom(pos,1);
+                (*p) = value_type(std::forward<Args>(args)...);
+            }
+            return begin()+offset;
         }
         //
         //  Assignment functions
         void assign(size_type n, const_reference val)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"Overflow in static_deque::assign()");
-            DestructAll(); 
+            FRYSTL_ASSERT2(n <= capacity(),"Overflow in static_deque::assign()");
+            DestroyAll(); 
             _begin = _end = Centered(n);
             while (size() < n)
                 push_back(val);
         }
         void assign(std::initializer_list<value_type> x)
         {
-            FRYSTL_ASSERT2(x.size() <= _trueCap,"Overflow in static_deque::assign()");
-            DestructAll();
+            FRYSTL_ASSERT2(x.size() <= capacity(),"Overflow in static_deque::assign()");
+            DestroyAll();
             _begin = _end = Centered(x.size());
             for (auto &a : x)
                 emplace_back(a);
@@ -326,7 +319,7 @@ public:
                   typename = RequireInputIter<Iter>>
         void assign(Iter begin, Iter end)
         {
-            DestructAll();
+            DestroyAll();
             Center(begin,end,
                 typename std::iterator_traits<Iter>::iterator_category());
             for (Iter k = begin; k != end; ++k) {
@@ -343,12 +336,13 @@ public:
         {
             if (this != &other)
             {
-                FRYSTL_ASSERT2(other.size() <= _trueCap,
+                FRYSTL_ASSERT2(other.size() <= capacity(),
                     "Overflow in assignment to static_deque");
-                DestructAll();
+                DestroyAll();
                 _end = _begin = Centered(other.size());
                 for (auto &o : other)
-                    new (_end++) value_type(std::move(o));
+                    Construct(_end++, std::move(o));
+                other.clear();
             }
             return *this;
         }
@@ -373,11 +367,11 @@ public:
             if (b <= t && t < e)
                 (*t) = std::move(val);
             else 
-                new(t) value_type(val);
+                Construct(t, std::move(val));
             return t;
         }
         // fill insert
-        iterator insert(const_iterator position, size_type n, const value_type &val)
+        iterator insert(const_iterator position, size_type n, const_reference val)
         {
             FRYSTL_ASSERT2(begin() <= position && position <= end(),
                 "Bad position argument in static_deque::insert()");
@@ -401,9 +395,13 @@ public:
                 InpIter last,
                 std::input_iterator_tag)
             {
-                while (first != last)
-                    insert(position++, *first++);
-                return const_cast<iterator>(position);
+                size_type posIndex = position-begin();
+                size_type oldSize = size();
+                while (first != last) {
+                    emplace_back(*first++);
+                }
+                std::rotate(begin()+posIndex, begin()+oldSize, end());
+                return begin()+posIndex;
             }
             // Implementation for iterators having operator-()
             template <class DAIter>
@@ -424,7 +422,7 @@ public:
                 return result;
             }
         public:
-        template <class Iter>
+        template <class Iter,typename = RequireInputIter<Iter>>
         iterator insert(const_iterator position, Iter first, Iter last)
         {
             return insert(position,first,last,
@@ -449,7 +447,7 @@ public:
         }
         void resize(size_type n, const value_type &val)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"n too large in static_deque::resize(n,value)");
+            FRYSTL_ASSERT2(n <= capacity(),"n too large in static_deque::resize(n,value)");
             while (n < size())
                 pop_back();
             while (size() < n)
@@ -457,7 +455,7 @@ public:
         }
         void resize(size_type n)
         {
-            FRYSTL_ASSERT2(n <= _trueCap,"n too large in static_deque::resize(n)");
+            FRYSTL_ASSERT2(n <= capacity(),"n too large in static_deque::resize(n)");
             while (n < size())
                 pop_back();
             while (size() < n)
@@ -521,7 +519,7 @@ public:
                 const iterator l = const_cast<iterator>(last);
                 unsigned nToErase = last-first;
                 for (iterator it = f; it < l; ++it)
-                    it->~value_type();
+                    Destroy(it);
                 if (first-_begin < _end-last) {
                     // Move the elements before first
                     std::move_backward(_begin,f,l);
@@ -542,12 +540,11 @@ public:
         }
 
     private:
-        static constexpr unsigned _trueCap{2*Capacity -1};
         using storage_type =
             std::aligned_storage_t<sizeof(value_type), alignof(value_type)>;
         pointer _begin;
         pointer _end;
-        storage_type _elem[_trueCap];
+        storage_type _elem[Capacity];
 
         pointer FirstSpace() noexcept
         {
@@ -559,11 +556,11 @@ public:
         }
         pointer PastLastSpace() noexcept
         {
-            return reinterpret_cast<pointer>(_elem+_trueCap);
+            return reinterpret_cast<pointer>(_elem+capacity());
         }
         const_pointer PastLastSpace() const noexcept
         {
-            return reinterpret_cast<const_pointer>(_elem+_trueCap);
+            return reinterpret_cast<const_pointer>(_elem+capacity());
         }
         const_pointer Data() const noexcept
         {
@@ -584,13 +581,7 @@ public:
         // Update _end.
         iterator MakeRoomAfter(iterator p, size_type n)
         {
-            iterator src = end();
-            iterator tgt = src+n;
-            // Fill the uninitialized target cells by move construction
-            while(p<src && end()<tgt)
-                new (--tgt) value_type(std::move(*(--src)));       
-            // Shift elements to previously occupied cells by assignment
-            std::move_backward(p, src, tgt);
+            SlideToBack(p,_end+n);
             _end += n;
             return p;
         }
@@ -599,48 +590,49 @@ public:
         // Update _begin.
         iterator MakeRoomBefore(iterator p, size_type n)
         {
-            iterator src = begin();
-            iterator tgt = src-n;
-            FRYSTL_ASSERT2(FirstSpace() <= tgt,"Overflow in static_deque");
-            // fill the uninitialized target cells by move construction
-            while (src < p && tgt < begin())
-                new (tgt++) value_type(std::move(*(src++)));
-            // shift elements to previously occupied cells by move assignment
-            std::move(src,p,tgt);
+            SlideToFront(p, _begin-n);
             _begin -= n;
             return p-n;
         }
-        // Slide cells toward the front or back to make room for n elements
-        // before constp.  Choose the faster direction unless that will cause 
-        // overflow. Update _begin or _end. Return an iterator pointing to the 
-        // first cleared space. 
+        // Slide cells such that there are n empty cells between 
+        // constp and constp+n.  The order of all other cells
+        // is preserved.  Update _begin or _end or both. 
+        // Return an iterator pointing to the first cleared space, which
+        // may be different from constp.
         iterator MakeRoom(const_iterator constp, size_type n)
         {
+            FRYSTL_ASSERT2(size()+n <= capacity(), "static_deque overflow");
             iterator p = const_cast<iterator>(constp);
             if (end()-p < p-begin() && end()+n <= PastLastSpace())
                 return MakeRoomAfter(p, n);
-            else
+            else if (FirstSpace() + n <= _begin)
                 return MakeRoomBefore(p, n);
+            else {
+                // Neither side has enough extra space
+                p -= _begin - FirstSpace();
+                SlideAllToFront();
+                return MakeRoomAfter(p, n);
+            }
         }
         // Return a pointer to the front end of a range of n cells centered
         // in the space.
         constexpr pointer Centered(unsigned n) noexcept
         {
-            return FirstSpace()+Capacity-1-n/2;
+            return FirstSpace()+(Capacity-n)/2;
         }
         template <class RAIter>
         void Center(RAIter begin, RAIter end, std::random_access_iterator_tag)
         {
-            FRYSTL_ASSERT2(end-begin <= _trueCap, "Overflow");
+            FRYSTL_ASSERT2(end-begin <= capacity(), "Overflow");
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
         void Center(InpIter begin, InpIter end, std::input_iterator_tag)
         {
-            _begin = _end = Centered(0);
+            _begin = _end = FirstSpace();
         }
         template <class... Args>
-        void FillCell(iterator b, iterator e, iterator pos, Args... args)
+        void FillCell(const_iterator b, const_iterator e, iterator pos, Args... args)
         {
             if (b <= pos && pos < e)
                 // fill previously occupied cell using assignment
@@ -649,10 +641,40 @@ public:
                 // fill unoccupied cell in place by constructon
                 new (pos) value_type(args...);
         }
-        void DestructAll() noexcept
+        void DestroyAll() noexcept
         {
-            for (reference elem : *this)
-                elem.~value_type(); // destruct all elements
+            for (reference elem : *this) Destroy(&elem);
+        }
+        void SlideAllToFront()
+        {
+            auto sz = size();
+            SlideToFront(_end, FirstSpace());
+            _begin = FirstSpace();
+            _end = _begin + sz;
+        }
+        void SlideToFront(pointer last, pointer tgt)
+        {
+            pointer src = _begin;
+            while (src != last && tgt < _begin) {
+                    new(tgt++) value_type(std::move(*src++));                
+            }
+            std::move(src, last, tgt);
+        }
+        void SlideAllToBack()
+        {
+            auto sz = size();
+            SlideToBack(_begin, PastLastSpace());
+            _end = PastLastSpace();
+            _begin = _end-sz;
+        }
+        void SlideToBack(pointer first, pointer end)
+        {
+            pointer tgt = end;
+            pointer src = _end;
+            while (first < src && _end < tgt) {
+                new(--tgt) value_type(std::move(*--src));
+            }
+            std::move_backward(first, src, tgt);
         }
     };
     //

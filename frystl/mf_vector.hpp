@@ -53,6 +53,9 @@
 // pointers, references, and iterators pointing to its target
 // and elements after its target.
 //
+// Exception safety: this template makes the same exception
+// safety guarantees as std::vector.
+//
 // Contrast with std::vector:
 // + The memory required by std::vector is three time size() during
 //   reallocation. Mf_vector never requires more than B extra spaces.
@@ -100,13 +103,19 @@ SOFTWARE.
 #include <iterator>  // reverse_iterator
 #include <vector>
 #include <type_traits> // conditional
+#include <algorithm>   // rotate
 #include <initializer_list>
 #include "frystl-defines.hpp"
 
 namespace frystl
 {
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  Iterator Implementation  **********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
     template <class T, bool IsConst>
-        struct MFV_Iterator
+        struct MFV_Iterator: std::random_access_iterator_tag
         {
         using iterator_category = std::random_access_iterator_tag;
         using value_type        = T;
@@ -279,8 +288,18 @@ namespace frystl
             + (a._current - a._first) + (b._last - b._current);
     }
 
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  mf_vector Implementation  *********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+
+
     // A dummy to give the final pointer in any mf_vector a valid
     // data address to use.
+    //
+    // This is an ugly kluge.  Before changing it, consider how to
+    // increment an iterator to end() when the last block is full.
     static long MFVectorDummyEnd = 0;
 
     template <
@@ -310,7 +329,7 @@ namespace frystl
             : _size(0)
         {
             _blocks.reserve(NBlocks + 1);
-            _blocks.push_back(pointer(&MFVectorDummyEnd));
+            _blocks.push_back(reinterpret_cast<pointer>(&MFVectorDummyEnd));
         }
         // Fill constructors
         explicit mf_vector(size_type count, const_reference value)
@@ -360,7 +379,7 @@ namespace frystl
                 swap(reinterpret_cast<mf_vector&>(other));
             else {
                 for (auto&& value : other)
-                    MovePushBack(std::move(value));
+                    push_back(std::move(value));
                 other.clear();
             }
         }
@@ -374,7 +393,7 @@ namespace frystl
         void clear() noexcept
         {
             for (auto& m : *this)
-                m.~T(); // destruct all
+                Destroy(&m);
             _size = 0;
             Shrink(); // free memory
         }
@@ -385,7 +404,7 @@ namespace frystl
 
         void reserve(size_type newCap)
         {
-            size_type nBlocks = QuotientRoundedUp(newCap, BlockSize);
+            size_type nBlocks = Ceiling(newCap, BlockSize);
             _blocks.reserve(nBlocks+1);
         }
         size_type size() const noexcept
@@ -401,42 +420,49 @@ namespace frystl
             return size() == 0;
         }
         template <class... Args>
-        void emplace_back(Args... args)
+        void emplace_back(Args&&... args)
         {
             Grow(_size + 1);
             iterator e = End();
-            new (e.operator->()) value_type(args...);
+            Construct(e.operator->(), std::forward<Args>(args)...);
             ++_size;
         }
         template <class... Args>
-        iterator emplace(const_iterator position, Args... args)
+        iterator emplace(const_iterator position, Args&&... args)
         {
             iterator pos = MakeRoom(position,1);
-            new (pos.operator->()) T(args...);
+            Construct(pos.operator->(), std::forward<Args>(args)...);
             return pos;
         }
         void push_back(const_reference t)
         {
             Grow(_size + 1);
-            iterator e = End();
-            new (e.operator->()) value_type(t);
+            Construct(End().operator->(), t);
+            ++_size;
+        }
+        void push_back(value_type&& value)
+        {
+            Grow(_size + 1);
+            Construct(End().operator->(), std::move(value));
             ++_size;
         }
         void pop_back() noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = end() - 1;
-            back().~T(); //destruct
             _size -= 1;
-            if (e._first == e.operator->())
+            Destroy(e.operator->());
+            if (e._first == e._current)
                 Shrink();
         }
         reference back() noexcept
         {
+            FRYSTL_ASSERT2(_size,"mf_vector::back() on empty vector");
             return *(end() - 1);
         }
         const_reference back() const noexcept
         {
+            FRYSTL_ASSERT2(_size,"mf_vector::back() on empty vector");
             return *(cend() - 1);
         }
         reference front() noexcept
@@ -478,7 +504,7 @@ namespace frystl
             {
                 iterator l = MakeIterator(last);
                 for (iterator it = f; it < l; ++it)
-                    it->~value_type();
+                    Destroy(it._current);
                 std::move(l, end(), f);
                 _size -= last - first;
                 Shrink();
@@ -539,7 +565,7 @@ namespace frystl
                 }
                 else {
                     for (auto& val : other) {
-                        emplace_back(std::move(val));
+                        push_back(std::move(val));
                     }
                     other.clear();
                 }
@@ -558,30 +584,40 @@ namespace frystl
             return emplace(position, std::move(val));
         }       
         // copy insert()
-        iterator insert(const_iterator position, value_type& val)
+        iterator insert(const_iterator position, const_reference val)
         {
             return emplace(position, val);
         }
         // fill insert()
-        iterator insert(const_iterator position, size_type n, const value_type& val)
+        iterator insert(const_iterator position, size_type n, const_reference val)
         {
             iterator p = MakeRoom(position,n);
             // copy val n times into newly available cells
             for (iterator i = p; i < p + n; ++i)
             {
-                new (i.operator->()) value_type(val);
+                Construct(i.operator->(), val);
             }
             return p;
         }
         // Range insert()
-        template <class InputIterator>
+        template <class InputIterator,
+                  typename = RequireInputIter<InputIterator>> 
         iterator insert(const_iterator position, InputIterator first, InputIterator last)
         {
-            iterator result = MakeIterator(position);
-            iterator p = result;
-            while (first != last)
-                emplace(p++, *first++);
-            return result;
+            size_type posIndex = position-begin();
+            size_type oldSize = _size;   
+            try {
+                // append(first,last);
+                while (first != last) {
+                    push_back(*first++);
+                }
+            } catch (...){
+                _size = oldSize;
+                Shrink();
+                throw;
+            }
+            std::rotate(begin()+posIndex, begin()+oldSize, end());
+            return begin()+posIndex;
         }
         // initializer list insert()
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
@@ -593,7 +629,7 @@ namespace frystl
             auto j = il.begin();
             for (iterator i = p; i < p + n; ++i, ++j)
             {
-                new (i.operator->()) value_type(*j);
+                Construct(i.operator->(), *j);
             }
             return p;
         }
@@ -685,11 +721,17 @@ namespace frystl
         // Invalidates iterators.
         void Grow(size_type newSize)
         {
-            while ((_blocks.size() - 1) * _blockSize < newSize)
-            {
-                pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-                _blocks.push_back(_blocks.back());
-                *(_blocks.end() - 2) = b;
+            try {
+                while ((_blocks.size() - 1) * _blockSize < newSize)
+                {
+                    pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+                    _blocks.push_back(_blocks.back());
+                    *(_blocks.end() - 2) = b;
+                }
+            }
+            catch (...) {
+                Shrink();
+                throw;
             }
         }
         // Release any no-longer-needed storage blocks.
@@ -701,12 +743,12 @@ namespace frystl
                 auto ender = _blocks.back();
                 do {
                     delete[] reinterpret_cast<storage_type*>(*(_blocks.end() - 2));
-                _blocks.pop_back();
-                cap -= _blockSize;
+                    _blocks.pop_back();
+                    cap -= _blockSize;
                 } while (_size + _blockSize <= cap);
                 _blocks.back() = ender;
             }
-            FRYSTL_ASSERT2((_size + _blockSize - 1) / _blockSize + 1 == _blocks.size(),
+            FRYSTL_ASSERT2(Ceiling(_size,BlockSize) + 1 == _blocks.size(),
                 "mf_vector: internal error in Shrink()");
         }
         // Make n spaces available starting at pos.  Shift
@@ -722,18 +764,11 @@ namespace frystl
             iterator from = end() - nu;
             iterator to = from + n;
             for (size_type i = 0; i < nu; ++i)
-                new ((to++).operator->()) value_type(std::move(*(from++)));
+                Construct((to++).operator->(), std::move(*(from++)));
             // shift elements to previously occupied cells by move assignment
             std::move_backward(result, end() - nu, end());
             _size += n;
             return result;
-        }
-        void MovePushBack(T&& value)
-        {
-            Grow(_size + 1);
-            iterator e = End();
-            new (e.operator->()) T(std::move(value));
-            ++_size;
         }
         iterator Begin() const noexcept
         {
