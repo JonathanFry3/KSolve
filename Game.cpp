@@ -185,7 +185,7 @@ void Game::MakeMove(Move mv) noexcept
         _waste.Draw(_stock,mv.DrawCount());
         toPile.Push(_waste.Pop());
         toPile.IncrUpCount(1);
-        if (mv.Recycle()) _recycleCount += 1;
+        _recycleCount += mv.Recycle();
     } else {
         const auto n = mv.NCards();
         Pile& fromPile = *_allPiles[mv.From()];
@@ -193,13 +193,13 @@ void Game::MakeMove(Move mv) noexcept
         // For tableau piles, UpCount counts face-up cards.  
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
-        fromPile.IncrUpCount(-n);
-        if (fromPile.empty())
+        if (fromPile.empty()) {
             _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
+            fromPile.SetUpCount(0);
+        }
         else {
-            if (fromPile.UpCount() == 0){
-                fromPile.SetUpCount(1);    // flip the top card
-            }
+            fromPile.IncrUpCount(-n
+                + (fromPile.UpCount()==n));      // flip top card up
         }
     }
 }

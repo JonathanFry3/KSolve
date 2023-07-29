@@ -31,16 +31,19 @@ GameState::GameState(const Game& game) noexcept
     // except for order are considered equal
     std::sort(tableauState.begin(),tableauState.end());
 
-    _part[0] = ((GameState::PartType(tableauState[0])<<21
-                | tableauState[1])<<21) 
-                | tableauState[2];
-    _part[1] = ((GameState::PartType(tableauState[3])<<21
-                | tableauState[4])<<21) 
-                | tableauState[5];
-    _part[2] = (tableauState[6]<<5) | game.StockPile().size();
-    for (const auto& pile: game.Foundation()){
-        _part[2] =_part[2]<<4 | pile.size();
-    }
+    _part[0] =    GameState::PartType(tableauState[0])<<42
+                | GameState::PartType(tableauState[1])<<21
+                | GameState::PartType(tableauState[2]);
+    _part[1] =    GameState::PartType(tableauState[3])<<42
+                | GameState::PartType(tableauState[4])<<21
+                | GameState::PartType(tableauState[5]);
+    auto& f{game.Foundation()};
+    _part[2] =    GameState::PartType(tableauState[6])<<21
+                | game.StockPile().size()<<16
+                | f[0].size()<<12 
+                | f[1].size()<<8 
+                | f[2].size()<<4 
+                | f[3].size();
 }
 
 GameStateMemory::GameStateMemory()
