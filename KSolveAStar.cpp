@@ -10,7 +10,7 @@ typedef std::lock_guard<Mutex> Guard;
 
 using namespace frystl;
 
-enum {maxMoves = 256};
+enum {maxMoves = 500};
 typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
 // Mix-in to measure max size
@@ -307,14 +307,14 @@ void Worker(
                 for (auto mv: availableMoves){
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
-                    const unsigned remaining = state._game.MinimumMovesLeft();
-                    const unsigned minMoves = made + remaining;
-                    // The following assert tests the consistency of
-                    // Game::MinimumMovesLeft(), our heuristic.  
-                    // Never remove it.
-                    assert(minMoves0 <= minMoves);
-                    if ( state._closedList.IsShortPathToState(state._game, made)) {  // <- side effect
-                        state._moveStorage.PushBranch(mv,minMoves);
+                    if (state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
+                        const unsigned remaining = 
+                            state._game.MinimumMovesLeft();
+                        // The following assert tests the consistency of
+                        // Game::MinimumMovesLeft(), our heuristic.  
+                        // Never remove it.
+                        assert(minMoves0 <= made+remaining);
+                        state._moveStorage.PushBranch(mv,made+remaining);
                     }
                     state._game.UnMakeMove(mv);
                 }
