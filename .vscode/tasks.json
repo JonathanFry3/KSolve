@@ -95,13 +95,13 @@
 			"command": "g++",
 			"args": [
 				"-g",
-			//	"-pg", "-O1",	// gprof profiling
 				"-pthread",
+			//	"-pg", "-O1",	// gprof profiling
 				"-O3",
+			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
 			//	"-DNDEBUG",		// comment out to activate assert()
 				"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
-			//	"-O","-Wall",	// for valgrind builds
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
