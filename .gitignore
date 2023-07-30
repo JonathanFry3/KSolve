@@ -12,3 +12,5 @@ frystl/.vscode
 frystl/.editorconfig
 statistics/__pycache__/*
 frystl/.gitignore
+callgrind.out.*
+
