@@ -151,7 +151,7 @@ class CandidateSolution
     Mutex _mutex;
 public:
     CandidateSolution()
-        : _count(-1)
+        : _count(-1U)
         {}
     const Moves & GetMoves() const
     {
@@ -308,13 +308,14 @@ void Worker(
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
                     if (state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
-                        const unsigned remaining = 
+                        const unsigned minMoves = made + 
                             state._game.MinimumMovesLeft();
                         // The following assert tests the consistency of
                         // Game::MinimumMovesLeft(), our heuristic.  
                         // Never remove it.
-                        assert(minMoves0 <= made+remaining);
-                        state._moveStorage.PushBranch(mv,made+remaining);
+                        assert(minMoves0 <= minMoves);
+                        if (minMoves < state._minSolution.MoveCount())
+                            state._moveStorage.PushBranch(mv,minMoves);
                     }
                     state._game.UnMakeMove(mv);
                 }
