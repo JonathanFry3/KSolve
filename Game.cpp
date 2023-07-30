@@ -193,13 +193,13 @@ void Game::MakeMove(Move mv) noexcept
         // For tableau piles, UpCount counts face-up cards.  
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
-        if (fromPile.empty()) {
-            _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
-            fromPile.SetUpCount(0);
-        }
-        else {
+        if (fromPile.size()) {
             fromPile.IncrUpCount(-n
                 + (fromPile.UpCount()==n));      // flip top card up
+        }
+        else {
+            _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
+            fromPile.SetUpCount(0);
         }
     }
 }
