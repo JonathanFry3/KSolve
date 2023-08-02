@@ -95,6 +95,7 @@ public:
     bool OverLimit() const{
         return _moveTree.size() > _moveTreeSizeLimit;
     }
+    Moves BadMoveSequence();
 };
 class MoveStorage
 {
@@ -263,9 +264,11 @@ KSolveAStarResult KSolveAStar(
                 ? GaveUp
                 : Impossible;
     }
+
+    Moves badSequence = sharedMoveStorage.BadMoveSequence();
     return KSolveAStarResult(
         outcome,
-        solution.GetMoves(),
+        badSequence,
         state._closedList.Size(),
         sharedMoveStorage.MoveCount(),
         sharedMoveStorage.MaxFringeElementSize());
@@ -470,4 +473,18 @@ QMoves WorkerState::FilteredAvailableMoves() noexcept
 void WorkerState::CheckForMinSolution() {
     const unsigned nmv = _moveStorage.MoveSequence().MoveCount();
     _minSolution.ReplaceIfShorter(_moveStorage.MoveSequence(), nmv);
+}
+
+// Return a loser sequence
+Moves SharedMoveStorage::BadMoveSequence()
+{
+    // This is called after a solution is found (if at all),
+    // so it is in a single-thread environment.
+    static_deque<Move,500> hold;
+    NodeX leafIndex = _fringe.back()._stack.back(); 
+    for (NodeX mx = leafIndex; mx != -1U; mx = _moveTree[mx]._prevNode){
+        hold.push_front(_moveTree[mx]._move);
+    }
+    Moves result {hold.begin(), hold.end()};
+    return result;
 }
