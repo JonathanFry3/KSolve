@@ -37,19 +37,13 @@ class Card
 {
 private:
     // "Major" here means spades or hearts, rather than clubs or diamonds. 
-    unsigned char _suit;
-    unsigned char _rank;
-    unsigned char _isMajor;
-    unsigned char _parity;
+    unsigned char _suit {0};
+    unsigned char _rank {0};
+    unsigned char _isMajor {0};
+    unsigned char _parity {0};
 
 public:
-    Card() :
-        _suit(0),
-        _rank(0),
-        _isMajor(0),
-        _parity(0)
-        {}
-
+    Card() = default;
     Card(const Card& orig) = default;
 
     Card(unsigned char suit,unsigned char rank) : 
@@ -120,7 +114,7 @@ enum PileCode {
     Tableau5,
     Tableau6,
     Tableau7,
-    Stock,       // must == TableauBase+7.  See MovesToShortFoundationPile
+    Stock,       // must == TableauBase+7.  See OneMoveToShortFoundationPile
     FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,
@@ -168,7 +162,8 @@ public:
         assert(n <= donor.size());
         for (auto p = donor.end()-n; p < donor.end(); ++p)
             emplace_back(std::move(*p));
-        donor.resize(donor.size() - n);
+        auto newSize = donor.size() - n;
+        while (newSize < donor.size()) donor.pop_back();
     }
     // If n > 0, move the last n cards in other to the end of 
     // this pile reversing order. 
@@ -212,7 +207,7 @@ private:
     };
 
 public:
-    Move() = default;
+    Move() = delete;
     // Construct a talon move.  Represents 'nMoves'-1 draws
     // Their cumulative effect is to draw 'draw' cards (may be negative)
     // from stock. One card is then moved from the waste pile to the "to" pile.
@@ -376,6 +371,7 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 class Game
 {
+private:
     const CardDeck _deck;
     Pile _waste;
     Pile _stock;
@@ -391,7 +387,7 @@ class Game
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
     // Parts of AvailableMoves()
-    void MovesToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
+    void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromTableau(QMoves & moves) const noexcept;
     bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;

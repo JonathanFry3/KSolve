@@ -15,8 +15,9 @@ typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
 
 // Mix-in to measure max size
 template <class VectorType>
-struct MaxSizeCollector : public VectorType
+class MaxSizeCollector : public VectorType
 {
+public:
     using size_type = typename VectorType::size_type;
     MaxSizeCollector() = default;
 
@@ -29,15 +30,16 @@ struct MaxSizeCollector : public VectorType
         VectorType::pop_back();
     }
 private:
-    size_type _maxSize;
+    size_type _maxSize {0};
     void Remember()
     {
         _maxSize = std::max(VectorType::size(),_maxSize);
     }
 };
 
-class SharedMoveStorage
+struct SharedMoveStorage
 {
+private:
     size_t _moveTreeSizeLimit;
     typedef std::uint32_t NodeX;
     struct MoveNode
@@ -65,13 +67,9 @@ class SharedMoveStorage
     };
     static_vector<FringeElement,256> _fringe;
     Mutex _fringeMutex;
-    unsigned _startStackIndex;
+    unsigned _startStackIndex {-1U};
     friend class MoveStorage;
 public:
-    SharedMoveStorage() 
-        : _startStackIndex(-1)
-    {
-    }
     // Start move storage with the minimum number of moves from
     // the dealt deck before the first move.
     void Start(size_t moveTreeSizeLimit, unsigned minMoves)
@@ -98,6 +96,7 @@ public:
 };
 class MoveStorage
 {
+private:
     typedef SharedMoveStorage::NodeX NodeX;
     typedef SharedMoveStorage::MoveNode MoveNode;
     typedef SharedMoveStorage::LeafNodeStack LeafNodeStack;
@@ -146,13 +145,11 @@ public:
 
 class CandidateSolution
 {
+private:
     Moves _sol;
-    unsigned _count;
+    unsigned _count {-1U};
     Mutex _mutex;
 public:
-    CandidateSolution()
-        : _count(-1U)
-        {}
     const Moves & GetMoves() const
     {
         return _sol;
@@ -172,6 +169,7 @@ public:
 };
 
 struct WorkerState {
+public:
     Game _game;
     // _moveStorage stores the portion of the move tree that has been generated.
     // Each node has a move and a reference to the node with
@@ -454,15 +452,15 @@ QMoves WorkerState::MakeAutoMoves() noexcept
 // Return a vector of the available moves that pass the XYZ_Move filter
 QMoves WorkerState::FilteredAvailableMoves() noexcept
 {
-    QMoves availableMoves = _game.AvailableMoves();
+    QMoves avail = _game.AvailableMoves();
     const auto& movesMade{_moveStorage.MoveSequence()};
     auto newEnd = std::remove_if(
-        availableMoves.begin(), 
-        availableMoves.end(),
+        avail.begin(), 
+        avail.end(),
         [&movesMade] (Move& move) 
             {return XYZ_Move(move, movesMade);});
-    availableMoves.resize(newEnd - availableMoves.begin());
-    return availableMoves;
+    while (avail.end() != newEnd) avail.pop_back();
+    return avail;
 }
 
 // A solution has been found.  If it's the first, or shorter than

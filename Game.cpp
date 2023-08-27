@@ -277,7 +277,7 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // game can be won from this position, no sequence that
 // does not start with such a move can be shorter than
 // the shortest sequences that start with it.
-void Game::MovesToShortFoundationPile(
+void Game::OneMoveToShortFoundationPile(
     QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
     const auto & fnd = Foundation();
@@ -557,7 +557,7 @@ QMoves Game::AvailableMoves() const noexcept
 
     const unsigned minFoundationSize = MinFoundationPileSize();
     if (minFoundationSize == 13) return moves;		// game over
-    MovesToShortFoundationPile(moves,minFoundationSize);
+    OneMoveToShortFoundationPile(moves,minFoundationSize);
     if (moves.size()) return moves;
 
     MovesFromTableau(moves);
