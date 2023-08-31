@@ -20,7 +20,7 @@ static unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
 static std::string Filtered(std::string input, std::string filter)
 {
     std::string result;
-    for (auto ic = input.begin(); ic<input.end(); ic+=1)	{
+    for (auto ic = input.begin(); ic<input.end(); ic++)	{
         if (filter.find(*ic) != std::string::npos) {
             result += *ic;
         }
@@ -173,8 +173,8 @@ void Game::Deal()
         _kingSpaces += _tableau[iPile][0].Rank() == King;	// count kings at base
     }
     // Deal last 24 cards to stock
-    for (iDeck = _deck.cend(); _stock.size() < 24;)
-        _stock.push_back(*--iDeck);
+    for (auto jDeck = _deck.cend(); _stock.size() < 24;)
+        _stock.push_back(*--jDeck);
 }
 
 void Game::MakeMove(Move mv) noexcept
@@ -247,7 +247,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
 
 bool Game::GameOver() const noexcept
 {
-    for (auto & f: _foundation) {
+    for (const auto & f: _foundation) {
         if (f.size() < 13) return false;
     }
     return true;
@@ -306,7 +306,7 @@ void Game::OneMoveToShortFoundationPile(
 // Append to "moves" any available moves from tableau piles.
 void Game::MovesFromTableau(QMoves & moves) const noexcept
 {
-    for (const Pile& fromPile: _tableau) {
+    for (const auto& fromPile: _tableau) {
         // skip empty from piles
         if (fromPile.empty()) continue;
 
@@ -323,7 +323,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         // Look for moves between tableau piles.  These may involve
         // moving multiple cards.
         bool kingMoved = false;     // prevents moving the same king twice
-        for (const Pile& toPile: _tableau) {
+        for (const auto& toPile: _tableau) {
             if (&fromPile == &toPile) continue;
 
             if (toPile.empty()) { 
@@ -487,12 +487,10 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
     // Look for move from waste to tableau or foundation, including moves that become available 
     // after one or more draws.  
     const TalonFutureVec talon(TalonCards(*this));
-    for (TalonFuture talonCard : talon){
+    for (auto talonCard : talon){
 
         // Stop generating talon moves if they require too many moves
-        // and there are alternative moves.  The ungenerated moves will get
-        // their chances later if we get that far before we find a minimum,
-        // although that may require an extra move or more.
+        // and there are alternative moves.
         if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
         const unsigned cardSuit = talonCard._card.Suit();
@@ -510,7 +508,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
             }
         }
             
-        for (const Pile& tPile : _tableau) {
+        for (const auto& tPile : _tableau) {
             if ((tPile.size() > 0)) {
                 if (talonCard._card.Covers(tPile.back())) {
                     PushTalonMove(talonCard, tPile.Code(), recycle, moves);
@@ -527,10 +525,10 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
 // Look for moves from foundation piles to tableau piles.
 void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
-    for (const Pile& fPile: _foundation) {
+    for (const auto& fPile: _foundation) {
         if (fPile.size() > minFoundationSize+1) {  
             const Card& top = fPile.back();
-            for (const Pile& tPile: _tableau) {
+            for (const auto& tPile: _tableau) {
                 if (tPile.size() > 0) {
                     if (top.Covers(tPile.back())) {
                         moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
@@ -576,7 +574,7 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
 {
     unsigned  mins[4] {14,14,14,14};
     unsigned result = 0;
-    for (auto i = begin; i != end; i+=1){
+    for (auto i = begin; i != end; ++i){
         const unsigned rank = i->Rank();
         const unsigned suit = i->Suit();
         if (rank < mins[suit])
@@ -613,7 +611,7 @@ unsigned Game::MinimumMovesLeft() const noexcept
         result += MisorderCount(_waste.begin(), _waste.end());
     }
 
-    for (const Pile & tpile: _tableau) {
+    for (const auto & tpile: _tableau) {
         if (tpile.size()) {
             const auto begin = tpile.begin();
             const unsigned downCount = tpile.size() - tpile.UpCount();
@@ -767,7 +765,7 @@ std::string Peek(const Pile& pile)
 {
     std::stringstream outStr;
     outStr << PileNames[pile.Code()] << ":";
-    for (auto ip = pile.begin(); ip < pile.end(); ip+=1)
+    for (auto ip = pile.begin(); ip < pile.end(); ++ip)
     {
         char sep(' ');
         if (pile.IsTableau())
@@ -801,7 +799,7 @@ std::string Peek (const Game&game)
 {
     std::stringstream out;
     const auto & piles = game.AllPiles();
-    for (const Pile* pile: piles){
+    for (const auto pile: piles){
         out << Peek(*pile) << "\n";
     } 
     return out.str();

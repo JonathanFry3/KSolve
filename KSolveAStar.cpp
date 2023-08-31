@@ -82,7 +82,7 @@ public:
     }
     FringeSizeType MaxFringeElementSize() const{
         FringeSizeType result = 0;
-        for (auto const & f: _fringe) {
+        for (const auto & f: _fringe) {
             result = std::max(result, f._stack.MaxSize());
         }
         return result;
