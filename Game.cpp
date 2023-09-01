@@ -283,20 +283,20 @@ void Game::OneMoveToShortFoundationPile(
     const auto & fnd = Foundation();
     const auto & _allPiles = AllPiles();
     // Loop over Waste, all Tableau piles, and Stock if DrawSetting()==1
-    int end = (_drawSetting==1) ? Stock : Stock-1;
-    for (int iPile = Waste; iPile<=end && moves.empty(); iPile+=1) {
+    unsigned end = (_drawSetting==1) ? Stock : Stock-1;
+    for (unsigned iPile = Waste; iPile<=end && moves.empty(); iPile++) {
         const Pile &pile = *_allPiles[iPile] ;
         if (pile.size()) {
             const Card& card = pile.back();
-            const unsigned suit = card.Suit();
+            const Suit_t suit = card.Suit();
             if (card.Rank() <= minFoundationSize+1 
                 && fnd[suit].size() == card.Rank()) {
                 if (iPile == Stock) {
                     // Talon move: draw one card, move it to foundation
-                    moves.emplace_back(FoundationBase+suit,2,1);
+                    moves.emplace_back(PileCode(FoundationBase+suit),2,1);
                 } else {
                     const unsigned up = (iPile == Waste) ? 0 : pile.UpCount();
-                    moves.emplace_back(iPile,FoundationBase+suit,1,up);
+                    moves.emplace_back(PileCode(iPile),PileCode(FoundationBase+suit),1,up);
                 }
             }
         }
@@ -474,7 +474,7 @@ static TalonFutureVec TalonCards(const Game & game)
 // Push a talon move onto a sequence.
 // This is to visually distinguish talon Move construction from
 // non-talon Move construction in AvailableMoves().
-static inline void PushTalonMove(const TalonFuture& f, unsigned pileNum, bool recycle, QMoves& qm)
+static inline void PushTalonMove(const TalonFuture& f, PileCode pileNum, bool recycle, QMoves& qm)
 {
     qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
     qm.back().SetRecycle(recycle);
@@ -493,11 +493,11 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         // and there are alternative moves.
         if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
-        const unsigned cardSuit = talonCard._card.Suit();
-        const unsigned cardRank = talonCard._card.Rank();
+        const Suit_t cardSuit = talonCard._card.Suit();
+        const Rank_t cardRank = talonCard._card.Rank();
         bool recycle = talonCard._recycle;
         if (cardRank == _foundation[cardSuit].size()) {
-            const unsigned pileNo = FoundationBase+cardSuit;
+            const PileCode pileNo = PileCode(FoundationBase+cardSuit);
             PushTalonMove(talonCard, pileNo, recycle, moves);
             if (cardRank <= minFoundationSize+1){
                 if (_drawSetting == 1) {
@@ -575,8 +575,8 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
     unsigned  mins[4] {14,14,14,14};
     unsigned result = 0;
     for (auto i = begin; i != end; ++i){
-        const unsigned rank = i->Rank();
-        const unsigned suit = i->Suit();
+        const Rank_t rank = i->Rank();
+        const Suit_t suit = i->Suit();
         if (rank < mins[suit])
             mins[suit] = rank;
         else
@@ -675,8 +675,8 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
     std::vector<XMove> result;
 
     for (auto mv : solution){
-        const unsigned from = mv.From();
-        const unsigned to = mv.To();
+        const auto from = mv.From();
+        const auto to = mv.To();
         
         if (!mv.IsTalonMove()){
             unsigned n = mv.NCards();

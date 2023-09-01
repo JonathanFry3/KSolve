@@ -213,7 +213,7 @@ std::minstd_rand rng;
 int main()
 {
 	// Test Card
-	assert(Card(Hearts,Ace+2).AsString() == "h3");
+	assert(Card(Hearts,Rank_t(Ace+2)).AsString() == "h3");
 	Card tcard(Clubs,Ace);
 	std::pair<bool,Card> pair = Card::FromString("S10");
 	bool validCardString = pair.first;
@@ -256,7 +256,7 @@ int main()
 		assert (sol.Tableau()[1].UpCount() == 2);
 
 		assert (sol.StockPile().size() == 24);
-		sol.MakeMove(Move(Foundation2D,4,4));
+		sol.MakeMove(Move(Foundation2D,Tableau4,4));
 		assert (sol.StockPile().size()==20);
 		assert (sol.WastePile().size()==3);
 		assert (sol.Foundation()[1].back().AsString()=="d6");
