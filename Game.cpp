@@ -628,7 +628,7 @@ static bool Valid(const Game& gm,
 {
     if (from >= gm.AllPiles().size()) return false;
     if (to >= gm.AllPiles().size()) return false;
-    if (nCardsToMove == 0 || nCardsToMove > 23) return false;
+    if (nCardsToMove == 0 || nCardsToMove > 24) return false;
     const Pile& fromPile = *gm.AllPiles()[from];
     const Pile& toPile = *gm.AllPiles()[to];
     if (nCardsToMove > fromPile.size()) return false;
