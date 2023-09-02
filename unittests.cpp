@@ -213,7 +213,7 @@ std::minstd_rand rng;
 int main()
 {
 	// Test Card
-	assert(Card(Hearts,Rank_t(Ace+2)).AsString() == "h3");
+	assert(Card(Hearts,RankType(Ace+2)).AsString() == "h3");
 	Card tcard(Clubs,Ace);
 	std::pair<bool,Card> pair = Card::FromString("S10");
 	bool validCardString = pair.first;

@@ -488,8 +488,8 @@ CardDeck SolitaireDeck(string const& cardSet) {
             cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
             return empty;
         }
-        Suit_t suit = Suit_t(suitchar - '1');
-        Card cd(suit,Rank_t(rank-1));
+        SuitType suit = SuitType(suitchar - '1');
+        Card cd(suit,RankType(rank-1));
         if (dupchk(cd)) {
             return empty;
         }

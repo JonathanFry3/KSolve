@@ -49,15 +49,15 @@ std::string Card::AsString() const
 std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept  
 {
     const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
-    Suit_t suit;
-    Rank_t rank;
+    SuitType suit;
+    RankType rank;
     bool ok = s1.length() == 2 || s1.length() == 3;
     std::string rankStr;
     if (ok)	{
         auto suitIndex = suits.find(s1[0]);
         if (suitIndex != std::string::npos)	{
             // input has suit first
-            suit = static_cast<Suit_t>(suitIndex);
+            suit = static_cast<SuitType>(suitIndex);
             rankStr = s1.substr(1);
         } else {
             // suit does not appear first in input
@@ -66,7 +66,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
                 suitIndex = suits.find(s1.back());
                 ok = suitIndex != std::string::npos;
                 if (ok) {
-                    suit = static_cast<Suit_t>(suitIndex);
+                    suit = static_cast<SuitType>(suitIndex);
                     rankStr = s1.substr(0,s1.length()-1);
                 }
             }
@@ -77,7 +77,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
         auto rankIndex = ranks.find(rankStr);
         ok = rankIndex != std::string::npos;
         if (ok)	{
-            rank = static_cast<Rank_t>(rankIndex);
+            rank = static_cast<RankType>(rankIndex);
         }
     }
     Card card;
@@ -288,15 +288,15 @@ void Game::OneMoveToShortFoundationPile(
         const Pile &pile = *_allPiles[iPile] ;
         if (pile.size()) {
             const Card& card = pile.back();
-            const Suit_t suit = card.Suit();
+            const SuitType suit = card.Suit();
             if (card.Rank() <= minFoundationSize+1 
                 && fnd[suit].size() == card.Rank()) {
                 if (iPile == Stock) {
                     // Talon move: draw one card, move it to foundation
-                    moves.emplace_back(PileCode(FoundationBase+suit),2,1);
+                    moves.emplace_back(PileCodeType(FoundationBase+suit),2,1);
                 } else {
                     const unsigned up = (iPile == Waste) ? 0 : pile.UpCount();
-                    moves.emplace_back(PileCode(iPile),PileCode(FoundationBase+suit),1,up);
+                    moves.emplace_back(PileCodeType(iPile),PileCodeType(FoundationBase+suit),1,up);
                 }
             }
         }
@@ -474,7 +474,7 @@ static TalonFutureVec TalonCards(const Game & game)
 // Push a talon move onto a sequence.
 // This is to visually distinguish talon Move construction from
 // non-talon Move construction in AvailableMoves().
-static inline void PushTalonMove(const TalonFuture& f, PileCode pileNum, bool recycle, QMoves& qm)
+static inline void PushTalonMove(const TalonFuture& f, PileCodeType pileNum, bool recycle, QMoves& qm)
 {
     qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
     qm.back().SetRecycle(recycle);
@@ -493,11 +493,11 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         // and there are alternative moves.
         if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
-        const Suit_t cardSuit = talonCard._card.Suit();
-        const Rank_t cardRank = talonCard._card.Rank();
+        const SuitType cardSuit = talonCard._card.Suit();
+        const RankType cardRank = talonCard._card.Rank();
         bool recycle = talonCard._recycle;
         if (cardRank == _foundation[cardSuit].size()) {
-            const PileCode pileNo = PileCode(FoundationBase+cardSuit);
+            const PileCodeType pileNo = PileCodeType(FoundationBase+cardSuit);
             PushTalonMove(talonCard, pileNo, recycle, moves);
             if (cardRank <= minFoundationSize+1){
                 if (_drawSetting == 1) {
@@ -575,8 +575,8 @@ static unsigned MisorderCount(const Card *begin, const Card *end)
     unsigned  mins[4] {14,14,14,14};
     unsigned result = 0;
     for (auto i = begin; i != end; ++i){
-        const Rank_t rank = i->Rank();
-        const Suit_t suit = i->Suit();
+        const RankType rank = i->Rank();
+        const SuitType suit = i->Suit();
         if (rank < mins[suit])
             mins[suit] = rank;
         else

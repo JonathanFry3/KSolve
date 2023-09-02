@@ -21,12 +21,12 @@
 
 #include "frystl/static_vector.hpp"
 
-enum Rank_t : unsigned char
+enum RankType : unsigned char
 {
     Ace = 0,
     King = 12
 };
-enum Suit_t : unsigned char 
+enum SuitType : unsigned char 
 {
     Clubs = 0,
     Diamonds,
@@ -38,8 +38,8 @@ class Card
 {
 private:
     // "Major" here means spades or hearts, rather than clubs or diamonds. 
-    Suit_t _suit {Clubs};
-    Rank_t _rank {Ace};
+    SuitType _suit {Clubs};
+    RankType _rank {Ace};
     bool _isMajor {0};
     bool _parity {0};
 
@@ -47,7 +47,7 @@ public:
     Card() = default;
     Card(const Card& orig) = default;
 
-    Card(Suit_t suit, Rank_t rank) : 
+    Card(SuitType suit, RankType rank) : 
         _suit(suit),
         _rank(rank),
         _isMajor(suit>>1),
@@ -55,15 +55,15 @@ public:
         {}
 
     Card(unsigned value):
-        _suit(Suit_t(value/13)),
-        _rank(Rank_t(value%13)),
+        _suit(SuitType(value/13)),
+        _rank(RankType(value%13)),
         _isMajor(_suit>>1),
         _parity((_rank&1)^(_suit&1))
         {}
 
 
-    Suit_t Suit() const noexcept	    {return _suit;}
-    Rank_t Rank() const noexcept	    {return _rank;}
+    SuitType Suit() const noexcept	    {return _suit;}
+    RankType Rank() const noexcept	    {return _rank;}
     bool IsMajor() const noexcept		{return _isMajor;}
     bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
                                         {return _parity;}
@@ -107,7 +107,7 @@ struct CardDeck : frystl::static_vector<Card,52>
 // Function to generate a randomly shuffled deck
 CardDeck NumberedDeal(uint32_t seed);
 
-enum PileCode : unsigned char{
+enum PileCodeType : unsigned char{
     Waste = 0, 
     TableauBase,  // == 1.  Must == Waste+1
     Tableau1 = TableauBase,
@@ -124,9 +124,9 @@ enum PileCode : unsigned char{
     Foundation3S,
     Foundation4H
 };
-static_assert(Stock == PileCode(TableauBase+7));
+static_assert(Stock == PileCodeType(TableauBase+7));
 
-static bool IsTableau(PileCode pile) noexcept
+static bool IsTableau(PileCodeType pile) noexcept
 {
     return TableauBase <= pile && pile < TableauBase+7;
 }
@@ -134,20 +134,20 @@ static bool IsTableau(PileCode pile) noexcept
 class Pile : public PileVec
 {
 private:
-    PileCode _code;
+    PileCodeType _code;
     unsigned char _upCount;
     bool _isTableau;
     bool _isFoundation;
 
 public:
-    Pile(PileCode code)
+    Pile(PileCodeType code)
     : _code(code)
     , _upCount(0)
     , _isTableau(::IsTableau(code))
     , _isFoundation(FoundationBase <= code && code < FoundationBase+4)
     {}
 
-    PileCode Code() const noexcept			{return _code;}
+    PileCodeType Code() const noexcept		{return _code;}
     unsigned UpCount() const noexcept		{return _upCount;}
     bool IsTableau() const noexcept			{return _isTableau;}
     bool IsFoundation() const noexcept		{return _isFoundation;}
@@ -197,8 +197,8 @@ std::string Peek(const Pile& pile);
 class Move
 {
 private:
-    PileCode _from;    // _from == Stock <==> talon move
-    PileCode _to;
+    PileCodeType _from;    // _from == Stock <==> talon move
+    PileCodeType _to;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
     union {
@@ -217,7 +217,7 @@ public:
     // Their cumulative effect is to draw 'draw' cards (may be negative)
     // from stock. One card is then moved from the waste pile to the "to" pile.
     // All talon moves, and only talon moves, are from the stock pile.
-    Move(PileCode to, unsigned nMoves, int draw) noexcept
+    Move(PileCodeType to, unsigned nMoves, int draw) noexcept
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
@@ -226,7 +226,7 @@ public:
         {}
     // Construct a non-talon move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
-    Move(PileCode from, PileCode to, unsigned n, unsigned fromUpCount) noexcept
+    Move(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
@@ -240,8 +240,8 @@ public:
     void SetRecycle(bool r) noexcept    {_recycle = r;}      
 
     bool IsTalonMove() const noexcept	{return _from==Stock;}
-    PileCode From() const noexcept		{return _from;}
-    PileCode To()   const noexcept		{return _to;}
+    PileCodeType From() const noexcept		{return _from;}
+    PileCodeType To()   const noexcept		{return _to;}
     unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
@@ -339,7 +339,7 @@ std::string Peek(const Moves_t & mvs)
 // consecutive, as drawing multiple cards from the stock pile
 // is represented as a single XMove.
 //
-// Pile numbers are given by the enum PileCode.
+// Pile numbers are given by the enum PileCodeType.
 //
 // Flips of tableau cards are not counted as moves, but they
 // are flagged on the move from the pile of the flip.
@@ -347,8 +347,8 @@ std::string Peek(const Moves_t & mvs)
 class XMove
 {
     unsigned short _moveNum;
-    PileCode _from;
-    PileCode _to;
+    PileCodeType _from;
+    PileCodeType _to;
     unsigned char _nCards;
     unsigned char _flip;		// tableau flip?
 public:
@@ -356,8 +356,8 @@ public:
         : _nCards(0)
         {}
     XMove(    unsigned moveNum
-            , PileCode from
-            , PileCode to
+            , PileCodeType from
+            , PileCodeType to
             , unsigned nCards
             , bool flip)
         : _moveNum(moveNum)
@@ -389,7 +389,7 @@ private:
     unsigned _kingSpaces;
     std::array<Pile,7> _tableau;
     std::array<Pile,4> _foundation;
-    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCode
+    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCodeType
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}

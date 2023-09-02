@@ -324,9 +324,7 @@ CardDeck SolitaireDeck(string const& cardSet) {
             cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
             return empty;
         }
-        char suits [] {"1243"};
-        unsigned suit = find(suits,suits+4,suitchar) - suits;
-        Card cd(suit,rank-1);
+        Card cd(SuitType(suitchar-'1'),RankType(rank-1));
         if (dupchk(cd)) {
             return empty;
         }
