@@ -246,7 +246,8 @@ int main(int argc, char * argv[]) {
             cout << "----------------------------------------\n"; 
             for (XMove xmove: xmoves) {
                 bool isTalonMove = xmove.To() == Stock || xmove.To() == Waste;
-                cout << GetMoveInfo(xmove,game) << "\n";
+                cout << GetMoveInfo(xmove,game) << endl;
+                assert(game.IsValid(xmove));
                 game.MakeMove(xmove);
                 if (!isTalonMove){
                     if (outputMethod == 0) {
