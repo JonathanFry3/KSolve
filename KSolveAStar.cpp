@@ -305,15 +305,20 @@ void Worker(
                 for (auto mv: availableMoves){
                     state._game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
-                    if (state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
-                        const unsigned minMoves = made + 
-                            state._game.MinimumMovesLeft();
+                    unsigned minRemaining = -1U;
+                    bool pass = true;
+                    if (state._minSolution.MoveCount() != -1U) { // rare copndition
+                        minRemaining = state._game.MinimumMovesLeft(); // expensive
+                        pass = (made + minRemaining) < state._minSolution.MoveCount();
+                    }
+                    if (pass && state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
+                        if (minRemaining == -1U) minRemaining = state._game.MinimumMovesLeft();
+                        const unsigned minMoves = made + minRemaining;
                         // The following assert tests the consistency of
                         // Game::MinimumMovesLeft(), our heuristic.  
                         // Never remove it.
                         assert(minMoves0 <= minMoves);
-                        if (minMoves < state._minSolution.MoveCount())
-                            state._moveStorage.PushBranch(mv,minMoves);
+                        state._moveStorage.PushBranch(mv,minMoves);
                     }
                     state._game.UnMakeMove(mv);
                 }
