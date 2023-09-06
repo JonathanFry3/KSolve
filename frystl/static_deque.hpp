@@ -63,8 +63,9 @@ SOFTWARE.
 namespace frystl
 {
     template <typename value_type, unsigned Capacity>
-    struct static_deque
+    class static_deque
     {
+    public:
         using this_type = static_deque<value_type,Capacity>;
         using reference = value_type &;
         using const_reference = const value_type &;
@@ -127,7 +128,7 @@ namespace frystl
         // Constructs the new static_deque by moving all the elements of
         // the existing static_deque.  It leaves the moved-from object
         // empty.
-        static_deque(this_type &&donor)
+        static_deque(this_type &&donor) noexcept
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
@@ -136,7 +137,7 @@ namespace frystl
             donor.clear();
         }
         template <unsigned C1>
-        static_deque(static_deque<value_type, C1> &&donor)
+        static_deque(static_deque<value_type, C1> &&donor) noexcept
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
@@ -190,14 +191,14 @@ namespace frystl
             Construct(_begin-1, t);
             --_begin;
         }
-        void push_front(value_type&& t)
+        void push_front(value_type&& t) noexcept
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, std::move(t));
             --_begin;
         }
-        void pop_front()
+        void pop_front() noexcept
         {
             FRYSTL_ASSERT2(_begin < _end, "pop_front called on empty static_deque");
             ++_begin;
@@ -211,7 +212,7 @@ namespace frystl
             Construct(_end,std::forward<Args>(args)...);
             ++_end;
         }
-        void push_back(const_reference t) noexcept
+        void push_back(const_reference t) 
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
@@ -326,7 +327,7 @@ namespace frystl
                 push_back(*k);
             }
         }
-        this_type &operator=(const this_type &other) noexcept
+        this_type &operator=(const this_type &other) 
         {
             if (this != &other)
                 assign(other.begin(), other.end());
@@ -336,12 +337,9 @@ namespace frystl
         {
             if (this != &other)
             {
-                FRYSTL_ASSERT2(other.size() <= capacity(),
-                    "Overflow in assignment to static_deque");
-                DestroyAll();
-                _end = _begin = Centered(other.size());
+                clear();
                 for (auto &o : other)
-                    Construct(_end++, std::move(o));
+                    push_back(std::move(o));
                 other.clear();
             }
             return *this;
@@ -357,7 +355,7 @@ namespace frystl
             return insert(position, 1, val);
         }
         // move insert()
-        iterator insert(const_iterator position, value_type &&val)
+        iterator insert(const_iterator position, value_type &&val) noexcept
         {
             FRYSTL_ASSERT2(begin() <= position && position <= end(),
                 "Bad position argument in static_deque::insert()");
@@ -461,7 +459,7 @@ namespace frystl
             while (size() < n)
                 emplace_back();
         }
-        void swap(this_type &x)
+        void swap(this_type &x) noexcept
         {
             std::swap(*this, x);
         }
@@ -507,7 +505,7 @@ namespace frystl
         {
             return const_reverse_iterator(_begin);
         }
-        iterator erase(const_iterator first, const_iterator last)
+        iterator erase(const_iterator first, const_iterator last) noexcept
         {
             iterator result = const_cast<iterator>(last);
             if (first != last)
@@ -579,7 +577,7 @@ namespace frystl
         // Slide cells at and behind p to the back by n spaces.
         // Return an iterator pointing to the first cleared cell (p).
         // Update _end.
-        iterator MakeRoomAfter(iterator p, size_type n)
+        iterator MakeRoomAfter(iterator p, size_type n) noexcept
         {
             SlideToBack(p,_end+n);
             _end += n;
@@ -588,7 +586,7 @@ namespace frystl
         // Slide cells before p to the front by n spaces.
         // Return an iterator pointing to the first cleared cell (p-n).
         // Update _begin.
-        iterator MakeRoomBefore(iterator p, size_type n)
+        iterator MakeRoomBefore(iterator p, size_type n) noexcept
         {
             SlideToFront(p, _begin-n);
             _begin -= n;
@@ -599,7 +597,7 @@ namespace frystl
         // is preserved.  Update _begin or _end or both. 
         // Return an iterator pointing to the first cleared space, which
         // may be different from constp.
-        iterator MakeRoom(const_iterator constp, size_type n)
+        iterator MakeRoom(const_iterator constp, size_type n) noexcept
         {
             FRYSTL_ASSERT2(size()+n <= capacity(), "static_deque overflow");
             iterator p = const_cast<iterator>(constp);
@@ -621,13 +619,13 @@ namespace frystl
             return FirstSpace()+(Capacity-n)/2;
         }
         template <class RAIter>
-        void Center(RAIter begin, RAIter end, std::random_access_iterator_tag)
+        void Center(RAIter begin, RAIter end, std::random_access_iterator_tag) noexcept
         {
             FRYSTL_ASSERT2(end-begin <= capacity(), "Overflow");
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
-        void Center(InpIter begin, InpIter end, std::input_iterator_tag)
+        void Center(InpIter begin, InpIter end, std::input_iterator_tag) noexcept
         {
             _begin = _end = FirstSpace();
         }
@@ -645,14 +643,14 @@ namespace frystl
         {
             for (reference elem : *this) Destroy(&elem);
         }
-        void SlideAllToFront()
+        void SlideAllToFront() noexcept
         {
             auto sz = size();
             SlideToFront(_end, FirstSpace());
             _begin = FirstSpace();
             _end = _begin + sz;
         }
-        void SlideToFront(pointer last, pointer tgt)
+        void SlideToFront(pointer last, pointer tgt) noexcept
         {
             pointer src = _begin;
             while (src != last && tgt < _begin) {
@@ -660,14 +658,14 @@ namespace frystl
             }
             std::move(src, last, tgt);
         }
-        void SlideAllToBack()
+        void SlideAllToBack() noexcept
         {
             auto sz = size();
             SlideToBack(_begin, PastLastSpace());
             _end = PastLastSpace();
             _begin = _end-sz;
         }
-        void SlideToBack(pointer first, pointer end)
+        void SlideToBack(pointer first, pointer end) noexcept
         {
             pointer tgt = end;
             pointer src = _end;
@@ -681,40 +679,40 @@ namespace frystl
     //*******  Non-member overloads
     //
     template <class T, unsigned C0, unsigned C1>
-    bool operator==(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator==(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator!=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator!=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         return !(rhs == lhs);
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator<(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator<(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator<=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator<=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         return !(rhs < lhs);
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator>(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator>(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         return rhs < lhs;
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator>=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs)
+    bool operator>=(const static_deque<T, C0> &lhs, const static_deque<T, C1> &rhs) noexcept
     {
         return !(lhs < rhs);
     }
 
     template <class T, unsigned C>
-    void swap(static_deque<T, C> &a, static_deque<T, C> &b)
+    void swap(static_deque<T, C> &a, static_deque<T, C> &b) noexcept
     {
         a.swap(b);
     }

@@ -6,7 +6,7 @@
 // That std::vector is initially allocated at size N.  This storage scheme
 // is similar to that used by std::deque.
 //
-// It's functions have the same semantics as those of std::vector with the
+// Its functions have the same semantics as those of std::vector with the
 // following exceptions:
 //
 //  (1) shrink_to_fit(), data(), max_size(), and get_allocator(), 
@@ -109,191 +109,6 @@ SOFTWARE.
 
 namespace frystl
 {
-/***********************************************************************************/    
-/***********************************************************************************/    
-/**********************  Iterator Implementation  **********************************/    
-/***********************************************************************************/    
-/***********************************************************************************/    
-    template <class T, bool IsConst>
-        struct MFV_Iterator: std::random_access_iterator_tag
-        {
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = T;
-        using difference_type   = std::ptrdiff_t;
-        using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
-        using reference         = typename std::conditional<IsConst,const T&,T&>::type;
-        using this_type         = MFV_Iterator<T, IsConst>;
-
-        using ValPtr            = T*;
-        using BlkPtr            = ValPtr*;
-        BlkPtr _block;
-        ValPtr _first;
-        ValPtr _last;
-        ValPtr _current; 
-
-        MFV_Iterator() = delete;
-
-        MFV_Iterator(pointer* block, pointer first, pointer last, pointer current)
-        : _block(block), _first(first), _last(last), _current(current)
-        {}
-
-        // Implicit conversion from iterator to const_iterator
-        template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
-        MFV_Iterator(const MFV_Iterator<T, WasConst>& x) noexcept
-            : _block(x._block)
-            , _first(x._first)
-            , _last(x._last)
-            , _current(x._current)
-        {}
-
-        MFV_Iterator(const MFV_Iterator& x) = default;
-
-        MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
-        {
-            Increment();
-            return *this;
-        }
-        MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
-        {
-            MFV_Iterator result = *this;
-            Increment();
-            return result;
-        }
-        MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
-        {
-            Decrement();
-            return *this;
-        }
-        MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
-        { 
-            MFV_Iterator result = *this;
-            Decrement();
-            return result;
-        }
-        bool operator==(const MFV_Iterator& other) const noexcept
-        {
-            return _current == other._current;
-        }
-        bool operator<(const MFV_Iterator& other) const noexcept
-        {
-            return _block < other._block || 
-                (_block == other._block && _current < other._current);
-        }
-        MFV_Iterator operator+=(difference_type a) noexcept
-        {
-            const difference_type blkSize = _last - _first;
-            const difference_type offset = a + (_current - _first);
-            if (0 <= offset && offset < blkSize)
-                _current += a;
-            else {
-                const long nodeOffset = 
-                    (offset > 0) ? offset / blkSize
-                    : (1 + offset - blkSize) / blkSize;
-                _block += nodeOffset;
-                _first = *_block;
-                _last = _first + blkSize;
-                _current = _first + (offset - nodeOffset * blkSize);
-            }
-            return *this;
-        }
-        MFV_Iterator operator-=(difference_type a) noexcept
-        {
-            return operator+=(-a);
-        }
-        MFV_Iterator operator+(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += a;
-        }
-        MFV_Iterator operator-(difference_type a) const noexcept
-        {
-            MFV_Iterator t{ *this };
-            return t += (-a);
-        }
-        reference operator*() const noexcept 
-        {
-            return *_current;
-        }
-        pointer operator->() const noexcept 
-        {
-            return _current;
-        }
-        reference operator[](difference_type x) 
-        {
-            return *(*this + x);
-        }
-
-
-    private:
-        void Increment()
-        {
-            _current++;
-            if (_last == _current) {
-                ++_block;
-                difference_type blockSize = _last - _first;
-                _current = _first = *_block;
-                _last = _first + blockSize;
-            }
-        }
-        void Decrement()
-        {
-            if (_first == _current) {
-                difference_type blockSize = _last - _first;
-                --_block;
-                _first = *_block;
-                _current = _last = _first + blockSize;
-            }
-            --_current;
-        }
-    };
-
-    // Non-member overrides for iterator operands
-
-    template <class T, bool C1, bool C2>
-    bool operator!=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
-    {
-        return !(a == b);
-    }
-    template <class T, bool C1, bool C2>
-    bool operator> (const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
-    {
-        return b < a;
-    }
-    template <class T, bool C1, bool C2>
-    bool operator<=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
-    {
-        return !(b < a);
-    }
-    template <class T, bool C1, bool C2>
-    bool operator>=(const MFV_Iterator<T, C1>& a,
-                    const MFV_Iterator<T, C2>& b)
-    {
-        return !(a < b);
-    }
-    template <class T, bool C>
-    typename MFV_Iterator<T, C>::difference_type
-    operator-(const MFV_Iterator<T, C>& a, const MFV_Iterator<T, C>& b)
-    { 
-        return (a._block - b._block - 1) * (a._last - a._first)
-            + (a._current - a._first) + (b._last - b._current);
-    }
-    template <class T, bool C1, bool C2>
-    typename MFV_Iterator<T, C1>::difference_type
-    operator-(const MFV_Iterator<T, C1>& a, const MFV_Iterator<T, C2>& b)
-    {
-        return (a._block - b._block - 1) * (a._last - a._first)
-            + (a._current - a._first) + (b._last - b._current);
-    }
-
-/***********************************************************************************/    
-/***********************************************************************************/    
-/**********************  mf_vector Implementation  *********************************/    
-/***********************************************************************************/    
-/***********************************************************************************/    
-
 
     // A dummy to give the final pointer in any mf_vector a valid
     // data address to use.
@@ -311,6 +126,179 @@ namespace frystl
     class mf_vector
     {
     public:
+
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  Iterator Implementation  **********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+        template <bool IsConst>
+        class MFV_Iterator: std::random_access_iterator_tag
+        {
+        public:
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type        = T;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = typename std::conditional<IsConst,const T*,T*>::type;
+            using reference         = typename std::conditional<IsConst,const T&,T&>::type;
+        private:
+            using this_type         = MFV_Iterator<IsConst>;
+            using const_this_type   = MFV_Iterator<true>;
+            using ValPtr            = T*;
+            using BlkPtr            = ValPtr*;
+
+            BlkPtr _block;      // -> an in the _blocks vector that points to a block of elements
+            ValPtr _current;    // -> the current element
+            friend class MFV_Iterator<!IsConst>;
+            friend class mf_vector;
+        public:
+            MFV_Iterator() = delete;
+
+            MFV_Iterator(pointer* block, pointer current) noexcept
+            : _block(block), _current(current)
+            {}
+
+            // Implicit conversion from iterator to const_iterator
+            template <bool WasConst, class = std::enable_if_t<IsConst && !WasConst> >
+            MFV_Iterator(const MFV_Iterator<WasConst>& x) noexcept
+                : _block(x._block)
+                , _current(x._current)
+            {}
+
+            MFV_Iterator(const MFV_Iterator& x) noexcept = default;
+            MFV_Iterator& operator++() noexcept  // prefix increment, as in ++iter
+            {
+                Increment();
+                return *this;
+            }
+            MFV_Iterator operator++(int i) noexcept  // postfix increment, as in iter++
+            {
+                MFV_Iterator result = *this;
+                Increment();
+                return result;
+            }
+            MFV_Iterator& operator--() noexcept  // prefix decrement, as in --iter;
+            {
+                Decrement();
+                return *this;
+            }
+            MFV_Iterator operator--(int i) noexcept // postfix decrement, as in iter--;
+            { 
+                MFV_Iterator result = *this;
+                Decrement();
+                return result;
+            }
+            bool operator==(const_this_type other) const noexcept
+            {
+                return _current == other._current;
+            }
+            bool operator!=(const_this_type other) const noexcept
+            {
+                return !operator==(other);
+            }
+            bool operator<(const_this_type other) const noexcept
+            {
+                return _block < other._block || 
+                    (_block == other._block && _current < other._current);
+            }
+            bool operator>(const_this_type other) const noexcept
+            {
+                return other < *this;
+            }
+            bool operator<=(const_this_type other) const noexcept
+            {
+                return !(other < *this);
+            }
+            bool operator>=(const_this_type other) const noexcept
+            {
+                return !(*this < other);
+            }
+            MFV_Iterator operator+=(difference_type a) noexcept
+            {
+                const difference_type offset = a + (_current - First());
+                if (0 <= offset && offset < BlockSize)
+                    _current += a;
+                else {
+                    const difference_type nodeOffset = 
+                        (offset > 0) ? offset / BlockSize
+                                    : (1 + offset - BlockSize) / BlockSize;
+                    _block += nodeOffset;
+                    _current = First() + (offset - nodeOffset * BlockSize);
+                }
+                return *this;
+            }
+            MFV_Iterator operator-=(difference_type a) noexcept
+            {
+                return operator+=(-a);
+            }
+            MFV_Iterator operator+(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += a;
+            }
+            MFV_Iterator operator-(difference_type a) const noexcept
+            {
+                MFV_Iterator t{ *this };
+                return t += (-a);
+            }
+            difference_type operator-(const_this_type b) const noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            difference_type operator-(const_this_type b) noexcept
+            {
+                return (_block - b._block - 1) * BlockSize
+                    + (_current - First()) + (b.Last() - b._current);
+            }
+            reference operator*() const noexcept 
+            {
+                return *_current;
+            }
+            pointer operator->() const noexcept 
+            {
+                return _current;
+            }
+            reference operator[](difference_type x) 
+            {
+                return *(*this + x);
+            }
+
+
+        private:
+            const ValPtr First() const noexcept
+            {
+                return *_block;
+            }
+            const ValPtr Last() const noexcept
+            {
+                return First() + BlockSize;
+            }
+            void Increment()
+            {
+                _current++;
+                if (Last() == _current) {
+                    ++_block;
+                    _current = First();
+                }
+            }
+            void Decrement()
+            {
+                if (First() == _current) {
+                    --_block;
+                    _current =  First() + BlockSize;
+                }
+                --_current;
+            }
+        };
+
+/***********************************************************************************/    
+/***********************************************************************************/    
+/**********************  mf_vector Implementation  *********************************/    
+/***********************************************************************************/    
+/***********************************************************************************/    
+
+
         using value_type        = T;
         using reference         = T&;
         using pointer           = T*;
@@ -319,8 +307,8 @@ namespace frystl
         using size_type         = size_t;
         using this_type         = mf_vector;
 
-        using iterator                  = MFV_Iterator<T, false>;
-        using const_iterator            = MFV_Iterator<T, true>;
+        using iterator                  = MFV_Iterator<false>;
+        using const_iterator            = MFV_Iterator<true>;
         using reverse_iterator          = std::reverse_iterator<iterator>;
         using const_reverse_iterator    = std::reverse_iterator<const_iterator>;
 
@@ -366,7 +354,7 @@ namespace frystl
                 push_back(value);
         }
         // Move constructors
-        mf_vector(mf_vector&& other)
+        mf_vector(mf_vector&& other) noexcept
             : mf_vector()
         {
             swap(other);
@@ -452,7 +440,7 @@ namespace frystl
             iterator e = end() - 1;
             _size -= 1;
             Destroy(e.operator->());
-            if (e._first == e._current)
+            if (*e._block == e._current)
                 Shrink();
         }
         reference back() noexcept
@@ -468,12 +456,12 @@ namespace frystl
         reference front() noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
-            return **_blocks.data();
+            return *_blocks.front();
         }
         const_reference front() const noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::front() on empty vector");
-            return **_blocks.data();
+            return *_blocks.front();
         }
 
         reference at(size_type index)
@@ -498,17 +486,16 @@ namespace frystl
         }
         iterator erase(const_iterator first, const_iterator last) noexcept
         {
-            iterator f = MakeIterator(first);
             // Requires: begin()<=first && first<=last && last<=end()
-            if (first < last)
-            {
-                iterator l = MakeIterator(last);
-                for (iterator it = f; it < l; ++it)
-                    Destroy(it._current);
-                std::move(l, end(), f);
-                _size -= last - first;
-                Shrink();
-            }
+            FRYSTL_ASSERT2(!(last < first), "bad args to mf_vector::erase");
+            iterator f = MakeIterator(first);
+            iterator l = MakeIterator(last);
+            for (iterator it = f; it < l; ++it)
+                Destroy(it._current);
+            std::move(l, end(), f);
+            _size -= last - first;
+
+            Shrink();
             return f;
         }
         iterator erase(const_iterator position) noexcept
@@ -538,36 +525,35 @@ namespace frystl
             for (InputIterator k = begin; k != end; ++k)
                 push_back(*k);
         }
-        mf_vector& operator=(const mf_vector& other) noexcept
+        mf_vector& operator=(const mf_vector& other) 
         {
-            if (this != &other)
-                assign(other.begin(), other.end());
+            mf_vector tmp(other);
+            swap(tmp);
             return *this;
         }
         mf_vector& operator=(mf_vector&& other) noexcept
         {
-            if (this != &other)
-            {
-                clear();
-                swap(other);
-            }
+            if (this == &other) return *this;
+            clear();
+            swap(other);
             return *this;
         }
         template <unsigned B, size_t N>
-        mf_vector& operator=(mf_vector<T, B, N>&& other) noexcept
+        mf_vector& operator=(mf_vector<T, B, N>&& other) 
         {
             mf_vector* pOther = reinterpret_cast<mf_vector*>(&other);
             if (this != pOther)
             {
-                clear();
                 if (block_size() == pOther->block_size()) {
+                    clear();
                     swap(*pOther);
                 }
                 else {
+                    mf_vector tmp;
                     for (auto& val : other) {
-                        push_back(std::move(val));
+                        tmp.emplace_back(std::move(val));
                     }
-                    other.clear();
+                    swap(tmp);
                 }
             }
             return *this;
@@ -612,8 +598,7 @@ namespace frystl
                     push_back(*first++);
                 }
             } catch (...){
-                _size = oldSize;
-                Shrink();
+                while (oldSize < _size) pop_back();
                 throw;
             }
             std::rotate(begin()+posIndex, begin()+oldSize, end());
@@ -695,7 +680,7 @@ namespace frystl
         {
             return const_reverse_iterator(cbegin());
         }
-        void swap(mf_vector& other)
+        void swap(mf_vector& other) noexcept
         {
             std::swap(_blocks, other._blocks);
             std::swap(_size, other._size);
@@ -722,11 +707,11 @@ namespace frystl
         void Grow(size_type newSize)
         {
             try {
+                auto final = _blocks.back();
                 while ((_blocks.size() - 1) * _blockSize < newSize)
                 {
-                    pointer b = reinterpret_cast<pointer>(new storage_type[_blockSize]);
-                    _blocks.push_back(_blocks.back());
-                    *(_blocks.end() - 2) = b;
+                    _blocks.back() = reinterpret_cast<pointer>(new storage_type[_blockSize]);
+                    _blocks.push_back(final);
                 }
             }
             catch (...) {
@@ -773,13 +758,12 @@ namespace frystl
         iterator Begin() const noexcept
         {
             // MFV_Iterator(pointer* block, pointer first, pointer last, pointer current)
-            pointer* b = const_cast<pointer*>(_blocks.data());
-            return iterator(b, *b, *b + BlockSize, *b);
+            auto b = const_cast<pointer*>(_blocks.data());
+            return iterator(b, *b);
         }
         iterator End() const noexcept
         {
-            pointer* e = const_cast<pointer*>(_blocks.data() + _size / BlockSize);
-            return iterator(e, *e, *e + BlockSize, *e + _size % BlockSize);
+            return Begin()+_size;
         }
         static void Verify(bool cond)
         {
@@ -790,8 +774,6 @@ namespace frystl
         {
             return iterator(
                 const_cast<pointer*>(ci._block), 
-                const_cast<pointer>(ci._first),
-                const_cast<pointer>(ci._last),
                 const_cast<pointer>(ci._current));
         }
     }; // template class mf_vector
@@ -799,39 +781,39 @@ namespace frystl
     //*******  Non-member overloads
     //
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator==(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator==(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator!=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator!=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(rhs == lhs);
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator<(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator<(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator<=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator<=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(rhs < lhs);
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator>(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator>(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return rhs < lhs;
     }
     template <class T, unsigned B1, unsigned B2, size_t N1, size_t N2>
-    bool operator>=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs)
+    bool operator>=(const mf_vector<T, B1, N1>& lhs, const mf_vector<T, B2, N2>& rhs) noexcept
     {
         return !(lhs < rhs);
     }
     template <class T, unsigned BS, size_t NB0, size_t NB1>
-    void swap(mf_vector<T, BS, NB0>& a, mf_vector<T, BS, NB1>& b)
+    void swap(mf_vector<T, BS, NB0>& a, mf_vector<T, BS, NB1>& b) noexcept
     {
         a.swap(b);
     }

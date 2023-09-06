@@ -43,10 +43,10 @@ SOFTWARE.
 
 namespace frystl
 {
-
     template <class T, uint32_t Capacity>
-    struct static_vector
+    class static_vector
     {
+    public:
         using this_type = static_vector<T, Capacity>;
         using value_type = T;
         using size_type = uint32_t;
@@ -62,13 +62,11 @@ namespace frystl
         //
         //******* Public member functions:
         //
-        static_vector() : _size(0) {}
-        ~static_vector() { clear(); }
+        static_vector() noexcept : _size(0) {} 
+        ~static_vector() noexcept { clear(); } 
         // copy constructors
         static_vector(const this_type &donor) : _size(0)
         {
-            FRYSTL_ASSERT2(donor.size() <= Capacity,
-                    "static_vector: construction from a too-large object");
             for (auto &m : donor)
                 push_back(m);
         }
@@ -85,7 +83,7 @@ namespace frystl
         // the existing static_vector.  It leaves the moved-from object
         // empty.
         template <unsigned C1>
-        static_vector(static_vector<T, C1> &&donor) : _size(0)
+        static_vector(static_vector<T, C1> &&donor) noexcept : _size(0)
         {
             FRYSTL_ASSERT2(donor.size() <= Capacity,
                     "static_vector: overflow on move construction");
@@ -143,7 +141,7 @@ namespace frystl
         }
         // Copy operator=.
         template <unsigned C2>
-        this_type &operator=(static_vector<T,C2> &other) noexcept
+        this_type &operator=(static_vector<T,C2> &other) 
         {
             if (data() != other.data()) {
                 assign(other.begin(), other.end());
@@ -181,7 +179,7 @@ namespace frystl
             Verify(i < _size);
             return data()[i];
         }
-        reference operator[](size_type i)
+        reference operator[](size_type i) noexcept
         {
             FRYSTL_ASSERT2(i < _size,"static_vector: index out of range");
             return data()[i];
@@ -191,13 +189,21 @@ namespace frystl
             Verify(i < _size);
             return data()[i];
         }
-        const_reference operator[](size_type i) const
+        const_reference operator[](size_type i) const noexcept
         {
             FRYSTL_ASSERT2(i < _size,"static_vector: index out of range");
             return data()[i];
         }
-        reference back() noexcept { return data()[_size - 1]; }
-        const_reference back() const noexcept { return data()[_size - 1]; }
+        reference back() noexcept 
+        { 
+            FRYSTL_ASSERT2(_size,"back() called on empty static_vector");
+            return data()[_size - 1]; 
+        }
+        const_reference back() const noexcept 
+        { 
+            FRYSTL_ASSERT2(_size,"back() called on empty static_vector");
+            return data()[_size - 1]; 
+        }
         reference front() noexcept
         {
             FRYSTL_ASSERT2(_size,"front() called on empty static_vector");
@@ -230,21 +236,21 @@ namespace frystl
         constexpr std::size_t max_size() const noexcept { return Capacity; }
         size_type size() const noexcept { return _size; }
         bool empty() const noexcept { return _size == 0; }
-        void reserve(size_type n) { 
+        void reserve(size_type n) noexcept { 
             FRYSTL_ASSERT2(n <= capacity(), "static_vector::reserve() argument too large"); 
         }
-        void shrink_to_fit() {}
+        void shrink_to_fit() noexcept {}
         //
         //  Modifiers
         //
-        void pop_back()
+        void pop_back() noexcept
         {
             FRYSTL_ASSERT2(_size, "static_vector::pop_back() on empty vector");
             _size -= 1;
             Destroy(end());
         }
         void push_back(const T &cd) { emplace_back(cd); }
-        void push_back(T &&cd) { emplace_back(std::move(cd)); }
+        void push_back(T &&cd) noexcept { emplace_back(std::move(cd)); }
         void clear() noexcept
         {
             while (_size)
@@ -313,7 +319,7 @@ namespace frystl
             return p;
         }
         // move insert()
-        iterator insert(const_iterator position, value_type &&val)
+        iterator insert(const_iterator position, value_type &&val) noexcept
         {
             FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
             FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
@@ -414,7 +420,7 @@ namespace frystl
             while (size() < n)
                 emplace_back();
         }
-        void swap(this_type &x)
+        void swap(this_type &x) noexcept
         {
             std::swap(*this, x);
         }
@@ -433,7 +439,7 @@ namespace frystl
                 throw std::out_of_range("static_vector range error");
         }
         // Move cells at and to the right of p to the right by n spaces.
-        void MakeRoom(iterator p, size_type n)
+        void MakeRoom(iterator p, size_type n) noexcept
         {
             size_type nu = std::min(size_type(end() - p), n);
             // fill the uninitialized target cells by move construction
@@ -443,7 +449,7 @@ namespace frystl
             std::move_backward(p, end() - nu, end());
         }
         // returns true iff it-1 can be dereferenced.
-        bool GoodIter(const const_iterator &it)
+        bool GoodIter(const const_iterator &it) noexcept
         {
             return begin() < it && it <= end();
         }
@@ -463,40 +469,40 @@ namespace frystl
     //*******  Non-member overloads
     //
     template <class T, unsigned C0, unsigned C1>
-    bool operator==(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator==(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         if (lhs.size() != rhs.size())
             return false;
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator!=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator!=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         return !(rhs == lhs);
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator<(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator<(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator<=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator<=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         return !(rhs < lhs);
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator>(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator>(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         return rhs < lhs;
     }
     template <class T, unsigned C0, unsigned C1>
-    bool operator>=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs)
+    bool operator>=(const static_vector<T, C0> &lhs, const static_vector<T, C1> &rhs) noexcept
     {
         return !(lhs < rhs);
     }
 
     template <class T, unsigned C>
-    void swap(static_vector<T, C> &a, static_vector<T, C> &b)
+    void swap(static_vector<T, C> &a, static_vector<T, C> &b) noexcept
     {
         a.swap(b);
     }
