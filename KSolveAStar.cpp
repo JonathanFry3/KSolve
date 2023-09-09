@@ -293,8 +293,9 @@ void Worker(
             QMoves availableMoves = state.MakeAutoMoves();
 
             if (availableMoves.empty()) {
+                // This could be a dead end or a win.
                 if (state._game.GameOver()) {
-                    // We have a solution.  See if it is a new champion
+                    // We have a win.  See if it is a new champion
                     state.CheckForMinSolution();
                 }
             } else {
@@ -403,6 +404,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
     {
         size = _shared._fringe.size();
+        // Set offset to the index of the first non-empty leaf node stack, or size if all are empty.
         for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
 
         if (offset < size) {
@@ -439,7 +441,7 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
     }
 }
 
-// Make available moves until a branching node or an empty one is encountered.
+// Make available moves until a branching node or an childless one is encountered.
 // If more than one move is available but order will make no difference
 // (as when two aces are dealt face up), FilteredAvailableMoves() will
 // return them one at a time.
