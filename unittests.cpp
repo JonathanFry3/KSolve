@@ -208,6 +208,15 @@ bool operator==(const Game& a, const Game& b)
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
 
+static void Peek(const GameState& state)
+{
+	cerr << hex;
+	for (auto w : state._shorts){
+		cerr << w << ' ';
+	}
+	cerr << endl << dec;
+}
+
 std::minstd_rand rng;
 
 int main()
@@ -353,7 +362,6 @@ int main()
 	}
 	{
 		// Test GameState creation.
-
 		vector<string> deal102 {
 			"ct","s7","ck","d6","h3","dt","sk","h9","d2","s8","dq","c9","st",
 			"da","s9","ht","d5","hj","hq","s6","cj","h5","d7","c5","sq","c8",
@@ -393,6 +401,10 @@ int main()
 							cerr << Peek(prevGames[which]) << endl;
 							cerr << "Moves made<<<<<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(movesMade) << endl;
+							cerr << "Current GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							Peek(state);
+							cerr << "Previous GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+							Peek(states[which]);
 							assert(game == prevGames[which]);
 						}
 					} else {
@@ -404,15 +416,9 @@ int main()
 							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(prevGames[which]) << endl;
 							cerr << "Current GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-							for (auto w : state._part){
-								cerr << oct << w << ' ';
-							}
-							cerr << endl;
+							Peek(state);
 							cerr << "Previous GameState <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-							for (auto w : states[which]._part){
-								cerr << oct << w << ' ';
-							}
-							cerr << endl << dec;
+							Peek(states[which]);
 							assert (state == states[which]);
 						}
 					}

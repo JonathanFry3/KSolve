@@ -11,6 +11,7 @@
 #include "parallel_hashmap/phmap_base.h" 
 #include <mutex>
 #include <atomic>
+#include <algorithm>                    // for equal
 
 // A compact representation of the current game state.
 //
@@ -28,24 +29,21 @@
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
 struct GameState {
-    typedef std::uint_fast64_t PartType;
-    std::array<PartType,3> _part;
+    std::array<unsigned short,11> _shorts;
     GameState(const Game& game) noexcept;
     bool operator==(const GameState& other) const noexcept
     {
-        return _part[0] == other._part[0]
-            && _part[1] == other._part[1]
-            && _part[2] == other._part[2];
+        return std::equal(_shorts.begin(), _shorts.end(), other._shorts.begin());
     }
 };
 struct Hasher
 {
     size_t operator() (const GameState & gs) const noexcept
     {
-        return 	  gs._part[0]
-                ^ gs._part[1]
-                ^ gs._part[2]
-                ;
+        size_t result = (gs._shorts[0]<<8) | (gs._shorts[1]<<4) | (gs._shorts[2]);
+        for (unsigned i = 3; i < 11; ++i)
+            result = (result << 5) | gs._shorts[i];
+        return result;
     }
 };
 

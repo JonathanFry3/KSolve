@@ -31,19 +31,29 @@ GameState::GameState(const Game& game) noexcept
     // except for order are considered equal
     std::sort(tableauState.begin(),tableauState.end());
 
-    _part[0] =    GameState::PartType(tableauState[0])<<42
-                | GameState::PartType(tableauState[1])<<21
-                | GameState::PartType(tableauState[2]);
-    _part[1] =    GameState::PartType(tableauState[3])<<42
-                | GameState::PartType(tableauState[4])<<21
-                | GameState::PartType(tableauState[5]);
+    struct {
+        uint64_t _p0;
+        uint64_t _p1;
+        union {
+            uint64_t _p2:48;
+            unsigned short _p2_shorts[3];
+        };
+    } p;
+    p._p0  =    uint64_t(tableauState[0])<<42
+                | uint64_t(tableauState[1])<<21
+                | uint64_t(tableauState[2]);
+    p._p1  =    uint64_t(tableauState[3])<<42
+                | uint64_t(tableauState[4])<<21
+                | uint64_t(tableauState[5]);
     auto& f{game.Foundation()};
-    _part[2] =    GameState::PartType(tableauState[6])<<21
+    p._p2  =    uint64_t(tableauState[6])<<21
                 | game.StockPile().size()<<16
                 | f[0].size()<<12 
                 | f[1].size()<<8 
                 | f[2].size()<<4 
                 | f[3].size();
+    memcpy(_shorts.data(),&p._p0,16);
+    memcpy(_shorts.data()+8,&p._p2_shorts,6);
 }
 
 GameStateMemory::GameStateMemory()
