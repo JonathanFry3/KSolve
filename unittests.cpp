@@ -208,12 +208,10 @@ bool operator==(const Game& a, const Game& b)
 }
 bool operator!=(const Game& a, const Game& b) {return !(a==b);}
 
-static void Peek(const GameState& state)
+static void Peek(const GameState& st)
 {
 	cerr << hex;
-	for (auto w : state._shorts){
-		cerr << w << ' ';
-	}
+	cerr << st._part0 << st._part1 << st._part2 << st._moveCount;
 	cerr << endl << dec;
 }
 
@@ -388,7 +386,7 @@ int main()
 					game.MakeMove(move);
 					movesMade.push_back(move);
 					Validate(game);
-					GameState state(game);
+					GameState state(game,0);
 					auto pMatch = find(states.begin(),states.end(),state);
 					if (pMatch!=states.end()){
 						// state matches a previous GameState.  See if 

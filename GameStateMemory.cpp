@@ -3,7 +3,8 @@
 #include <algorithm>        // max
 #include "GameStateMemory.hpp"
 
-GameState::GameState(const Game& game) noexcept
+GameState::GameState(const Game& game, unsigned moveCount) noexcept
+    : _moveCount(moveCount)
 {
     typedef std::array<uint32_t,7> TabStateT;
     TabStateT tableauState;
@@ -31,29 +32,19 @@ GameState::GameState(const Game& game) noexcept
     // except for order are considered equal
     std::sort(tableauState.begin(),tableauState.end());
 
-    struct {
-        uint64_t _p0;
-        uint64_t _p1;
-        union {
-            uint64_t _p2:48;
-            unsigned short _p2_shorts[3];
-        };
-    } p;
-    p._p0  =    uint64_t(tableauState[0])<<42
-                | uint64_t(tableauState[1])<<21
-                | uint64_t(tableauState[2]);
-    p._p1  =    uint64_t(tableauState[3])<<42
-                | uint64_t(tableauState[4])<<21
-                | uint64_t(tableauState[5]);
+    _part0 =    GameState::PartType(tableauState[0])<<42
+                | GameState::PartType(tableauState[1])<<21
+                | GameState::PartType(tableauState[2]);
+    _part1 =    GameState::PartType(tableauState[3])<<42
+                | GameState::PartType(tableauState[4])<<21
+                | GameState::PartType(tableauState[5]);
     auto& f{game.Foundation()};
-    p._p2  =    uint64_t(tableauState[6])<<21
+    _part2 =    GameState::PartType(tableauState[6])<<21
                 | game.StockPile().size()<<16
                 | f[0].size()<<12 
                 | f[1].size()<<8 
                 | f[2].size()<<4 
                 | f[3].size();
-    memcpy(_shorts.data(),&p._p0,16);
-    memcpy(_shorts.data()+8,&p._p2_shorts,6);
 }
 
 GameStateMemory::GameStateMemory()
@@ -64,17 +55,20 @@ GameStateMemory::GameStateMemory()
 
 bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
 {
-    const GameState state{game};
+    const GameState newState{game,moveCount};
     bool valueChanged{false};
-    const bool isNewKey = _states.try_emplace_l(
-        state,						// key
-        [&](auto& keyValuePair) {	// run behind lock when key found
-            if (moveCount < keyValuePair.second) {
-                keyValuePair.second = moveCount;
+    const bool isOldKey = _states.lazy_emplace_l(
+        newState,						// key
+        [&](auto& oldState) {	// run behind lock when key found
+            if (moveCount < oldState._moveCount) {
+                oldState._moveCount = moveCount;
+                static_assert(sizeof(oldState) == 24);
                 valueChanged = true;
             }
         },
-        moveCount 					// c'tor run behind lock when key not found
+        [&](const MapType::constructor& ctor) {
+           ctor(newState);
+        }
     );
-    return isNewKey || valueChanged;
+    return !isOldKey || valueChanged;
 }

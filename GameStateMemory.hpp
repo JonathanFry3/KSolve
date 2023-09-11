@@ -11,7 +11,6 @@
 #include "parallel_hashmap/phmap_base.h" 
 #include <mutex>
 #include <atomic>
-#include <algorithm>                    // for equal
 
 // A compact representation of the current game state.
 //
@@ -29,33 +28,38 @@
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
 struct GameState {
-    std::array<unsigned short,11> _shorts;
-    GameState(const Game& game) noexcept;
+    typedef std::uint64_t PartType;
+    PartType _part0;
+    PartType _part1;
+    PartType _part2:48;
+    PartType _moveCount:16;
+    GameState(const Game& game, unsigned moveCount) noexcept;
     bool operator==(const GameState& other) const noexcept
     {
-        return std::equal(_shorts.begin(), _shorts.end(), other._shorts.begin());
+        return _part0 == other._part0
+            && _part1 == other._part1
+            && _part2 == other._part2;
     }
 };
 struct Hasher
 {
     size_t operator() (const GameState & gs) const noexcept
     {
-        size_t result = (gs._shorts[0]<<8) | (gs._shorts[1]<<4) | (gs._shorts[2]);
-        for (unsigned i = 3; i < 11; ++i)
-            result = (result << 5) | gs._shorts[i];
-        return result;
+        return 	  gs._part0
+                ^ gs._part1
+                ^ gs._part2
+                ;
     }
 };
 
 class GameStateMemory
 {
 private:
-    typedef phmap::parallel_flat_hash_map< 
+    typedef phmap::parallel_flat_hash_set< 
             GameState, 								// key type
-            unsigned short, 						// mapped type
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
-            phmap::priv::Allocator<phmap::priv::Pair<GameState,unsigned short> >, 
+            phmap::priv::Allocator<GameState >, 
             8U, 									// log2(n of submaps)
             std::mutex								// mutex type
         > MapType;
