@@ -57,17 +57,19 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
 {
     const GameState newState{game,moveCount};
     bool valueChanged{false};
-    const bool isOldKey = _states.lazy_emplace_l(
+    bool isOldKey(false);
+    _states.lazy_emplace_l(
         newState,						// key
         [&](auto& oldState) {	// run behind lock when key found
+            isOldKey = true;
             if (moveCount < oldState._moveCount) {
                 oldState._moveCount = moveCount;
                 static_assert(sizeof(oldState) == 24);
                 valueChanged = true;
             }
         },
-        [&](const MapType::constructor& ctor) {
-           ctor(newState);
+        [&](const MapType::constructor& ctor) { // key not found
+            ctor(newState);
         }
     );
     return !isOldKey || valueChanged;
