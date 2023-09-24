@@ -172,9 +172,8 @@ void Game::Deal()
         _tableau[iPile].SetUpCount(1);      // turn up the top card
         _kingSpaces += _tableau[iPile][0].Rank() == King;	// count kings at base
     }
-    // Deal last 24 cards to stock
-    for (auto jDeck = _deck.cend(); _stock.size() < 24;)
-        _stock.push_back(*--jDeck);
+    // Deal last 24 cards to stock, reversing order
+    _stock.assign(_deck.crbegin(), _deck.crbegin()+24);
 }
 
 void Game::MakeMove(Move mv) noexcept
@@ -232,6 +231,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
     const unsigned n = xmv.NCards();
     Pile& toPile = *_allPiles[to];
     Pile& fromPile = *_allPiles[from];
+    
     if (from == Stock || to == Stock)
         toPile.Draw(fromPile, n);
     else
@@ -245,26 +245,20 @@ void Game::MakeMove(const XMove & xmv) noexcept
     }
 }
 
+// Return true if all 52 cards are in the foundation
 bool Game::GameOver() const noexcept
 {
-    for (const auto & f: _foundation) {
-        if (f.size() < 13) return false;
-    }
-    return true;
+    return std::all_of(_foundation.cbegin(), _foundation.cend(),
+        [&] (auto const p) {return p.size() == 13;});
 }
 
 // Return the height of the shortest foundation pile
 unsigned Game::MinFoundationPileSize() const noexcept
 {
     const auto& fnd = _foundation;
-    unsigned result = fnd[0].size();
-    for (int ifnd = 1; ifnd < 4; ifnd+=1) {
-        const unsigned sz = fnd[ifnd].size();
-        if (sz < result) { 
-            result = sz;
-        }
-    }
-    return result;
+    return std::min_element(fnd.cbegin(), fnd.cend(), 
+        [&](auto& left, auto& right)
+        {return left.size() < right.size();})->size();
 }
 
 // If there are any available moves from waste, tableau, or

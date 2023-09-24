@@ -166,8 +166,7 @@ public:
         assert(n <= donor.size());
         for (auto p = donor.end()-n; p < donor.end(); ++p)
             emplace_back(std::move(*p));
-        auto newSize = donor.size() - n;
-        while (newSize < donor.size()) donor.pop_back();
+        donor.resize(donor.size() - n);
     }
     // If n > 0, move the last n cards in other to the end of 
     // this pile reversing order. 
@@ -270,10 +269,8 @@ unsigned MoveCount(const SeqType& moves) noexcept
 template <class SeqType>
 unsigned RecycleCount(const SeqType& moves) noexcept
 {
-    unsigned result = 0;
-    for (auto & move: moves)
-        result += move.Recycle();
-    return result;
+    return std::count_if(moves.cbegin(), moves.cend(), 
+        [&](const auto & p) {return p.Recycle();});
 }
 
 // Mix-in to make any sequence container an automatic move counter.
