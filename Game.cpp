@@ -8,7 +8,7 @@
 #include <random>
 
 const std::string suits("cdsh");
-const std::string ranks("a23456789tjqka");
+const std::string ranks("a23456789tjqk");
 
 
 static unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
