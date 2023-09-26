@@ -1,20 +1,20 @@
 WASTE    : 
 TABLEAU 1: 4D 
 TABLEAU 2: AD -4C
-TABLEAU 3: 5D -QH-4S
-TABLEAU 4: 6C -5C-8C-QS
-TABLEAU 5: 4H -9C-QC-TS-2H
-TABLEAU 6: KS -7C-8H-9S-9H-7H
-TABLEAU 7: JS -JH-KD-TD-7S-3C-JC
-STOCK    : -KC-2D-TH-AH-6D-3D-TC-AC-AS-3S-5S-2C-JD-6S-9D-8D-KH-3H-7D-5H-8S-6H-2S-QD
+TABLEAU 3: 5D -QS-4H
+TABLEAU 4: 6C -5C-8C-QH
+TABLEAU 5: 4S -9C-QC-TH-2S
+TABLEAU 6: KH -7C-8S-9H-9S-7S
+TABLEAU 7: JH -JS-KD-TD-7H-3C-JC
+STOCK    : -KC-2D-TS-AS-6D-3D-TC-AC-AH-3H-5H-2C-JD-6H-9D-8D-KS-3S-7D-5S-8H-6S-2H-QD
 CLUBS    : 
 DIAMONDS : 
 SPADES   : 
 HEARTS   : 
 Minimum Moves Needed: 83
 
-Minimal solution in 104 moves + 21 flips in 2 passes.
-Took 0.5803 sec. 1.025 million moves generated.
+Minimal solution in 101 moves + 21 flips in 1 pass.
+Took 0.4519 sec. 1.077 million moves generated.
 WASTE    : 
 TABLEAU 1: AH 
 TABLEAU 2: 4H -7D
@@ -31,7 +31,7 @@ HEARTS   :
 Minimum Moves Needed: 83
 
 Minimal solution in 109 moves + 21 flips in 1 pass.
-Took 0.6716 sec. 2.258 million moves generated.
+Took 0.6048 sec. 2.259 million moves generated.
 WASTE    : 
 TABLEAU 1: 3S 
 TABLEAU 2: 3H -TS
@@ -48,24 +48,24 @@ HEARTS   :
 Minimum Moves Needed: 81
 
 Minimal solution in 170 moves + 21 flips in 5 passes.
-Took 0.06081 sec. 0.1349 million moves generated.
+Took 0.06094 sec. 0.134 million moves generated.
 WASTE    : 
 TABLEAU 1: 4C 
-TABLEAU 2: JS -2H
-TABLEAU 3: 9D -6H-KS
-TABLEAU 4: QD -KC-7D-QS
-TABLEAU 5: 6C -8H-4H-3C-KH
-TABLEAU 6: 9S -5C-8S-8D-3H-7C
-TABLEAU 7: 7H -5S-9H-6S-4S-QC-TD
-STOCK    : -4D-AH-9C-TS-3D-TC-JH-6D-2D-TH-5D-3S-2C-KD-AD-7S-JD-JC-QH-AC-5H-2S-8C-AS
+TABLEAU 2: JH -2S
+TABLEAU 3: 9D -6S-KH
+TABLEAU 4: QD -KC-7D-QH
+TABLEAU 5: 6C -8S-4S-3C-KS
+TABLEAU 6: 9H -5C-8H-8D-3S-7C
+TABLEAU 7: 7S -5H-9S-6H-4H-QC-TD
+STOCK    : -4D-AS-9C-TH-3D-TC-JS-6D-2D-TS-5D-3H-2C-KD-AD-7H-JD-JC-QS-AC-5S-2H-8C-AH
 CLUBS    : 
 DIAMONDS : 
 SPADES   : 
 HEARTS   : 
 Minimum Moves Needed: 82
 
-Impossible.
-Took 0.3424 sec. 0.5774 million moves generated.
+Minimal solution in 111 moves + 21 flips in 2 passes.
+Took 0.541 sec. 1.563 million moves generated.
 WASTE    : 
 TABLEAU 1: 5C 
 TABLEAU 2: 9H -7H
@@ -82,4 +82,4 @@ HEARTS   :
 Minimum Moves Needed: 83
 
 Minimal solution in 115 moves + 21 flips in 2 passes.
-Took 15.15 sec. 32.39 million moves generated.
+Took 12.58 sec. 32.39 million moves generated.
