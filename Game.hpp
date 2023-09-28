@@ -37,11 +37,8 @@ enum SuitType : unsigned char
 class Card
 {
 private:
-    // "Major" here means spades or hearts, rather than clubs or diamonds. 
-    SuitType _suit {Clubs};
-    RankType _rank {Ace};
-    bool _isMajor {0};
-    bool _parity {0};
+    SuitType _suit:2;
+    RankType _rank:6;
 
 public:
     Card() = default;
@@ -49,28 +46,24 @@ public:
 
     Card(SuitType suit, RankType rank) : 
         _suit(suit),
-        _rank(rank),
-        _isMajor(suit>>1),
-        _parity((rank&1)^(suit&1))
+        _rank(rank)
         {}
 
     Card(unsigned value):
         _suit(SuitType(value/13)),
-        _rank(RankType(value%13)),
-        _isMajor(_suit>>1),
-        _parity((_rank&1)^(_suit&1))
+        _rank(RankType(value%13))
         {}
 
 
     SuitType Suit() const noexcept	    {return _suit;}
     RankType Rank() const noexcept	    {return _rank;}
-    bool IsMajor() const noexcept		{return _isMajor;}
+    bool IsMajor() const noexcept		{return _suit>>1;} // Hearts or spades
     bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
-                                        {return _parity;}
+                                        {return (_rank&1)^(_suit&1);}
     unsigned Value() const noexcept		{return 13*_suit+_rank;}
     std::string AsString() const;       // Returns a string like "ha" or "d2"
     bool Covers(Card c) const noexcept	// can this card be moved onto c on a tableau pile?
-                                        {return _parity == c._parity && _rank+1 == c._rank;}
+                                        {return _rank+1 == c._rank && OddRed() == c.OddRed();}
     bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 
@@ -83,7 +76,7 @@ public:
     static std::pair<bool,Card> FromString(const std::string& s) noexcept;
 };
 
-static_assert(sizeof(Card) == 4, "Card must be 4 bytes long");
+static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
 typedef frystl::static_vector<Card,24> PileVec;
