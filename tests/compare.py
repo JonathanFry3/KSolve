@@ -1,22 +1,15 @@
 import pandas as pd
 import os
 import sys
-print("Comparing", sys.argv[1], "with", sys.argv[2])
-base = pd.read_csv(sys.argv[1], sep="\t")
-test = pd.read_csv(sys.argv[2], sep="\t")
+# print("Comparing", sys.argv[1], "with", sys.argv[2])
+# base = pd.read_csv(sys.argv[1], sep="\t")
+# test = pd.read_csv(sys.argv[2], sep="\t")
+base = pd.read_csv("tests/base10000.txt", sep="\t")
+test = pd.read_csv("tests/test100.txt", sep="\t")
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]
-solvesPlus = basex["outcome"].isin([2,3,4]) & test["outcome"].isin([0,1])
-print(" Solves+:",list(test.row[solvesPlus]))
-solvesMinus = basex["outcome"].isin([0,1]) & test["outcome"].isin([2,3,4])
-print(" Solves-:",list(test.row[solvesMinus]))
-imposPlusGood = filter(lambda i: (basex.outcome[i] == 3) and (test.outcome[i] == 2), indexes)
-print("Imposs++:",list(test.row[imposPlusGood]))
-imposPlusBad = filter(lambda i: (basex.outcome[i] <= 1) and (test.outcome[i] == 2), indexes)
-print("Imposs+-:",list(test.row[imposPlusBad]))
-imposMinus = filter(lambda i: (basex.outcome[i] == 2) and (test.outcome[i] != 2), indexes)
-print(" Imposs-:",list(test.row[imposMinus]))
+print(pd.crosstab(index=basex["outcome"],columns=test["outcome"],rownames=["Base"], colnames=["Test"]))
 movesPlus = basex["outcome"].isin([0,1]) & test["outcome"].isin([0,1]) \
         & (test["moves"] > basex["moves"])
 print("  Moves+:",list(test.row[movesPlus]))
