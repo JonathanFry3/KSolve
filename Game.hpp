@@ -115,8 +115,10 @@ enum PileCodeType : unsigned char{
     Foundation1C = FoundationBase,
     Foundation2D,
     Foundation3S,
-    Foundation4H
+    Foundation4H,
+    PileCount = 13
 };
+
 static_assert(Stock == PileCodeType(TableauBase+7));
 
 static bool IsTableau(PileCodeType pile) noexcept
@@ -124,7 +126,7 @@ static bool IsTableau(PileCodeType pile) noexcept
     return TableauBase <= pile && pile < TableauBase+7;
 }
 
-class Pile : public PileVec
+class alignas(32) Pile : public PileVec
 {
 private:
     PileCodeType _code;
@@ -369,17 +371,16 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 class Game
 {
 private:
-    const CardDeck _deck;
     Pile _waste;
-    Pile _stock;
-    unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
-    unsigned _talonLookAheadLimit;
-    unsigned _recycleLimit;             // max number of recycles allowed
-    unsigned _recycleCount;             // n of recycles so far
-    unsigned _kingSpaces;
     std::array<Pile,7> _tableau;
+    Pile _stock;
     std::array<Pile,4> _foundation;
-    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCodeType
+    unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
+    unsigned char _talonLookAheadLimit;
+    unsigned char _recycleLimit;            // max number of recycles allowed
+    unsigned char _recycleCount;            // n of recycles so far
+    unsigned char _kingSpaces;
+    const CardDeck _deck;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
@@ -395,22 +396,26 @@ public:
          unsigned recyleLimit=-1);
     Game(const Game&);
 
-    Pile& WastePile()       						{return _waste;}
-    Pile& StockPile()       						{return _stock;}
-    std::array<Pile,4>& Foundation()   				{return _foundation;}
-    std::array<Pile,7>& Tableau()      				{return _tableau;}
-    std::array<Pile*,13>& AllPiles()     			{return _allPiles;}
-    const Pile & WastePile() const     				{return _waste;}
-    const Pile & StockPile() const     				{return _stock;}
-    const std::array<Pile,4>& Foundation() const   	{return _foundation;}
-    const std::array<Pile,7>& Tableau() const      	{return _tableau;}
-    const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
-    unsigned DrawSetting() const            		{return _drawSetting;}
-    unsigned TalonLookAheadLimit() const			{return _talonLookAheadLimit;}
-    unsigned RecycleLimit() const                   {return _recycleLimit;}
-    unsigned RecycleCount() const                   {return _recycleCount;}
+    Pile& WastePile()       						        {return _waste;}
+    std::array<Pile,7>& Tableau()      				        {return _tableau;}
+    Pile& StockPile()       						        {return _stock;}
+    std::array<Pile,4>& Foundation()   				        {return _foundation;}
+    const Pile & WastePile() const noexcept    				{return _waste;}
+    const Pile & StockPile() const noexcept    				{return _stock;}
+    const std::array<Pile,4>& Foundation() const  noexcept  {return _foundation;}
+    const std::array<Pile,7>& Tableau() const noexcept      {return _tableau;}
+    std::array<Pile,13>& AllPiles() {
+        return *reinterpret_cast<std::array<Pile,13>* >(&_waste);
+    }
+    const std::array<Pile,13>& AllPiles() const {
+        return *reinterpret_cast<const std::array<Pile,13>* >(&_waste);
+    }
+    unsigned DrawSetting() const noexcept            		{return _drawSetting;}
+    unsigned TalonLookAheadLimit() const noexcept			{return _talonLookAheadLimit;}
+    unsigned RecycleLimit() const noexcept                  {return _recycleLimit;}
+    unsigned RecycleCount() const noexcept                  {return _recycleCount;}
 
-    void        Deal();
+    void        Deal() noexcept;
     QMoves      AvailableMoves() const noexcept;
     void        MakeMove(Move mv) noexcept;
     void        UnMakeMove(Move mv) noexcept;

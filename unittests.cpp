@@ -59,9 +59,9 @@ static void PrintPile(const Pile & pile)
 static void PrintGame(const Game& game) 
 {
 	cout << endl;
-	for (auto ip = game.AllPiles().begin(); ip <game.AllPiles().end(); ++ip )
+	for (const auto& ip: game.AllPiles() )
 	{
-		PrintPile(**ip);
+		PrintPile(ip);
 	}
 }
 
@@ -77,8 +77,8 @@ static void Validate(const Game & game)
 {
 	// See if we have 52 cards
 	unsigned nCards = 0;
-	for (auto ip = game.AllPiles().begin(); ip < game.AllPiles().end(); ++ip)	{
-		nCards += (*ip)->size();
+	for (const auto& ip : game.AllPiles())	{
+		nCards += ip.size();
 	}
 	assert(nCards == 52);
 
