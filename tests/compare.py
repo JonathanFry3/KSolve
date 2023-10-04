@@ -1,11 +1,12 @@
 import pandas as pd
 import os
 import sys
-# print("Comparing", sys.argv[1], "with", sys.argv[2])
-# base = pd.read_csv(sys.argv[1], sep="\t")
-# test = pd.read_csv(sys.argv[2], sep="\t")
-base = pd.read_csv("tests/base10000.txt", sep="\t")
-test = pd.read_csv("tests/test100.txt", sep="\t")
+print ("")
+print("Comparing", sys.argv[1], "with", sys.argv[2])
+base = pd.read_csv(sys.argv[1], sep="\t")
+test = pd.read_csv(sys.argv[2], sep="\t")
+# base = pd.read_csv("tests/base10000.txt", sep="\t")
+# test = pd.read_csv("tests/test100.txt", sep="\t")
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]
