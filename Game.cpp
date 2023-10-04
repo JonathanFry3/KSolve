@@ -117,15 +117,6 @@ CardDeck NumberedDeal(uint32_t seed)
     return deck;
 }
 
-static void SetAllPiles(Game& game)
-{
-    auto & allPiles = game.AllPiles();
-    allPiles[Waste] = &game.WastePile();
-    allPiles[Stock] = &game.StockPile();
-    for (int ip = 0; ip < 4; ip+=1) allPiles[FoundationBase+ip] = &game.Foundation()[ip];
-    for (int ip = 0; ip < 7; ip+=1) allPiles[TableauBase+ip] = &game.Tableau()[ip];
-}
-
 Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned recycleLimit)
     : _deck(deck)
     , _waste(Waste)
@@ -136,7 +127,6 @@ Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned rec
     , _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
     , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
 {
-    SetAllPiles(*this);
     Deal();
 }
 Game::Game(const Game& orig)
@@ -150,19 +140,17 @@ Game::Game(const Game& orig)
     , _kingSpaces(orig._kingSpaces)
     , _tableau(orig._tableau)
     , _foundation(orig._foundation)
-    {
-        SetAllPiles(*this);
-    }
+    {}
 
 // Deal the cards for Klondike Solitaire.
-void Game::Deal()
+void Game::Deal() noexcept
 {
     assert(_deck.size() == 52);
     _kingSpaces = 0;
     _recycleCount = 0;
 
-    for (auto pile: _allPiles)	{
-        pile->ClearCards();
+    for (auto& pile: AllPiles())	{
+        pile.ClearCards();
     }
     // Deal 28 cards to the tableau
     auto iDeck = _deck.cbegin();
@@ -179,7 +167,7 @@ void Game::Deal()
 void Game::MakeMove(Move mv) noexcept
 {
     const auto to = mv.To();
-    Pile& toPile = *_allPiles[to];
+    Pile& toPile = AllPiles()[to];
     if (mv.IsTalonMove()) {
         _waste.Draw(_stock,mv.DrawCount());
         toPile.Push(_waste.Pop());
@@ -187,7 +175,7 @@ void Game::MakeMove(Move mv) noexcept
         _recycleCount += mv.Recycle();
     } else {
         const auto n = mv.NCards();
-        Pile& fromPile = *_allPiles[mv.From()];
+        Pile& fromPile = AllPiles()[mv.From()];
         toPile.Take(fromPile, n);
         // For tableau piles, UpCount counts face-up cards.  
         // For other piles, it is undefined.
@@ -206,7 +194,7 @@ void Game::MakeMove(Move mv) noexcept
 void  Game::UnMakeMove(Move mv) noexcept
 {
     const auto to = mv.To();
-    Pile & toPile = *_allPiles[to];
+    Pile & toPile = AllPiles()[to];
     if (mv.IsTalonMove()) {
         _waste.Push(toPile.Pop());
         toPile.IncrUpCount(-1);
@@ -214,7 +202,7 @@ void  Game::UnMakeMove(Move mv) noexcept
         if (mv.Recycle()) _recycleCount -= 1;
     } else {
         const auto n = mv.NCards();
-        Pile & fromPile = *_allPiles[mv.From()];
+        Pile & fromPile = AllPiles()[mv.From()];
         if (fromPile.IsTableau()) {
             _kingSpaces -= fromPile.empty();  // uncount newly cleared columns
             fromPile.SetUpCount(mv.FromUpCount());
@@ -229,8 +217,8 @@ void Game::MakeMove(const XMove & xmv) noexcept
     const auto from = xmv.From();
     const auto to = xmv.To();
     const unsigned n = xmv.NCards();
-    Pile& toPile = *_allPiles[to];
-    Pile& fromPile = *_allPiles[from];
+    Pile& toPile = AllPiles()[to];
+    Pile& fromPile = AllPiles()[from];
     
     if (from == Stock || to == Stock)
         toPile.Draw(fromPile, n);
@@ -275,22 +263,22 @@ void Game::OneMoveToShortFoundationPile(
     QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
     const auto & fnd = Foundation();
-    const auto & _allPiles = AllPiles();
     // Loop over Waste, all Tableau piles, and Stock if DrawSetting()==1
-    unsigned end = (_drawSetting==1) ? Stock : Stock-1;
-    for (unsigned iPile = Waste; iPile<=end && moves.empty(); iPile++) {
-        const Pile &pile = *_allPiles[iPile] ;
+    const auto end = AllPiles().begin() + ((_drawSetting==1) ? Stock : Stock-1);
+    for (auto iPile = AllPiles().begin()+Waste; iPile<=end && moves.empty(); ++iPile) {
+        const Pile &pile = *iPile;
         if (pile.size()) {
             const Card& card = pile.back();
             const SuitType suit = card.Suit();
             if (card.Rank() <= minFoundationSize+1 
                 && fnd[suit].size() == card.Rank()) {
-                if (iPile == Stock) {
+                PileCodeType pileCode = pile.Code();
+                if (pileCode == Stock) {
                     // Talon move: draw one card, move it to foundation
                     moves.emplace_back(PileCodeType(FoundationBase+suit),2,1);
                 } else {
-                    const unsigned up = (iPile == Waste) ? 0 : pile.UpCount();
-                    moves.emplace_back(PileCodeType(iPile),PileCodeType(FoundationBase+suit),1,up);
+                    const unsigned up = (pileCode == Waste) ? 0 : pile.UpCount();
+                    moves.emplace_back(pileCode,PileCodeType(FoundationBase+suit),1,up);
                 }
             }
         }
@@ -620,11 +608,11 @@ static bool Valid(const Game& gm,
                   unsigned to, 
                   unsigned nCardsToMove)
 {
-    if (from >= gm.AllPiles().size()) return false;
-    if (to >= gm.AllPiles().size()) return false;
+    if (from >= PileCount) return false;
+    if (to >= PileCount) return false;
     if (nCardsToMove == 0 || nCardsToMove > 24) return false;
-    const Pile& fromPile = *gm.AllPiles()[from];
-    const Pile& toPile = *gm.AllPiles()[to];
+    const Pile& fromPile = gm.AllPiles()[from];
+    const Pile& toPile = gm.AllPiles()[to];
     if (nCardsToMove > fromPile.size()) return false;
     Card coverCard = *(fromPile.end()-nCardsToMove);
     if (toPile.IsTableau()) {
@@ -793,8 +781,8 @@ std::string Peek (const Game&game)
 {
     std::stringstream out;
     const auto & piles = game.AllPiles();
-    for (const auto pile: piles){
-        out << Peek(*pile) << "\n";
+    for (const auto& pile: piles){
+        out << Peek(pile) << "\n";
     } 
     return out.str();
 }

@@ -37,11 +37,8 @@ enum SuitType : unsigned char
 class Card
 {
 private:
-    // "Major" here means spades or hearts, rather than clubs or diamonds. 
-    SuitType _suit {Clubs};
-    RankType _rank {Ace};
-    bool _isMajor {0};
-    bool _parity {0};
+    SuitType _suit:2;
+    RankType _rank:6;
 
 public:
     Card() = default;
@@ -49,28 +46,24 @@ public:
 
     Card(SuitType suit, RankType rank) : 
         _suit(suit),
-        _rank(rank),
-        _isMajor(suit>>1),
-        _parity((rank&1)^(suit&1))
+        _rank(rank)
         {}
 
     Card(unsigned value):
         _suit(SuitType(value/13)),
-        _rank(RankType(value%13)),
-        _isMajor(_suit>>1),
-        _parity((_rank&1)^(_suit&1))
+        _rank(RankType(value%13))
         {}
 
 
     SuitType Suit() const noexcept	    {return _suit;}
     RankType Rank() const noexcept	    {return _rank;}
-    bool IsMajor() const noexcept		{return _isMajor;}
+    bool IsMajor() const noexcept		{return _suit>>1;} // Hearts or spades
     bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
-                                        {return _parity;}
+                                        {return (_rank&1)^(_suit&1);}
     unsigned Value() const noexcept		{return 13*_suit+_rank;}
     std::string AsString() const;       // Returns a string like "ha" or "d2"
     bool Covers(Card c) const noexcept	// can this card be moved onto c on a tableau pile?
-                                        {return _parity == c._parity && _rank+1 == c._rank;}
+                                        {return _rank+1 == c._rank && OddRed() == c.OddRed();}
     bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 
@@ -83,7 +76,7 @@ public:
     static std::pair<bool,Card> FromString(const std::string& s) noexcept;
 };
 
-static_assert(sizeof(Card) == 4, "Card must be 4 bytes long");
+static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
 typedef frystl::static_vector<Card,24> PileVec;
@@ -122,8 +115,10 @@ enum PileCodeType : unsigned char{
     Foundation1C = FoundationBase,
     Foundation2D,
     Foundation3S,
-    Foundation4H
+    Foundation4H,
+    PileCount = 13
 };
+
 static_assert(Stock == PileCodeType(TableauBase+7));
 
 static bool IsTableau(PileCodeType pile) noexcept
@@ -131,7 +126,7 @@ static bool IsTableau(PileCodeType pile) noexcept
     return TableauBase <= pile && pile < TableauBase+7;
 }
 
-class Pile : public PileVec
+class alignas(32) Pile : public PileVec
 {
 private:
     PileCodeType _code;
@@ -376,17 +371,16 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 class Game
 {
 private:
-    const CardDeck _deck;
     Pile _waste;
-    Pile _stock;
-    unsigned _drawSetting;             	// number of cards to draw from stock (usually 1 or 3)
-    unsigned _talonLookAheadLimit;
-    unsigned _recycleLimit;             // max number of recycles allowed
-    unsigned _recycleCount;             // n of recycles so far
-    unsigned _kingSpaces;
     std::array<Pile,7> _tableau;
+    Pile _stock;
     std::array<Pile,4> _foundation;
-    std::array<Pile *,13> _allPiles; 	// pile numbers from enum PileCodeType
+    unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
+    unsigned char _talonLookAheadLimit;
+    unsigned char _recycleLimit;            // max number of recycles allowed
+    unsigned char _recycleCount;            // n of recycles so far
+    unsigned char _kingSpaces;
+    const CardDeck _deck;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
@@ -402,22 +396,26 @@ public:
          unsigned recyleLimit=-1);
     Game(const Game&);
 
-    Pile& WastePile()       						{return _waste;}
-    Pile& StockPile()       						{return _stock;}
-    std::array<Pile,4>& Foundation()   				{return _foundation;}
-    std::array<Pile,7>& Tableau()      				{return _tableau;}
-    std::array<Pile*,13>& AllPiles()     			{return _allPiles;}
-    const Pile & WastePile() const     				{return _waste;}
-    const Pile & StockPile() const     				{return _stock;}
-    const std::array<Pile,4>& Foundation() const   	{return _foundation;}
-    const std::array<Pile,7>& Tableau() const      	{return _tableau;}
-    const std::array<Pile*,13>& AllPiles() const   	{return _allPiles;}
-    unsigned DrawSetting() const            		{return _drawSetting;}
-    unsigned TalonLookAheadLimit() const			{return _talonLookAheadLimit;}
-    unsigned RecycleLimit() const                   {return _recycleLimit;}
-    unsigned RecycleCount() const                   {return _recycleCount;}
+    Pile& WastePile()       						        {return _waste;}
+    std::array<Pile,7>& Tableau()      				        {return _tableau;}
+    Pile& StockPile()       						        {return _stock;}
+    std::array<Pile,4>& Foundation()   				        {return _foundation;}
+    const Pile & WastePile() const noexcept    				{return _waste;}
+    const Pile & StockPile() const noexcept    				{return _stock;}
+    const std::array<Pile,4>& Foundation() const  noexcept  {return _foundation;}
+    const std::array<Pile,7>& Tableau() const noexcept      {return _tableau;}
+    std::array<Pile,13>& AllPiles() {
+        return *reinterpret_cast<std::array<Pile,13>* >(&_waste);
+    }
+    const std::array<Pile,13>& AllPiles() const {
+        return *reinterpret_cast<const std::array<Pile,13>* >(&_waste);
+    }
+    unsigned DrawSetting() const noexcept            		{return _drawSetting;}
+    unsigned TalonLookAheadLimit() const noexcept			{return _talonLookAheadLimit;}
+    unsigned RecycleLimit() const noexcept                  {return _recycleLimit;}
+    unsigned RecycleCount() const noexcept                  {return _recycleCount;}
 
-    void        Deal();
+    void        Deal() noexcept;
     QMoves      AvailableMoves() const noexcept;
     void        MakeMove(Move mv) noexcept;
     void        UnMakeMove(Move mv) noexcept;

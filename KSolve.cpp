@@ -517,7 +517,7 @@ string GameDiagram(const Game& game) {
     };
     for (int i = 0; i < 13; i++) {
         ss << pilestring[i] << ": ";
-        Pile & p = *(game.AllPiles()[i]);
+        const Pile & p = game.AllPiles()[i];
         int downsize = p.size() - p.UpCount();
         for (int j = p.size() - 1; j >= 0; j--) {
             Card c = p[j];
@@ -550,7 +550,6 @@ char PFndString(const Game& game, unsigned suit)
 }
 string GameDiagramPysol(const Game& game) {
     stringstream ss;
-    auto piles(game.AllPiles());
     ss <<  "Foundations: H-" << PFndString(game,Hearts) 
                     << " C-" << PFndString(game,Clubs) 
                     << " D-" << PFndString(game,Diamonds) 
@@ -621,7 +620,7 @@ string GetMoveInfo(XMove move, const Game& game) {
         } else {
             ss << "Move ";
             if (xnum == 1) {
-                ss << CardString((*game.AllPiles()[xfrom]).back());
+                ss << CardString((game.AllPiles()[xfrom]).back());
             } else {
                 ss << xnum << " cards";
             }
