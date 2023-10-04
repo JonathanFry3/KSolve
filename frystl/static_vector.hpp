@@ -48,11 +48,10 @@ namespace frystl
     class static_vector
     {
     private:
-        using large_size_type = typename std::conditional< Capacity<=0xffff, uint16_t, uint32_t>::type;
     public:
         using this_type = static_vector<T, Capacity>;
         using value_type = T;
-        using size_type = typename std::conditional< Capacity<=0xff, uint8_t, large_size_type >::type;
+        using size_type = uint32_t;
         using difference_type = std::ptrdiff_t;
         using reference = value_type &;
         using const_reference = const value_type &;
