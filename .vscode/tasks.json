@@ -91,6 +91,33 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  clang++ build and run unittests",
+			"command": "clang++-17",
+			"args": [
+				"-DFRYSTL_DEBUG",
+				"-g",
+				"-pthread",
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"unittests.cpp",
+				"-o","${workspaceFolder}/unittests"
+				,"&&","./unittests"
+				,"||","echo","'<<<FAILED>>>'"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++:  g++ build ran",
 			"command": "g++",
 			"args": [
@@ -142,6 +169,36 @@
 				"isDefault": true
 			}
 		},		
+		{
+			"type": "shell",
+			"label": "C/C++:  clang build ran",
+			"command": "clang++-17",
+			"args": [
+				"-g",
+				"-pthread",
+			//	"-pg", "-O1",	// gprof profiling
+				"-O3",
+			//	"-O",			// for valgrind builds
+			//	"-DNDEBUG",		// comment out to activate assert()
+			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"ran.cpp",
+				"-o",
+				"${workspaceFolder}/ran"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
 		{
 			"type": "shell",
 			"label": "C/C++: cl.exe build unittests",
