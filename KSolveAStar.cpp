@@ -195,9 +195,7 @@ public:
         , _moveStorage(sharedMoveStorage)
         , _closedList(map)
         , _minSolution(solution)
-        {
-            k_blewMemory = false;
-        }
+        {}
     explicit WorkerState(const WorkerState& orig)
         : _game(orig._game)
         , _moveStorage(orig._moveStorage.Shared())
