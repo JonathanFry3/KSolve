@@ -329,7 +329,7 @@ int main()
     frystl::mf_vector<int,4> vi;
 
     for (int i: vi){
-        assert((false,"empty vector failed"));
+        assert((false && "empty vector failed"));
     }
     
     for (int i = 0; i<4; ++i) {
