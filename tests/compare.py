@@ -1,12 +1,17 @@
 import pandas as pd
 import os
 import sys
-print ("")
-print("Comparing", sys.argv[1], "with", sys.argv[2])
-base = pd.read_csv(sys.argv[1], sep="\t")
-test = pd.read_csv(sys.argv[2], sep="\t")
-# base = pd.read_csv("tests/base10000.txt", sep="\t")
-# test = pd.read_csv("tests/test100.txt", sep="\t")
+if len(sys.argv) == 3:
+        print ("")
+        print("Comparing", sys.argv[1], "with", sys.argv[2])
+        base = pd.read_csv(sys.argv[1], sep="\t")
+        test = pd.read_csv(sys.argv[2], sep="\t")
+elif len(sys.argv) == 1:
+        base = pd.read_csv("tests/base10000.txt", sep="\t")
+        test = pd.read_csv("tests/base10000.txt", sep="\t")
+else:
+        print("Expected two filenames or none.")
+        exit
 assert test.shape[0] <= base.shape[0]
 indexes = list(range(test.shape[0]))
 basex = base.loc[indexes]
