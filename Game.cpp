@@ -335,21 +335,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     // in the to pile, so a move is possible.
                     const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
                     assert(moveCount <= upCount);
-                    if (moveCount==upCount && (upCount<fromPile.size() || NeedKingSpace())){
-                        // This move will flip a face-down card or
-                        // clear a column that's needed for a king.
-                        // Move all the face-up cards on the from pile.
-                        assert(fromBase.Covers(cardToCover));
-                        moves.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
-                    } else if (moveCount < upCount || upCount < fromPile.size()) {
-                        const Card uncovered = *(fromPile.end()-moveCount-1);
-                        if (uncovered.Rank() == _foundation[uncovered.Suit()].size()){
-                            // This move will uncover a card that can be moved to 
-                            // its foundation pile.
-                            assert((fromPile.end()-moveCount)->Covers(cardToCover));
-                            moves.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
-                        }
-                    }
+                    moves.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
                 }
             }
         }

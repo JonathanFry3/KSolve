@@ -8,7 +8,7 @@ if len(sys.argv) == 3:
         test = pd.read_csv(sys.argv[2], sep="\t")
 elif len(sys.argv) == 1:
         base = pd.read_csv("tests/base10000.txt", sep="\t")
-        test = pd.read_csv("tests/base10000.txt", sep="\t")
+        test = pd.read_csv("tests/tests10.txt", sep="\t")
 else:
         print("Expected two filenames or none.")
         exit
