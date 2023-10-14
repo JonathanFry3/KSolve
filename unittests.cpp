@@ -328,7 +328,7 @@ int main()
 	// Test mf_vector
     frystl::mf_vector<int,4> vi;
 
-	assert((vi.size() == 0,"empty vector failed"));
+	assert((vi.empty() && "empty vector failed"));
     
     for (int i = 0; i<4; ++i) {
         vi.push_back(i);
