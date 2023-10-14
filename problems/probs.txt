@@ -33,7 +33,8 @@ dk d3 c2
 st c3 da h5
 s6 hj h3 ht cj 
 sq s7 cq c5 h2 ha
-c7 h7 c4 d8 s8 sj h6# 130 moves by KSolve, 129 on phone
+c7 h7 c4 d8 s8 sj h6
+# 130 moves by KSolve, 129 on phone
 naloT: hq s2 s9 d8 c7 h8 s7 s8 sk h9 c8 ct h6 c3 ha sj c9 s5 d9 s3 d4 h3 cj c4
 h4 
 s4 da
