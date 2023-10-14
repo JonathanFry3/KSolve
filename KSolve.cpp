@@ -54,7 +54,8 @@ CardDeck LoadDeck(string const& f, unsigned int & index) {
     int gameType = 0;
     int startIndex = index;
     if (f[index] == '#') {
-        while (index < f.size() && f[index++] != '\n') {}
+        while (index < f.size() && f[index++] != '\n') {cout << f[index];}
+        cout << endl;
         return deck;
     } else if (f[index] == 'T' || f[index] == 't' || f[index] == 'n') {
         bool reversed = f[index] == 'n';// Prefix is "Talon" for Pysol, "nolat" for reversed
