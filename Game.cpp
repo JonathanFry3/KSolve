@@ -262,7 +262,6 @@ unsigned Game::MinFoundationPileSize() const noexcept
 void Game::OneMoveToShortFoundationPile(
     QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
-    const auto & fnd = Foundation();
     // Loop over Waste, all Tableau piles, and Stock if DrawSetting()==1
     const auto end = AllPiles().begin() + ((_drawSetting==1) ? Stock : Stock-1);
     for (auto iPile = AllPiles().begin()+Waste; iPile<=end && moves.empty(); ++iPile) {
@@ -271,7 +270,7 @@ void Game::OneMoveToShortFoundationPile(
             const Card& card = pile.back();
             const SuitType suit = card.Suit();
             if (card.Rank() <= minFoundationSize+1 
-                && fnd[suit].size() == card.Rank()) {
+                && CanMoveToFoundation(card)) {
                 PileCodeType pileCode = pile.Code();
                 if (pileCode == Stock) {
                     // Talon move: draw one card, move it to foundation
@@ -297,8 +296,8 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         const auto upCount = fromPile.UpCount();
 
         // look for moves from tableau to foundation
-        const Pile& foundation = _foundation[fromTip.Suit()];
-        if (foundation.size() == fromTip.Rank()) {
+        if (CanMoveToFoundation(fromTip)) {
+            const Pile& foundation = _foundation[fromTip.Suit()];
             moves.emplace_back(fromPile.Code(),foundation.Code(),1,upCount);
         }
 
@@ -335,7 +334,21 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     // in the to pile, so a move is possible.
                     const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
                     assert(moveCount <= upCount);
-                    moves.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
+                    if (moveCount==upCount && (upCount<fromPile.size() || NeedKingSpace())){
+                        // This move will flip a face-down card or
+                        // clear a column that's needed for a king.
+                        // Move all the face-up cards on the from pile.
+                        assert(fromBase.Covers(cardToCover));
+                        moves.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
+                    } else if (moveCount < upCount || upCount < fromPile.size()) {
+                        const Card uncovered = *(fromPile.end()-moveCount-1);
+                        if (CanMoveToFoundation(uncovered)){
+                            // This move will uncover a card that can be moved to 
+                            // its foundation pile.
+                            assert((fromPile.end()-moveCount)->Covers(cardToCover));
+                            moves.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
+                        }
+                    }
                 }
             }
         }
@@ -461,13 +474,11 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         // and there are alternative moves.
         if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
-        const SuitType cardSuit = talonCard._card.Suit();
-        const RankType cardRank = talonCard._card.Rank();
         bool recycle = talonCard._recycle;
-        if (cardRank == _foundation[cardSuit].size()) {
-            const PileCodeType pileNo = PileCodeType(FoundationBase+cardSuit);
+        if (CanMoveToFoundation(talonCard._card)) {
+            const PileCodeType pileNo = PileCodeType(FoundationBase+talonCard._card.Suit());
             PushTalonMove(talonCard, pileNo, recycle, moves);
-            if (cardRank <= minFoundationSize+1){
+            if (talonCard._card.Rank() <= minFoundationSize+1){
                 if (_drawSetting == 1) {
                     if (moves.size() == 1) return true;
                     break;		// This is best next move from among the remaining talon cards
@@ -481,7 +492,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
                 if (talonCard._card.Covers(tPile.back())) {
                     PushTalonMove(talonCard, tPile.Code(), recycle, moves);
                 }
-            } else if (cardRank == King) {
+            } else if (talonCard._card.Rank() == King) {
                 PushTalonMove(talonCard, tPile.Code(), recycle, moves);
                 break;  // move that king to just one empty pile
             }

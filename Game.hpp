@@ -389,6 +389,10 @@ private:
     void MovesFromTableau(QMoves & moves) const noexcept;
     bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
+    bool CanMoveToFoundation(Card cd) const noexcept{
+        return cd.Rank() == Foundation()[cd.Suit()].size();
+    }
+    
 public:
     Game(CardDeck deck,
          unsigned draw=1,
