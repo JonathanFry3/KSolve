@@ -501,7 +501,7 @@ CardDeck SolitaireDeck(string const& cardSet) {
 }
 string GameDiagram(const Game& game) {
     stringstream ss;
-    vector<string> pilestring{
+    string pilestring[]{
         "WASTE    ",
         "TABLEAU 1",
         "TABLEAU 2",

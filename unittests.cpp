@@ -91,7 +91,7 @@ static void Validate(const Game & game)
 
 	// See if the face-up cards in the tableau are in proper stacks
 	const auto& tableau = game.Tableau();
-	for(unsigned i = 0; i < 7; ++i){
+	for(unsigned i = 0; i < TableauSize; ++i){
 		const Pile & tab = tableau[i];
 		assert(tab.UpCount() <= tab.size());
 		if (tab.UpCount() > 1){
@@ -194,11 +194,11 @@ bool operator==(const Game& a, const Game& b)
 	if (a.Foundation() != b.Foundation()) return false;
 	auto& taba = a.Tableau();
 	auto& tabb = b.Tableau();
-	for (unsigned i = 0; i < 7; ++i){
+	for (unsigned i = 0; i < TableauSize; ++i){
 		// Tableaus of two games are equivalent if their
 		// piles' cards and up counts are equal after rearrangement.
 		int found = -1;
-		for (unsigned j = 0; found == -1 && j < 7; ++j) {
+		for (unsigned j = 0; found == -1 && j < TableauSize; ++j) {
 			if (taba[i] == tabb[j]) found = j;
 		}
 		if (found == -1 || taba[i].UpCount() != tabb[found].UpCount()) 
@@ -279,7 +279,7 @@ int main()
 		PileVec svstock = sol.StockPile().Cards();
 		PileVec svwaste = sol.WastePile().Cards();
 		vector<PileVec> svtableau;
-		for (unsigned itab = 0; itab<7; ++itab){
+		for (unsigned itab = 0; itab<TableauSize; ++itab){
 			svtableau.push_back(sol.Tableau()[itab]);
 		}
 		unsigned nreps = 20;
@@ -296,7 +296,7 @@ int main()
 		}
 		assert (svstock == sol.StockPile().Cards());
 		assert (svwaste == sol.WastePile().Cards());
-		for (unsigned p = 0; p<7; ++p) {
+		for (unsigned p = 0; p<TableauSize; ++p) {
 			assert(sol.Tableau()[p] == svtableau[p]);
 		}
 		assert (FoundationCardCount(sol) == 0);

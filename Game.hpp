@@ -36,6 +36,7 @@ enum SuitType : unsigned char
 };
 enum {SuitsPerDeck = 4};
 enum {CardsPerDeck = CardsPerSuit*SuitsPerDeck};
+enum {TableauSize = 7};
 
 class Card
 {
@@ -113,7 +114,7 @@ enum PileCodeType : unsigned char{
     Tableau5,
     Tableau6,
     Tableau7,
-    Stock,       // must == TableauBase+7.  See OneMoveToShortFoundationPile
+    Stock,       // must == TableauBase+TableauSize.  See OneMoveToShortFoundationPile
     FoundationBase, // == 9
     Foundation1C = FoundationBase,
     Foundation2D,
@@ -122,11 +123,11 @@ enum PileCodeType : unsigned char{
     PileCount
 };
 
-static_assert(Stock == PileCodeType(TableauBase+7));
+static_assert(Stock == PileCodeType(TableauBase+TableauSize));
 
 static bool IsTableau(PileCodeType pile) noexcept
 {
-    return TableauBase <= pile && pile < TableauBase+7;
+    return TableauBase <= pile && pile < TableauBase+TableauSize;
 }
 
 class alignas(32) Pile : public PileVec
@@ -375,7 +376,7 @@ class Game
 {
 private:
     Pile _waste;
-    std::array<Pile,7> _tableau;
+    std::array<Pile,TableauSize> _tableau;
     Pile _stock;
     std::array<Pile,SuitsPerDeck> _foundation;
     unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
@@ -404,14 +405,14 @@ public:
     Game(const Game&);
 
     Pile& WastePile()       						        {return _waste;}
-    std::array<Pile,7>& Tableau()      				        {return _tableau;}
+    std::array<Pile,TableauSize>& Tableau()      				        {return _tableau;}
     Pile& StockPile()       						        {return _stock;}
     std::array<Pile,SuitsPerDeck>& Foundation()             {return _foundation;}
     const Pile & WastePile() const noexcept    				{return _waste;}
     const Pile & StockPile() const noexcept    				{return _stock;}
     const std::array<Pile,SuitsPerDeck>& Foundation() const noexcept  
                                                             {return _foundation;}
-    const std::array<Pile,7>& Tableau() const noexcept      {return _tableau;}
+    const std::array<Pile,TableauSize>& Tableau() const noexcept      {return _tableau;}
     std::array<Pile,PileCount>& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }

@@ -154,8 +154,8 @@ void Game::Deal() noexcept
     }
     // Deal 28 cards to the tableau
     auto iDeck = _deck.cbegin();
-    for (unsigned iPile = 0; iPile<7; iPile+=1) {
-        for (unsigned icd = iPile; icd < 7; ++icd)	
+    for (unsigned iPile = 0; iPile<TableauSize; iPile+=1) {
+        for (unsigned icd = iPile; icd < TableauSize; ++icd)	
             _tableau[icd].push_back(*iDeck++);
         _tableau[iPile].SetUpCount(1);      // turn up the top card
         _kingSpaces += _tableau[iPile][0].Rank() == King;	// count kings at base
@@ -649,8 +649,8 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
     unsigned stockSize = 24;
     unsigned wasteSize = 0;
     unsigned mvnum = 0;
-    std::array<unsigned char,7> upCount {1,1,1,1,1,1,1};
-    std::array<unsigned char,7> totalCount {1,2,3,4,5,6,7};
+    std::array<unsigned char,TableauSize> upCount {1,1,1,1,1,1,1};
+    std::array<unsigned char,TableauSize> totalCount {1,2,3,4,5,6,7};
     std::vector<XMove> result;
 
     for (auto mv : solution){

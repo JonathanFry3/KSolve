@@ -77,8 +77,8 @@ void WriteSolvitaireDeck(const CardDeck deck)
 {
     cout << "Klondike,1" << endl;
     unsigned iCard = 0;
-    for (unsigned iRow = 0; iRow < 7; ++iRow) {
-        for (unsigned iCol = iRow; iCol < 7; ++iCol) {
+    for (unsigned iRow = 0; iRow < TableauSize; ++iRow) {
+        for (unsigned iCol = iRow; iCol < TableauSize; ++iCol) {
             WriteSolvitaireCard(deck[iCard++]);
             cout << ",";
         }

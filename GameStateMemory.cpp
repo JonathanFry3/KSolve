@@ -6,10 +6,10 @@
 GameState::GameState(const Game& game, unsigned moveCount) noexcept
     : _moveCount(moveCount)
 {
-    typedef std::array<uint32_t,7> TabStateT;
+    typedef std::array<uint32_t,TableauSize> TabStateT;
     TabStateT tableauState;
     const auto& tableau = game.Tableau();
-    for (unsigned i = 0; i<7; ++i) {
+    for (unsigned i = 0; i<TableauSize; ++i) {
         const auto& cards = tableau[i];
         const unsigned upCount = cards.UpCount();
         if (upCount == 0) {
