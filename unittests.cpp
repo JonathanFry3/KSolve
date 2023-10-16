@@ -65,7 +65,7 @@ static void PrintGame(const Game& game)
 	}
 }
 
-static void CheckCards(const Pile & pile, array<bool,52>& present)
+static void CheckCards(const Pile & pile, array<bool,CardsPerDeck>& present)
 {
 	for (auto card: pile){
 		assert(!present[card.Value()]);
@@ -80,10 +80,10 @@ static void Validate(const Game & game)
 	for (const auto& ip : game.AllPiles())	{
 		nCards += ip.size();
 	}
-	assert(nCards == 52);
+	assert(nCards == CardsPerDeck);
 
 	// see if each card is present just once
-	array<bool,52> present{false*52};
+	array<bool,CardsPerDeck> present{false*CardsPerDeck};
 	CheckCards(game.StockPile(),present);
 	CheckCards(game.WastePile(),present);
 	for (auto& pile: game.Tableau()) CheckCards(pile,present);

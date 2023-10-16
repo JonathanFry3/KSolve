@@ -19,7 +19,7 @@ using namespace std;
 
 CardDeck PysolDeck(const string& s);
 CardDeck ReversedPysolDeck(const string& s);
-CardDeck DeckLoader(string const& cardSet, const int order[52]);
+CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]);
 CardDeck Shuffle1(int &seed);
 CardDeck SolitaireDeck(const string& s);
 string GameDiagram(const Game& game);
@@ -121,10 +121,10 @@ int main(int argc, char * argv[]) {
 // Check for the same card appearing twice in a deck. 
 // Prints an error message and returns true if that is found.
 class DuplicateCardChecker {
-    bool used[52];
+    bool used[CardsPerDeck];
 public:
     DuplicateCardChecker()
-        : used{false*52} {};
+        : used{false*CardsPerDeck} {};
 
     bool operator()(const Card & card)
     {
@@ -142,7 +142,7 @@ public:
     bool MissingCards()
     {
         bool result = false;
-        for (unsigned c = 0; c < 52; ++c) {
+        for (unsigned c = 0; c < CardsPerDeck; ++c) {
             if (!used[c])
             {
                 if (!result) cerr << "Missing";
@@ -171,7 +171,7 @@ CardDeck PysolDeck(string const& cardSet)
 {
     // Pysol expects the cards within each pile to be in the 
     // order they were dealt.
-    const int order[52] = { 
+    const int order[CardsPerDeck] = { 
         28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
         42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
         0, 
@@ -188,7 +188,7 @@ CardDeck ReversedPysolDeck(string const& cardSet)
 {
     // In ReversePysol, the cards in each pile are in the order
     // in which the player would discover them while playing.
-    const int order[52] = { 
+    const int order[CardsPerDeck] = { 
         28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
         42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
          0, 
@@ -201,15 +201,15 @@ CardDeck ReversedPysolDeck(string const& cardSet)
     return DeckLoader(cardSet, order);
 }
 
-CardDeck DeckLoader(string const& cardSet, const int order[52]) {
-    CardDeck result(52);
+CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]) {
+    CardDeck result(CardsPerDeck);
     DuplicateCardChecker dupchk;
     string eyeCandy{"<> \t\n\r:-"};
     unsigned int j = 7;  // skips "Talon: " or "nolaT: "
 
     int i;
     bool valid = true;
-    for (i = 0; i < 52 && j < cardSet.size(); i++) {
+    for (i = 0; i < CardsPerDeck && j < cardSet.size(); i++) {
         // skip over punctuation and white space
         while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
         if (j+1 < cardSet.size()){
@@ -253,11 +253,11 @@ CardDeck Shuffle1(int &dealNumber) {
     }
 
     CardDeck result;
-    for (int i = 0; i < 52; i++) { result.push_back(Card(i)); }
+    for (int i = 0; i < CardsPerDeck; i++) { result.push_back(Card(i)); }
 
     for (int x = 0; x < 269; ++x) {
-        int k = rng.Next1() % 52;
-        int j = rng.Next1() % 52;
+        int k = rng.Next1() % CardsPerDeck;
+        int j = rng.Next1() % CardsPerDeck;
         Card temp = result[k];
         result[k] = result[j];
         result[j] = temp;
@@ -306,13 +306,13 @@ CardDeck SolitaireDeck(string const& cardSet) {
     CardDeck result;
     CardDeck empty;
     DuplicateCardChecker dupchk;
-    result.reserve(52);
+    result.reserve(CardsPerDeck);
     if (cardSet.size() < 156) { 
         cerr << "Card string must be at least 156 bytes long.  This one is " 
                 << cardSet.size() << "bytes long." << endl;
         return empty;
     }
-    for (int i = 0; i < 52; i++) {
+    for (int i = 0; i < CardsPerDeck; i++) {
         string cardcode = cardSet.substr(i*3,3);
         char suitchar = cardcode[2];
         string rankstr = cardcode.substr(0,2);
@@ -320,7 +320,7 @@ CardDeck SolitaireDeck(string const& cardSet) {
         if (!('1'<=suitchar && suitchar<='4' 
              && '0'<=rankstr[0] && rankstr[0]<='1'
              && '0'<=rankstr[1] && rankstr[1]<='9'
-             && 1 <= (rank = stoi(rankstr)) && rank <= 13)){
+             && 1 <= (rank = stoi(rankstr)) && rank <= CardsPerSuit)){
             cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
             return empty;
         }

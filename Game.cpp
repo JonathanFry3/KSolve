@@ -90,7 +90,7 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
 // Results from std::shuffle() differ between g++ and MSVC
 static void Shuffle(CardDeck & deck, uint32_t seed)
 {
-    assert(deck.size() == 52);
+    assert(deck.size() == CardsPerDeck);
 
     // Create and seed a random number generator
     std::mt19937 engine;
@@ -100,7 +100,7 @@ static void Shuffle(CardDeck & deck, uint32_t seed)
     std::uniform_int_distribution<unsigned> distribution(0,51);
 
     // Swap each card with a randomly chosen card.
-    for (unsigned i = 0; i < 52; ++i) {
+    for (unsigned i = 0; i < CardsPerDeck; ++i) {
         std::swap(deck[i], deck[distribution(engine)]);
     }
 }
@@ -109,7 +109,7 @@ CardDeck NumberedDeal(uint32_t seed)
 {
     // Create a new sorted pack of cards
     CardDeck deck;
-    for (unsigned i = 0; i < 52; ++i){
+    for (unsigned i = 0; i < CardsPerDeck; ++i){
         deck.emplace_back(i);
     }
     // Randomly shuffle the deck
@@ -145,7 +145,7 @@ Game::Game(const Game& orig)
 // Deal the cards for Klondike Solitaire.
 void Game::Deal() noexcept
 {
-    assert(_deck.size() == 52);
+    assert(_deck.size() == CardsPerDeck);
     _kingSpaces = 0;
     _recycleCount = 0;
 
@@ -233,11 +233,11 @@ void Game::MakeMove(const XMove & xmv) noexcept
     }
 }
 
-// Return true if all 52 cards are in the foundation
+// Return true if all CardsPerDeck cards are in the foundation
 bool Game::GameOver() const noexcept
 {
     return std::all_of(_foundation.cbegin(), _foundation.cend(),
-        [&] (auto const p) {return p.size() == 13;});
+        [&] (auto const p) {return p.size() == CardsPerSuit;});
 }
 
 // Return the height of the shortest foundation pile
@@ -533,7 +533,7 @@ QMoves Game::AvailableMoves() const noexcept
     QMoves moves;
 
     const unsigned minFoundationSize = MinFoundationPileSize();
-    if (minFoundationSize == 13) return moves;		// game over
+    if (minFoundationSize == CardsPerSuit) return moves;		// game over
     OneMoveToShortFoundationPile(moves,minFoundationSize);
     if (moves.size()) return moves;
 
@@ -551,7 +551,7 @@ QMoves Game::AvailableMoves() const noexcept
 // stack tops are at the back.
 static unsigned MisorderCount(const Card *begin, const Card *end)
 {
-    unsigned  mins[4] {14,14,14,14};
+    unsigned  mins[SuitsPerDeck] {14,14,14,14};
     unsigned result = 0;
     for (auto i = begin; i != end; ++i){
         const RankType rank = i->Rank();

@@ -24,15 +24,18 @@
 enum RankType : unsigned char
 {
     Ace = 0,
-    King = 12
+    King = 12,
+    CardsPerSuit
 };
 enum SuitType : unsigned char 
 {
     Clubs = 0,
     Diamonds,
     Spades,
-    Hearts,
+    Hearts
 };
+enum {SuitsPerDeck = 4};
+enum {CardsPerDeck = CardsPerSuit*SuitsPerDeck};
 
 class Card
 {
@@ -50,8 +53,8 @@ public:
         {}
 
     Card(unsigned value):
-        _suit(SuitType(value/13)),
-        _rank(RankType(value%13))
+        _suit(SuitType(value/CardsPerSuit)),
+        _rank(RankType(value%CardsPerSuit))
         {}
 
 
@@ -60,7 +63,7 @@ public:
     bool IsMajor() const noexcept		{return _suit>>1;} // Hearts or spades
     bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
                                         {return (_rank&1)^(_suit&1);}
-    unsigned Value() const noexcept		{return 13*_suit+_rank;}
+    unsigned Value() const noexcept		{return CardsPerSuit*_suit+_rank;}
     std::string AsString() const;       // Returns a string like "ha" or "d2"
     bool Covers(Card c) const noexcept	// can this card be moved onto c on a tableau pile?
                                         {return _rank+1 == c._rank && OddRed() == c.OddRed();}
@@ -82,18 +85,18 @@ static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 typedef frystl::static_vector<Card,24> PileVec;
 
 // Type to hold a complete deck
-struct CardDeck : frystl::static_vector<Card,52> 
+struct CardDeck : frystl::static_vector<Card,CardsPerDeck> 
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
-        : static_vector<Card,52>(vec.begin(),vec.end())
+        : static_vector<Card,CardsPerDeck>(vec.begin(),vec.end())
     {
-        assert(vec.size() == 52);
+        assert(vec.size() == CardsPerDeck);
     }
-    CardDeck(const frystl::static_vector<Card,52> &v)
-        : static_vector<Card,52>(v)
+    CardDeck(const frystl::static_vector<Card,CardsPerDeck> &v)
+        : static_vector<Card,CardsPerDeck>(v)
     {
-        assert(v.size() == 52);
+        assert(v.size() == CardsPerDeck);
     }
 };
 
@@ -116,7 +119,7 @@ enum PileCodeType : unsigned char{
     Foundation2D,
     Foundation3S,
     Foundation4H,
-    PileCount = 13
+    PileCount
 };
 
 static_assert(Stock == PileCodeType(TableauBase+7));
@@ -139,7 +142,7 @@ public:
     : _code(code)
     , _upCount(0)
     , _isTableau(::IsTableau(code))
-    , _isFoundation(FoundationBase <= code && code < FoundationBase+4)
+    , _isFoundation(FoundationBase <= code && code < FoundationBase+SuitsPerDeck)
     {}
 
     PileCodeType Code() const noexcept		{return _code;}
@@ -374,7 +377,7 @@ private:
     Pile _waste;
     std::array<Pile,7> _tableau;
     Pile _stock;
-    std::array<Pile,4> _foundation;
+    std::array<Pile,SuitsPerDeck> _foundation;
     unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
     unsigned char _talonLookAheadLimit;
     unsigned char _recycleLimit;            // max number of recycles allowed
@@ -403,16 +406,17 @@ public:
     Pile& WastePile()       						        {return _waste;}
     std::array<Pile,7>& Tableau()      				        {return _tableau;}
     Pile& StockPile()       						        {return _stock;}
-    std::array<Pile,4>& Foundation()   				        {return _foundation;}
+    std::array<Pile,SuitsPerDeck>& Foundation()             {return _foundation;}
     const Pile & WastePile() const noexcept    				{return _waste;}
     const Pile & StockPile() const noexcept    				{return _stock;}
-    const std::array<Pile,4>& Foundation() const  noexcept  {return _foundation;}
+    const std::array<Pile,SuitsPerDeck>& Foundation() const noexcept  
+                                                            {return _foundation;}
     const std::array<Pile,7>& Tableau() const noexcept      {return _tableau;}
-    std::array<Pile,13>& AllPiles() {
-        return *reinterpret_cast<std::array<Pile,13>* >(&_waste);
+    std::array<Pile,PileCount>& AllPiles() {
+        return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }
-    const std::array<Pile,13>& AllPiles() const {
-        return *reinterpret_cast<const std::array<Pile,13>* >(&_waste);
+    const std::array<Pile,PileCount>& AllPiles() const {
+        return *reinterpret_cast<const std::array<Pile,PileCount>* >(&_waste);
     }
     unsigned DrawSetting() const noexcept            		{return _drawSetting;}
     unsigned TalonLookAheadLimit() const noexcept			{return _talonLookAheadLimit;}
