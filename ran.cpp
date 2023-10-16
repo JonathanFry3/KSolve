@@ -79,47 +79,47 @@ Specification GetSpec(int argc, char * argv[])
             cout << "the number of moves in the solution if a solution is found," << endl;
             cout << "the number of talon passes in the solution if a solution is found." << endl;
             cout << "the clock time required in seconds, the size of the largest fringe element," << endl;
-            cout << "the number of moves in the move tree, and the number of branches of the move tree." << endl;
+            cout << "the number of branches of the move tree, and the number of moves in the move tree." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
             cout << "3 = too many moves in the tree, 4 = exceeded memory." << endl;
             cout << flush;
             exit(0);
         } else if (flag == "-s" || flag == "--seed") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --seed");
+            if (iarg == argc) Error("No number after "+flag);
             spec._seed0 = GetNumber(argv[iarg]);
         } else if (flag == "-i" || flag == "--incr") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --incr");
+            if (iarg == argc) Error("No number after "+flag);
             spec._incr = GetNumber(argv[iarg]);
         } else if (flag == "-b" || flag == "--begin") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --begin");
+            if (iarg == argc) Error("No number after "+flag);
             spec._begin = GetNumber(argv[iarg]);
         } else if (flag == "-e" || flag == "--end") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --end");
+            if (iarg == argc) Error("No number after "+flag);
             spec._end = GetNumber(argv[iarg]);
         } else if (flag == "-d" || flag == "--draw") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --draw");
+            if (iarg == argc) Error("No number after "+flag);
             spec._drawSpec = GetNumber(argv[iarg]);
         } else if (flag == "-v" || flag == "--vegas") {
             spec._vegas = true;
         } else if (flag == "-mv" || flag == "--mvlimit") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --mvlimit");
+            if (iarg == argc) Error("No number after "+flag);
             spec._mvLimit = GetNumber(argv[iarg]);
         } else if (flag == "-t" || flag == "--threads") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --threads");
+            if (iarg == argc) Error("No number after "+flag);
             spec._threads = GetNumber(argv[iarg]);
         } else if (flag == "-l" || flag == "--look") {
             iarg += 1;
-            if (iarg == argc) Error("No number after --look");
+            if (iarg == argc) Error("No number after "+flag);
             spec._lookAhead = GetNumber(argv[iarg]);
         } else {
-            Error (string("Expected flag, got ") + argv[iarg]);
+            Error ("Expected flag, got " + flag);
         }
     }
     return spec;
