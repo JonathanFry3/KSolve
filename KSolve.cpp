@@ -313,10 +313,10 @@ public:
 // Converts a card to a string and prints an error message if
 // that fails.  Returns true and the card if the conversion succeeds.
 // or false and garbage if it fails.
-pair<bool,Card> CardFromString(const string& str)
+optional<Card> CardFromString(const string& str)
 {
-    pair<bool,Card> result = Card::FromString(str);
-    if (!result.first) {
+    optional<Card> result = Card::FromString(str);
+    if (!result) {
         cerr << "Invalid card '" << str <<"'" << endl;
     }
     return result;
@@ -368,11 +368,11 @@ CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]) {
         // skip over punctuation and white space
         while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
         if (j+1 < cardSet.size()){
-            pair<bool,Card> cd = CardFromString(cardSet.substr(j,2));
-            if (!cd.first || dupchk(cd.second)) {
+            optional<Card> cd = CardFromString(cardSet.substr(j,2));
+            if (!cd || dupchk(*cd)) {
                 valid = false;
             } else {
-                result[order[i]] = cd.second;
+                result[order[i]] = *cd;
             }
         }
         j += 2;

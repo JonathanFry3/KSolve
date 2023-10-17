@@ -46,13 +46,13 @@ std::string Card::AsString() const
 
 // Make a Card from a string like "ah" or "s8".
 // Returns true if it succeeds.
-std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept  
+std::optional<Card> Card::FromString(const std::string& s0) noexcept  
 {
     const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
     SuitType suit;
-    RankType rank;
-    bool ok = s1.length() == 2 || s1.length() == 3;
     std::string rankStr;
+    std::optional<Card> result;
+    bool ok = s1.length() == 2 || s1.length() == 3;
     if (ok)	{
         auto suitIndex = suits.find(s1[0]);
         if (suitIndex != std::string::npos)	{
@@ -75,15 +75,12 @@ std::pair<bool,Card> Card::FromString(const std::string& s0) noexcept
     if (ok)	{
         if (rankStr == "10") {rankStr = "t";}
         auto rankIndex = ranks.find(rankStr);
-        ok = rankIndex != std::string::npos;
-        if (ok)	{
-            rank = static_cast<RankType>(rankIndex);
+        if (rankIndex != std::string::npos)	{
+            RankType rank = static_cast<RankType>(rankIndex);
+            result.emplace(suit,rank);
         }
     }
-    Card card;
-    if (ok)
-        card = Card(suit,rank);
-    return std::pair<bool,Card>(ok,card);
+    return result;
 }
 
 // A reproducible shuffle function.

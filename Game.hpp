@@ -18,6 +18,7 @@
 #include <array>
 #include <cassert>
 #include <sstream> 		// for stringstream
+#include <optional>
 
 #include "frystl/static_vector.hpp"
 
@@ -77,7 +78,7 @@ public:
     // upper or lower case, or mixed.
     // Returns true and the specified Card if it succeeds, 
     // false and garbage if it fails,
-    static std::pair<bool,Card> FromString(const std::string& s) noexcept;
+    static std::optional<Card> FromString(const std::string& s) noexcept;
 };
 
 static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
