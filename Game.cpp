@@ -273,7 +273,7 @@ void Game::OneMoveToShortFoundationPile(
                 && CanMoveToFoundation(card)) {
                 PileCodeType pileCode = pile.Code();
                 if (pileCode == Stock) {
-                    // Talon move: draw one card, move it to foundation
+                    // Stock Move: draw one card, move it to foundation
                     moves.emplace_back(PileCodeType(FoundationBase+suit),2,1);
                 } else {
                     const unsigned up = (pileCode == Waste) ? 0 : pile.UpCount();
@@ -452,9 +452,9 @@ static TalonFutureVec TalonCards(const Game & game)
     return result;
 }
 
-// Push a talon move onto a sequence.
-// This is to visually distinguish talon Move construction from
-// non-talon Move construction in AvailableMoves().
+// Push a stock Move onto a sequence.
+// This is to visually distinguish a stock Move construction from
+// non-stock Move construction in AvailableMoves().
 static inline void PushTalonMove(const TalonFuture& f, PileCodeType pileNum, bool recycle, QMoves& qm)
 {
     qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
@@ -470,7 +470,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
     const TalonFutureVec talon(TalonCards(*this));
     for (auto talonCard : talon){
 
-        // Stop generating talon moves if they require too many moves
+        // Stop generating stock Moves if they require too many moves
         // and there are alternative moves.
         if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
 
