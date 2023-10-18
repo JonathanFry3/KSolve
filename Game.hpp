@@ -241,9 +241,9 @@ public:
     void SetRecycle(bool r) noexcept    {_recycle = r;}      
 
     bool IsTalonMove() const noexcept	{return _from==Stock;}
-    PileCodeType From() const noexcept		{return _from;}
-    PileCodeType To()   const noexcept		{return _to;}
-    unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
+    PileCodeType From() const noexcept  {return _from;}
+    PileCodeType To() const noexcept	{return _to;}
+    unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
@@ -255,7 +255,7 @@ static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 typedef std::vector<Move> Moves;
 
 // A limited-size Moves type for AvailableMoves to return
-typedef frystl::static_vector<Move,74> QMoves; 
+typedef frystl::static_vector<Move,43> QMoves; 
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
@@ -378,15 +378,18 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 class Game
 {
 private:
+    // See the declaration of PileCodeType for the order of piles.
     Pile _waste;
     std::array<Pile,TableauSize> _tableau;
     Pile _stock;
     std::array<Pile,SuitsPerDeck> _foundation;
+
     unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
     unsigned char _talonLookAheadLimit;
     unsigned char _recycleLimit;            // max number of recycles allowed
     unsigned char _recycleCount;            // n of recycles so far
     unsigned char _kingSpaces;
+
     const CardDeck _deck;
 
     // Return true if any more empty columns are needed for kings
@@ -407,25 +410,26 @@ public:
          unsigned recyleLimit=-1);
     Game(const Game&);
 
-    Pile& WastePile()       						        {return _waste;}
-    std::array<Pile,TableauSize>& Tableau()      				        {return _tableau;}
-    Pile& StockPile()       						        {return _stock;}
-    std::array<Pile,SuitsPerDeck>& Foundation()             {return _foundation;}
-    const Pile & WastePile() const noexcept    				{return _waste;}
-    const Pile & StockPile() const noexcept    				{return _stock;}
+    Pile& WastePile()       					    {return _waste;}
+    std::array<Pile,TableauSize>& Tableau()         {return _tableau;}
+    Pile& StockPile()       					    {return _stock;}
+    std::array<Pile,SuitsPerDeck>& Foundation()     {return _foundation;}
+    const Pile & WastePile() const noexcept    	    {return _waste;}
+    const Pile & StockPile() const noexcept    	    {return _stock;}
     const std::array<Pile,SuitsPerDeck>& Foundation() const noexcept  
-                                                            {return _foundation;}
-    const std::array<Pile,TableauSize>& Tableau() const noexcept      {return _tableau;}
+                                                    {return _foundation;}
+    const std::array<Pile,TableauSize>& Tableau() const noexcept
+                                                    {return _tableau;}
+    unsigned DrawSetting() const noexcept           {return _drawSetting;}
+    unsigned TalonLookAheadLimit() const noexcept	{return _talonLookAheadLimit;}
+    unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
+    unsigned RecycleCount() const noexcept          {return _recycleCount;}
     std::array<Pile,PileCount>& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }
     const std::array<Pile,PileCount>& AllPiles() const {
         return *reinterpret_cast<const std::array<Pile,PileCount>* >(&_waste);
     }
-    unsigned DrawSetting() const noexcept            		{return _drawSetting;}
-    unsigned TalonLookAheadLimit() const noexcept			{return _talonLookAheadLimit;}
-    unsigned RecycleLimit() const noexcept                  {return _recycleLimit;}
-    unsigned RecycleCount() const noexcept                  {return _recycleCount;}
 
     void        Deal() noexcept;
     QMoves      AvailableMoves() const noexcept;
