@@ -85,6 +85,7 @@ static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
 typedef frystl::static_vector<Card,24> PileVec;
+static_assert(sizeof(PileVec) <= 28, "PileVec should fit in 28 bytes");
 
 // Type to hold a complete deck
 struct CardDeck : frystl::static_vector<Card,CardsPerDeck> 
@@ -181,6 +182,7 @@ public:
     }
 };
 
+static_assert(sizeof(Pile) <= 32, "Good to make it Pile fit in 32 bytes");
 
 // Returns a string to visualize a pile for debugging.
 std::string Peek(const Pile& pile);
@@ -196,26 +198,26 @@ std::string Peek(const Pile& pile);
 class Move
 {
 private:
-    PileCodeType _from;    // _from == Stock <==> talon move
+    PileCodeType _from;    // _from == Stock <==> stock Move
     PileCodeType _to;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
     union {
-        // Non-talon move
+        // Non-stock Move
         struct {
-            unsigned char _n:4;
+            unsigned char _cardsToMove:4;
             unsigned char _fromUpCount:4;
         };
-        // Talon move
+        // Stock Move
         signed char _drawCount;			// draw this many cards (may be negative)
     };
 
 public:
     Move() = delete;
-    // Construct a talon move.  Represents 'nMoves'-1 draws
-    // Their cumulative effect is to draw 'draw' cards (may be negative)
-    // from stock. One card is then moved from the waste pile to the "to" pile.
-    // All talon moves, and only talon moves, are from the stock pile.
+    // Construct a stock Move. Their cumulative effect is to 
+    // draw 'draw' cards (may be negative) from stock to (from)
+    // the waste pile. One card is then moved from the waste pile
+    // to the "to" pile. Only stock Moves draw from the stock pile.
     Move(PileCodeType to, unsigned nMoves, int draw) noexcept
         : _from(Stock)
         , _to(to)
@@ -223,14 +225,14 @@ public:
         , _recycle(0)
         , _drawCount(draw)
         {}
-    // Construct a non-talon move.  UnMakeMove() can't infer the count
+    // Construct a non-stock Move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
     Move(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
         , _recycle(0)
-        , _n(n)
+        , _cardsToMove(n)
         , _fromUpCount(fromUpCount)
         {
             assert(from != Stock);
@@ -241,7 +243,7 @@ public:
     bool IsTalonMove() const noexcept	{return _from==Stock;}
     PileCodeType From() const noexcept		{return _from;}
     PileCodeType To()   const noexcept		{return _to;}
-    unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _n;}     
+    unsigned NCards()    const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
