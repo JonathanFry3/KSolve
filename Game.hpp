@@ -375,107 +375,6 @@ public:
 typedef std::vector<XMove> XMoves;
 XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
-class Game
-{
-private:
-    // See the declaration of PileCodeType for the order of piles.
-    Pile _waste;
-    std::array<Pile,TableauSize> _tableau;
-    Pile _stock;
-    std::array<Pile,SuitsPerDeck> _foundation;
-
-    unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
-    unsigned char _talonLookAheadLimit;
-    unsigned char _recycleLimit;            // max number of recycles allowed
-    unsigned char _recycleCount;            // n of recycles so far
-    unsigned char _kingSpaces;
-
-    const CardDeck _deck;
-
-    // Return true if any more empty columns are needed for kings
-    bool NeedKingSpace() const noexcept {return _kingSpaces < 4;}
-    // Parts of AvailableMoves()
-    void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
-    void MovesFromTableau(QMoves & moves) const noexcept;
-    bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
-    void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
-    bool CanMoveToFoundation(Card cd) const noexcept{
-        return cd.Rank() == Foundation()[cd.Suit()].size();
-    }
-    
-public:
-    Game(CardDeck deck,
-         unsigned draw=1,
-         unsigned talonLookAheadLimit=24, 
-         unsigned recyleLimit=-1);
-    Game(const Game&);
-
-    Pile& WastePile()       					    {return _waste;}
-    std::array<Pile,TableauSize>& Tableau()         {return _tableau;}
-    Pile& StockPile()       					    {return _stock;}
-    std::array<Pile,SuitsPerDeck>& Foundation()     {return _foundation;}
-    const Pile & WastePile() const noexcept    	    {return _waste;}
-    const Pile & StockPile() const noexcept    	    {return _stock;}
-    const std::array<Pile,SuitsPerDeck>& Foundation() const noexcept  
-                                                    {return _foundation;}
-    const std::array<Pile,TableauSize>& Tableau() const noexcept
-                                                    {return _tableau;}
-    unsigned DrawSetting() const noexcept           {return _drawSetting;}
-    unsigned TalonLookAheadLimit() const noexcept	{return _talonLookAheadLimit;}
-    unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
-    unsigned RecycleCount() const noexcept          {return _recycleCount;}
-    std::array<Pile,PileCount>& AllPiles() {
-        return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
-    }
-    const std::array<Pile,PileCount>& AllPiles() const {
-        return *reinterpret_cast<const std::array<Pile,PileCount>* >(&_waste);
-    }
-
-    void        Deal() noexcept;
-    QMoves      UnfilteredAvailableMoves() const noexcept;
-    void        MakeMove(Move mv) noexcept;
-    void        UnMakeMove(Move mv) noexcept;
-    unsigned    MinimumMovesLeft() const noexcept;
-    void        MakeMove(const XMove& xmv) noexcept;
-    bool        IsValid(Move mv) const noexcept;
-    bool        IsValid(XMove xmv) const noexcept;
-    unsigned    MinFoundationPileSize() const noexcept;
-    bool        GameOver() const noexcept;
-
-    // Return a vector of the available moves that pass the XYZ_Move filter
-    template <class V>
-    QMoves AvailableMoves(const V& movesMade) noexcept
-    {
-        QMoves avail = UnfilteredAvailableMoves();
-        auto newEnd = std::remove_if(
-            avail.begin(), 
-            avail.end(),
-            [&movesMade] (Move& move) 
-                {return XYZ_Move(move, movesMade);});
-        while (avail.end() != newEnd) avail.pop_back();
-        return avail;
-    }
-
-};
-
-// Validate a solution
-template <class Container>
-void TestSolution(Game game, const Container& mvs)
-{
-		game.Deal();
-		// PrintGame(game);
-		for (auto mv: mvs) {
-			// std::cerr << Peek(mv) << std::endl;
-			assert(game.IsValid(mv));
-			game.MakeMove(mv);
-		}
-		// PrintGame(game);
-		assert(game.GameOver());
-}
-
-// Return a string to visualize the state of a game
-std::string Peek (const Game& game);
-
 // Return true if this move cannot be in a minimum solution.
 template <class V>
 bool XYZ_Move(Move trial, const V& movesMade) noexcept
@@ -533,5 +432,109 @@ bool XYZ_Move(Move trial, const V& movesMade) noexcept
     // cost more time than it saved.
     // Jonathan Fry 7/12/2020
 }
+
+class Game
+{
+public:
+    using FoundationType = std::array<Pile,SuitsPerDeck>;
+    using TableauType = std::array<Pile,TableauSize>;
+private:
+    // See the declaration of PileCodeType for the order of piles.
+    Pile _waste;
+    TableauType _tableau;
+    Pile _stock;
+    FoundationType _foundation;
+
+    unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
+    unsigned char _talonLookAheadLimit;
+    unsigned char _recycleLimit;            // max number of recycles allowed
+    unsigned char _recycleCount;            // n of recycles so far
+    unsigned char _kingSpaces;
+
+    const CardDeck _deck;
+
+    // Return true if any more empty columns are needed for kings
+    bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
+    // Parts of UnfilteredAvailableMoves()
+    void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromTableau(QMoves & moves) const noexcept;
+    bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
+
+    QMoves UnfilteredAvailableMoves() const noexcept;
+    
+public:
+    Game(CardDeck deck,
+         unsigned draw=1,
+         unsigned talonLookAheadLimit=24, 
+         unsigned recyleLimit=-1);
+    Game(const Game&);
+
+    Pile& WastePile()       					    {return _waste;}
+    TableauType& Tableau()                          {return _tableau;}
+    Pile& StockPile()       					    {return _stock;}
+    FoundationType& Foundation()                    {return _foundation;}
+    const Pile & WastePile() const noexcept    	    {return _waste;}
+    const Pile & StockPile() const noexcept    	    {return _stock;}
+    const FoundationType& Foundation()const noexcept{return _foundation;}
+    const TableauType& Tableau() const noexcept     {return _tableau;}
+    unsigned DrawSetting() const noexcept           {return _drawSetting;}
+    unsigned TalonLookAheadLimit() const noexcept	{return _talonLookAheadLimit;}
+    unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
+    unsigned RecycleCount() const noexcept          {return _recycleCount;}
+    std::array<Pile,PileCount>& AllPiles() {
+        return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
+    }
+    const std::array<Pile,PileCount>& AllPiles() const {
+        return *reinterpret_cast<const std::array<Pile,PileCount>* >(&_waste);
+    }
+
+    bool CanMoveToFoundation(Card cd) const noexcept{
+        return cd.Rank() == Foundation()[cd.Suit()].size();
+    }
+
+    void        Deal() noexcept;
+    void        MakeMove(Move mv) noexcept;
+    void        UnMakeMove(Move mv) noexcept;
+    unsigned    MinimumMovesLeft() const noexcept;
+    void        MakeMove(const XMove& xmv) noexcept;
+    bool        IsValid(Move mv) const noexcept;
+    bool        IsValid(XMove xmv) const noexcept;
+    unsigned    MinFoundationPileSize() const noexcept;
+    bool        GameOver() const noexcept;
+
+    // Return a vector of the available moves that pass the XYZ_Move filter
+    template <class V>
+    QMoves AvailableMoves(const V& movesMade) noexcept
+    {
+        QMoves avail = UnfilteredAvailableMoves();
+        auto newEnd = std::remove_if(
+            avail.begin(), 
+            avail.end(),
+            [&movesMade] (Move& move) 
+                {return XYZ_Move(move, movesMade);});
+        while (avail.end() != newEnd) avail.pop_back();
+        return avail;
+    }
+
+};
+
+// Validate a solution
+template <class Container>
+void TestSolution(Game game, const Container& mvs)
+{
+		game.Deal();
+		// PrintGame(game);
+		for (auto mv: mvs) {
+			// std::cerr << Peek(mv) << std::endl;
+			assert(game.IsValid(mv));
+			game.MakeMove(mv);
+		}
+		// PrintGame(game);
+		assert(game.GameOver());
+}
+
+// Return a string to visualize the state of a game
+std::string Peek (const Game& game);
 
 #endif      // GAME_HPP
