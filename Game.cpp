@@ -452,7 +452,7 @@ static TalonFutureVec TalonCards(const Game & game)
 // Push a stock Move onto a sequence.
 // This is to visually distinguish a stock Move construction from
 // non-stock Move construction in AvailableMoves().
-static inline void PushTalonMove(const TalonFuture& f, PileCodeType pileNum, bool recycle, QMoves& qm)
+static inline void PushStockMove(const TalonFuture& f, PileCodeType pileNum, bool recycle, QMoves& qm)
 {
     qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
     qm.back().SetRecycle(recycle);
@@ -474,7 +474,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         bool recycle = talonCard._recycle;
         if (CanMoveToFoundation(talonCard._card)) {
             const PileCodeType pileNo = PileCodeType(FoundationBase+talonCard._card.Suit());
-            PushTalonMove(talonCard, pileNo, recycle, moves);
+            PushStockMove(talonCard, pileNo, recycle, moves);
             if (talonCard._card.Rank() <= minFoundationSize+1){
                 if (_drawSetting == 1) {
                     if (moves.size() == 1) return true;
@@ -487,10 +487,10 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         for (const auto& tPile : _tableau) {
             if ((tPile.size() > 0)) {
                 if (talonCard._card.Covers(tPile.back())) {
-                    PushTalonMove(talonCard, tPile.Code(), recycle, moves);
+                    PushStockMove(talonCard, tPile.Code(), recycle, moves);
                 }
             } else if (talonCard._card.Rank() == King) {
-                PushTalonMove(talonCard, tPile.Code(), recycle, moves);
+                PushStockMove(talonCard, tPile.Code(), recycle, moves);
                 break;  // move that king to just one empty pile
             }
         }
@@ -525,7 +525,7 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
 // known to be wasted.  Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-QMoves Game::AvailableMoves() const noexcept
+QMoves Game::UnfilteredAvailableMoves() const noexcept
 {
     QMoves moves;
 

@@ -432,7 +432,7 @@ public:
     }
 
     void        Deal() noexcept;
-    QMoves      AvailableMoves() const noexcept;
+    QMoves      UnfilteredAvailableMoves() const noexcept;
     void        MakeMove(Move mv) noexcept;
     void        UnMakeMove(Move mv) noexcept;
     unsigned    MinimumMovesLeft() const noexcept;
@@ -441,6 +441,21 @@ public:
     bool        IsValid(XMove xmv) const noexcept;
     unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
+
+    // Return a vector of the available moves that pass the XYZ_Move filter
+    template <class V>
+    QMoves AvailableMoves(const V& movesMade) noexcept
+    {
+        QMoves avail = UnfilteredAvailableMoves();
+        auto newEnd = std::remove_if(
+            avail.begin(), 
+            avail.end(),
+            [&movesMade] (Move& move) 
+                {return XYZ_Move(move, movesMade);});
+        while (avail.end() != newEnd) avail.pop_back();
+        return avail;
+    }
+
 };
 
 // Validate a solution
@@ -466,13 +481,13 @@ template <class V>
 bool XYZ_Move(Move trial, const V& movesMade) noexcept
 {
     // Consider a move at time T0 from X to Y and the next move
-    // from Y, which goes to Z at time Tn.  The move at Tn can
+    // to or from Y, which goes from Y to Z at time Tn.  The move at Tn can
     // be skipped if the same result could have been achieved 
     // at T0 by moving the same cards directly from X to Z.
 
-    // We are now at Tn looking back for a T0 move.  Y is our from pile
-    // and Z is our to pile.  A candidate T0 move is one that moves
-    // to our from pile (pile Y).
+    // We are now at Tn looking back for a T0 move.  Y is our from-pile
+    // and Z is our to-pile.  A candidate T0 move is one that moves
+    // to our from-pile (pile Y).
 
     // Do those two moves move the same set of cards?.  Yes if
     // no intervening move has changed pile Y and the two moves
@@ -511,7 +526,7 @@ bool XYZ_Move(Move trial, const V& movesMade) noexcept
     }
     return false;
 
-    // AvailableMoves() generates moves among tableau files for only two purposes:
+    // UnfilteredAvailableMoves() generates moves among tableau files for only two purposes:
     // to move all the face-up cards, or to uncover a card that can be moved to the 
     // foundation.  I have tried filtering out later moves that would re-cover a 
     // card that had been uncovered in that fashion.  That did not break anything, but

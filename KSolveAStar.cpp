@@ -205,7 +205,6 @@ public:
             
     QMoves MakeAutoMoves() noexcept;
     void CheckForMinSolution();
-    QMoves FilteredAvailableMoves()noexcept;
 };
 bool WorkerState::k_blewMemory(false);
 
@@ -441,31 +440,18 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 
 // Make available moves until a branching node or an childless one is encountered.
 // If more than one move is available but order will make no difference
-// (as when two aces are dealt face up), FilteredAvailableMoves() will
+// (as when two aces are dealt face up), AvalaibleMoves() will
 // return them one at a time.
 QMoves WorkerState::MakeAutoMoves() noexcept
 {
     QMoves availableMoves;
-    while ((availableMoves = FilteredAvailableMoves()).size() == 1)
+    while ((availableMoves = 
+        _game.AvailableMoves(_moveStorage.MoveSequence())).size() == 1)
     {
         _moveStorage.PushStem(availableMoves[0]);
         _game.MakeMove(availableMoves[0]);
     }
     return availableMoves;
-}
-
-// Return a vector of the available moves that pass the XYZ_Move filter
-QMoves WorkerState::FilteredAvailableMoves() noexcept
-{
-    QMoves avail = _game.AvailableMoves();
-    const auto& movesMade{_moveStorage.MoveSequence()};
-    auto newEnd = std::remove_if(
-        avail.begin(), 
-        avail.end(),
-        [&movesMade] (Move& move) 
-            {return XYZ_Move(move, movesMade);});
-    while (avail.end() != newEnd) avail.pop_back();
-    return avail;
 }
 
 // A solution has been found.  If it's the first, or shorter than
