@@ -377,7 +377,7 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 // Return true if this move cannot be in a minimum solution.
 template <class V>
-bool XYZ_Move(Move trial, const V& movesMade) noexcept
+static bool XYZ_Move(Move trial, const V& movesMade) noexcept
 {
     // Consider a move at time T0 from X to Y and the next move
     // to or from Y, which goes from Y to Z at time Tn.  The move at Tn can
@@ -440,16 +440,16 @@ public:
     using TableauType = std::array<Pile,TableauSize>;
 private:
     // See the declaration of PileCodeType for the order of piles.
-    Pile _waste;
-    TableauType _tableau;
-    Pile _stock;
-    FoundationType _foundation;
+    Pile            _waste;
+    TableauType     _tableau;
+    Pile            _stock;
+    FoundationType  _foundation;
 
-    unsigned char _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
-    unsigned char _talonLookAheadLimit;
-    unsigned char _recycleLimit;            // max number of recycles allowed
-    unsigned char _recycleCount;            // n of recycles so far
-    unsigned char _kingSpaces;
+    unsigned char   _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
+    unsigned char   _talonLookAheadLimit;
+    unsigned char   _recycleLimit;            // max number of recycles allowed
+    unsigned char   _recycleCount;            // n of recycles so far
+    unsigned char   _kingSpaces;
 
     const CardDeck _deck;
 
