@@ -8,7 +8,6 @@
 
 #include "Game.hpp"                     // for Game
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
-//#include "parallel_hashmap/phmap_base.h" 
 #include <mutex>
 
 // A compact representation of the current game state.
