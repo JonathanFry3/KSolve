@@ -93,7 +93,9 @@
         "__locale": "cpp",
         "__threading_support": "cpp",
         "__verbose_abort": "cpp",
-        "execution": "cpp"
+        "execution": "cpp",
+        "*.ipp": "cpp",
+        "future": "cpp"
     },
     "terminal.explorerKind": "external",
     "workbench.editor.enablePreview": false,
