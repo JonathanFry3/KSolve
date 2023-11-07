@@ -9,7 +9,7 @@
 #include "Game.hpp"                     // for Game
 #include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
 #include <mutex>
-
+namespace KSolveNames {
 // A compact representation of the current game state.
 //
 // For game play purposes, two tableaus that are identical except
@@ -75,3 +75,4 @@ public:
     // Returns the number of states stored.  
     size_t Size() {return _states.size();}
 };
+}   // namespace KSolveNames

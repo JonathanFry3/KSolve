@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace chrono;
+using namespace KSolveNames;
 
 struct Specification
 {

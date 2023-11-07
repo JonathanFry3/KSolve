@@ -5,6 +5,8 @@
 #include <mutex>          	// for std::mutex, std::lock_guard
 #include <thread>
 
+namespace KSolveNames {
+
 typedef std::mutex Mutex;
 typedef std::lock_guard<Mutex> Guard;
 
@@ -460,3 +462,4 @@ void WorkerState::CheckForMinSolution() {
     const unsigned nmv = _moveStorage.MoveSequence().MoveCount();
     _minSolution.ReplaceIfShorter(_moveStorage.MoveSequence(), nmv);
 }
+}   // namespace KSolveNames

@@ -31,6 +31,7 @@ copies or substantial portions of the Software.
 
 using namespace std;
 using namespace std::chrono;
+using namespace KSolveNames;
 
 CardDeck PysolDeck(const string& s);
 CardDeck ReversedPysolDeck(const string& s);

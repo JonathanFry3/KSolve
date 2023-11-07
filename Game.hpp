@@ -22,6 +22,8 @@
 
 #include "frystl/static_vector.hpp"
 
+namespace KSolveNames {
+
 enum RankType : unsigned char
 {
     Ace = 0,
@@ -144,7 +146,7 @@ public:
     Pile(PileCodeType code)
     : _code(code)
     , _upCount(0)
-    , _isTableau(::IsTableau(code))
+    , _isTableau(KSolveNames::IsTableau(code))
     , _isFoundation(FoundationBase <= code && code < FoundationBase+SuitsPerDeck)
     {}
 
@@ -469,6 +471,17 @@ public:
          unsigned talonLookAheadLimit=24, 
          unsigned recyleLimit=-1);
     Game(const Game&);
+    /*
+    bool operator==(const Game& rt) const noexcept
+    {
+        if (_waste != rt._waste) return false;
+        if (_tableau != rt._tableau) return false;
+        if (_stock != rt._stock) return false;
+        if (_foundation != rt._foundation) return false;
+        // remaining fields not checked
+        return true;
+    }
+    */
 
     Pile& WastePile()       					    {return _waste;}
     TableauType& Tableau()                          {return _tableau;}
@@ -536,5 +549,7 @@ void TestSolution(Game game, const Container& mvs)
 
 // Return a string to visualize the state of a game
 std::string Peek (const Game& game);
+
+}   // namespace KSolveNames
 
 #endif      // GAME_HPP

@@ -11,6 +11,7 @@
 #include "frystl/mf_vector.hpp"
 
 using namespace std;
+using namespace KSolveNames;
 
 std::vector<Card> Cards(const std::vector<std::string>& strings)
 {
@@ -186,7 +187,7 @@ bool operator==(const Pile&a, const Pile&b)
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
 // Returns true iff GameState(a) should equal GameState(b).
-bool operator==(const Game& a, const Game& b) 
+bool operator==(const Game& a, const Game& b) noexcept
 {
 	if (a.StockPile() != b.StockPile()) return false;
 	if (a.WastePile() != b.WastePile()) return false;
@@ -205,7 +206,7 @@ bool operator==(const Game& a, const Game& b)
 	}
 	return true;
 }
-bool operator!=(const Game& a, const Game& b) {return !(a==b);}
+bool operator!=(const Game& a, const Game& b) noexcept {return !(a==b);} 
 
 static void Peek(const GameState& st)
 {
@@ -389,7 +390,7 @@ int main()
 						// state matches a previous GameState.  See if 
 						// game matches the corresponding Game.
 						unsigned which = pMatch - states.begin();
-						if (game != prevGames[which]) {
+						if (!(game == prevGames[which])) {
 							cerr << "Current game [" << prevGames.size() << "]<<<<<<<<<<<<<<<" << endl;
 							cerr << Peek(game) << endl;
 							cerr << "Previous game [" << which << "]<<<<<<<<<<<<<<<" << endl;

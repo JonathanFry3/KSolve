@@ -10,7 +10,7 @@
 const std::string suits("cdsh");
 const std::string ranks("a23456789tjqk");
 
-
+namespace KSolveNames {
 static unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
 {
     return (numerator+denominator-1)/denominator;
@@ -780,3 +780,5 @@ std::string Peek (const Game&game)
     } 
     return out.str();
 }
+
+}   // namespace KSolveNames
