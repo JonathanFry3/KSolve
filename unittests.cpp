@@ -179,10 +179,12 @@ void PrintOutcome(Game& game, const KSolveAStarResult& rslt)
 	}
 }
 
+namespace KSolveNames {
 bool operator==(const Pile&a, const Pile&b)
 {
-	return     (a.Code()==b.Code() && 
-				PileVec(a)==PileVec(b));
+	return  a.Code()==b.Code() && 
+			PileVec(a)==PileVec(b) &&
+			(!a.IsTableau() || a.UpCount()==b.UpCount());
 }
 bool operator!=(const Pile& a, const Pile& b) {return !(a==b);}
 
@@ -192,21 +194,18 @@ bool operator==(const Game& a, const Game& b) noexcept
 	if (a.StockPile() != b.StockPile()) return false;
 	if (a.WastePile() != b.WastePile()) return false;
 	if (a.Foundation() != b.Foundation()) return false;
-	auto& taba = a.Tableau();
-	auto& tabb = b.Tableau();
-	for (unsigned i = 0; i < TableauSize; ++i){
-		// Tableaus of two games are equivalent if their
-		// piles' cards and up counts are equal after rearrangement.
-		int found = -1;
-		for (unsigned j = 0; found == -1 && j < TableauSize; ++j) {
-			if (taba[i] == tabb[j]) found = j;
-		}
-		if (found == -1 || taba[i].UpCount() != tabb[found].UpCount()) 
+	auto& aTab = a.Tableau();
+	auto& bTab = b.Tableau();
+	// Tableaus of two games are equivalent if their
+	// piles' cards and up counts are equal after rearrangement.
+	for (auto & aPile:aTab) {
+		if (std::find(bTab.cbegin(), bTab.cend(), aPile) == bTab.cend())
 			return false;
 	}
 	return true;
 }
 bool operator!=(const Game& a, const Game& b) noexcept {return !(a==b);} 
+}	// namespace KSolveNames
 
 static void Peek(const GameState& st)
 {
@@ -214,7 +213,6 @@ static void Peek(const GameState& st)
 	cerr << st._part0 << st._part1 << st._part2 << st._moveCount;
 	cerr << endl << dec;
 }
-
 std::minstd_rand rng;
 
 int main()
@@ -405,6 +403,7 @@ int main()
 						}
 					} else {
 						auto gMatch = find(prevGames.begin(), prevGames.end(), game);
+
 						if (gMatch != prevGames.end()){
 							unsigned which = gMatch - prevGames.begin();
 							cerr << "Current game [" << prevGames.size() << "]<<<<<<<<<<<<<<<" << endl;
