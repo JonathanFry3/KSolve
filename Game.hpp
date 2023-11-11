@@ -471,17 +471,6 @@ public:
          unsigned talonLookAheadLimit=24, 
          unsigned recyleLimit=-1);
     Game(const Game&);
-    /*
-    bool operator==(const Game& rt) const noexcept
-    {
-        if (_waste != rt._waste) return false;
-        if (_tableau != rt._tableau) return false;
-        if (_stock != rt._stock) return false;
-        if (_foundation != rt._foundation) return false;
-        // remaining fields not checked
-        return true;
-    }
-    */
 
     Pile& WastePile()       					    {return _waste;}
     TableauType& Tableau()                          {return _tableau;}
