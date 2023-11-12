@@ -462,6 +462,9 @@ private:
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
 
     QMoves UnfilteredAvailableMoves() const noexcept;
+    std::array<Pile,PileCount>& AllPiles() {
+        return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
+    }
     
 public:
     Game(CardDeck deck,
@@ -469,11 +472,6 @@ public:
          unsigned talonLookAheadLimit=24, 
          unsigned recyleLimit=-1);
     Game(const Game&);
-
-    Pile& WastePile()       					    {return _waste;}
-    TableauType& Tableau()                          {return _tableau;}
-    Pile& StockPile()       					    {return _stock;}
-    FoundationType& Foundation()                    {return _foundation;}
     const Pile & WastePile() const noexcept    	    {return _waste;}
     const Pile & StockPile() const noexcept    	    {return _stock;}
     const FoundationType& Foundation()const noexcept{return _foundation;}
@@ -482,9 +480,6 @@ public:
     unsigned TalonLookAheadLimit() const noexcept	{return _talonLookAheadLimit;}
     unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
     unsigned RecycleCount() const noexcept          {return _recycleCount;}
-    std::array<Pile,PileCount>& AllPiles() {
-        return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
-    }
     const std::array<Pile,PileCount>& AllPiles() const {
         return *reinterpret_cast<const std::array<Pile,PileCount>* >(&_waste);
     }
