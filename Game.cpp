@@ -502,18 +502,17 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
 void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     for (const auto& fPile: _foundation) {
-        if (fPile.size() > minFoundationSize+1) {  
-            const Card& top = fPile.back();
-            for (const auto& tPile: _tableau) {
-                if (tPile.size() > 0) {
-                    if (top.Covers(tPile.back())) {
-                        moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
-                    }
-                } else {
-                    if (top.Rank() == King) {
-                        moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
-                        break;  // don't move same king to another tableau pile
-                    }
+        if (fPile.size() <= minFoundationSize+1) continue;
+        const Card& top = fPile.back();
+        for (const auto& tPile: _tableau) {
+            if (tPile.size() > 0) {
+                if (top.Covers(tPile.back())) {
+                    moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
+                }
+            } else {
+                if (top.Rank() == King) {
+                    moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
+                    break;  // don't move same king to another tableau pile
                 }
             }
         }
@@ -546,7 +545,8 @@ QMoves Game::UnfilteredAvailableMoves() const noexcept
 // Counts the number of times a card is higher in the stack
 // than a lower card of the same suit.  Remember that the 
 // stack tops are at the back.
-static unsigned MisorderCount(const Card *begin, const Card *end)
+template <class Iter>
+unsigned MisorderCount(Iter begin, Iter end)
 {
     unsigned  mins[SuitsPerDeck] {14,14,14,14};
     unsigned result = 0;
@@ -587,11 +587,11 @@ unsigned Game::MinimumMovesLeft() const noexcept
         result += MisorderCount(_waste.begin(), _waste.end());
     }
 
-    for (const auto & tpile: _tableau) {
-        if (tpile.size()) {
-            const auto begin = tpile.begin();
-            const unsigned downCount = tpile.size() - tpile.UpCount();
-            result += tpile.size() + MisorderCount(begin, begin+downCount+1);
+    for (const auto & tPile: _tableau) {
+        if (tPile.size()) {
+            const auto begin = tPile.begin();
+            const unsigned downCount = tPile.size() - tPile.UpCount();
+            result += tPile.size() + MisorderCount(begin, begin+downCount+1);
         }
     }
     return result;

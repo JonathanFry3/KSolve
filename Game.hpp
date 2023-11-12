@@ -19,6 +19,8 @@
 #include <cassert>
 #include <sstream> 		// for stringstream
 #include <optional>
+#include <numeric>
+#include <algorithm>
 
 #include "frystl/static_vector.hpp"
 
@@ -263,10 +265,8 @@ typedef frystl::static_vector<Move,43> QMoves;
 template <class SeqType>
 unsigned MoveCount(const SeqType& moves) noexcept
 {
-    unsigned result = 0;
-    for (auto & move: moves)
-        result += move.NMoves();
-    return result;
+    return std::accumulate(moves.begin(),moves.end(),0,
+        [](auto acc, auto move){return acc+move.NMoves();});
 }
 
 // Return the number of stock recycles implied by a sequence of Moves.
@@ -528,7 +528,6 @@ void TestSolution(Game game, const Container& mvs)
 		game.Deal();
 		// PrintGame(game);
 		for (auto mv: mvs) {
-			// std::cerr << Peek(mv) << std::endl;
 			assert(game.IsValid(mv));
 			game.MakeMove(mv);
 		}

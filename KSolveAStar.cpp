@@ -82,6 +82,7 @@ public:
         _fringe.emplace_back();
         _fringe[0]._stack.push_back(-1);
     }
+
     FringeSizeType MaxFringeElementSize() const{
         FringeSizeType result = 0;
         for (const auto & f: _fringe) {
@@ -89,6 +90,7 @@ public:
         }
         return result;
     }
+
     unsigned MoveCount() const{
         return _moveTree.size();
     }
@@ -358,8 +360,8 @@ void MoveStorage::ShareMoves()
             Guard rupert(_shared._moveTreeMutex);
             // Copy all the stem moves into the move tree.
             for (auto mvi = _currentSequence.begin()+_startSize;
-                    mvi != _currentSequence.end();
-                    ++mvi) {
+                      mvi != _currentSequence.end();
+                      ++mvi) {
                 // Each stem node points to the previous node.
                 _shared._moveTree.emplace_back(*mvi, stemEnd);
                 stemEnd =  _shared._moveTree.size() - 1;
@@ -402,13 +404,14 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
     for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
     {
-        size = _shared._fringe.size();
+        auto & fringe = _shared._fringe;
+        size = fringe.size();
         // Set offset to the index of the first non-empty leaf node stack, or size if all are empty.
-        for (offset = 0; offset < size && _shared._fringe[offset]._stack.empty(); ++offset) {}
+        for (offset = 0; offset < size && fringe[offset]._stack.empty(); ++offset) {}
 
         if (offset < size) {
-            Guard methuselah(_shared._fringe[offset]._mutex);
-            auto & stack = _shared._fringe[offset]._stack;
+            Guard methuselah(fringe[offset]._mutex);
+            auto & stack = fringe[offset]._stack;
             if (stack.size()) {
                 _leafIndex = stack.back();
                 stack.pop_back();
@@ -416,7 +419,7 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
             }
         } 
         if (result == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::yield();
         }
     }
     if (result) {
