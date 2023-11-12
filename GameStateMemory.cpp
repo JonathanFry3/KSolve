@@ -3,6 +3,7 @@
 #include <algorithm>        // max
 #include "GameStateMemory.hpp"
 
+namespace KSolveNames {
 GameState::GameState(const Game& game, unsigned moveCount) noexcept
     : _moveCount(moveCount)
 {
@@ -72,3 +73,4 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
     );
     return isNewKey || valueChanged;
 }
+}   // namespace KSolveNames
