@@ -24,11 +24,20 @@ AGGREGATE OUTFILE=* MODE=ADDVARIABLES
 	/min_time "Minimum Time" = MIN(time).
 	 (time).
 GRAPH SCATTERPLOT(BIVARIATE) = threads WITH min_time.
- compute moves_generated_per_second = treemoves/min_time.
- GRAPH scatterplot(bivariate) = threads with moves_generated_per_second.
+ compute gmps= treemoves/min_time.
+ variable label gmps "Generated moves per second".
+ GRAPH scatterplot(bivariate) = threads with gmps.
  
 compute constant = 1.
  aggregate out=* mode=add / break = constant / gl_max_time "Global Maximum Time" = max(min_time).
  compute Speedup = gl_max_time/min_time.
  GRAPH SCATTERPLOT(BIVARIATE) = threads WITH Speedup.
+ select if (threads <= 8).
+ GRAPH SCATTERPLOT(BIVARIATE) = threads WITH Speedup.
+REGRESSION
+	/VARIABLES= threads
+	/DEPENDENT= Speedup
+	/METHOD=ENTER
+	/STATISTICS=COEFF R.
+
  
