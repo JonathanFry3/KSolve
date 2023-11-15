@@ -154,6 +154,38 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  g++ build thread-test",
+			"command": "g++",
+			"args": [
+				"-g",
+				"-pthread",
+			//	"-pg", "-O1",	// gprof profiling
+				"-std=c++17",
+				"-O3",
+			//	"-O",			// for valgrind builds
+				"-Wno-placement-new",
+			//	"-DNDEBUG",		// comment out to activate assert()
+			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"thread-tests.cpp",
+				"-o",
+				"${workspaceFolder}/thread-test"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++: cl.exe build active file",
 			"command": "cl.exe",
 			"args": [
@@ -192,6 +224,36 @@
 				"ran.cpp",
 				"-o",
 				"${workspaceFolder}/ran"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  clang build thread-test",
+			"command": "clang++-17",
+			"args": [
+				"-g",
+				"-pthread",
+			//	"-pg", "-O1",	// gprof profiling
+				"-O3",
+			//	"-O",			// for valgrind builds
+			//	"-DNDEBUG",		// comment out to activate assert()
+			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"thread-test.cpp",
+				"-o",
+				"${workspaceFolder}/thread-test"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
@@ -274,6 +336,34 @@
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
 			"ran.cpp" 
+		],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": [  
+			"$msCompile"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		}
+	},
+	{
+		"type": "shell",
+		"label": "C/C++: cl.exe build thread-test",
+		"command": "cl.exe",
+		"args": [
+			"-Zi",			// debug information format
+			"-EHsc",		// Exception handling options
+			"-O2",			// maximize speed
+			"-utf-8",
+			"-GL",			// Optimize across whole program
+			"-std:c++17",   // language standard - c++ 17
+			"-Fe:",	"thread-test.exe", // name EXE file
+			"Game.cpp",
+			"KSolveAStar.cpp",
+			"GameStateMemory.cpp",
+			"thread-test.cpp" 
 		],
 		"options": {
 			"cwd": "${workspaceFolder}"
