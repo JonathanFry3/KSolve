@@ -1,6 +1,6 @@
 GET DATA
   /TYPE=TXT
-  /FILE="C:\Users\Jon\prj\KSolve\thread-test-MSVC-1.txt"
+  /FILE="/home/jon/prj/KSolve/statistics/thread-test-gcc-1.txt"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -18,15 +18,17 @@ GET DATA
     frmax F6.0
     branches F7.0
     treemoves F7.0.
- GRAPH SCATTERPLOT(BIVARIATE) = threads WITH time.
- compute moves_generated_per_second = treemoves/time.
- GRAPH scatterplot(bivariate) = threads with moves_generated_per_second.
-sort cases threads.
+ sort cases threads.
 AGGREGATE OUTFILE=* MODE=ADDVARIABLES
 	/BREAK= threads
-	/mean_time "Mean Time" = MEAN (time).
-
-
-
-
-
+	/min_time "Minimum Time" = MIN(time).
+	 (time).
+GRAPH SCATTERPLOT(BIVARIATE) = threads WITH min_time.
+ compute moves_generated_per_second = treemoves/min_time.
+ GRAPH scatterplot(bivariate) = threads with moves_generated_per_second.
+ 
+compute constant = 1.
+ aggregate out=* mode=add / break = constant / gl_max_time "Global Maximum Time" = max(min_time).
+ compute Speedup = gl_max_time/min_time.
+ GRAPH SCATTERPLOT(BIVARIATE) = threads WITH Speedup.
+ 

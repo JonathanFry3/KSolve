@@ -169,7 +169,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
-				"thread-tests.cpp",
+				"thread-test.cpp",
 				"-o",
 				"${workspaceFolder}/thread-test"
 			],
