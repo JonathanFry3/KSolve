@@ -8,6 +8,11 @@
 
 namespace KSolveNames {
 
+unsigned DefaultThreads()
+{
+    return std::thread::hardware_concurrency();
+}
+
 class Spinlock {
   std::atomic_flag _lock = ATOMIC_FLAG_INIT;
 
@@ -247,7 +252,7 @@ KSolveAStarResult KSolveAStar(
     state._moveStorage.Shared().Start(moveTreeLimit,startMoves);	// pump priming
     
     if (nThreads == 0)
-        nThreads = 2*std::thread::hardware_concurrency();
+        nThreads = DefaultThreads();
 
     // Start workers in their own threads
     std::vector<std::thread> threads;

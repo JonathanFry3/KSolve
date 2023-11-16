@@ -73,7 +73,7 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-mv # or --mvlimit    Set the maximum size of the move tree (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (see below for default)." << endl;
             cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
-            cout << "The default number of threads is twice the number the hardware will run concurrently." << endl;
+            cout << "The default number of threads is the number the hardware will run concurrently." << endl;
             cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
@@ -136,14 +136,14 @@ int main(int argc, char * argv[])
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
         cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfrmax\tbranches\ttreemoves" << endl;
+    unsigned threads = (spec._threads > 0)
+                        ? spec._threads
+                        : DefaultThreads();
     
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
         CardDeck deck(NumberedDeal(seed));
         Game game(deck, spec._drawSpec,spec._lookAhead,recycleLimit);
-        unsigned threads = (spec._threads > 0)
-                            ? spec._threads
-                            :2*std::thread::hardware_concurrency();
         cout << sample << "\t"
             << seed << "\t"
             << threads << "\t"			 
