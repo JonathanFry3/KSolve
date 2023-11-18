@@ -13,20 +13,6 @@ unsigned DefaultThreads()
     return std::thread::hardware_concurrency();
 }
 
-class Spinlock {
-  std::atomic_flag _lock = ATOMIC_FLAG_INIT;
-
- public:
-  void lock() {
-    while (_lock.test_and_set(std::memory_order_acquire)) continue;
-  }
-  void unlock() {
-    _lock.clear(std::memory_order_release);
-  }
-};
-
-using SpinGuard = std::lock_guard<Spinlock>;
-
 typedef std::mutex Mutex;
 typedef std::lock_guard<Mutex> Guard;
 
