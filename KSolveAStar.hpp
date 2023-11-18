@@ -26,6 +26,7 @@
 #ifndef KSOLVEASTAR_HPP
 #define KSOLVEASTAR_HPP
 
+#include <thread>
 #include "Game.hpp"		// for Game, Card, Pile, Move etc.
 namespace KSolveNames {
 // Solves the game of Klondike Solitaire for minimum moves if possible.
@@ -65,6 +66,8 @@ KSolveAStarResult KSolveAStar(
         unsigned MoveTreeLimit=12'000'000,// Give up if the size of the move tree
                                         // exceeds this before any solution is found.
         unsigned threads=0);            // Use as many threads as the hardware will run together
+
+unsigned DefaultThreads();
 }       // namespace KSolveNames
 
 #endif    // KSOLVEASTAR_HPP 
