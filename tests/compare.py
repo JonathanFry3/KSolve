@@ -7,24 +7,22 @@ if len(sys.argv) == 3:
         test = pd.read_csv(sys.argv[2], sep="\t")
 elif len(sys.argv) == 1:
         base = pd.read_csv("tests/sm-1-base-1000.txt", sep="\t")
-        test = pd.read_csv("tests/sm-1-100-tests.txt", sep="\t")
+        test = pd.read_csv("tests/sm-1-100-test.txt", sep="\t")
 else:
         print("Expected two filenames or none.")
         exit
 assert test.shape[0] <= base.shape[0]
-indexes = list(range(test.shape[0]))
+indexes = range(test.shape[0])
 basex = base.loc[indexes]
 print(pd.crosstab(index=basex["outcome"],columns=test["outcome"],rownames=["Base"], colnames=["Test"]))
-movesPlus = basex["outcome"].isin([0,1]) & test["outcome"].isin([0,1]) \
-        & (test["moves"] > basex["moves"])
+movesPlus = test["moves"] > basex["moves"]
 print("  Moves+:",list(test.row[movesPlus]))
-movesMinus = basex["outcome"].isin([0,1]) & test["outcome"].isin([0,1]) \
-        & (test["moves"] < basex["moves"])
+movesMinus = test["moves"] < basex["moves"]
 print("  Moves-:",list(test.row[movesMinus]))
 timePlus = filter(lambda i:  basex.time[i] < test.time[i], indexes)
-print("   Time+:",len(list(test.row[timePlus])))
+print("   Time+:",len(test.row[timePlus]))
 timeMinus = filter(lambda i:  basex.time[i] > test.time[i], indexes)
-print("   Time-:",len(list(test.row[timeMinus])))
+print("   Time-:",len(test.row[timeMinus]))
 form = "{:12.2f}"
 pctForm = "{:+.2f}%"
 baseTot = sum(basex.time)
