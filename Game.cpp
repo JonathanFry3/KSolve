@@ -265,16 +265,17 @@ void Game::OneMoveToShortFoundationPile(
         const Pile &pile = *iPile;
         if (pile.size()) {
             const Card& card = pile.back();
-            const SuitType suit = card.Suit();
+            auto fromPile = pile.Code();
             if (card.Rank() <= minFoundationSize+1 
                 && CanMoveToFoundation(card)) {
-                PileCodeType pileCode = pile.Code();
-                if (pileCode == Stock) {
+                const auto toPile = FoundationPileCode(card.Suit());
+
+                if (fromPile == Stock) {
                     // Stock Move: draw one card, move it to foundation
-                    moves.emplace_back(PileCodeType(FoundationBase+suit),2,1);
+                    moves.emplace_back(toPile,2,1);
                 } else {
-                    const unsigned up = (pileCode == Waste) ? 0 : pile.UpCount();
-                    moves.emplace_back(pileCode,PileCodeType(FoundationBase+suit),1,up);
+                    const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
+                    moves.emplace_back(fromPile,toPile,1,up);
                 }
             }
         }
@@ -473,7 +474,7 @@ bool Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
 
         bool recycle = talonCard._recycle;
         if (CanMoveToFoundation(talonCard._card)) {
-            const PileCodeType pileNo = PileCodeType(FoundationBase+talonCard._card.Suit());
+            const auto pileNo = FoundationPileCode(talonCard._card.Suit());
             PushStockMove(talonCard, pileNo, recycle, moves);
             if (talonCard._card.Rank() <= minFoundationSize+1){
                 if (_drawSetting == 1) {

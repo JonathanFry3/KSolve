@@ -32,9 +32,9 @@ namespace views = std::views;
 enum RankType : unsigned char
 {
     Ace = 0,
-    King = 12,
-    CardsPerSuit
+    King = 12
 };
+const unsigned CardsPerSuit {13};
 enum SuitType : unsigned char 
 {
     Clubs = 0,
@@ -42,9 +42,9 @@ enum SuitType : unsigned char
     Spades,
     Hearts
 };
-enum {SuitsPerDeck = 4};
-enum {CardsPerDeck = CardsPerSuit*SuitsPerDeck};
-enum {TableauSize = 7};
+const unsigned SuitsPerDeck {4};
+const unsigned CardsPerDeck {CardsPerSuit*SuitsPerDeck};
+const unsigned TableauSize  {7};
 
 class Card
 {
@@ -129,8 +129,13 @@ enum PileCodeType : unsigned char{
     Foundation4H,
     PileCount
 };
-
 static_assert(Stock == PileCodeType(TableauBase+TableauSize));
+
+static PileCodeType FoundationPileCode(SuitType suit)
+{
+    unsigned suitNum = suit;
+    return static_cast<PileCodeType>(FoundationBase+suitNum);
+}
 
 static bool IsTableau(PileCodeType pile) noexcept
 {
@@ -507,7 +512,8 @@ public:
         QMoves avail = UnfilteredAvailableMoves();
         auto newEnd = ranges::remove_if(avail,
             [&movesMade] (Move move) 
-                {return XYZ_Move(move, movesMade);}).end();
+                {return XYZ_Move(move, movesMade);}).begin();
+        assert (avail.begin() <= newEnd && newEnd <= avail.end());
         while (avail.end() != newEnd) avail.pop_back();
         return avail;
     }
