@@ -95,10 +95,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang++ build and run unittests",
-			"command": "clang++-20",
+			"command": "clang++",
 			"args": [
 				"-DFRYSTL_DEBUG",
 				"-g",
+				"-std=c++20",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -208,10 +209,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang build ran",
-			"command": "clang++-20",
+			"command": "clang++",
 			"args": [
 				"-g",
 				"-pthread",
+				"-std=c++20",
 			//	"-pg", "-O1",	// gprof profiling
 				"-O3",
 			//	"-O",			// for valgrind builds
@@ -238,10 +240,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang build thread-test",
-			"command": "clang++-20",
+			"command": "clang++",
 			"args": [
 				"-g",
 				"-pthread",
+				"-std=c++20",
 			//	"-pg", "-O1",	// gprof profiling
 				"-O3",
 			//	"-O",			// for valgrind builds
