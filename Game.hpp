@@ -13,6 +13,7 @@
 
     Any solvers implemented here will operate on these objects.
 */ 
+#include <ranges>
 #include <string>
 #include <vector>
 #include <array>
@@ -23,8 +24,10 @@
 #include <algorithm>
 
 #include "frystl/static_vector.hpp"
-
 namespace KSolveNames {
+
+namespace ranges = std::ranges;
+namespace views = std::views;
 
 enum RankType : unsigned char
 {
@@ -80,8 +83,6 @@ public:
     // Ignores characters that cannot appear in a valid card string.
     // Suit may come before or after rank, and letters may be in
     // upper or lower case, or mixed.
-    // Returns true and the specified Card if it succeeds, 
-    // false and garbage if it fails,
     static std::optional<Card> FromString(const std::string& s) noexcept;
 };
 
@@ -273,8 +274,8 @@ unsigned MoveCount(const SeqType& moves) noexcept
 template <class SeqType>
 unsigned RecycleCount(const SeqType& moves) noexcept
 {
-    return std::count_if(moves.cbegin(), moves.cend(), 
-        [&](const auto & p) {return p.Recycle();});
+    return ranges::count_if(moves, 
+        [&](auto  p) {return p.Recycle();});
 }
 
 // Mix-in to make any sequence container an automatic move counter.
@@ -406,8 +407,7 @@ static bool XYZ_Move(Move trial, const V& movesMade) noexcept
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
     const auto Z = trial.To();
-    for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){
-        const Move mv = *imv;
+    for (auto mv: views::reverse(movesMade)){ 
         if (mv.To() == Y){
             // candidate T0 move
             if (mv.From() == Z) {
@@ -420,9 +420,9 @@ static bool XYZ_Move(Move trial, const V& movesMade) noexcept
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)
-                return false;			// trial move's to pile (Z) has changed
+                return false;			// trial move's to-pile (Z) has changed
             if (mv.From() == Y) 
-                return false;			// trial move's from pile (Y) has changed
+                return false;			// trial move's from-pile (Y) has changed
         }
     }
     return false;
@@ -505,11 +505,9 @@ public:
     QMoves AvailableMoves(const V& movesMade) noexcept
     {
         QMoves avail = UnfilteredAvailableMoves();
-        auto newEnd = std::remove_if(
-            avail.begin(), 
-            avail.end(),
-            [&movesMade] (Move& move) 
-                {return XYZ_Move(move, movesMade);});
+        auto newEnd = ranges::remove_if(avail,
+            [&movesMade] (Move move) 
+                {return XYZ_Move(move, movesMade);}).end();
         while (avail.end() != newEnd) avail.pop_back();
         return avail;
     }
