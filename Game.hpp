@@ -250,7 +250,7 @@ public:
 
     void SetRecycle(bool r) noexcept    {_recycle = r;}      
 
-    bool IsTalonMove() const noexcept	{return _from==Stock;}
+    bool IsStockMove() const noexcept	{return _from==Stock;}
     PileCodeType From() const noexcept  {return _from;}
     PileCodeType To() const noexcept	{return _to;}
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
@@ -465,7 +465,7 @@ private:
     // Parts of UnfilteredAvailableMoves()
     void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromTableau(QMoves & moves) const noexcept;
-    bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
+    bool MovesFromStock(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
 
     QMoves UnfilteredAvailableMoves() const noexcept;
