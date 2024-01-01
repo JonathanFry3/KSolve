@@ -373,7 +373,6 @@ void MoveStorage::ShareMoves()
         {
             Guard rupert(_shared._moveTreeMutex);
             // Copy all the stem moves into the move tree.
-            // for (auto m: ranges::drop_view(_currentSequence, _startSize))
             for (auto m: _currentSequence | views::drop(_startSize))
             {
                 // Each stem node points to the previous node.
