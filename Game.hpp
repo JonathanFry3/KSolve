@@ -513,7 +513,6 @@ public:
         auto newEnd = ranges::remove_if(avail,
             [&movesMade] (Move move) 
                 {return XYZ_Move(move, movesMade);}).begin();
-        assert (avail.begin() <= newEnd && newEnd <= avail.end());
         while (avail.end() != newEnd) avail.pop_back();
         return avail;
     }
