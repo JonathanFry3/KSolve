@@ -12,7 +12,9 @@ else:
         print("Expected two filenames or none.")
         exit
 assert test.shape[0] <= base.shape[0]
-indexes = range(test.shape[0])
+indexes = test["seed"]
+test.set_index("seed",inplace=True)
+base.set_index("seed",inplace=True)
 basex = base.loc[indexes]
 print(pd.crosstab(index=basex["outcome"],columns=test["outcome"],rownames=["Base"], colnames=["Test"]))
 movesPlus = test["moves"] > basex["moves"]
