@@ -7,8 +7,7 @@ namespace KSolveNames {
 GameState::GameState(const Game& game, unsigned moveCount) noexcept
     : _moveCount(moveCount)
 {
-    typedef std::array<uint32_t,TableauSize> TabStateT;
-    TabStateT tableauState;
+    std::array<uint32_t,TableauSize> tableauState;
     const auto& tableau = game.Tableau();
     for (unsigned i = 0; i<TableauSize; ++i) {
         const auto& cards = tableau[i];
@@ -21,30 +20,34 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
             // by identifying the bottom card (the first face-up card)
             // and whether each other face-up card is from 
             // a major suit (hearts or spades) or not.
-            unsigned isMajor = 0;
-            for (auto j = cards.end()-upCount+1;j < cards.end(); j+=1){
-                isMajor = isMajor<<1 | unsigned(j->IsMajor());
-            }
+            //
+            // The face-up cards in a tableau pile cannot number
+            // more than 12, since AvailableMoves() will never move an
+            // ace there.
+            unsigned isMajor = 
+                std::accumulate(cards.end()-upCount+1, cards.end(), 0,
+                    [](unsigned acc, Card card)
+                        {return acc<<1 | card.IsMajor();});
             const Card top = cards.Top();
             tableauState[i] = ((top.Suit()<<4 | top.Rank())<<11 | isMajor)<<4 | upCount;
         }
     }
     // Sort the tableau states because tableaus that are identical
     // except for order are considered equal
-    std::sort(tableauState.begin(),tableauState.end());
+    ranges::sort(tableauState);
 
-    _part0 =    GameState::PartType(tableauState[0])<<42
-                | GameState::PartType(tableauState[1])<<21
+    _part0 =    (GameState::PartType(tableauState[0])<<21
+                | GameState::PartType(tableauState[1]))<<21
                 | GameState::PartType(tableauState[2]);
-    _part1 =    GameState::PartType(tableauState[3])<<42
-                | GameState::PartType(tableauState[4])<<21
+    _part1 =    (GameState::PartType(tableauState[3])<<21
+                | GameState::PartType(tableauState[4]))<<21
                 | GameState::PartType(tableauState[5]);
     auto& f{game.Foundation()};
-    _part2 =    GameState::PartType(tableauState[6])<<21
-                | game.StockPile().size()<<16
-                | f[0].size()<<12 
-                | f[1].size()<<8 
-                | f[2].size()<<4 
+    _part2 =    ((((GameState::PartType(tableauState[6])<<5
+                | game.StockPile().size())<<4
+                | f[0].size())<<4 
+                | f[1].size())<<4 
+                | f[2].size())<<4 
                 | f[3].size();
 }
 
