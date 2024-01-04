@@ -1,6 +1,6 @@
 GET DATA
   /TYPE=TXT
-  /FILE="/home/jon/prj/KSolve/tests/base10000.txt"
+  /FILE="/home/jon/prj/KSolve/tests/lg-1-base-1000.txt"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -19,11 +19,11 @@ GET DATA
     base_treemoves F9.0.
 value labels base_outcome 0 "Solved Mimimal" 1 Solved 2 Impossible 3 "Gave Up".    
 
-save outfile="/home/jon/prj/KSolve/statistics/base10000.sav".
+save outfile="/home/jon/prj/KSolve/statistics/lg-1-base-1000.sav".
 
 GET DATA
   /TYPE=TXT
-  /FILE="/home/jon/prj/KSolve/tests/big2000.txt"
+  /FILE="/home/jon/prj/KSolve/tests/lg-3-base-1000.txt"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -42,4 +42,4 @@ GET DATA
     base_treemoves F9.0.
 value labels base_outcome 0 "Solved Mimimal" 1 Solved 2 Impossible 3 "Gave Up".    
 
-save outfile="/home/jon/prj/KSolve/statistics/big2000.sav".
+save outfile="/home/jon/prj/KSolve/statistics/lg-3-base-1000.sav".
