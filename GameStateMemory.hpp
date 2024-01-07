@@ -39,6 +39,7 @@ struct GameState {
             && _part2 == other._part2;
     }
 };
+static_assert(sizeof(GameState) == 24);
 struct Hasher
 {
     size_t operator() (const GameState & gs) const noexcept

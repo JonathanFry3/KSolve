@@ -42,13 +42,13 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
     _part1 =    (GameState::PartType(tableauState[3])<<21
                 | GameState::PartType(tableauState[4]))<<21
                 | GameState::PartType(tableauState[5]);
-    auto& f{game.Foundation()};
+    auto& fnd{game.Foundation()};
     _part2 =    ((((GameState::PartType(tableauState[6])<<5
                 | game.StockPile().size())<<4
-                | f[0].size())<<4 
-                | f[1].size())<<4 
-                | f[2].size())<<4 
-                | f[3].size();
+                | fnd[0].size())<<4 
+                | fnd[1].size())<<4 
+                | fnd[2].size())<<4 
+                | fnd[3].size();
 }
 
 GameStateMemory::GameStateMemory()
@@ -66,7 +66,6 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
         [&](auto& oldState) {	// run behind lock when key found
             if (moveCount < oldState._moveCount) {
                 oldState._moveCount = moveCount;
-                static_assert(sizeof(oldState) == 24);
                 valueChanged = true;
             }
         },
