@@ -423,10 +423,9 @@ void MoveStorage::UpdateFringe(MoveStorage::NodeX branchIndex) noexcept
     }
     for (const auto &br: _branches) {
         auto & elem = fringe[br._offset];
-        {
-            Guard clyde(elem._mutex);
-            elem._stack.push_back(branchIndex++);
-        }
+
+        Guard clyde(elem._mutex);
+        elem._stack.push_back(branchIndex++);
     }
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
@@ -443,17 +442,20 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
     {
         auto & fringe = _shared._fringe;
         size = fringe.size();
-        // Set offset to the index of the first non-empty leaf node stack, or size if all are empty.
+        // Set offset to the index of the first non-empty leaf node stack
+        // or size if all are empty.
         auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
         offset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
 
         if (offset < size) {
-            Guard methuselah(fringe[offset]._mutex);
             auto & stack = fringe[offset]._stack;
-            if (stack.size()) {
-                _leafIndex = stack.back();
-                stack.pop_back();
-                result = offset+_shared._startStackIndex;
+            {
+                Guard methuselah(fringe[offset]._mutex);
+                if (stack.size()) {
+                    _leafIndex = stack.back();
+                    stack.pop_back();
+                    result = offset+_shared._startStackIndex;
+                }
             }
         } 
         if (result == 0) {
@@ -464,14 +466,17 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 }
 void MoveStorage::LoadMoveSequence() noexcept
 {
-    // Follow the links to recover all of its preceding moves in reverse order.
+    // Follow the links to recover all the moves in a sequence in reverse order.
     // Note that this operation requires no guard on _shared._moveTree only if 
     // the block vector in that structure never needs reallocation.
     _currentSequence.clear();
-    for (NodeX node = _leafIndex; node != -1U; node = _shared._moveTree[node]._prevNode){
+    for (NodeX node = _leafIndex; 
+         node != -1U; 
+         node = _shared._moveTree[node]._prevNode){
         const Move &mv = _shared._moveTree[node]._move;
         _currentSequence.push_front(mv);
     }
+
     _startSize = _currentSequence.size();
     _branches.clear();
 }
