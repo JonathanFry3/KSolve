@@ -152,6 +152,34 @@
 				"isDefault": true
 			}
 		},
+        {
+            "type": "shell",
+            "label": "C/C++:  g++ build benchmark",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-pthread",
+                "-std=c++20",
+                "-O3",
+                "-Wno-placement-new",
+                "Game.cpp",
+                "GameStateMemory.cpp",
+                "KSolveAStar.cpp",
+                "benchmark.cpp",
+                "-o",
+                "${workspaceFolder}/benchmark"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
 		{
 			"type": "shell",
 			"label": "C/C++:  g++ build thread-test",
