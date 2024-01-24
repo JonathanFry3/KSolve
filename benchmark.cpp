@@ -10,13 +10,12 @@
 #include <algorithm>
 #include <iterator>
 #include <chrono>
+#include <numeric>
 
 #include "KSolveAStar.hpp"
 
 using namespace std;
 using namespace KSolveNames;
-namespace ranges = std::ranges;
-namespace chrono = std::chrono;
 
 
 using ArgVec = vector<string>;
@@ -24,11 +23,8 @@ using ArgVec = vector<string>;
 static ArgVec WrapArgs(int nArgs, char* args[])
 {
     ArgVec result;
-    result.reserve(nArgs);
-    for (int i = 0; i < nArgs; ++i){
-        result.emplace_back(args[i]);
-    }
-    return result;
+    return accumulate(args, args+nArgs, ArgVec(),
+        [](ArgVec r, char*& arg) {r.emplace_back(arg);return r;});
 }
 struct Specs
 {
@@ -36,6 +32,31 @@ struct Specs
     bool verbose{false};
     unsigned seed{50486};
 };
+
+static unsigned GetUnsignedInt(const ArgVec& args, unsigned i)
+{
+    int result;
+    if (i < args.size()) {
+        try{
+            result = stoi(args[i]);
+        }
+        catch (...){
+            cerr << "Invalid argument after "<<"\""<<args[i-1]<<"\":";
+            cerr << " \"" << args[i] << "\"" << "\n";
+            exit(4);
+        }
+        if (result < 0) {
+            cerr << "\"" << args[i-1] << "\"";
+            cerr << " requires a non-negative integer.  Got ";
+            cerr << "\"" << args[i] << "\"\n";
+            exit(4);
+        }
+    } else {
+        cerr << "Missing argument after " << "\"" << args[i-1] << "\"\n";
+        exit(4);
+    }
+    return result;
+}
 
 static Specs GetSpecs(const ArgVec& args)
 {
@@ -47,35 +68,11 @@ static Specs GetSpecs(const ArgVec& args)
         else if (arg == "-n" || arg == "--nReps")
         {
             i++;
-            if (i < args.size()) {
-                try{
-                    result.nReps = stoul(args[i]);
-                }
-                catch (...){
-                    cerr << "Invalid argument after "<<"\""<<args[i-1]<<"\":";
-                    cerr << " \"" << args[i] << "\"" << "\n";
-                    exit(4);
-                }
-            } else {
-                cerr << "Missing argument after " << "\"" << args[i-1] << "\"\n";
-                exit(4);
-            }
+            result.nReps = GetUnsignedInt(args, i);
         } else if (arg == "-g" || arg == "--gameID")
         {
             i++;
-            if (i < args.size()) {
-                try{
-                    result.nReps = stoul(args[i]);
-                }
-                catch (...){
-                    cerr << "Invalid argument after "<<"\""<<args[i-1]<<"\":";
-                    cerr << " \"" << args[i] << "\"" << "\n";
-                    exit(4);
-                }
-            } else {
-                cerr << "Missing argument after " << "\"" << args[i-1] << "\"\n";
-                exit(4);
-            }
+            result.seed = GetUnsignedInt(args, i);
         } else {
             cerr << "Invalid argument " << args[i] << "\n";
             exit(4);
@@ -94,9 +91,9 @@ static vector<double> Measure(unsigned nReps, unsigned seed)
     for (unsigned i = 0; i < nReps; ++i) {
         auto startTime = chrono::steady_clock::now();
         KSolveAStarResult slv = KSolveAStar(game,100'000'000);
-        chrono::duration<float, std::milli> elapsed = 
-            chrono::steady_clock::now() - startTime;
-        result.push_back(elapsed.count()/1000.);
+        double elapsed = 
+            (chrono::steady_clock::now() - startTime)/1.0s;
+        result.push_back((elapsed));
     }
     return result;
 }
@@ -117,23 +114,27 @@ static void PrintVerbose(vector<double> secs)
     ranges::copy(secs, ostream_iterator<double>(cout, " "));
     cout << "\n";
 
-    vector<double> diffs(secs.size());
-    adjacent_difference(secs.begin(), secs.end(),diffs.begin());
-    cout << "Adjacent differences:     ";
-    copy(diffs.begin()+1,diffs.end(), 
-        ostream_iterator<double>(cout, " "));
-    cout << "\n";
+    if (secs.size() > 1) {
+        vector<double> diffs(secs.size());
+        adjacent_difference(secs.begin(), secs.end(),diffs.begin());
+        cout << "Adjacent differences:     ";
+        copy(diffs.begin()+1,diffs.end(), 
+            ostream_iterator<double>(cout, " "));
+        cout << "\n";
+    }
 }
 
 int main(int nArgs, char* args[])
 {
     auto argVec = WrapArgs(nArgs, args);
     auto specs = GetSpecs(argVec);
-    fixed(cout);
-    cout.precision(3);
-    vector<double> elapsedSeconds = Measure(specs.nReps, specs.seed);
-    if (specs.verbose) PrintVerbose(elapsedSeconds);
-    else PrintConcise(elapsedSeconds);
+    if (specs.nReps > 0) {
+        fixed(cout);
+        cout.precision(3);
+        vector<double> elapsedSeconds = Measure(specs.nReps, specs.seed);
+        if (specs.verbose) PrintVerbose(elapsedSeconds);
+        else PrintConcise(elapsedSeconds);
+    }
     return 0;
 }
 
