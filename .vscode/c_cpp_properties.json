@@ -9,7 +9,7 @@
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         },
@@ -17,7 +17,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**"
-                ,"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.37.32822/include"
+                ,"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -27,7 +27,7 @@
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "msvc-x64"
         }
     ],

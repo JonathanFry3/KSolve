@@ -8,6 +8,9 @@
 
 namespace KSolveNames {
 
+namespace ranges = std::ranges;
+namespace views = ranges::views;
+
 unsigned DefaultThreads()
 {
     return std::thread::hardware_concurrency();
@@ -80,7 +83,7 @@ private:
 public:
     // Start move storage with the minimum number of moves from
     // the dealt deck before the first move.
-    void Start(size_t moveTreeSizeLimit, unsigned minMoves)
+    void Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
     {
         _moveTreeSizeLimit = moveTreeSizeLimit;
         _moveTree.reserve(moveTreeSizeLimit+1000);
@@ -89,18 +92,16 @@ public:
         _fringe[0]._stack.push_back(-1);
     }
 
-    FringeSizeType MaxFringeElementSize() const{
-        FringeSizeType result = 0;
-        for (const auto & f: _fringe) {
-            result = std::max(result, f._stack.MaxSize());
-        }
-        return result;
+    FringeSizeType MaxFringeElementSize() const noexcept{
+        return ranges::max_element(_fringe,{},
+            [](const auto& f){return f._stack.MaxSize();})
+            ->_stack.MaxSize();
     }
 
-    unsigned MoveCount() const{
+    unsigned MoveCount() const noexcept{
         return _moveTree.size();
     }
-    bool OverLimit() const{
+    bool OverLimit() const noexcept{
         return _moveTree.size() > _moveTreeSizeLimit;
     }
 };
@@ -128,24 +129,29 @@ private:
         }
     };
     static_vector<MovePair,128> _branches;
+
+    NodeX UpdateMoveTree() noexcept; // Returns move tree index of first branch
+    void UpdateFringe(NodeX branchIndex) noexcept;
 public:
     // Constructor.
     MoveStorage(SharedMoveStorage& shared);
     // Return a reference to the storage shared among threads
     SharedMoveStorage& Shared() const noexcept {return _shared;}
     // Push a move to the back of the current stem.
-    void PushStem(Move move);
+    void PushStem(Move move) noexcept;
     // Push the first move of a new branch off the current stem,
     // along with the total number of moves to reach the end state
     // that move produces.
-    void PushBranch(Move move, unsigned moveCount);
+    void PushBranch(Move move, unsigned moveCount) noexcept;
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
     void ShareMoves();
-    // Fetch a move sequence with the lowest available index, make it
-    // the current move sequence and remove it from the queue.  
-    // Return its index number, or zero if no more sequences are available.
-    unsigned DequeueMoveSequence() noexcept; 
+    // Identify a move sequence with the lowest available minimum move count, 
+    // return its minimum move count or, if no more sequences are available.
+    // return 0. Remove that sequence from the open queue and make it current.
+    unsigned PopNextSequenceIndex() noexcept;
+    // Copy the moves in the current sequence from the move tree.
+    void LoadMoveSequence() noexcept; 
     // Make all the moves in the current sequence
     void MakeSequenceMoves(Game&game) const noexcept;
     // Return a const reference to the current move sequence in its
@@ -160,22 +166,25 @@ private:
     unsigned _count {-1U};
     Mutex _mutex;
 public:
-    const Moves & GetMoves() const
+    const Moves & GetMoves() const noexcept
     {
         return _sol;
     }
-    unsigned MoveCount() const{
+    unsigned MoveCount() const noexcept{
         return _count;
     }
     template <class Container>
-    void ReplaceIfShorter(const Container& source, unsigned count)
+    void ReplaceIfShorter(const Container& source, unsigned count) noexcept
     {
-        Guard nikita(_mutex);
         if (_sol.empty() || count < _count){
-            _sol.assign(source.begin(), source.end());
-            _count = count;
+            Guard nikita(_mutex);
+            if (_sol.empty() || count < _count){
+                _sol.assign(source.begin(), source.end());
+                _count = count;
+            }
         }
     }
+    bool IsEmpty() const noexcept {return _sol.empty();}
 };
 
 struct WorkerState {
@@ -200,10 +209,10 @@ public:
     explicit WorkerState(  Game & gm, 
             CandidateSolution& solution,
             SharedMoveStorage& sharedMoveStorage,
-            GameStateMemory& map)
+            GameStateMemory& closed)
         : _game(gm)
         , _moveStorage(sharedMoveStorage)
-        , _closedList(map)
+        , _closedList(closed)
         , _minSolution(solution)
         {}
     explicit WorkerState(const WorkerState& orig)
@@ -214,29 +223,14 @@ public:
         {}
             
     QMoves MakeAutoMoves() noexcept;
-    void CheckForMinSolution();
 };
 bool WorkerState::k_blewMemory(false);
 
 static void Worker(
         WorkerState* pMasterState);
-/*************************************************************************/
-/*************************** Entrance ************************************/
-/*************************************************************************/
-KSolveAStarResult KSolveAStar(
-        Game& game,
-        unsigned moveTreeLimit,
-        unsigned nThreads)
+
+static void RunWorkers(unsigned nThreads, WorkerState & state)
 {
-    SharedMoveStorage sharedMoveStorage;
-    GameStateMemory map;
-    CandidateSolution solution;
-    WorkerState state(game,solution,sharedMoveStorage,map);
-
-    const unsigned startMoves = state._game.MinimumMovesLeft();
-
-    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);	// pump priming
-    
     if (nThreads == 0)
         nThreads = DefaultThreads();
 
@@ -254,6 +248,26 @@ KSolveAStarResult KSolveAStar(
     for (auto& thread: threads) 
         thread.join();
     // Everybody's finished
+}
+/*************************************************************************/
+/*************************** Entrance ************************************/
+/*************************************************************************/
+KSolveAStarResult KSolveAStar(
+        Game& game,
+        unsigned moveTreeLimit,
+        unsigned nThreads)
+{
+    SharedMoveStorage sharedMoveStorage;
+    GameStateMemory closed;
+    CandidateSolution solution;
+    WorkerState state(game,solution,sharedMoveStorage,closed);
+
+    const unsigned startMoves = state._game.MinimumMovesLeft();
+
+    // Prime the pump
+    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);
+    
+    RunWorkers(nThreads, state);
     
     KSolveAStarCode outcome;
     if (state.k_blewMemory) {
@@ -277,61 +291,71 @@ KSolveAStarResult KSolveAStar(
     ;
 }
 
+/*************************************************************************/
+/*************************** Main Loop ***********************************/
+/*************************************************************************/
 void Worker(
         WorkerState* pMasterState)
 {
-    WorkerState state(*pMasterState);
+    WorkerState         state(*pMasterState);
+
+    // Nicknames
+    MoveStorage&        moveStorage {state._moveStorage};
+    Game&               game {state._game};
+    CandidateSolution&  minSolution {state._minSolution};
+    GameStateMemory&    closedList{state._closedList};
 
     try {
-        // Main loop
         unsigned minMoves0;
-        while ( !state._moveStorage.Shared().OverLimit()
+        while ( !moveStorage.Shared().OverLimit()
                 && !state.k_blewMemory
-                && (minMoves0 = state._moveStorage.DequeueMoveSequence())    // <- side effect
-                && minMoves0 < state._minSolution.MoveCount()) { 
+                && (minMoves0 = moveStorage.PopNextSequenceIndex())    // <- side effect
+                && minMoves0 < minSolution.MoveCount()) { 
 
-            // Restore state._game to the state it had when this move
+            // Restore game to the state it had when this move
             // sequence was enqueued.
-            state._game.Deal();
-            state._moveStorage.MakeSequenceMoves(state._game);
+            game.Deal();
+            moveStorage.LoadMoveSequence();
+            moveStorage.MakeSequenceMoves(game);
 
             // Make all the no-choice (stem) moves.  Returns the first choice of moves
             // (the branches from next branching node) or an empty set.
             QMoves availableMoves = state.MakeAutoMoves();
 
+            const unsigned movesMadeCount = 
+                moveStorage.MoveSequence().MoveCount();
+
             if (availableMoves.empty()) {
                 // This could be a dead end or a win.
-                if (state._game.GameOver()) {
+                if (game.GameOver()) {
                     // We have a win.  See if it is a new champion
-                    state.CheckForMinSolution();
+                    minSolution.ReplaceIfShorter(
+                        moveStorage.MoveSequence(), movesMadeCount);
                 }
             } else {
-                const unsigned movesMadeCount = 
-                    state._moveStorage.MoveSequence().MoveCount();
-
                 // Save the result of each of the possible next moves.
                 for (auto mv: availableMoves){
-                    state._game.MakeMove(mv);
+                    game.MakeMove(mv);
                     const unsigned made = movesMadeCount + mv.NMoves();
                     unsigned minRemaining = -1U;
                     bool pass = true;
-                    if (state._minSolution.MoveCount() != -1U) { // rare copndition
-                        minRemaining = state._game.MinimumMovesLeft(); // expensive
-                        pass = (made + minRemaining) < state._minSolution.MoveCount();
+                    if (!minSolution.IsEmpty()) { // rare condition
+                        minRemaining = game.MinimumMovesLeft(); // expensive
+                        pass = (made + minRemaining) < minSolution.MoveCount();
                     }
-                    if (pass && state._closedList.IsShortPathToState(state._game, made)) { // <- side effect
-                        if (minRemaining == -1U) minRemaining = state._game.MinimumMovesLeft();
+                    if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
+                        if (minRemaining == -1U) minRemaining = game.MinimumMovesLeft();
                         const unsigned minMoves = made + minRemaining;
                         // The following assert tests the consistency of
                         // Game::MinimumMovesLeft(), our heuristic.  
                         // Never remove it.
                         assert(minMoves0 <= minMoves);
-                        state._moveStorage.PushBranch(mv,minMoves);
+                        moveStorage.PushBranch(mv,minMoves);
                     }
-                    state._game.UnMakeMove(mv);
+                    game.UnMakeMove(mv);
                 }
                 // Share the moves made here
-                state._moveStorage.ShareMoves();
+                moveStorage.ShareMoves();
             }
         }
     } 
@@ -346,11 +370,11 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared)
     , _leafIndex(-1)
     , _startSize(0)
     {}
-void MoveStorage::PushStem(Move move)
+void MoveStorage::PushStem(Move move) noexcept
 {
     _currentSequence.push_back(move);
 }
-void MoveStorage::PushBranch(Move mv, unsigned nMoves)
+void MoveStorage::PushBranch(Move mv, unsigned nMoves) noexcept
 {
     assert(_shared._startStackIndex <= nMoves);
     _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
@@ -360,45 +384,51 @@ void MoveStorage::ShareMoves()
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
-        NodeX stemEnd = _leafIndex;
-        NodeX branchIndex;      // index in _moveTree of branch
-        {
-            Guard rupert(_shared._moveTreeMutex);
-            // Copy all the stem moves into the move tree.
-            for (auto mvi = _currentSequence.begin()+_startSize;
-                      mvi != _currentSequence.end();
-                      ++mvi) {
-                // Each stem node points to the previous node.
-                _shared._moveTree.emplace_back(*mvi, stemEnd);
-                stemEnd =  _shared._moveTree.size() - 1;
-            }
-            // Now all the branches
-            branchIndex = _shared._moveTree.size();
-            for (const auto& br:_branches) {
-                // Each branch node points to the last stem node.
-                _shared._moveTree.emplace_back(br._mv, stemEnd);
-            }
-        }
-        // Update the fringe.
-        auto & fringe = _shared._fringe;
-        // Enlarge the fringe if needed.
-        unsigned maxOffset = 
-            std::max_element(_branches.cbegin(),_branches.cend())->_offset;
-        if (fringe.size() <= maxOffset) {
-            Guard freddie(_shared._fringeMutex);
-            if (fringe.size() <= maxOffset)
-                fringe.resize(maxOffset+1);
-        }
-        for (const auto &br: _branches) {
-            auto & elem = fringe[br._offset];
-            {
-                Guard clyde(elem._mutex);
-                elem._stack.push_back(branchIndex++);
-            }
-        }
+        NodeX branch0Index      // index in _moveTree of first branch
+            = UpdateMoveTree();
+        UpdateFringe(branch0Index);
     }
 }
-unsigned MoveStorage::DequeueMoveSequence() noexcept
+
+// Returns move tree index of first branch
+MoveStorage::NodeX MoveStorage::UpdateMoveTree() noexcept
+{
+    NodeX stemEnd = _leafIndex;
+    Guard rupert(_shared._moveTreeMutex);
+    // Copy all the stem moves (if any) into the move tree.
+    for (auto m: _currentSequence | views::drop(_startSize))
+    {
+        // Each stem node points to the previous node.
+        _shared._moveTree.emplace_back(m, stemEnd);
+        stemEnd =  _shared._moveTree.size() - 1;
+    }
+    // Now all the branches
+    NodeX branch0Index = _shared._moveTree.size();
+    for (const auto& br:_branches) {
+        // Each branch node points to the last stem node.
+        _shared._moveTree.emplace_back(br._mv, stemEnd);
+    }
+    return branch0Index;
+} 
+void MoveStorage::UpdateFringe(MoveStorage::NodeX branchIndex) noexcept
+{
+    auto & fringe = _shared._fringe;
+    // Enlarge the fringe if needed.
+    unsigned maxOffset = 
+        std::max_element(_branches.cbegin(),_branches.cend())->_offset;
+    if (fringe.size() <= maxOffset) {
+        Guard freddie(_shared._fringeMutex);
+        if (fringe.size() <= maxOffset)
+            fringe.resize(maxOffset+1);
+    }
+    for (const auto &br: _branches) {
+        auto & elem = fringe[br._offset];
+
+        Guard clyde(elem._mutex);
+        elem._stack.push_back(branchIndex++);
+    }
+}
+unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
     unsigned offset;
     unsigned size;
@@ -412,35 +442,43 @@ unsigned MoveStorage::DequeueMoveSequence() noexcept
     {
         auto & fringe = _shared._fringe;
         size = fringe.size();
-        // Set offset to the index of the first non-empty leaf node stack, or size if all are empty.
-        for (offset = 0; offset < size && fringe[offset]._stack.empty(); ++offset) {}
+        // Set offset to the index of the first non-empty leaf node stack
+        // or size if all are empty.
+        auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
+        offset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
 
         if (offset < size) {
-            Guard methuselah(fringe[offset]._mutex);
             auto & stack = fringe[offset]._stack;
-            if (stack.size()) {
-                _leafIndex = stack.back();
-                stack.pop_back();
-                result = offset+_shared._startStackIndex;
+            {
+                Guard methuselah(fringe[offset]._mutex);
+                if (stack.size()) {
+                    _leafIndex = stack.back();
+                    stack.pop_back();
+                    result = offset+_shared._startStackIndex;
+                }
             }
         } 
         if (result == 0) {
             std::this_thread::yield();
         }
     }
-    if (result) {
-        // Follow the links to recover all of its preceding moves in reverse order.
-        // Note that this operation requires no guard on _shared._moveTree only if 
-        // the block vector in that structure never needs reallocation.
-        _currentSequence.clear();
-        for (NodeX node = _leafIndex; node != -1U; node = _shared._moveTree[node]._prevNode){
-            const Move &mv = _shared._moveTree[node]._move;
-            _currentSequence.push_front(mv);
-        }
-        _startSize = _currentSequence.size();
-        _branches.clear();
-    }
     return result;
+}
+void MoveStorage::LoadMoveSequence() noexcept
+{
+    // Follow the links to recover all the moves in a sequence in reverse order.
+    // Note that this operation requires no guard on _shared._moveTree only if 
+    // the block vector in that structure never needs reallocation.
+    _currentSequence.clear();
+    for (NodeX node = _leafIndex; 
+         node != -1U; 
+         node = _shared._moveTree[node]._prevNode){
+        const Move &mv = _shared._moveTree[node]._move;
+        _currentSequence.push_front(mv);
+    }
+
+    _startSize = _currentSequence.size();
+    _branches.clear();
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {
@@ -465,10 +503,4 @@ QMoves WorkerState::MakeAutoMoves() noexcept
     return availableMoves;
 }
 
-// A solution has been found.  If it's the first, or shorter than
-// the current champion, we have a new champion
-void WorkerState::CheckForMinSolution() {
-    const unsigned nmv = _moveStorage.MoveSequence().MoveCount();
-    _minSolution.ReplaceIfShorter(_moveStorage.MoveSequence(), nmv);
-}
 }   // namespace KSolveNames

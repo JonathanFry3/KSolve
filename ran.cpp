@@ -4,9 +4,7 @@
 #include <iostream>			// cout
 #include <string>
 #include <cstdint>
-#include <ctime>
 #include <chrono>
-#include <thread>
 #include "KSolveAStar.hpp"
 
 using namespace std;

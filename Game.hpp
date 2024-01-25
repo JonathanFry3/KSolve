@@ -13,6 +13,7 @@
 
     Any solvers implemented here will operate on these objects.
 */ 
+#include <ranges>
 #include <string>
 #include <vector>
 #include <array>
@@ -23,15 +24,17 @@
 #include <algorithm>
 
 #include "frystl/static_vector.hpp"
-
 namespace KSolveNames {
+
+namespace ranges = std::ranges;
+namespace views = std::views;
 
 enum RankType : unsigned char
 {
     Ace = 0,
-    King = 12,
-    CardsPerSuit
+    King = 12
 };
+const unsigned CardsPerSuit {13};
 enum SuitType : unsigned char 
 {
     Clubs = 0,
@@ -39,9 +42,9 @@ enum SuitType : unsigned char
     Spades,
     Hearts
 };
-enum {SuitsPerDeck = 4};
-enum {CardsPerDeck = CardsPerSuit*SuitsPerDeck};
-enum {TableauSize = 7};
+const unsigned SuitsPerDeck {4};
+const unsigned CardsPerDeck {CardsPerSuit*SuitsPerDeck};
+const unsigned TableauSize  {7};
 
 class Card
 {
@@ -80,8 +83,6 @@ public:
     // Ignores characters that cannot appear in a valid card string.
     // Suit may come before or after rank, and letters may be in
     // upper or lower case, or mixed.
-    // Returns true and the specified Card if it succeeds, 
-    // false and garbage if it fails,
     static std::optional<Card> FromString(const std::string& s) noexcept;
 };
 
@@ -128,8 +129,13 @@ enum PileCodeType : unsigned char{
     Foundation4H,
     PileCount
 };
-
 static_assert(Stock == PileCodeType(TableauBase+TableauSize));
+
+static PileCodeType FoundationPileCode(SuitType suit)
+{
+    unsigned suitNum = suit;
+    return static_cast<PileCodeType>(FoundationBase+suitNum);
+}
 
 static bool IsTableau(PileCodeType pile) noexcept
 {
@@ -244,7 +250,7 @@ public:
 
     void SetRecycle(bool r) noexcept    {_recycle = r;}      
 
-    bool IsTalonMove() const noexcept	{return _from==Stock;}
+    bool IsStockMove() const noexcept	{return _from==Stock;}
     PileCodeType From() const noexcept  {return _from;}
     PileCodeType To() const noexcept	{return _to;}
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
@@ -258,8 +264,22 @@ static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 
 typedef std::vector<Move> Moves;
 
-// A limited-size Moves type for AvailableMoves to return
-typedef frystl::static_vector<Move,43> QMoves; 
+// Class for collecting freshly-built Moves
+class QMoves : public frystl::static_vector<Move,43>
+{
+public:
+    void AddStockMove(PileCodeType to, unsigned nMoves, 
+        int draw, bool recycle) noexcept
+    {
+        emplace_back(to, nMoves, draw);
+        back().SetRecycle(recycle);
+    }
+    void AddNonStockMove(PileCodeType from, PileCodeType to, 
+        unsigned n, unsigned fromUpCount) noexcept
+    {
+        emplace_back(from,to,n,fromUpCount);
+    }
+};
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
@@ -273,8 +293,8 @@ unsigned MoveCount(const SeqType& moves) noexcept
 template <class SeqType>
 unsigned RecycleCount(const SeqType& moves) noexcept
 {
-    return std::count_if(moves.cbegin(), moves.cend(), 
-        [&](const auto & p) {return p.Recycle();});
+    return ranges::count_if(moves, 
+        [&](auto  p) {return p.Recycle();});
 }
 
 // Mix-in to make any sequence container an automatic move counter.
@@ -406,8 +426,7 @@ static bool XYZ_Move(Move trial, const V& movesMade) noexcept
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
     const auto Z = trial.To();
-    for (auto imv = movesMade.crbegin(); imv != movesMade.crend(); ++imv){
-        const Move mv = *imv;
+    for (auto mv: views::reverse(movesMade)){ 
         if (mv.To() == Y){
             // candidate T0 move
             if (mv.From() == Z) {
@@ -420,9 +439,9 @@ static bool XYZ_Move(Move trial, const V& movesMade) noexcept
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)
-                return false;			// trial move's to pile (Z) has changed
+                return false;			// trial move's to-pile (Z) has changed
             if (mv.From() == Y) 
-                return false;			// trial move's from pile (Y) has changed
+                return false;			// trial move's from-pile (Y) has changed
         }
     }
     return false;
@@ -460,7 +479,7 @@ private:
     // Parts of UnfilteredAvailableMoves()
     void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromTableau(QMoves & moves) const noexcept;
-    bool MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
+    bool MovesFromStock(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
 
     QMoves UnfilteredAvailableMoves() const noexcept;
@@ -505,11 +524,9 @@ public:
     QMoves AvailableMoves(const V& movesMade) noexcept
     {
         QMoves avail = UnfilteredAvailableMoves();
-        auto newEnd = std::remove_if(
-            avail.begin(), 
-            avail.end(),
-            [&movesMade] (Move& move) 
-                {return XYZ_Move(move, movesMade);});
+        auto newEnd = ranges::remove_if(avail,
+            [&movesMade] (Move move) 
+                {return XYZ_Move(move, movesMade);}).begin();
         while (avail.end() != newEnd) avail.pop_back();
         return avail;
     }

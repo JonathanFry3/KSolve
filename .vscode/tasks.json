@@ -10,7 +10,7 @@
 			//	"-m32",
 			//	"-pg",
 				"-O3",
-				"-std=c++17",
+				"-std=c++20",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
 				//	"-DNDEBUG",
@@ -41,7 +41,7 @@
 				"-g",
 			//	"-m32",
 			//	"-pg",
-				"-std=c++17",
+				"-std=c++20",
 				"-O3",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
@@ -70,8 +70,7 @@
 			"args": [
 				"-DFRYSTL_DEBUG",
 				"-g",
-				"-std=c++17",
-				"-O1",
+				"-std=c++20",
 				"-Wno-placement-new",
 				"-pthread",
 				"Game.cpp",
@@ -96,10 +95,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang++ build and run unittests",
-			"command": "clang++-17",
+			"command": "clang++",
 			"args": [
 				"-DFRYSTL_DEBUG",
 				"-g",
+				"-std=c++20",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -128,7 +128,7 @@
 				"-g",
 				"-pthread",
 			//	"-pg", "-O1",	// gprof profiling
-				"-std=c++17",
+				"-std=c++20",
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
@@ -152,6 +152,34 @@
 				"isDefault": true
 			}
 		},
+        {
+            "type": "shell",
+            "label": "C/C++:  g++ build benchmark",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-pthread",
+                "-std=c++20",
+                "-O3",
+                "-Wno-placement-new",
+                "Game.cpp",
+                "GameStateMemory.cpp",
+                "KSolveAStar.cpp",
+                "benchmark.cpp",
+                "-o",
+                "${workspaceFolder}/benchmark"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
 		{
 			"type": "shell",
 			"label": "C/C++:  g++ build thread-test",
@@ -160,7 +188,7 @@
 				"-g",
 				"-pthread",
 			//	"-pg", "-O1",	// gprof profiling
-				"-std=c++17",
+				"-std=c++20",
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
@@ -191,7 +219,7 @@
 			"args": [
 				"-Zi",
 				"-EHsc",
-				"-std:c++17",   // language standard - c++ 17
+				"-std:c++20",   // language standard - c++ 20
 				"-Fe:", "${fileBasenameNoExtension}.exe",
 				"${fileBasenameNoExtension}.cpp"
 			],
@@ -209,10 +237,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang build ran",
-			"command": "clang++-17",
+			"command": "clang++",
 			"args": [
 				"-g",
 				"-pthread",
+				"-std=c++20",
 			//	"-pg", "-O1",	// gprof profiling
 				"-O3",
 			//	"-O",			// for valgrind builds
@@ -239,10 +268,11 @@
 		{
 			"type": "shell",
 			"label": "C/C++:  clang build thread-test",
-			"command": "clang++-17",
+			"command": "clang++",
 			"args": [
 				"-g",
 				"-pthread",
+				"-std=c++20",
 			//	"-pg", "-O1",	// gprof profiling
 				"-O3",
 			//	"-O",			// for valgrind builds
@@ -273,7 +303,7 @@
 			"args": [
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
-				"-std:c++17",   // language standard - c++ 17
+				"-std:c++20",   // language standard - c++ 20
 				"-Fe:",			// name EXE file
 				"unittests.exe",
 				"Game.cpp",
@@ -302,7 +332,7 @@
 			"-O2",			// maximize speed
 			"-utf-8",
 			"-GL",			// Optimize across whole program
-			"-std:c++17",   // language standard - c++ 17
+			"-std:c++20",   // language standard - c++ 20
 			"-Fe:",	"KSolve.exe",
 			"Game.cpp",
 			"KSolveAStar.cpp",
@@ -330,7 +360,7 @@
 			"-O2",			// maximize speed
 			"-utf-8",
 			"-GL",			// Optimize across whole program
-			"-std:c++17",   // language standard - c++ 17
+			"-std:c++20",   // language standard - c++ 20
 			"-Fe:",	"ran.exe", // name EXE file
 			"Game.cpp",
 			"KSolveAStar.cpp",
@@ -358,7 +388,7 @@
 			"-O2",			// maximize speed
 			"-utf-8",
 			"-GL",			// Optimize across whole program
-			"-std:c++17",   // language standard - c++ 17
+			"-std:c++20",   // language standard - c++ 20
 			"-Fe:",	"thread-test.exe", // name EXE file
 			"Game.cpp",
 			"KSolveAStar.cpp",
