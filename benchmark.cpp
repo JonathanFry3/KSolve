@@ -131,6 +131,8 @@ int main(int nArgs, char* args[])
     if (specs.nReps > 0) {
         fixed(cout);
         cout.precision(3);
+        // Discard the first try.
+        (void) Measure(1,specs.seed);
         vector<double> elapsedSeconds = Measure(specs.nReps, specs.seed);
         if (specs.verbose) PrintVerbose(elapsedSeconds);
         else PrintConcise(elapsedSeconds);
