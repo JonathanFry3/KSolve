@@ -271,10 +271,10 @@ void Game::OneMoveToShortFoundationPile(
 
                 if (fromPile == Stock) {
                     // Stock Move: draw one card, move it to foundation
-                    moves.emplace_back(toPile,2,1);
+                    moves.AddStockMove(toPile,2,1,false);
                 } else {
                     const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
-                    moves.emplace_back(fromPile,toPile,1,up);
+                    moves.AddNonStockMove(fromPile,toPile,1,up);
                 }
             }
         }
@@ -295,7 +295,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         // look for moves from tableau to foundation
         if (CanMoveToFoundation(fromTip)) {
             const auto toPile = FoundationPileCode(fromTip.Suit());
-            moves.emplace_back(fromPile.Code(),toPile,1,upCount);
+            moves.AddNonStockMove(fromPile.Code(),toPile,1,upCount);
         }
 
         // Look for moves between tableau piles.  These may involve
@@ -310,7 +310,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     && fromPile.size() > upCount) {
                     // toPile is empty, a king sits atop fromPile's face-up
                     // cards, and it is covering at least one face-down card.
-                    moves.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
+                    moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount);
                     kingMoved = true;
                 }
             } else {
@@ -336,14 +336,14 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                         // clear a column that's needed for a king.
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
-                        moves.emplace_back(fromPile.Code(),toPile.Code(),upCount,upCount);
+                        moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount);
                     } else if (moveCount < upCount || upCount < fromPile.size()) {
                         const Card uncovered = *(fromPile.end()-moveCount-1);
                         if (CanMoveToFoundation(uncovered)){
                             // This move will uncover a card that can be moved to 
                             // its foundation pile.
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
-                            moves.emplace_back(fromPile.Code(),toPile.Code(),moveCount,upCount);
+                            moves.AddNonStockMove(fromPile.Code(),toPile.Code(),moveCount,upCount);
                         }
                     }
                 }
@@ -449,15 +449,6 @@ static TalonFutureVec TalonCards(const Game & game)
     return result;
 }
 
-// Push a stock Move onto a sequence.
-// This is to visually distinguish a stock Move construction from
-// non-stock Move construction in AvailableMoves().
-static inline void PushStockMove(const TalonFuture& f, PileCodeType pileNum, bool recycle, QMoves& qm)
-{
-    qm.emplace_back(pileNum, f._nMoves+1, f._drawCount);
-    qm.back().SetRecycle(recycle);
-}
-
 // Append to "moves" any available moves from the talon.
 // Returns true if the one move in moves is a short foundation move, otherwise false.
 bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noexcept
@@ -474,7 +465,7 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
         bool recycle = talonCard._recycle;
         if (CanMoveToFoundation(talonCard._card)) {
             const auto pileNo = FoundationPileCode(talonCard._card.Suit());
-            PushStockMove(talonCard, pileNo, recycle, moves);
+            moves.AddStockMove(pileNo, talonCard._nMoves+1, talonCard._drawCount, recycle);
             if (talonCard._card.Rank() <= minFoundationSize+1){
                 if (_drawSetting == 1) {
                     if (moves.size() == 1) return true;
@@ -487,10 +478,12 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
         for (const auto& tPile : _tableau) {
             if ((tPile.size() > 0)) {
                 if (talonCard._card.Covers(tPile.back())) {
-                    PushStockMove(talonCard, tPile.Code(), recycle, moves);
+                    moves.AddStockMove(tPile.Code(), talonCard._nMoves+1,
+                        talonCard._drawCount, recycle);
                 }
             } else if (talonCard._card.Rank() == King) {
-                PushStockMove(talonCard, tPile.Code(), recycle, moves);
+                moves.AddStockMove(tPile.Code(), talonCard._nMoves+1,
+                    talonCard._drawCount, recycle);
                 break;  // move that king to just one empty pile
             }
         }
@@ -507,11 +500,11 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
         for (const auto& tPile: _tableau) {
             if (tPile.size() > 0) {
                 if (top.Covers(tPile.back())) {
-                    moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
                 }
             } else {
                 if (top.Rank() == King) {
-                    moves.emplace_back(fPile.Code(),tPile.Code(),1,0);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
                     break;  // don't move same king to another tableau pile
                 }
             }

@@ -264,8 +264,22 @@ static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 
 typedef std::vector<Move> Moves;
 
-// A limited-size Moves type for AvailableMoves to return
-typedef frystl::static_vector<Move,43> QMoves; 
+// Class for collecting freshly-built Moves
+class QMoves : public frystl::static_vector<Move,43>
+{
+public:
+    void AddStockMove(PileCodeType to, unsigned nMoves, 
+        int draw, bool recycle) noexcept
+    {
+        emplace_back(to, nMoves, draw);
+        back().SetRecycle(recycle);
+    }
+    void AddNonStockMove(PileCodeType from, PileCodeType to, 
+        unsigned n, unsigned fromUpCount) noexcept
+    {
+        emplace_back(from,to,n,fromUpCount);
+    }
+};
 
 // Return the number of actual moves implied by a sequence of Moves.
 template <class SeqType>
