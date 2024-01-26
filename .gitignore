@@ -1,6 +1,7 @@
 gmon.out
 ran
 unittests
+benchmark
 KSolve2Solvitaire
 KSolve
 *.exe
