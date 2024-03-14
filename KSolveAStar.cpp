@@ -294,7 +294,7 @@ KSolveAStarResult KSolveAStar(
 /*************************************************************************/
 /*************************** Main Loop ***********************************/
 /*************************************************************************/
-void Worker(
+static void Worker(
         WorkerState* pMasterState)
 {
     WorkerState         state(*pMasterState);
