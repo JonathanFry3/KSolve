@@ -104,10 +104,8 @@ static void Shuffle(CardDeck & deck, uint32_t seed)
 CardDeck NumberedDeal(uint32_t seed)
 {
     // Create a new sorted pack of cards
-    CardDeck deck;
-    for (unsigned i = 0; i < CardsPerDeck; ++i){
-        deck.emplace_back(i);
-    }
+    CardDeck deck(52);
+    std::iota(deck.begin(), deck.end(), 0);
     // Randomly shuffle the deck
     Shuffle(deck, seed);
     return deck;
@@ -233,7 +231,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
 bool Game::GameOver() const noexcept
 {
     return std::all_of(_foundation.cbegin(), _foundation.cend(),
-        [&] (auto const p) {return p.size() == CardsPerSuit;});
+        [&] (const auto& pile) {return pile.size() == CardsPerSuit;});
 }
 
 // Return the height of the shortest foundation pile
@@ -308,7 +306,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                 if (  !kingMoved 
                     && fromBase.Rank() == King 
                     && fromPile.size() > upCount) {
-                    // toPile is empty, a king sits atop fromPile's face-up
+                    // toPile is empty, a king sits abottom fromPile's face-up
                     // cards, and it is covering at least one face-down card.
                     moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount);
                     kingMoved = true;
@@ -318,7 +316,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                 // We move from one tableau pile to another only to 
                 // (a) move all the face-up cards on the from pile in order to 
                 //		(1) flip a face-down card, or
-                //		(2) make an empty column, or
+                //		(2) make a useful empty column, or
                 // (b) uncover a face-up card on the from pile that can be moved
                 // 	   to a foundation pile.
                 const Card cardToCover = toPile.back();
