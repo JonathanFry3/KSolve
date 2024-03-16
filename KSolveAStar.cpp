@@ -273,8 +273,7 @@ KSolveAStarResult KSolveAStar(
     if (state.k_blewMemory) {
         outcome = MemoryExceeded;
     } else if (solution.GetMoves().size()) { 
-        outcome = game.TalonLookAheadLimit() < 24 
-                  || sharedMoveStorage.OverLimit()
+        outcome = sharedMoveStorage.OverLimit()
                 ? Solved
                 : SolvedMinimal;
     } else {

@@ -92,13 +92,11 @@ int main(int argc, char * argv[]) {
     int outputMethod = 0;
     int threads = 0;
     int moveLimit = 20'000'000;
-    bool fastMode = false;
     string fileContents;
     bool replay = false;
     bool showMoves = false;
     CardDeck deck;
     int drawCount = 1;
-    unsigned fastOption = 24;
 
     for (int i = 1; i < argc; i++) {
         if (_stricmp(argv[i], "-draw") == 0 || _stricmp(argv[i], "-dc") == 0) {
@@ -155,13 +153,6 @@ int main(int argc, char * argv[]) {
             threads = atoi(argv[i + 1]);
             if (threads < 0) { cerr << "-THREADS requires a non-negative number\n"; return 100; }
             i++;
-        } else if (_stricmp(argv[i], "-fast") == 0 || _stricmp(argv[i], "-f") == 0) {
-            if (i + 1 >= argc) { cerr << "No number follows -FAST.\n"; return 100; }
-            if (!IsNumber(argv[i + 1])) {cerr << "\"" << argv[i] << " " << argv[i + 1] 
-                    << "\" A non-negative number must be specified. \n"; return 100;}
-            fastOption = atoi(argv[i + 1]);
-            if (fastOption < 1 || fastOption > 24) { cerr << "-FAST option requires a number from 1 to 24\n"; return 100; }
-            i++;
     } else if (argv[i][0] == '-') {
             cout << "KSolve\nSolves games of Klondike (Patience) solitaire minimally.\n\n";
             cout << "KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Path]\n\n";
@@ -205,7 +196,7 @@ int main(int argc, char * argv[]) {
                 continue;
             }
         }
-        Game game(deck,drawCount,fastOption);
+        Game game(deck,drawCount);
         if (outputMethod == 0) {
             cout << GameDiagram(game) << "\n\n";
         } else if (outputMethod == 1) {

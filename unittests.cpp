@@ -480,7 +480,7 @@ int main()
 	"dq","h5","s2","sa","hq","sq","ht","s9","sj","d2","c6","ha","cq","h4"};
 	{
 		// deal3 can be solved in two passes but not in one drawing one card.
-		Game game(Cards(deal3), 1, 24, 0);
+		Game game(Cards(deal3), 1, 0);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == Impossible);
@@ -488,7 +488,7 @@ int main()
 	}
 	//
 	{
-		Game game(Cards(deal3), 1, 24, 1);
+		Game game(Cards(deal3), 1, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		// PrintOutcome(game, outcome);
@@ -497,7 +497,7 @@ int main()
 	}
 	{
 		// deal3 can be solved in 84 moves in three passes drawing three cards
-		Game game(Cards(deal3), 3, 24, 2);
+		Game game(Cards(deal3), 3, 2);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000); 
 		assert(outcome._code == SolvedMinimal);
@@ -507,7 +507,7 @@ int main()
 	}
 	{
 		// in two passes, it takes 87 moves.
-		Game game(Cards(deal3), 3, 24, 1);
+		Game game(Cards(deal3), 3, 1);
 		// PrintGame(game);
 		auto outcome = KSolveAStar(game,9'600'000,0); 
 		assert(outcome._code == SolvedMinimal);
@@ -518,7 +518,7 @@ int main()
 	{
 		// Test IsValid(Move m) and IsValid(XMove xm)
 		// Game 36394, drawing 1, can be solved in 100 moves
-		Game game(NumberedDeal(36394), 1, 24, 8);
+		Game game(NumberedDeal(36394), 1, 8);
 		auto outcome = KSolveAStar(game,700'000);
 		assert(MoveCount(outcome._solution) == 100);
 		// PrintGame(game);

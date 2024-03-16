@@ -111,12 +111,11 @@ CardDeck NumberedDeal(uint32_t seed)
     return deck;
 }
 
-Game::Game(CardDeck deck,unsigned draw,unsigned talonLookAheadLimit,unsigned recycleLimit)
+Game::Game(CardDeck deck,unsigned draw,unsigned recycleLimit)
     : _deck(deck)
     , _waste(Waste)
     , _stock(Stock)
     , _drawSetting(draw)
-    , _talonLookAheadLimit(talonLookAheadLimit)
     , _recycleLimit(recycleLimit)
     , _tableau{Tableau1,Tableau2,Tableau3,Tableau4,Tableau5,Tableau6,Tableau7}
     , _foundation{Foundation1C,Foundation2D,Foundation3S,Foundation4H}
@@ -128,7 +127,6 @@ Game::Game(const Game& orig)
     , _waste(orig._waste)
     , _stock(orig._stock)
     , _drawSetting(orig._drawSetting)
-    , _talonLookAheadLimit(orig._talonLookAheadLimit)
     , _recycleLimit(orig._recycleLimit)
     , _recycleCount(orig._recycleCount)
     , _kingSpaces(orig._kingSpaces)
@@ -455,11 +453,6 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
     // after one or more draws.  
     const TalonFutureVec talon(TalonCards(*this));
     for (auto talonCard : talon){
-
-        // Stop generating stock Moves if they require too many moves
-        // and there are alternative moves.
-        if (moves.size() > 1 && talonCard._nMoves > _talonLookAheadLimit) break;
-
         bool recycle = talonCard._recycle;
         if (CanMoveToFoundation(talonCard._card)) {
             const auto pileNo = FoundationPileCode(talonCard._card.Suit());

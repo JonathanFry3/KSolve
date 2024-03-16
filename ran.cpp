@@ -18,7 +18,6 @@ struct Specification
     unsigned _threads;
     unsigned _mvLimit;
     unsigned _drawSpec;
-    unsigned _lookAhead;
     uint32_t _seed0;
     int _incr;
     bool _vegas;
@@ -53,7 +52,6 @@ Specification GetSpec(int argc, char * argv[])
     spec._incr = 1;
     spec._drawSpec = 1;
     spec._threads = 0;
-    spec._lookAhead = 24;
     spec._vegas = false;
 
     for (int iarg = 1; iarg < argc; iarg += 1) {
@@ -70,7 +68,6 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
             cout << "-mv # or --mvlimit    Set the maximum size of the move tree (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (see below for default)." << endl;
-            cout << "-l # or --look #      Limits talon look-ahead (default 24)" << endl;
             cout << "The default number of threads is the number the hardware will run concurrently." << endl;
             cout << "The output on standard out is a tab-delimited file." << endl;
             cout << "Its columns are the row number, the seed, the number of threads," << endl;
@@ -113,10 +110,6 @@ Specification GetSpec(int argc, char * argv[])
             iarg += 1;
             if (iarg == argc) Error("No number after "+flag);
             spec._threads = GetNumber(argv[iarg]);
-        } else if (flag == "-l" || flag == "--look") {
-            iarg += 1;
-            if (iarg == argc) Error("No number after "+flag);
-            spec._lookAhead = GetNumber(argv[iarg]);
         } else {
             Error ("Expected flag, got " + flag);
         }
@@ -141,7 +134,7 @@ int main(int argc, char * argv[])
     unsigned seed = spec._seed0;
     for (unsigned sample = spec._begin; sample <= spec._end; ++sample){
         CardDeck deck(NumberedDeal(seed));
-        Game game(deck, spec._drawSpec,spec._lookAhead,recycleLimit);
+        Game game(deck, spec._drawSpec, recycleLimit);
         cout << sample << "\t"
             << seed << "\t"
             << threads << "\t"			 

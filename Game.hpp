@@ -467,7 +467,6 @@ private:
     FoundationType  _foundation;
 
     unsigned char   _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
-    unsigned char   _talonLookAheadLimit;
     unsigned char   _recycleLimit;            // max number of recycles allowed
     unsigned char   _recycleCount;            // n of recycles so far
     unsigned char   _kingSpaces;
@@ -490,7 +489,6 @@ private:
 public:
     Game(CardDeck deck,
          unsigned draw=1,
-         unsigned talonLookAheadLimit=24, 
          unsigned recyleLimit=-1);
     Game(const Game&);
     const Pile & WastePile() const noexcept    	    {return _waste;}
@@ -498,7 +496,6 @@ public:
     const FoundationType& Foundation()const noexcept{return _foundation;}
     const TableauType& Tableau() const noexcept     {return _tableau;}
     unsigned DrawSetting() const noexcept           {return _drawSetting;}
-    unsigned TalonLookAheadLimit() const noexcept	{return _talonLookAheadLimit;}
     unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
     unsigned RecycleCount() const noexcept          {return _recycleCount;}
     const std::array<Pile,PileCount>& AllPiles() const {

@@ -17,7 +17,6 @@ KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Pat
   -moves [-mvs]         |Will also output a compact list of moves made when a solution is found.
   -mvlimit # [-mxm #]   |Sets the maximum size of the move tree.  Defaults to 20 million moves.
   -threads # [-t #]     |Sets the number of threads. Defaults to the number of hardware threads.
-  -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24. Defaults to 24. See the notes below.
   Path                  |Solves deals specified in the file.
 ### Notes:
 Options may be written in upper or lower case and can be prefixed with a dash ("-") or a slash ("/").
@@ -76,4 +75,4 @@ If -MVLIMIT is set too high, the program may become unable to allocate memory it
 
 There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). If you have a deal for which you really want a solution but for which you don't seem to have enough memory, try the -FAST option, starting with an argument of 3 or 4. 
+There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). 
