@@ -1,9 +1,10 @@
 # Building
 
-Four main programs can be built from these source files.  
+Five main programs can be built from these source files.  
 * unittests, which is, you guessed it, unit tests of lower-level components plus some small complete problems to solve.
 * KSolve, the program described in README.md.  Provides various ways of entering a deal to solve and various output options, all text-based.
 * ran, which runs a batch of random deals for statistical purposes.  "ran -?" will print its flags.
+* benchmark, which runs a test problem ten times and prints the smallest of the ten run times.  It provides a quick sanity check for large changes in performance.
 * KSolve2Solvitaire, which writes a file of input for the commercial program Solvitaire using the same flags and inputs
 that KSolve uses.
 
@@ -17,5 +18,7 @@ have a program working, I recommend -O3 as well.  It works built for 32-bit or  
 but will solve only small problems as a 32-bit executable.
 
 This code was developed on Linux and is already configured for VSCode using the g++ compiler.
-It has been ported to Windows using MSVC twice, but is not maintained on that platform.
+It is occasionally built and tested using CLang on Linux and MSVC on Windows. It requires the 
+2020 level of C++.
+
 

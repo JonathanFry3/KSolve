@@ -16,7 +16,7 @@ KSolve [-dc #] [-d str] [-g #] [-ran #] [-r] [-o #] [-mvs] [-mxm] [-t] [-f] [Pat
   -out # [-o #]         |Sets the output method of the solver. Defaults to 0, 1 for Pysol, and 2 for minimal output.
   -moves [-mvs]         |Will also output a compact list of moves made when a solution is found.
   -mvlimit # [-mxm #]   |Sets the maximum size of the move tree.  Defaults to 20 million moves.
-  -threads # [-t #]     |Sets the number of threads. Defaults to twice the hardware threads.
+  -threads # [-t #]     |Sets the number of threads. Defaults to the number of hardware threads.
   -fast # [-f #]        |Limits talon look-ahead.  Enter 1 to 24. Defaults to 24. See the notes below.
   Path                  |Solves deals specified in the file.
 ### Notes:
@@ -29,10 +29,10 @@ Therefore an Ace of spades is 014.  A 4 of diamonds is represented by 042.
 When using the -MOVES command, the program will print the moves neccesary such that you could execute to the winning condition.  The codex for moves is as follows:
 * DR# is a draw move that is done # number of times, i.e. DR2 means draw two cards.
 * NEW is to represent the recycling of cards from the waste pile back to the stock pile (a new round).
-* F# means to flip the card on tableau pile #. 
+* F# means to flip the top card on tableau pile #. 
 * XY means to move the top card from pile X to pile Y.
-	* X will be 1 through 7, W for Waste, or a foundation suit character. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
-	* Y will be 1 through 7 or the foundation suit character.
+	* X will be 1 through 7, W for Waste, or a foundation suit letter. 'C'lubs, 'D'iamonds, 'S'pades, 'H'earts
+	* Y will be 1 through 7 or the foundation suit letter.
 * XY-Z is the same as above except you are moving Z cards from X to Y.
 
 By limiting talon look-ahead, the -FAST option can speed up solution a great deal and greatly reduce the memory needed. 
@@ -68,8 +68,8 @@ This program uses lots of memory.
 One of its larger data structures contains a representation of the move tree - a tree structure in 
 which the nodes are game states and the arcs are moves.
 Playing draw one,
-the median number of moves in that structure is around five million, and about 2% of deals 
-need more than 110 million moves.
+the median number of moves in that structure is around five million, and about .8% of deals 
+need more than 150 million moves.
 You can limit or expand the space (and time) used by using the -MVLIMIT flag.  
 If that data structure becomes larger than the specified limit, the program will give up.
 If -MVLIMIT is set too high, the program may become unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
