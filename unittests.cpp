@@ -254,20 +254,20 @@ int main()
 		Validate(sol);
 
 		// Test Game::MakeMove
-		sol.MakeMove(Move(Tableau1,Tableau2,1,0));
+		sol.MakeMove(NonStockMove(Tableau1,Tableau2,1,0));
 		assert (sol.Tableau()[0].empty());
 		assert (sol.Tableau()[1].size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
 		assert (sol.Tableau()[1].UpCount() == 2);
 
 		assert (sol.StockPile().size() == 24);
-		sol.MakeMove(Move(Foundation2D,Tableau4,4));
+		sol.MakeMove(StockMove(Foundation2D,4,4,false));
 		assert (sol.StockPile().size()==20);
 		assert (sol.WastePile().size()==3);
 		assert (sol.Foundation()[1].back().AsString()=="d6");
 		assert (sol.WastePile().back().AsString()=="s7");
 		assert (sol.StockPile().back().AsString()=="ct");
-		sol.MakeMove(Move(Waste,Tableau1,1,0));
+		sol.MakeMove(NonStockMove(Waste,Tableau1,1,0));
 		assert (sol.Tableau()[0].UpCount() == 1);
 	}
 
@@ -302,14 +302,11 @@ int main()
 	{
 		// Test Move class and Peek functions
 		assert(sizeof(Move)==4);
-		Move a(Tableau3,6,5);
-		Move b(Waste,Foundation2D,1,0);
-		Move c(Tableau1,Tableau6,4,1);
-		Move d(Tableau3,6,-4);
-		d.SetRecycle(true);
+		Move a {StockMove(Tableau3,6,5,false)};
+		Move b {NonStockMove(Waste,Foundation2D,1,0)};
+		Move c {NonStockMove(Tableau1,Tableau6,4,1)};
+		Move d {StockMove(Tableau3,6,-4,true)};
 		assert(!a.Recycle());
-		assert(!b.Recycle());
-		assert(!c.Recycle());
 		assert(d.Recycle());
 		string peeka = Peek(a);
 		string peekb = Peek(b);
@@ -319,7 +316,7 @@ int main()
 		assert(peekb == "wa>di");
 		assert(peekc == "t1>t6x4u1");
 		assert(peekd == "+6d-4c>t3");
-		Moves mvs({a,b,c});
+		Moves mvs{a,b,c};
 		string peekmvs = Peek(mvs);
 		assert (peekmvs == "(+6d5>t3,wa>di,t1>t6x4u1)");
 	}
@@ -340,19 +337,19 @@ int main()
 
 		// Set up a move history
 		vector<Move> made;
-		made.emplace_back(Tableau2,Tableau3,1,2);	// A. move one card from 2 up cards
-		made.emplace_back(Tableau7,Tableau6,2,5);	// B.
-		made.emplace_back(Tableau7,Tableau5,1,3);   // C.
-		made.emplace_back(Tableau4,Tableau2,1,4);	// D.
-		made.emplace_back(Tableau4,Tableau1,3,3);	// E.
+		made.emplace_back(NonStockMove(Tableau2,Tableau3,1,2));	// A. move one card from 2 up cards
+		made.emplace_back(NonStockMove(Tableau7,Tableau6,2,5));	// B.
+		made.emplace_back(NonStockMove(Tableau7,Tableau5,1,3)); // C.
+		made.emplace_back(NonStockMove(Tableau4,Tableau2,1,4));	// D.
+		made.emplace_back(NonStockMove(Tableau4,Tableau1,3,3));	// E.
 
 		// Test various candidate moves 
-		assert(XYZ_Move(Move(Tableau5,Tableau7,1,6),made));		// direct reversal of C
-		assert(XYZ_Move(Move(Tableau5,Tableau3,1,6),made));		// could have been done at C
-		assert(!XYZ_Move(Move(Tableau5,Tableau3,2,6),made));	// only one card was moved at C
-		assert(!XYZ_Move(Move(Tableau6,Tableau7,2,6),made));	// Tableau7 was changed at move C.
-		assert(!XYZ_Move(Move(Tableau2,Tableau4,3,4),made));	// Tableau4 was changed at E
-		assert(!XYZ_Move(Move(Tableau1,Tableau4,3,4),made));	// E flipped Tableau4
+		assert(XYZ_Move(NonStockMove(Tableau5,Tableau7,1,6),made));		// direct reversal of C
+		assert(XYZ_Move(NonStockMove(Tableau5,Tableau3,1,6),made));		// could have been done at C
+		assert(!XYZ_Move(NonStockMove(Tableau5,Tableau3,2,6),made));	// only one card was moved at C
+		assert(!XYZ_Move(NonStockMove(Tableau6,Tableau7,2,6),made));	// Tableau7 was changed at move C.
+		assert(!XYZ_Move(NonStockMove(Tableau2,Tableau4,3,4),made));	// Tableau4 was changed at E
+		assert(!XYZ_Move(NonStockMove(Tableau1,Tableau4,3,4),made));	// E flipped Tableau4
 	}
 	{
 		// Test GameState creation.

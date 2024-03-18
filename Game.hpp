@@ -221,9 +221,6 @@ private:
         // Stock Move
         signed char _drawCount;			// draw this many cards (may be negative)
     };
-
-public:
-    Move() = delete;
     // Construct a stock Move. Their cumulative effect is to 
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
@@ -247,8 +244,13 @@ public:
         {
             assert(from != Stock);
         }
+    friend Move StockMove(PileCodeType, unsigned, int, bool) noexcept;
+    friend Move NonStockMove(PileCodeType, PileCodeType, unsigned, unsigned) noexcept;
 
-    void SetRecycle(bool r) noexcept    {_recycle = r;}      
+public:
+    Move() = delete;
+
+    void SetRecycle(bool r) noexcept    {_recycle = r;}
 
     bool IsStockMove() const noexcept	{return _from==Stock;}
     PileCodeType From() const noexcept  {return _from;}
@@ -262,22 +264,33 @@ public:
 };
 static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 
+inline Move StockMove(PileCodeType to, unsigned nMoves, int draw, bool recycle) noexcept
+{
+    Move result(to, nMoves, draw);
+    result.SetRecycle(recycle);
+    return result; 
+}
+inline Move NonStockMove(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
+{
+    return Move(from,to,n,fromUpCount);
+}     
+
+
 typedef std::vector<Move> Moves;
 
-// Class for collecting freshly-built Moves
+// Class for collecting freshly-built Moves in AvailableMoves()
 class QMoves : public frystl::static_vector<Move,43>
 {
 public:
     void AddStockMove(PileCodeType to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
-        emplace_back(to, nMoves, draw);
-        back().SetRecycle(recycle);
+        push_back(StockMove(to,nMoves,draw,recycle));
     }
     void AddNonStockMove(PileCodeType from, PileCodeType to, 
         unsigned n, unsigned fromUpCount) noexcept
     {
-        emplace_back(from,to,n,fromUpCount);
+        push_back(NonStockMove(from,to,n,fromUpCount));
     }
 };
 
