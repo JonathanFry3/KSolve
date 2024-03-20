@@ -209,7 +209,8 @@ class Move
 {
 private:
     PileCodeType _from;    // _from == Stock <==> stock Move
-    PileCodeType _to;
+    PileCodeType _to:4;
+    unsigned char _sourceID:4;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
     union {
@@ -225,27 +226,29 @@ private:
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
     // to the "to" pile. Only stock Moves draw from the stock pile.
-    Move(PileCodeType to, unsigned nMoves, int draw) noexcept
+    Move(PileCodeType to, unsigned nMoves, int draw, unsigned sourceID) noexcept
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
         , _recycle(0)
         , _drawCount(draw)
+        , _sourceID(sourceID)
         {}
     // Construct a non-stock Move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
-    Move(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
+    Move(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount, unsigned sourceID) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
         , _recycle(0)
         , _cardsToMove(n)
         , _fromUpCount(fromUpCount)
+        , _sourceID(sourceID)
         {
             assert(from != Stock);
         }
-    friend Move StockMove(PileCodeType, unsigned, int, bool) noexcept;
-    friend Move NonStockMove(PileCodeType, PileCodeType, unsigned, unsigned) noexcept;
+    friend Move StockMove(PileCodeType, unsigned, int, bool, unsigned) noexcept;
+    friend Move NonStockMove(PileCodeType, PileCodeType, unsigned, unsigned, unsigned) noexcept;
 
 public:
     Move() = delete;
@@ -260,19 +263,20 @@ public:
     unsigned NMoves() const	noexcept	{return _nMoves;}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
+    unsigned SourceID() const noexcept  {return _sourceID;}
 
 };
 static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 
-inline Move StockMove(PileCodeType to, unsigned nMoves, int draw, bool recycle) noexcept
+inline Move StockMove(PileCodeType to, unsigned nMoves, int draw, bool recycle, unsigned sourceID) noexcept
 {
-    Move result(to, nMoves, draw);
+    Move result(to, nMoves, draw, sourceID);
     result.SetRecycle(recycle);
     return result; 
 }
-inline Move NonStockMove(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
+inline Move NonStockMove(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount, unsigned sourceID) noexcept
 {
-    return Move(from,to,n,fromUpCount);
+    return Move(from,to,n,fromUpCount,sourceID);
 }     
 
 
@@ -283,14 +287,14 @@ class QMoves : public frystl::static_vector<Move,43>
 {
 public:
     void AddStockMove(PileCodeType to, unsigned nMoves, 
-        int draw, bool recycle) noexcept
+        int draw, bool recycle, unsigned sourceID) noexcept
     {
-        push_back(StockMove(to,nMoves,draw,recycle));
+        push_back(StockMove(to,nMoves,draw,recycle,sourceID));
     }
     void AddNonStockMove(PileCodeType from, PileCodeType to, 
-        unsigned n, unsigned fromUpCount) noexcept
+        unsigned n, unsigned fromUpCount, unsigned sourceID) noexcept
     {
-        push_back(NonStockMove(from,to,n,fromUpCount));
+        push_back(NonStockMove(from,to,n,fromUpCount,sourceID));
     }
 };
 

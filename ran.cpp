@@ -2,6 +2,7 @@
 // writes a file of results, one line per deal.
 
 #include <iostream>			// cout
+#include <fstream>          // ofstream
 #include <string>
 #include <cstdint>
 #include <chrono>
@@ -120,6 +121,8 @@ Specification GetSpec(int argc, char * argv[])
 int main(int argc, char * argv[])
 {
     Specification spec = GetSpec(argc, argv);
+    ofstream sources;
+    sources.open ("sources.txt");
 
     unsigned recycleLimit(-1);
     if (spec._vegas) recycleLimit = spec._drawSpec-1;
@@ -168,6 +171,10 @@ int main(int argc, char * argv[])
         cout << result._moveTreeSize;
 
         cout << endl;
+
+        for (auto mv:result._solution) {
+            sources << seed << ' ' << mv.SourceID() << '\n';
+        }
 
         seed +=  spec._incr;
     }
