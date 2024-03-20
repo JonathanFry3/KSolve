@@ -175,6 +175,7 @@ int main(int argc, char * argv[])
         for (auto mv:result._solution) {
             sources << seed << ' ' << mv.SourceID() << '\n';
         }
+        sources.flush();
 
         seed +=  spec._incr;
     }
