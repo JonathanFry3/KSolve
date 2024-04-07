@@ -192,7 +192,7 @@ public:
     }
 };
 
-static_assert(sizeof(Pile) <= 32, "Good to make it Pile fit in 32 bytes");
+static_assert(sizeof(Pile) <= 32, "Good to make Pile fit in 32 bytes");
 
 // Returns a string to visualize a pile for debugging.
 std::string Peek(const Pile& pile);
@@ -205,6 +205,10 @@ std::string Peek(const Pile& pile);
 // Game::AvailableMoves creates Moves around the talon (the waste and
 // stock piles) that must be counted as multiple moves.  The number
 // of actual moves implied by a Move object is given by NMoves().
+//
+// Since making this class type-safe at compile time (using std::variant) 
+// requires making it larger (doubling the size of the move tree),
+// it has been made type-safe at run time using asserts.
 class Move
 {
 private:
