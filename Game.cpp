@@ -48,7 +48,7 @@ std::string Card::AsString() const
 std::optional<Card> Card::FromString(const std::string& s0) noexcept  
 {
     const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
-    SuitType suit;
+    Card::SuitT suit;
     std::string rankStr;
     std::optional<Card> result;
     bool ok = s1.length() == 2 || s1.length() == 3;
@@ -56,7 +56,7 @@ std::optional<Card> Card::FromString(const std::string& s0) noexcept
         auto suitIndex = suits.find(s1[0]);
         if (suitIndex != std::string::npos)	{
             // input has suit first
-            suit = static_cast<SuitType>(suitIndex);
+            suit = static_cast<Card::Card::SuitT>(suitIndex);
             rankStr = s1.substr(1);
         } else {
             // suit does not appear first in input
@@ -65,7 +65,7 @@ std::optional<Card> Card::FromString(const std::string& s0) noexcept
                 suitIndex = suits.find(s1.back());
                 ok = suitIndex != std::string::npos;
                 if (ok) {
-                    suit = static_cast<SuitType>(suitIndex);
+                    suit = static_cast<Card::SuitT>(suitIndex);
                     rankStr = s1.substr(0,s1.length()-1);
                 }
             }
@@ -75,7 +75,7 @@ std::optional<Card> Card::FromString(const std::string& s0) noexcept
         if (rankStr == "10") {rankStr = "t";}
         auto rankIndex = ranks.find(rankStr);
         if (rankIndex != std::string::npos)	{
-            RankType rank = static_cast<RankType>(rankIndex);
+            Card::RankT rank = static_cast<Card::RankT>(rankIndex);
             result.emplace(suit,rank);
         }
     }
@@ -150,7 +150,7 @@ void Game::Deal() noexcept
         for (unsigned icd = iPile; icd < TableauSize; ++icd)	
             _tableau[icd].push_back(*iDeck++);
         _tableau[iPile].SetUpCount(1);      // turn up the top card
-        _kingSpaces += _tableau[iPile][0].Rank() == King;	// count kings at base
+        _kingSpaces += _tableau[iPile][0].Rank() == Card::King;	// count kings at base
     }
     // Deal last 24 cards to stock, reversing order
     _stock.assign(_deck.crbegin(), _deck.crbegin()+24);
@@ -302,7 +302,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
 
             if (toPile.empty()) { 
                 if (  !kingMoved 
-                    && fromBase.Rank() == King 
+                    && fromBase.Rank() == Card::King 
                     && fromPile.size() > upCount) {
                     // toPile is empty, a king sits abottom fromPile's face-up
                     // cards, and it is covering at least one face-down card.
@@ -472,7 +472,7 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
                     moves.AddStockMove(tPile.Code(), talonCard._nMoves+1,
                         talonCard._drawCount, recycle);
                 }
-            } else if (talonCard._card.Rank() == King) {
+            } else if (talonCard._card.Rank() == Card::King) {
                 moves.AddStockMove(tPile.Code(), talonCard._nMoves+1,
                     talonCard._drawCount, recycle);
                 break;  // move that king to just one empty pile
@@ -494,7 +494,7 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
                     moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
                 }
             } else {
-                if (top.Rank() == King) {
+                if (top.Rank() == Card::King) {
                     moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
                     break;  // don't move same king to another tableau pile
                 }
@@ -535,8 +535,8 @@ unsigned MisorderCount(Iter begin, Iter end)
     unsigned  mins[SuitsPerDeck] {14,14,14,14};
     unsigned result = 0;
     for (auto i = begin; i != end; ++i){
-        const RankType rank = i->Rank();
-        const SuitType suit = i->Suit();
+        const Card::RankT rank = i->Rank();
+        const Card::SuitT suit = i->Suit();
         if (rank < mins[suit])
             mins[suit] = rank;
         else
@@ -595,7 +595,7 @@ static bool Valid(const Game& gm,
     Card coverCard = *(fromPile.end()-nCardsToMove);
     if (toPile.IsTableau()) {
         if (toPile.empty()) {
-            if (coverCard.Rank()!=King) return false;
+            if (coverCard.Rank()!=Card::King) return false;
         } else {
             if (!coverCard.Covers(toPile.back())) return false;
         }

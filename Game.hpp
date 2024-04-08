@@ -29,46 +29,48 @@ namespace KSolveNames {
 namespace ranges = std::ranges;
 namespace views = std::views;
 
-enum RankType : unsigned char
-{
-    Ace = 0,
-    King = 12
-};
 const unsigned CardsPerSuit {13};
-enum SuitType : unsigned char 
-{
-    Clubs = 0,
-    Diamonds,
-    Spades,
-    Hearts
-};
 const unsigned SuitsPerDeck {4};
 const unsigned CardsPerDeck {CardsPerSuit*SuitsPerDeck};
 const unsigned TableauSize  {7};
 
 class Card
 {
+public:
+    enum RankT : unsigned char
+    {
+        Ace = 0,
+        King = 12
+    };
+    enum SuitT : unsigned char 
+    {
+        Clubs = 0,
+        Diamonds,
+        Spades,
+        Hearts
+    };
+
 private:
-    SuitType _suit:2;
-    RankType _rank:6;
+    SuitT _suit:2;
+    RankT _rank:6;
 
 public:
     Card() = default;
     Card(const Card& orig) = default;
 
-    Card(SuitType suit, RankType rank) : 
+    Card(Card::SuitT suit, Card::RankT rank) : 
         _suit(suit),
         _rank(rank)
         {}
 
     Card(unsigned value):
-        _suit(SuitType(value/CardsPerSuit)),
-        _rank(RankType(value%CardsPerSuit))
+        _suit(Card::SuitT(value/CardsPerSuit)),
+        _rank(RankT(value%CardsPerSuit))
         {}
 
 
-    SuitType Suit() const noexcept	    {return _suit;}
-    RankType Rank() const noexcept	    {return _rank;}
+    Card::SuitT Suit() const noexcept	    {return _suit;}
+    RankT Rank() const noexcept 	    {return _rank;}
     bool IsMajor() const noexcept		{return _suit>>1;} // Hearts or spades
     bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
                                         {return (_rank&1)^(_suit&1);}
@@ -111,7 +113,7 @@ struct CardDeck : frystl::static_vector<Card,CardsPerDeck>
 // Function to generate a randomly shuffled deck
 CardDeck NumberedDeal(uint32_t seed);
 
-enum PileCodeType : unsigned char{
+enum PileCodeT : unsigned char{
     Waste = 0, 
     TableauBase,  // == 1.  Must == Waste+1
     Tableau1 = TableauBase,
@@ -129,15 +131,15 @@ enum PileCodeType : unsigned char{
     Foundation4H,
     PileCount
 };
-static_assert(Stock == PileCodeType(TableauBase+TableauSize));
+static_assert(Stock == PileCodeT(TableauBase+TableauSize));
 
-static PileCodeType FoundationPileCode(SuitType suit)
+static PileCodeT FoundationPileCode(Card::SuitT suit)
 {
     unsigned suitNum = suit;
-    return static_cast<PileCodeType>(FoundationBase+suitNum);
+    return static_cast<PileCodeT>(FoundationBase+suitNum);
 }
 
-static bool IsTableau(PileCodeType pile) noexcept
+static bool IsTableau(PileCodeT pile) noexcept
 {
     return TableauBase <= pile && pile < TableauBase+TableauSize;
 }
@@ -145,20 +147,20 @@ static bool IsTableau(PileCodeType pile) noexcept
 class alignas(32) Pile : public PileVec
 {
 private:
-    PileCodeType _code;
+    PileCodeT _code;
     unsigned char _upCount;
     bool _isTableau;
     bool _isFoundation;
 
 public:
-    Pile(PileCodeType code)
+    Pile(PileCodeT code)
     : _code(code)
     , _upCount(0)
     , _isTableau(KSolveNames::IsTableau(code))
     , _isFoundation(FoundationBase <= code && code < FoundationBase+SuitsPerDeck)
     {}
 
-    PileCodeType Code() const noexcept		{return _code;}
+    PileCodeT Code() const noexcept		{return _code;}
     unsigned UpCount() const noexcept		{return _upCount;}
     bool IsTableau() const noexcept			{return _isTableau;}
     bool IsFoundation() const noexcept		{return _isFoundation;}
@@ -212,8 +214,8 @@ std::string Peek(const Pile& pile);
 class Move
 {
 private:
-    PileCodeType _from;    // _from == Stock <==> stock Move
-    PileCodeType _to;
+    PileCodeT _from;    // _from == Stock <==> stock Move
+    PileCodeT _to;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
     union {
@@ -229,7 +231,7 @@ private:
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
     // to the "to" pile. Only stock Moves draw from the stock pile.
-    Move(PileCodeType to, unsigned nMoves, int draw) noexcept
+    Move(PileCodeT to, unsigned nMoves, int draw) noexcept
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
@@ -238,7 +240,7 @@ private:
         {}
     // Construct a non-stock Move.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
-    Move(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
+    Move(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
@@ -248,8 +250,8 @@ private:
         {
             assert(from != Stock);
         }
-    friend Move StockMove(PileCodeType, unsigned, int, bool) noexcept;
-    friend Move NonStockMove(PileCodeType, PileCodeType, unsigned, unsigned) noexcept;
+    friend Move StockMove(PileCodeT, unsigned, int, bool) noexcept;
+    friend Move NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
 
 public:
     Move() = delete;
@@ -257,8 +259,8 @@ public:
     void SetRecycle(bool r) noexcept    {_recycle = r;}
 
     bool IsStockMove() const noexcept	{return _from==Stock;}
-    PileCodeType From() const noexcept  {return _from;}
-    PileCodeType To() const noexcept	{return _to;}
+    PileCodeT From() const noexcept  {return _from;}
+    PileCodeT To() const noexcept	{return _to;}
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
@@ -268,13 +270,13 @@ public:
 };
 static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
 
-inline Move StockMove(PileCodeType to, unsigned nMoves, int draw, bool recycle) noexcept
+inline Move StockMove(PileCodeT to, unsigned nMoves, int draw, bool recycle) noexcept
 {
     Move result(to, nMoves, draw);
     result.SetRecycle(recycle);
     return result; 
 }
-inline Move NonStockMove(PileCodeType from, PileCodeType to, unsigned n, unsigned fromUpCount) noexcept
+inline Move NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
 {
     return Move(from,to,n,fromUpCount);
 }     
@@ -286,12 +288,12 @@ typedef std::vector<Move> Moves;
 class QMoves : public frystl::static_vector<Move,43>
 {
 public:
-    void AddStockMove(PileCodeType to, unsigned nMoves, 
+    void AddStockMove(PileCodeT to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
         push_back(StockMove(to,nMoves,draw,recycle));
     }
-    void AddNonStockMove(PileCodeType from, PileCodeType to, 
+    void AddNonStockMove(PileCodeT from, PileCodeT to, 
         unsigned n, unsigned fromUpCount) noexcept
     {
         push_back(NonStockMove(from,to,n,fromUpCount));
@@ -377,7 +379,7 @@ std::string Peek(const Moves_t & mvs)
 // consecutive, as drawing multiple cards from the stock pile
 // is represented as a single XMove.
 //
-// Pile numbers are given by the enum PileCodeType.
+// Pile numbers are given by the enum PileCodeT.
 //
 // Flips of tableau cards are not counted as moves, but they
 // are flagged on the move from the pile of the flip.
@@ -385,8 +387,8 @@ std::string Peek(const Moves_t & mvs)
 class XMove
 {
     unsigned short _moveNum;
-    PileCodeType _from;
-    PileCodeType _to;
+    PileCodeT _from;
+    PileCodeT _to;
     unsigned char _nCards;
     unsigned char _flip;		// tableau flip?
 public:
@@ -394,8 +396,8 @@ public:
         : _nCards(0)
         {}
     XMove(    unsigned moveNum
-            , PileCodeType from
-            , PileCodeType to
+            , PileCodeT from
+            , PileCodeT to
             , unsigned nCards
             , bool flip)
         : _moveNum(moveNum)
@@ -477,7 +479,7 @@ public:
     using FoundationType = std::array<Pile,SuitsPerDeck>;
     using TableauType = std::array<Pile,TableauSize>;
 private:
-    // See the declaration of PileCodeType for the order of piles.
+    // See the declaration of PileCodeT for the order of piles.
     Pile            _waste;
     TableauType     _tableau;
     Pile            _stock;

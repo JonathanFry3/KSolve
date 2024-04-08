@@ -325,7 +325,7 @@ CardDeck SolitaireDeck(string const& cardSet) {
             cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
             return empty;
         }
-        Card cd(SuitType(suitchar-'1'),RankType(rank-1));
+        Card cd(Card::SuitT(suitchar-'1'),Card::RankT(rank-1));
         if (dupchk(cd)) {
             return empty;
         }

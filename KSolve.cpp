@@ -482,8 +482,8 @@ CardDeck SolitaireDeck(string const& cardSet) {
             cerr << "Invalid card code '" << cardSet.substr(i*3+1, 3) << "'" << endl;
             return empty;
         }
-        SuitType suit = SuitType(suitchar - '1');
-        Card cd(suit,RankType(rank-1));
+        Card::SuitT suit = Card::SuitT(suitchar - '1');
+        Card cd(suit,Card::RankT(rank-1));
         if (dupchk(cd)) {
             return empty;
         }
@@ -543,10 +543,10 @@ char PFndString(const Game& game, unsigned suit)
 }
 string GameDiagramPysol(const Game& game) {
     stringstream ss;
-    ss <<  "Foundations: H-" << PFndString(game,Hearts) 
-                    << " C-" << PFndString(game,Clubs) 
-                    << " D-" << PFndString(game,Diamonds) 
-                    << " S-" << PFndString(game,Spades);
+    ss <<  "Foundations: H-" << PFndString(game,Card::Hearts) 
+                    << " C-" << PFndString(game,Card::Clubs) 
+                    << " D-" << PFndString(game,Card::Diamonds) 
+                    << " S-" << PFndString(game,Card::Spades);
     ss << "\nTalon: ";
 
     const Pile & waste = game.WastePile();
