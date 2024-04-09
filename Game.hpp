@@ -421,7 +421,7 @@ template <class V>
 static bool XYZ_Move(Move trial, const V& movesMade) noexcept
 {
     // Consider a move at time T0 from X to Y and the next move
-    // to or from Y, which goes from Y to Z at time Tn.  The move at Tn can
+    // from Y, which goes from Y to Z at time Tn.  The move at Tn can
     // be skipped if the same result could have been achieved 
     // at T0 by moving the same cards directly from X to Z.
 
@@ -468,7 +468,7 @@ static bool XYZ_Move(Move trial, const V& movesMade) noexcept
     // UnfilteredAvailableMoves() generates moves among tableau files for only two purposes:
     // to move all the face-up cards, or to uncover a card that can be moved to the 
     // foundation.  I have tried filtering out later moves that would re-cover a 
-    // card that had been uncovered in that fashion.  That did not break anything, but
+    // card that had been uncovered in the latter fashion.  That did not break anything, but
     // cost more time than it saved.
     // Jonathan Fry 7/12/2020
 }
