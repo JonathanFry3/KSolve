@@ -70,14 +70,14 @@ public:
 
 
     Card::SuitT Suit() const noexcept	    {return _suit;}
-    RankT Rank() const noexcept 	    {return _rank;}
-    bool IsMajor() const noexcept		{return _suit>>1;} // Hearts or spades
-    bool OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
-                                        {return (_rank&1)^(_suit&1);}
-    unsigned Value() const noexcept		{return CardsPerSuit*_suit+_rank;}
-    std::string AsString() const;       // Returns a string like "ha" or "d2"
-    bool Covers(Card c) const noexcept	// can this card be moved onto c on a tableau pile?
-                                        {return _rank+1 == c._rank && OddRed() == c.OddRed();}
+    RankT Rank() const noexcept 	        {return _rank;}
+    unsigned char IsMajor() const noexcept	{return _suit>>1;} // Hearts or spades
+    unsigned char OddRed() const noexcept		// true for card that fits on stacks where odd cards are red
+                                            {return (_rank&1)^(_suit&1);}
+    unsigned Value() const noexcept		    {return CardsPerSuit*_suit+_rank;}
+    std::string AsString() const;           // Returns a string like "ha" or "d2"
+    bool Covers(Card c) const noexcept	    // can this card be moved onto c on a tableau pile?
+                                            {return _rank+1 == c._rank && OddRed() == c.OddRed();}
     bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 
