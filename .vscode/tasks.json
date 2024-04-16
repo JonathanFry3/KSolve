@@ -380,6 +380,35 @@
 	},
 	{
 		"type": "shell",
+		"label": "C/C++: cl.exe build benchmark",
+		"command": "cl.exe",
+		"args": [
+			"-Zi",			// debug information format
+			"-EHsc",		// Exception handling options
+			"-O2",			// maximize speed
+			"-DNDEBUG",		// turn off assert()
+			"-utf-8",
+			"-GL",			// Optimize across whole program
+			"-std:c++20",   // language standard - c++ 20
+			"-Fe:",	"benchmark.exe", // name EXE file
+			"Game.cpp",
+			"KSolveAStar.cpp",
+			"GameStateMemory.cpp",
+			"benchmark.cpp" 
+		],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": [  
+			"$msCompile"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		}
+	},
+	{
+		"type": "shell",
 		"label": "C/C++: cl.exe build thread-test",
 		"command": "cl.exe",
 		"args": [
