@@ -45,7 +45,7 @@ std::string Card::AsString() const
 
 // Make a Card from a string like "ah" or "s8".
 // Returns true if it succeeds.
-std::optional<Card> Card::FromString(const std::string& s0) noexcept  
+std::optional<Card> CardFromString(const std::string& s0) noexcept  
 {
     const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
     Card::SuitT suit;

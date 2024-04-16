@@ -80,13 +80,12 @@ public:
                                             {return _rank+1 == c._rank && OddRed() == c.OddRed();}
     bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
-
-    // Make a Card from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
-    // Ignores characters that cannot appear in a valid card string.
-    // Suit may come before or after rank, and letters may be in
-    // upper or lower case, or mixed.
-    static std::optional<Card> FromString(const std::string& s) noexcept;
 };
+// Make a Card from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
+// Ignores characters that cannot appear in a valid card string.
+// Suit may come before or after rank, and letters may be in
+// upper or lower case, or mixed.
+std::optional<Card> CardFromString(const std::string& s) noexcept;
 
 static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 

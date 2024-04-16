@@ -18,7 +18,7 @@ std::vector<Card> Cards(const std::vector<std::string>& strings)
 	std::vector<Card> result;
 	for (const auto& str: strings)
 	{
-		auto outcome = Card::FromString(str);
+		auto outcome = CardFromString(str);
 		assert(outcome);
 		result.push_back(*outcome);
 	}
@@ -220,12 +220,12 @@ int main()
 	// Test Card
 	assert(Card(Card::Hearts,Card::RankT(Card::Ace+2)).AsString() == "h3");
 	Card tcard(Card::Clubs,Card::Ace);
-	auto pair = Card::FromString("S10");
+	auto pair = CardFromString("S10");
 	bool validCardString = pair.has_value();
 	if (validCardString) tcard = pair.value();
 	assert(validCardString);
 	assert(tcard.AsString() == "st");
-	pair = Card::FromString("7d");
+	pair = CardFromString("7d");
 	validCardString = pair.has_value();
 	assert(validCardString);
 	tcard = pair.value();

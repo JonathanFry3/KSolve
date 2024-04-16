@@ -161,7 +161,7 @@ public:
 // or false and garbage if it fails.
 auto CardFromString(const string& str)
 {
-    auto result = Card::FromString(str);
+    auto result = Card::CardFromString(str);
     if (!result) {
         cerr << "Invalid card '" << str <<"'" << endl;
     }

@@ -307,7 +307,7 @@ public:
 // or false and garbage if it fails.
 optional<Card> CardFromString(const string& str)
 {
-    optional<Card> result = Card::FromString(str);
+    optional<Card> result = Card::CardFromString(str);
     if (!result) {
         cerr << "Invalid card '" << str <<"'" << endl;
     }
