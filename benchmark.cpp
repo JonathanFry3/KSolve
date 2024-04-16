@@ -30,7 +30,7 @@ struct Specs
 {
     unsigned nReps{5};
     bool verbose{false};
-    unsigned seed{50486};
+    unsigned seed{729347};
 };
 
 static unsigned GetUnsignedInt(const ArgVec& args, unsigned i)
