@@ -84,19 +84,17 @@ std::optional<Card> CardFromString(const std::string& s0) noexcept
 
 // A reproducible shuffle function.
 // Results from std::shuffle() differ between g++ and MSVC
-static void Shuffle(CardDeck & deck, uint32_t seed)
+void Shuffle(CardDeck & deck, uint32_t seed)
 {
-    assert(deck.size() == CardsPerDeck);
-
     // Create and seed a random number generator
     std::mt19937 engine;
     engine.seed(seed);
 
     // Create a uniform random distribution of integers 0-51.
-    std::uniform_int_distribution<unsigned> distribution(0,51);
+    std::uniform_int_distribution<unsigned> distribution(0,deck.size()-1);
 
     // Swap each card with a randomly chosen card.
-    for (unsigned i = 0; i < CardsPerDeck; ++i) {
+    for (unsigned i = 0; i < deck.size(); ++i) {
         std::swap(deck[i], deck[distribution(engine)]);
     }
 }

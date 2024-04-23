@@ -109,6 +109,9 @@ struct CardDeck : frystl::static_vector<Card,CardsPerDeck>
     }
 };
 
+// Function to shuffle a (possible partial) deck
+void Shuffle(CardDeck & deck, uint32_t seed);
+
 // Function to generate a randomly shuffled deck
 CardDeck NumberedDeal(uint32_t seed);
 
