@@ -46,7 +46,22 @@ bool IsNumber (const char * a);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
+const auto missingCard = Card(CardsPerDeck);
 
+using TokenList = vector<string>;
+TokenList Tokenize(const string& text, string separators)
+{
+    TokenList result;
+    string remainder = text;
+    while (remainder.size()) {
+        remainder.erase(0,remainder.find_first_not_of(separators)); 
+        if (remainder.size()) {
+            result.push_back(remainder.substr(0,remainder.find_first_of(separators)));
+            remainder.erase(0, result.back().size());
+        }
+    }
+    return result;
+}
 
 CardDeck LoadDeck(string const& f, unsigned int & index) {
     CardDeck deck;
@@ -300,6 +315,24 @@ public:
         if (result) cerr << endl;
         return result;
     }
+
+    // Replace "?" cards with random missing cards.
+    void AssignUnknowns(Card marker, CardDeck & deck)
+    {
+        CardDeck missings;
+        for (unsigned i = 0; i < CardsPerDeck; ++i) 
+            if (!used[i]) missings.push_back(Card(i));
+        if (missings.size() > 1){
+            Shuffle(missings,time(nullptr));
+        }
+        unsigned m = 0;
+        for (unsigned i = 0; i < deck.size() && m < missings.size(); ++i) {
+            if (deck[i] == missingCard) {
+                deck[i] = missings[m++];
+            }
+        }
+        assert(m == missings.size());
+    }
 };
 
 // Converts a card to a string and prints an error message if
@@ -351,26 +384,37 @@ CardDeck ReversedPysolDeck(string const& cardSet)
 CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]) {
     CardDeck result(CardsPerDeck);
     DuplicateCardChecker dupchk;
-    string eyeCandy{"<> \t\n\r:-"};
-    unsigned int j = 7;  // skips "Talon: " or "nolaT: "
+    string skipChars{"<> \t\n\r:-"};
 
-    int i;
+    TokenList toks{Tokenize(cardSet, skipChars)};
+
     bool valid = true;
-    for (i = 0; i < CardsPerDeck && j < cardSet.size(); i++) {
-        // skip over punctuation and white space
-        while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
-        if (j+1 < cardSet.size()){
-            optional<Card> cd = StringToCard(cardSet.substr(j,2));
+    toks.erase(toks.begin());   // Toss starting "talon:" or "nolat:"
+    unsigned n = min<size_t>(toks.size(), CardsPerDeck);
+    for (unsigned i = 0;  i < n; i++) {
+        if (toks[i] == "?") {
+            result[order[i]] = missingCard;
+        }
+        else {
+            optional<Card> cd = StringToCard(toks[i]);
             if (!cd || dupchk(*cd)) {
                 valid = false;
             } else {
                 result[order[i]] = *cd;
             }
         }
-        j += 2;
     }
-    if (dupchk.MissingCards()) {
+    for (; n < toks.size(); ++n) {
+        if (n == CardsPerDeck) cerr << "Extra cards: ";
+        cerr << toks[n] << " ";
+        if (n == toks.size()-1) cerr << endl;
         valid = false;
+    }
+    if (valid && dupchk.MissingCards()) {
+        if (toks.size() == CardsPerDeck)
+            dupchk.AssignUnknowns(missingCard,result);
+        else 
+            valid = false;
     }
     if (!valid) result.clear();
     return result;
