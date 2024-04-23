@@ -34,15 +34,6 @@ When using the -MOVES command, the program will print the moves neccesary such t
 	* Y will be 1 through 7 or the foundation suit letter.
 * XY-Z is the same as above except you are moving Z cards from X to Y.
 
-By limiting talon look-ahead, the -FAST option can speed up solution a great deal and greatly reduce the memory needed. 
-However, if the program
-finds a solution using this option, it may not be minimal and the program cannot tell whether it is or not.
-If the program decides a deal is unsolvable, it might be solvable but limiting translation look-ahead caused
-it to miss the solution.  A low setting is fastest, uses the least memory, and is most likely to give a 
-misleading result.  The higher the setting, the better the result and the greater it's cost. A setting of
-3 or 4 seems a good starting point. The default is 24, and that is the only setting at which the program
-will declare a solution to be minimal and an "Impossible" result can be trusted.
-
 This program does not count flips or recycles of the stock pile in its move count.
 ## Input File
 Problems can be entered four different ways in an input file.  The file SampleDeals.txt shows examples of each.
@@ -58,21 +49,31 @@ Start a line with "Talon: " and follow that with the talon cards (the ones left 
 the seven piles) in the order in which they were dealt.  Represent a card with a suit letter and a one-character rank (A, J, Q, K, T for ten, or a digit from 2 through 9). Separate cards with spaces.
 Case does not matter, and the characters in "<>:-" plus tabs will be ignored.
 
+Unknown cards may be entered as "?". The program will replace each question mark with a card randomly
+chosen from among those cards not otherwise listed.
+Each time the program is run with a file containing question marks, it will choose a different sample.
+This feature can be helpful for solving a tough game in an app. 
+The program will usually give a solution that can be used to see more cards.
+
 After the first line, enter a line for each tableau pile (the seven piles dealt first), starting with the one-card pile.  Enter the cards in the order they were dealt, so the one dealt face-up comes last.
 ### Reverse Pysol Format
 This is like the Pysol format explained above, except that the cards are in the order a player discovers them while playing the game rather than the order they were dealt.  Start the first line with "naloT: " and follow with the talon cards.  Those are in the same order as in Talon format, since the deal order is the same as the discovery order.  Follow with seven lines containing the tableau piles.  These are in the reverse of their order in a Pysol file - the card dealt face-up is first, since that's the one the player sees first.
 
 ## What to Expect
-This program uses lots of memory.  
+This program sometimes uses lots of memory.  
 One of its larger data structures contains a representation of the move tree - a tree structure in 
 which the nodes are game states and the arcs are moves.
 Playing draw one,
-the median number of moves in that structure is around five million, and about .8% of deals 
-need more than 150 million moves.
+the median number of moves in that structure is around five million, 
+and about 0.8% of deals need more than 150 million moves.
 You can limit or expand the space (and time) used by using the -MVLIMIT flag.  
-If that data structure becomes larger than the specified limit, the program will give up.
-If -MVLIMIT is set too high, the program may become unable to allocate memory it needs and will end.  It contains code to end gracefully, but the memory needed to end gracefully is often not available, so it ends less than gracefully.  On Linux machines, the system sometimes prints "Killed".  On Windows, there is simply no output.
+If that data structure grows larger than the specified limit, the program will give up.
+If -MVLIMIT is set too high, the program may become unable to allocate memory it needs and will end. 
+Before it ends, if virtual memory is available, it will use that.  
+If much virtual memory is used, the program will slow down drastically.
+If virtual memory is not available, or is exhausted, the program will just quit.  
+On Linux systems, it may or may not print "Killed"; on Windows system, it will die quietly.
 
 There is no performance penalty for specifying a higher move limit than is needed.
 
-There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is no help at all (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). 
+There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is of very little help (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). 
