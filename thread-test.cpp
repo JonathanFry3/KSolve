@@ -20,7 +20,6 @@ struct Specification
     unsigned _threads;
     unsigned _mvLimit;
     unsigned _drawSpec;
-    unsigned _lookAhead;
     unsigned _repeat;
     uint32_t _seed0;
     int _incr;
@@ -56,7 +55,6 @@ Specification GetSpec(int argc, char * argv[])
     spec._incr = 1;
     spec._drawSpec = 1;
     spec._threads = 0;
-    spec._lookAhead = 24;
     spec._repeat = 1;
     spec._vegas = false;
 
