@@ -488,7 +488,7 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 
 // Make available moves until a branching node or an childless one is encountered.
 // If more than one move is available but order will make no difference
-// (as when two aces are dealt face up), AvalaibleMoves() will
+// (as when two aces are dealt face up), AvailableMoves() will
 // return them one at a time.
 QMoves WorkerState::MakeAutoMoves() noexcept
 {
