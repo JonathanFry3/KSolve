@@ -58,6 +58,7 @@ SOFTWARE.
 #include <algorithm> // std::move...(), equal(), lexicographical_compare()
 #include <initializer_list>
 #include <stdexcept> // for std::out_of_range
+#include <cstdint>   // uint32_t etc.
 #include "frystl-defines.hpp"
 
 namespace frystl
@@ -177,12 +178,13 @@ namespace frystl
             return Capacity;
         }
         template <class... Args>
-        void emplace_front(Args&&... args)
+        [[maybe_unused]] reference emplace_front(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_begin == FirstSpace()) SlideAllToBack();
             Construct(_begin-1, std::forward<Args>(args)...);
             --_begin;
+            return *_begin;
         }
         void push_front(const_reference t)
         {
@@ -205,12 +207,13 @@ namespace frystl
             Destroy(_begin-1);
         }
         template <class... Args>
-        void emplace_back(Args&&... args)
+        [[maybe_unused]] reference emplace_back(Args&&... args)
         {
             FRYSTL_ASSERT2(size() < capacity(),"static_deque overflow");
             if (_end == PastLastSpace()) SlideAllToFront();
             Construct(_end,std::forward<Args>(args)...);
             ++_end;
+            return *(_end-1);
         }
         void push_back(const_reference t) 
         {
@@ -294,7 +297,7 @@ namespace frystl
             else if (pos == _end) emplace_back(std::forward<Args>(args)...);
             else {
                 iterator p = MakeRoom(pos,1);
-                (*p) = value_type(std::forward<Args>(args)...);
+                Construct(p,std::forward<Args>(args)...);
             }
             return begin()+offset;
         }

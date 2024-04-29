@@ -5,6 +5,8 @@ but with better performance in some sense in some uses. They were originally min
 for use in my *KSolve* Klondike Solitaire solver, but I later filled them out to have all the 
 functionality of their model STL classes, with some exceptions that stem from their data structures 
 or my programming limitations. Detailed documentation is provided in the headers.
+
+They require at least c++ 17.
 ## static_vector
 Like an STL vector, one of these contains a sequence of items of like type that provides efficient
 random access, can be grown and shrunk, and keeps track of its own length.  Unlike an STL vector,
@@ -14,9 +16,7 @@ data taken from dynamic memory. A static_vector resides entirely where it is cre
 ## static_deque
 This is a static implementation of an STL deque.  Like an STL deque, it can be expanded efficiently
 at either end (unlike a vector, which can be expanded efficiently only at the back). A static_deque
-has a fixed size limit declared at compile time.  In this implementation, the declared size is
-the number of elements for which there is space in either direction before the first element is
-added. Rather than overflow, it will shift elements away from the the end of the imminent overflow
+has a fixed size limit declared at compile time.  Rather than overflow, it will shift elements away from the the end of the imminent overflow
 if possible (although that will hurt performance). Its random access speed is actually better
 than that of an STL deque because an STL deque need two levels of index.
 ## mf_vector
@@ -34,6 +34,6 @@ that of an STL vector because it uses two levels of index. It has no *data()* me
 An mf_vector offers another advantage. It is stable with respect to *push_back()* or *emplace_back()* 
 calls.  That is, pointers
 and references are still valid after such a call. 
-It also means that up to a predefined size, which can easily be made *very* large, read access 
+It also means that up to a predefined size, which can easily be made arbitrarily large, read access 
 is safe in a multi-threaded program as long as the only changes being made are new elements added
-at the back.
+at the back. In that circustance, iterators (except *end()*) also remain valid.
