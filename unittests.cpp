@@ -144,6 +144,10 @@ void PrintOutcome(Game& game, const KSolveAStarResult& rslt)
 	vector<string> outcomeWords{"Minimal Solution","Solution may not be minimal",
 									"Gave up without solving", "Impossible", "Memory Exceeded"};
 	cout << "Outcome: " << outcomeWords[rslt._code];
+
+	game.Deal();
+	// PrintGame(game);
+
 	XMoves moves = MakeXMoves(rslt._solution,game.DrawSetting());
 
 	if (moves.size()){
@@ -152,7 +156,6 @@ void PrintOutcome(Game& game, const KSolveAStarResult& rslt)
 	cout  << endl;
 
 	unsigned passes(1);
-	game.Deal();
 	for (auto mv : moves){
 		unsigned from = mv.From();
 		unsigned to = mv.To();
