@@ -62,12 +62,16 @@ private:
             : _move(mv)
             , _prevNode(prevNode)
             {}
+        MoveNode()
+            : _move()
+            , _prevNode(-1)
+            {}
     };
     mf_vector<MoveNode,2*1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    using LeafNodeStack  = MaxSizeCollector<mf_vector<NodeX,2*1024> >;
-    using FringeSizeType = MaxSizeCollector<mf_vector<NodeX,2*1024> >::size_type;
+    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,2*1024> >;
+    using FringeSizeType = LeafNodeStack::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
@@ -88,8 +92,6 @@ public:
         _moveTreeSizeLimit = moveTreeSizeLimit;
         _moveTree.reserve(moveTreeSizeLimit+1000);
         _startStackIndex = minMoves;
-        _fringe.emplace_back();
-        _fringe[0]._stack.push_back(-1);
     }
 
     FringeSizeType MaxFringeElementSize() const noexcept{
@@ -113,7 +115,7 @@ private:
     typedef SharedMoveStorage::LeafNodeStack LeafNodeStack;
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
-    NodeX _leafIndex;			// index of current sequence's leaf node in _moveTree
+    MoveNode _leaf;			// current sequence's leaf node 
     unsigned _startSize;
     struct MovePair
     {
@@ -366,7 +368,7 @@ static void Worker(
 
 MoveStorage::MoveStorage(SharedMoveStorage& shared)
     : _shared(shared)
-    , _leafIndex(-1)
+    , _leaf()
     , _startSize(0)
     {}
 void MoveStorage::PushStem(Move move) noexcept
@@ -383,33 +385,29 @@ void MoveStorage::ShareMoves()
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
-        NodeX branch0Index      // index in _moveTree of first branch
+        NodeX stemEnd      // index in _moveTree of last stem Move
             = UpdateMoveTree();
-        UpdateFringe(branch0Index);
+        UpdateFringe(stemEnd);
     }
 }
 
-// Returns move tree index of first branch
+// Returns move tree index of last stem node
 MoveStorage::NodeX MoveStorage::UpdateMoveTree() noexcept
 {
-    NodeX stemEnd = _leafIndex;
+    NodeX stemEnd = _leaf._prevNode;
     Guard rupert(_shared._moveTreeMutex);
-    // Copy all the stem moves (if any) into the move tree.
-    for (auto m: _currentSequence | views::drop(_startSize))
     {
-        // Each stem node points to the previous node.
-        _shared._moveTree.emplace_back(m, stemEnd);
-        stemEnd =  _shared._moveTree.size() - 1;
+        // Copy all the stem moves into the move tree.
+        for (auto m: _currentSequence | views::drop(_startSize))
+        {
+            // Each stem node points to the previous node.
+            _shared._moveTree.emplace_back(m, stemEnd);
+            stemEnd =  _shared._moveTree.size() - 1;
+        }
     }
-    // Now all the branches
-    NodeX branch0Index = _shared._moveTree.size();
-    for (const auto& br:_branches) {
-        // Each branch node points to the last stem node.
-        _shared._moveTree.emplace_back(br._mv, stemEnd);
-    }
-    return branch0Index;
+    return stemEnd;
 } 
-void MoveStorage::UpdateFringe(MoveStorage::NodeX branchIndex) noexcept
+void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 {
     auto & fringe = _shared._fringe;
     // Enlarge the fringe if needed.
@@ -420,11 +418,12 @@ void MoveStorage::UpdateFringe(MoveStorage::NodeX branchIndex) noexcept
         if (fringe.size() <= maxOffset)
             fringe.resize(maxOffset+1);
     }
+
     for (const auto &br: _branches) {
         auto & elem = fringe[br._offset];
 
         Guard clyde(elem._mutex);
-        elem._stack.push_back(branchIndex++);
+        elem._stack.emplace_back(br._mv,stemEnd);
     }
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
@@ -432,14 +431,19 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
     unsigned offset;
     unsigned size;
     unsigned result = 0;
-    _leafIndex = -1;
-    // Find the first non-empty leaf node stack, pop its top into _leafIndex.
+    _leaf = MoveNode{};
+    auto & fringe = _shared._fringe;
+
+    if (fringe.empty()) {
+        // first time 
+        return _shared._startStackIndex;
+    }
+    // Find the first non-empty leaf node stack, pop its top into _leaf.
     //
     // It's not quite that simple with more than one thread, but that's the idea.
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
     for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
     {
-        auto & fringe = _shared._fringe;
         size = fringe.size();
         // Set offset to the index of the first non-empty leaf node stack
         // or size if all are empty.
@@ -451,7 +455,7 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
             {
                 Guard methuselah(fringe[offset]._mutex);
                 if (stack.size()) {
-                    _leafIndex = stack.back();
+                    _leaf = stack.back();
                     stack.pop_back();
                     result = offset+_shared._startStackIndex;
                 }
@@ -469,7 +473,9 @@ void MoveStorage::LoadMoveSequence() noexcept
     // Note that this operation requires no guard on _shared._moveTree only if 
     // the block vector in that structure never needs reallocation.
     _currentSequence.clear();
-    for (NodeX node = _leafIndex; 
+    if (!_leaf._move.IsDefault())
+        _currentSequence.push_back(_leaf._move);
+    for (NodeX node = _leaf._prevNode; 
          node != -1U; 
          node = _shared._moveTree[node]._prevNode){
         const Move &mv = _shared._moveTree[node]._move;
@@ -477,6 +483,7 @@ void MoveStorage::LoadMoveSequence() noexcept
     }
 
     _startSize = _currentSequence.size();
+    if (_startSize > 0) _startSize--;
     _branches.clear();
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept

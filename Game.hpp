@@ -216,7 +216,7 @@ std::string Peek(const Pile& pile);
 class Move
 {
 private:
-    PileCodeT _from;    // _from == Stock <==> stock Move
+    PileCodeT _from;    // _from == Stock means stock Move
     PileCodeT _to;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
@@ -256,13 +256,14 @@ private:
     friend Move NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
 
 public:
-    Move() = delete;
+    Move() = default;
+    bool IsDefault()                    {return _from == _to;}
 
     void SetRecycle(bool r) noexcept    {_recycle = r;}
 
     bool IsStockMove() const noexcept	{return _from==Stock;}
-    PileCodeT From() const noexcept  {return _from;}
-    PileCodeT To() const noexcept	{return _to;}
+    PileCodeT From() const noexcept     {return _from;}
+    PileCodeT To() const noexcept	    {return _to;}
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
