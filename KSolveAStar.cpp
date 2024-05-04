@@ -83,6 +83,7 @@ private:
     static_vector<FringeElement,256> _fringe;
     Mutex _fringeMutex;
     unsigned _startStackIndex {-1U};
+    bool _firstTime;
     friend class MoveStorage;
 public:
     // Start move storage with the minimum number of moves from
@@ -92,6 +93,7 @@ public:
         _moveTreeSizeLimit = moveTreeSizeLimit;
         _moveTree.reserve(moveTreeSizeLimit+1000);
         _startStackIndex = minMoves;
+        _firstTime = true;
     }
 
     FringeSizeType MaxFringeElementSize() const noexcept{
@@ -434,8 +436,9 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
     _leaf = MoveNode{};
     auto & fringe = _shared._fringe;
 
-    if (fringe.empty()) {
+    if (fringe.empty() && _shared._firstTime) {
         // first time 
+        _shared._firstTime = false;
         return _shared._startStackIndex;
     }
     // Find the first non-empty leaf node stack, pop its top into _leaf.
