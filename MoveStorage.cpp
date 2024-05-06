@@ -1,4 +1,5 @@
 #include "MoveStorage.hpp"
+#include <thread>
 
 namespace KSolveNames {
 

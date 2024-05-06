@@ -2,7 +2,6 @@
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
 #include <mutex>          	// for std::mutex, std::lock_guard
-#include <thread>
 
 namespace KSolveNames {
 
@@ -51,10 +50,10 @@ private:
             , _prevNode(-1)
             {}
     };
-    mf_vector<MoveNode,2*1024> _moveTree;
+    mf_vector<MoveNode,1024> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
-    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,2*1024> >;
+    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,1024> >;
     using FringeSizeType = LeafNodeStack::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
