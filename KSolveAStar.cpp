@@ -1,9 +1,6 @@
 #include "KSolveAStar.hpp"
 #include "GameStateMemory.hpp"
-#include "frystl/mf_vector.hpp"
-#include "frystl/static_deque.hpp"
-#include <mutex>          	// for std::mutex, std::lock_guard
-#include <thread>
+#include "MoveStorage.hpp"
 #include <atomic>
 
 namespace KSolveNames {
@@ -15,153 +12,6 @@ unsigned DefaultThreads()
 {
     return std::thread::hardware_concurrency();
 }
-
-typedef std::mutex Mutex;
-typedef std::lock_guard<Mutex> Guard;
-
-using namespace frystl;
-
-enum {maxMoves = 500};
-typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
-
-// Mix-in to measure max size
-template <class VectorType>
-class MaxSizeCollector : public VectorType
-{
-public:
-    using size_type = typename VectorType::size_type;
-    MaxSizeCollector() = default;
-
-    size_type MaxSize() const {
-        return std::max(VectorType::size(),_maxSize);
-    }
-    void pop_back()
-    {
-        Remember();
-        VectorType::pop_back();
-    }
-private:
-    size_type _maxSize {0};
-    void Remember()
-    {
-        _maxSize = std::max(VectorType::size(),_maxSize);
-    }
-};
-
-struct SharedMoveStorage
-{
-private:
-    size_t _moveTreeSizeLimit;
-    typedef std::uint32_t NodeX;
-    struct MoveNode
-    {
-        Move _move;
-        NodeX _prevNode;
-
-        MoveNode(const Move& mv, NodeX prevNode)
-            : _move(mv)
-            , _prevNode(prevNode)
-            {}
-        MoveNode()
-            : _move()
-            , _prevNode(-1)
-            {}
-    };
-    mf_vector<MoveNode,2*1024> _moveTree;
-    Mutex _moveTreeMutex;
-    // Stack of indexes to leaf nodes in _moveTree
-    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,2*1024> >;
-    using FringeSizeType = LeafNodeStack::size_type;
-    // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
-    // stores nodes with the same minimum number of moves in any
-    // completed game that can grow from them.  MoveStorage uses it
-    // to implement a priority queue ordered by the minimum move count.
-    struct FringeElement {
-        Mutex _mutex;
-        LeafNodeStack _stack;
-    };
-    static_vector<FringeElement,256> _fringe;
-    Mutex _fringeMutex;
-    unsigned _startStackIndex {-1U};
-    bool _firstTime;
-    friend class MoveStorage;
-public:
-    // Start move storage with the minimum number of moves from
-    // the dealt deck before the first move.
-    void Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
-    {
-        _moveTreeSizeLimit = moveTreeSizeLimit;
-        _moveTree.reserve(moveTreeSizeLimit+1000);
-        _startStackIndex = minMoves;
-        _firstTime = true;
-    }
-
-    FringeSizeType MaxFringeElementSize() const noexcept{
-        return ranges::max_element(_fringe,{},
-            [](const auto& f){return f._stack.MaxSize();})
-            ->_stack.MaxSize();
-    }
-
-    unsigned MoveCount() const noexcept{
-        return _moveTree.size();
-    }
-    bool OverLimit() const noexcept{
-        return _moveTree.size() > _moveTreeSizeLimit;
-    }
-};
-class MoveStorage
-{
-private:
-    typedef SharedMoveStorage::NodeX NodeX;
-    typedef SharedMoveStorage::MoveNode MoveNode;
-    typedef SharedMoveStorage::LeafNodeStack LeafNodeStack;
-    SharedMoveStorage &_shared;
-    MoveSequenceType _currentSequence;
-    MoveNode _leaf;			// current sequence's leaf node 
-    unsigned _startSize;
-    struct MovePair
-    {
-        Move _mv;
-        std::uint32_t _offset;
-        MovePair(Move mv, unsigned offset)
-            : _mv(mv)
-            , _offset(offset)
-        {}
-        bool operator< (const MovePair& rhs) const
-        {
-            return _offset < rhs._offset;
-        }
-    };
-    static_vector<MovePair,128> _branches;
-
-    NodeX UpdateMoveTree() noexcept; // Returns move tree index of first branch
-    void UpdateFringe(NodeX branchIndex) noexcept;
-public:
-    // Constructor.
-    MoveStorage(SharedMoveStorage& shared);
-    // Return a reference to the storage shared among threads
-    SharedMoveStorage& Shared() const noexcept {return _shared;}
-    // Push a move to the back of the current stem.
-    void PushStem(Move move) noexcept;
-    // Push the first move of a new branch off the current stem,
-    // along with the total number of moves to reach the end state
-    // that move produces.
-    void PushBranch(Move move, unsigned moveCount) noexcept;
-    // Push all the moves (stem and branch) from this trip
-    // through the main loop into shared storage.
-    void ShareMoves();
-    // Identify a move sequence with the lowest available minimum move count, 
-    // return its minimum move count or, if no more sequences are available.
-    // return 0. Remove that sequence from the open queue and make it current.
-    unsigned PopNextSequenceIndex() noexcept;
-    // Copy the moves in the current sequence from the move tree.
-    void LoadMoveSequence() noexcept; 
-    // Make all the moves in the current sequence
-    void MakeSequenceMoves(Game&game) const noexcept;
-    // Return a const reference to the current move sequence in its
-    // native type.
-    const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
-};
 
 class CandidateSolution
 {
@@ -229,6 +79,22 @@ public:
     QMoves MakeAutoMoves() noexcept;
 };
 bool WorkerState::k_blewMemory(false);
+
+// Make available moves until a branching node or an childless one is encountered.
+// If more than one move is available but order will make no difference
+// (as when two aces are dealt face up), AvailableMoves() will
+// return them one at a time.
+QMoves WorkerState::MakeAutoMoves() noexcept
+{
+    QMoves availableMoves;
+    while ((availableMoves = 
+        _game.AvailableMoves(_moveStorage.MoveSequence())).size() == 1)
+    {
+        _moveStorage.PushStem(availableMoves[0]);
+        _game.MakeMove(availableMoves[0]);
+    }
+    return availableMoves;
+}
 
 static void Worker(
         WorkerState* pMasterState);
@@ -366,150 +232,6 @@ static void Worker(
         state.k_blewMemory = true;
     }
     return;
-}
-
-MoveStorage::MoveStorage(SharedMoveStorage& shared)
-    : _shared(shared)
-    , _leaf()
-    , _startSize(0)
-    {}
-void MoveStorage::PushStem(Move move) noexcept
-{
-    _currentSequence.push_back(move);
-}
-void MoveStorage::PushBranch(Move mv, unsigned nMoves) noexcept
-{
-    assert(_shared._startStackIndex <= nMoves);
-    _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
-}
-void MoveStorage::ShareMoves()
-{
-    // If _branches is empty, a dead end has been reached.  There
-    // is no need to store any stem nodes that led to it.
-    if (_branches.size()) {
-        NodeX stemEnd      // index in _moveTree of last stem Move
-            = UpdateMoveTree();
-        UpdateFringe(stemEnd);
-    }
-}
-
-// Returns move tree index of last stem node
-MoveStorage::NodeX MoveStorage::UpdateMoveTree() noexcept
-{
-    NodeX stemEnd = _leaf._prevNode;
-    Guard rupert(_shared._moveTreeMutex);
-    {
-        // Copy all the stem moves into the move tree.
-        for (auto m: _currentSequence | views::drop(_startSize))
-        {
-            // Each stem node points to the previous node.
-            _shared._moveTree.emplace_back(m, stemEnd);
-            stemEnd =  _shared._moveTree.size() - 1;
-        }
-    }
-    return stemEnd;
-} 
-void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
-{
-    auto & fringe = _shared._fringe;
-    // Enlarge the fringe if needed.
-    unsigned maxOffset = 
-        std::max_element(_branches.cbegin(),_branches.cend())->_offset;
-    if (fringe.size() <= maxOffset) {
-        Guard freddie(_shared._fringeMutex);
-        if (fringe.size() <= maxOffset)
-            fringe.resize(maxOffset+1);
-    }
-
-    for (const auto &br: _branches) {
-        auto & elem = fringe[br._offset];
-
-        Guard clyde(elem._mutex);
-        elem._stack.emplace_back(br._mv,stemEnd);
-    }
-}
-unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
-{
-    unsigned offset;
-    unsigned size;
-    unsigned result = 0;
-    _leaf = MoveNode{};
-    auto & fringe = _shared._fringe;
-
-    if (fringe.empty() && _shared._firstTime) {
-        // first time 
-        _shared._firstTime = false;
-        return _shared._startStackIndex;
-    }
-    // Find the first non-empty leaf node stack, pop its top into _leaf.
-    //
-    // It's not quite that simple with more than one thread, but that's the idea.
-    // When we don't have a lock on it, any of the stacks may become empty or non-empty.
-    for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
-    {
-        size = fringe.size();
-        // Set offset to the index of the first non-empty leaf node stack
-        // or size if all are empty.
-        auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-        offset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
-
-        if (offset < size) {
-            auto & stack = fringe[offset]._stack;
-            {
-                Guard methuselah(fringe[offset]._mutex);
-                if (stack.size()) {
-                    _leaf = stack.back();
-                    stack.pop_back();
-                    result = offset+_shared._startStackIndex;
-                }
-            }
-        } 
-        if (result == 0) {
-            std::this_thread::yield();
-        }
-    }
-    return result;
-}
-void MoveStorage::LoadMoveSequence() noexcept
-{
-    // Follow the links to recover all the moves in a sequence in reverse order.
-    // Note that this operation requires no guard on _shared._moveTree only if 
-    // the block vector in that structure never needs reallocation.
-    _currentSequence.clear();
-    if (!_leaf._move.IsDefault())
-        _currentSequence.push_back(_leaf._move);
-    for (NodeX node = _leaf._prevNode; 
-         node != -1U; 
-         node = _shared._moveTree[node]._prevNode){
-        const Move &mv = _shared._moveTree[node]._move;
-        _currentSequence.push_front(mv);
-    }
-
-    _startSize = _currentSequence.size();
-    if (_startSize > 0) _startSize--;
-    _branches.clear();
-}
-void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
-{
-    for (auto & move: _currentSequence){
-        game.MakeMove(move);
-    }
-}
-
-// Make available moves until a branching node or an childless one is encountered.
-// If more than one move is available but order will make no difference
-// (as when two aces are dealt face up), AvailableMoves() will
-// return them one at a time.
-QMoves WorkerState::MakeAutoMoves() noexcept
-{
-    QMoves availableMoves;
-    while ((availableMoves = 
-        _game.AvailableMoves(_moveStorage.MoveSequence())).size() == 1)
-    {
-        _moveStorage.PushStem(availableMoves[0]);
-        _game.MakeMove(availableMoves[0]);
-    }
-    return availableMoves;
 }
 
 }   // namespace KSolveNames

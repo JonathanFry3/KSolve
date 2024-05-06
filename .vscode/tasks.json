@@ -74,8 +74,9 @@
 				"-Wno-placement-new",
 				"-pthread",
 				"Game.cpp",
-				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
+				"KSolveAStar.cpp",
 				"unittests.cpp",
 				"-o","${workspaceFolder}/unittests"
 				,"&&","./unittests"
@@ -104,6 +105,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"unittests.cpp",
 				"-o","${workspaceFolder}/unittests"
 				,"&&","./unittests"
@@ -137,6 +139,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"ran.cpp",
 				"-o",
 				"${workspaceFolder}/ran"
@@ -165,6 +168,7 @@
                 "Game.cpp",
                 "GameStateMemory.cpp",
                 "KSolveAStar.cpp",
+				"MoveStorage.cpp",
                 "benchmark.cpp",
                 "-o",
                 "${workspaceFolder}/benchmark"
