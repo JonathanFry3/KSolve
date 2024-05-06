@@ -1,7 +1,6 @@
 #include "KSolveAStar.hpp"
 #include "GameStateMemory.hpp"
 #include "MoveStorage.hpp"
-#include <atomic>
 
 namespace KSolveNames {
 
@@ -96,70 +95,6 @@ QMoves WorkerState::MakeAutoMoves() noexcept
     return availableMoves;
 }
 
-static void Worker(
-        WorkerState* pMasterState);
-
-static void RunWorkers(unsigned nThreads, WorkerState & state)
-{
-    if (nThreads == 0)
-        nThreads = DefaultThreads();
-
-    // Start workers in their own threads
-    std::vector<std::thread> threads;
-    threads.reserve(nThreads-1);
-    for (unsigned t = 0; t < nThreads-1; ++t) {
-        threads.emplace_back(&Worker, &state);
-        std::this_thread::sleep_for(std::chrono::milliseconds(3));
-    }
-
-    // Run one more worker in this (main) thread
-    Worker(&state);
-
-    for (auto& thread: threads) 
-        thread.join();
-    // Everybody's finished
-}
-/*************************************************************************/
-/*************************** Entrance ************************************/
-/*************************************************************************/
-KSolveAStarResult KSolveAStar(
-        Game& game,
-        unsigned moveTreeLimit,
-        unsigned nThreads)
-{
-    SharedMoveStorage sharedMoveStorage;
-    GameStateMemory closed;
-    CandidateSolution solution;
-    WorkerState state(game,solution,sharedMoveStorage,closed);
-
-    const unsigned startMoves = state._game.MinimumMovesLeft();
-
-    // Prime the pump
-    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);
-    
-    RunWorkers(nThreads, state);
-    
-    KSolveAStarCode outcome;
-    if (state.k_blewMemory) {
-        outcome = MemoryExceeded;
-    } else if (solution.GetMoves().size()) { 
-        outcome = sharedMoveStorage.OverLimit()
-                ? Solved
-                : SolvedMinimal;
-    } else {
-        outcome = sharedMoveStorage.OverLimit()
-                ? GaveUp
-                : Impossible;
-    }
-    return KSolveAStarResult(
-        outcome,
-        solution.GetMoves(),
-        state._closedList.Size(),
-        sharedMoveStorage.MoveCount(),
-        sharedMoveStorage.MaxFringeElementSize());
-    ;
-}
-
 /*************************************************************************/
 /*************************** Main Loop ***********************************/
 /*************************************************************************/
@@ -232,6 +167,67 @@ static void Worker(
         state.k_blewMemory = true;
     }
     return;
+}
+
+static void RunWorkers(unsigned nThreads, WorkerState & state)
+{
+    if (nThreads == 0)
+        nThreads = DefaultThreads();
+
+    // Start workers in their own threads
+    std::vector<std::thread> threads;
+    threads.reserve(nThreads-1);
+    for (unsigned t = 0; t < nThreads-1; ++t) {
+        threads.emplace_back(&Worker, &state);
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    }
+
+    // Run one more worker in this (main) thread
+    Worker(&state);
+
+    for (auto& thread: threads) 
+        thread.join();
+    // Everybody's finished
+}
+/*************************************************************************/
+/*************************** Entrance ************************************/
+/*************************************************************************/
+KSolveAStarResult KSolveAStar(
+        Game& game,
+        unsigned moveTreeLimit,
+        unsigned nThreads)
+{
+    SharedMoveStorage sharedMoveStorage;
+    GameStateMemory closed;
+    CandidateSolution solution;
+    WorkerState state(game,solution,sharedMoveStorage,closed);
+
+    const unsigned startMoves = state._game.MinimumMovesLeft();
+
+    // Prime the pump
+    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);
+    
+    RunWorkers(nThreads, state);
+    
+    KSolveAStarCode outcome;
+    if (state.k_blewMemory) {
+        outcome = MemoryExceeded;
+    } else if (solution.GetMoves().size()) { 
+        outcome = sharedMoveStorage.OverLimit()
+                ? Solved
+                : SolvedMinimal;
+    } else {
+        outcome = sharedMoveStorage.OverLimit()
+                ? GaveUp
+                : Impossible;
+    }
+    return KSolveAStarResult(
+        outcome,
+        solution.GetMoves(),
+        state._closedList.Size(),
+        sharedMoveStorage.MoveCount(),
+        sharedMoveStorage.MaxFringeElementSize());
+    ;
 }
 
 }   // namespace KSolveNames

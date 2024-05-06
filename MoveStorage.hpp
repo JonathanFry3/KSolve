@@ -12,9 +12,6 @@ using namespace frystl;
 typedef std::mutex Mutex;
 typedef std::lock_guard<Mutex> Guard;
 
-enum {maxMoves = 500};
-typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
-
 // Mix-in to measure max size
 template <class VectorType>
 class MaxSizeCollector : public VectorType
@@ -28,15 +25,11 @@ public:
     }
     void pop_back()
     {
-        Remember();
+        _maxSize = MaxSize();
         VectorType::pop_back();
     }
 private:
     size_type _maxSize {0};
-    void Remember()
-    {
-        _maxSize = std::max(VectorType::size(),_maxSize);
-    }
 };
 
 struct SharedMoveStorage
@@ -102,6 +95,33 @@ public:
 
 class MoveStorage
 {
+public:
+    // Constructor.
+    MoveStorage(SharedMoveStorage& shared);
+    // Return a reference to the storage shared among threads
+    SharedMoveStorage& Shared() const noexcept {return _shared;}
+    // Push a move to the back of the current stem.
+    void PushStem(Move move) noexcept;
+    // Push the first move of a new branch off the current stem,
+    // along with the total number of moves to reach the end state
+    // that move produces.
+    void PushBranch(Move move, unsigned moveCount) noexcept;
+    // Push all the moves (stem and branch) from this trip
+    // through the main loop into shared storage.
+    void ShareMoves();
+    // Identify a move sequence with the lowest available minimum move count, 
+    // return its minimum move count or, if no more sequences are available.
+    // return 0. Remove that sequence from the open queue and make it current.
+    unsigned PopNextSequenceIndex() noexcept;
+    // Copy the moves in the current sequence from the move tree.
+    void LoadMoveSequence() noexcept; 
+    // Make all the moves in the current sequence
+    void MakeSequenceMoves(Game&game) const noexcept;
+    // Return a const reference to the current move sequence in its
+    // native type.
+    enum {maxMoves = 500};
+    typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
+    const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
     typedef SharedMoveStorage::NodeX NodeX;
     typedef SharedMoveStorage::MoveNode MoveNode;
@@ -127,30 +147,5 @@ private:
 
     NodeX UpdateMoveTree() noexcept; // Returns move tree index of first branch
     void UpdateFringe(NodeX branchIndex) noexcept;
-public:
-    // Constructor.
-    MoveStorage(SharedMoveStorage& shared);
-    // Return a reference to the storage shared among threads
-    SharedMoveStorage& Shared() const noexcept {return _shared;}
-    // Push a move to the back of the current stem.
-    void PushStem(Move move) noexcept;
-    // Push the first move of a new branch off the current stem,
-    // along with the total number of moves to reach the end state
-    // that move produces.
-    void PushBranch(Move move, unsigned moveCount) noexcept;
-    // Push all the moves (stem and branch) from this trip
-    // through the main loop into shared storage.
-    void ShareMoves();
-    // Identify a move sequence with the lowest available minimum move count, 
-    // return its minimum move count or, if no more sequences are available.
-    // return 0. Remove that sequence from the open queue and make it current.
-    unsigned PopNextSequenceIndex() noexcept;
-    // Copy the moves in the current sequence from the move tree.
-    void LoadMoveSequence() noexcept; 
-    // Make all the moves in the current sequence
-    void MakeSequenceMoves(Game&game) const noexcept;
-    // Return a const reference to the current move sequence in its
-    // native type.
-    const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 };
 }   // namespace KSolveNames
