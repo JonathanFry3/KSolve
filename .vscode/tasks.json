@@ -18,6 +18,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"KSolve.cpp", 
 				"-o",
 				"${workspaceFolder}/KSolve"
@@ -201,6 +202,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"thread-test.cpp",
 				"-o",
 				"${workspaceFolder}/thread-test"
@@ -254,6 +256,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"ran.cpp",
 				"-o",
 				"${workspaceFolder}/ran"
@@ -285,6 +288,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"thread-test.cpp",
 				"-o",
 				"${workspaceFolder}/thread-test"
@@ -313,6 +317,7 @@
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
 				"unittests.cpp" 
 			],
 			"options": {
@@ -341,6 +346,7 @@
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
+			"MoveStorage.cpp",
 			"KSolve.cpp" 
 		],
 		"options": {
@@ -369,6 +375,7 @@
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
+			"MoveStorage.cpp",
 			"ran.cpp" 
 		],
 		"options": {
@@ -398,6 +405,7 @@
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
+			"MoveStorage.cpp",
 			"benchmark.cpp" 
 		],
 		"options": {
@@ -426,6 +434,7 @@
 			"Game.cpp",
 			"KSolveAStar.cpp",
 			"GameStateMemory.cpp",
+			"MoveStorage.cpp",
 			"thread-test.cpp" 
 		],
 		"options": {
