@@ -154,7 +154,7 @@ void Game::Deal() noexcept
     _stock.assign(_deck.crbegin(), _deck.crbegin()+24);
 }
 
-void Game::MakeMove(Move mv) noexcept
+void Game::MakeMove(MoveSpec mv) noexcept
 {
     const auto to = mv.To();
     Pile& toPile = AllPiles()[to];
@@ -181,7 +181,7 @@ void Game::MakeMove(Move mv) noexcept
     }
 }
 
-void  Game::UnMakeMove(Move mv) noexcept
+void  Game::UnMakeMove(MoveSpec mv) noexcept
 {
     const auto to = mv.To();
     Pile & toPile = AllPiles()[to];
@@ -264,7 +264,7 @@ void Game::OneMoveToShortFoundationPile(
                 const auto toPile = FoundationPileCode(card.Suit());
 
                 if (fromPile == Stock) {
-                    // Stock Move: draw one card, move it to foundation
+                    // Stock MoveSpec: draw one card, move it to foundation
                     moves.AddStockMove(toPile,2,1,false);
                 } else {
                     const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
@@ -604,7 +604,7 @@ static bool Valid(const Game& gm,
     return true;
 }
 
-bool Game::IsValid(Move mv) const noexcept
+bool Game::IsValid(MoveSpec mv) const noexcept
 {
     if (mv.IsStockMove()) {
         int draw = mv.DrawCount();
@@ -735,7 +735,7 @@ std::string Peek(const Pile& pile)
     return outStr.str();
 }
 
-std::string Peek(const Move & mv)
+std::string Peek(const MoveSpec & mv)
 {
     std::stringstream outStr;
     if (mv.IsStockMove()){

@@ -8,11 +8,11 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared)
     , _leaf()
     , _startSize(0)
     {}
-void MoveStorage::PushStem(Move move) noexcept
+void MoveStorage::PushStem(MoveSpec move) noexcept
 {
     _currentSequence.push_back(move);
 }
-void MoveStorage::PushBranch(Move mv, unsigned nMoves) noexcept
+void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
 {
     assert(_shared._startStackIndex <= nMoves);
     _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
@@ -22,7 +22,7 @@ void MoveStorage::ShareMoves()
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
-        NodeX stemEnd      // index in _moveTree of last stem Move
+        NodeX stemEnd      // index in _moveTree of last stem MoveSpec
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
     }
@@ -116,7 +116,7 @@ void MoveStorage::LoadMoveSequence() noexcept
     for (NodeX node = _leaf._prevNode; 
          node != -1U; 
          node = _shared._moveTree[node]._prevNode){
-        const Move &mv = _shared._moveTree[node]._move;
+        const MoveSpec &mv = _shared._moveTree[node]._move;
         _currentSequence.push_front(mv);
     }
 

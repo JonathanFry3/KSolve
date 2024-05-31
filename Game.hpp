@@ -3,7 +3,7 @@
 
 /*
     This file defines the interfaces for the Klondike Solitaire card game.  It defines such
-    things as a Card, a Pile, and a Move.  It defines the Game containing several piles:
+    things as a Card, a Pile, and a MoveSpec.  It defines the Game containing several piles:
     stock       the pile from which a player draws
     waste       the pile on which to lay a drawn card if it is not played elsewhere
     foundation  the four piles, one for each suit, to which one wishes to move all the cards
@@ -208,41 +208,41 @@ std::string Peek(const Pile& pile);
 //
 // Game::AvailableMoves creates Moves around the talon (the waste and
 // stock piles) that must be counted as multiple moves.  The number
-// of actual moves implied by a Move object is given by NMoves().
+// of actual moves implied by a MoveSpec object is given by NMoves().
 //
 // Since making this class type-safe at compile time (using std::variant) 
 // requires making it larger (doubling the size of the move tree),
 // it has been made type-safe at run time using asserts.
-class Move
+class MoveSpec
 {
 private:
-    PileCodeT _from;    // _from == Stock means stock Move
+    PileCodeT _from;    // _from == Stock means stock MoveSpec
     PileCodeT _to;
     unsigned char _nMoves:7;
     unsigned char _recycle:1;
     union {
-        // Non-stock Move
+        // Non-stock MoveSpec
         struct {
             unsigned char _cardsToMove:4;
             unsigned char _fromUpCount:4;
         };
-        // Stock Move
+        // Stock MoveSpec
         signed char _drawCount;			// draw this many cards (may be negative)
     };
-    // Construct a stock Move. Their cumulative effect is to 
+    // Construct a stock MoveSpec. Their cumulative effect is to 
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
     // to the "to" pile. Only stock Moves draw from the stock pile.
-    Move(PileCodeT to, unsigned nMoves, int draw) noexcept
+    MoveSpec(PileCodeT to, unsigned nMoves, int draw) noexcept
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
         , _recycle(0)
         , _drawCount(draw)
         {}
-    // Construct a non-stock Move.  UnMakeMove() can't infer the count
+    // Construct a non-stock MoveSpec.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
-    Move(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
+    MoveSpec(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
@@ -252,11 +252,11 @@ private:
         {
             assert(from != Stock);
         }
-    friend Move StockMove(PileCodeT, unsigned, int, bool) noexcept;
-    friend Move NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
+    friend MoveSpec StockMove(PileCodeT, unsigned, int, bool) noexcept;
+    friend MoveSpec NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
 
 public:
-    Move() = default;
+    MoveSpec() = default;
     bool IsDefault()                    {return _from == _to;}
 
     void SetRecycle(bool r) noexcept    {_recycle = r;}
@@ -271,24 +271,24 @@ public:
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
 
 };
-static_assert(sizeof(Move) == 4, "Move must be 4 bytes long");
+static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
-inline Move StockMove(PileCodeT to, unsigned nMoves, int draw, bool recycle) noexcept
+inline MoveSpec StockMove(PileCodeT to, unsigned nMoves, int draw, bool recycle) noexcept
 {
-    Move result(to, nMoves, draw);
+    MoveSpec result(to, nMoves, draw);
     result.SetRecycle(recycle);
     return result; 
 }
-inline Move NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
+inline MoveSpec NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
 {
-    return Move(from,to,n,fromUpCount);
+    return MoveSpec(from,to,n,fromUpCount);
 }     
 
 
-typedef std::vector<Move> Moves;
+typedef std::vector<MoveSpec> Moves;
 
 // Class for collecting freshly-built Moves in AvailableMoves()
-class QMoves : public frystl::static_vector<Move,43>
+class QMoves : public frystl::static_vector<MoveSpec,43>
 {
 public:
     void AddStockMove(PileCodeT to, unsigned nMoves, 
@@ -333,7 +333,7 @@ public:
         _nMoves = 0;
         Base::clear();
     }
-    void push_front(const Move& mv)
+    void push_front(const MoveSpec& mv)
     {
         _nMoves += mv.NMoves();
         Base::push_front(mv);
@@ -344,7 +344,7 @@ public:
         Base::pop_front();
     }
 
-    void push_back(const Move& mv)
+    void push_back(const MoveSpec& mv)
     {
         _nMoves += mv.NMoves();
         Base::push_back(mv);
@@ -356,7 +356,7 @@ public:
     }
 };
 // Return a string to visualize a move for debugging
-std::string Peek(const Move& mv);
+std::string Peek(const MoveSpec& mv);
 
 // Return a string to visualize a sequence of Moves
 template <class Moves_t>
@@ -421,7 +421,7 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 // Return true if this move cannot be in a minimum solution.
 template <class V>
-static bool XYZ_Move(Move trial, const V& movesMade) noexcept
+static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
 {
     // Consider a move at time T0 from X to Y and the next move
     // from Y, which goes from Y to Z at time Tn.  The move at Tn can
@@ -529,11 +529,11 @@ public:
     }
 
     void        Deal() noexcept;
-    void        MakeMove(Move mv) noexcept;
-    void        UnMakeMove(Move mv) noexcept;
+    void        MakeMove(MoveSpec mv) noexcept;
+    void        UnMakeMove(MoveSpec mv) noexcept;
     unsigned    MinimumMovesLeft() const noexcept;
     void        MakeMove(const XMove& xmv) noexcept;
-    bool        IsValid(Move mv) const noexcept;
+    bool        IsValid(MoveSpec mv) const noexcept;
     bool        IsValid(XMove xmv) const noexcept;
     unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
@@ -544,7 +544,7 @@ public:
     {
         QMoves avail = UnfilteredAvailableMoves();
         auto newEnd = ranges::remove_if(avail,
-            [&movesMade] (Move move) 
+            [&movesMade] (MoveSpec move) 
                 {return XYZ_Move(move, movesMade);}).begin();
         while (avail.end() != newEnd) avail.pop_back();
         return avail;

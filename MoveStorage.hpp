@@ -38,10 +38,10 @@ private:
     typedef std::uint32_t NodeX;
     struct MoveNode
     {
-        Move _move;
+        MoveSpec _move;
         NodeX _prevNode;
 
-        MoveNode(const Move& mv, NodeX prevNode)
+        MoveNode(const MoveSpec& mv, NodeX prevNode)
             : _move(mv)
             , _prevNode(prevNode)
             {}
@@ -100,11 +100,11 @@ public:
     // Return a reference to the storage shared among threads
     SharedMoveStorage& Shared() const noexcept {return _shared;}
     // Push a move to the back of the current stem.
-    void PushStem(Move move) noexcept;
+    void PushStem(MoveSpec move) noexcept;
     // Push the first move of a new branch off the current stem,
     // along with the total number of moves to reach the end state
     // that move produces.
-    void PushBranch(Move move, unsigned moveCount) noexcept;
+    void PushBranch(MoveSpec move, unsigned moveCount) noexcept;
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
     void ShareMoves();
@@ -119,7 +119,7 @@ public:
     // Return a const reference to the current move sequence in its
     // native type.
     enum {maxMoves = 500};
-    typedef MoveCounter<static_deque<Move,maxMoves> > MoveSequenceType;
+    typedef MoveCounter<static_deque<MoveSpec,maxMoves> > MoveSequenceType;
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
     typedef SharedMoveStorage::NodeX NodeX;
@@ -131,9 +131,9 @@ private:
     unsigned _startSize;
     struct MovePair
     {
-        Move _mv;
+        MoveSpec _mv;
         std::uint32_t _offset;
-        MovePair(Move mv, unsigned offset)
+        MovePair(MoveSpec mv, unsigned offset)
             : _mv(mv)
             , _offset(offset)
         {}

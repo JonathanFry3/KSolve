@@ -303,12 +303,12 @@ int main()
 		assert (FoundationCardCount(sol) == 0);
 	}
 	{
-		// Test Move class and Peek functions
-		assert(sizeof(Move)==4);
-		Move a {StockMove(Tableau3,6,5,false)};
-		Move b {NonStockMove(Waste,Foundation2D,1,0)};
-		Move c {NonStockMove(Tableau1,Tableau6,4,1)};
-		Move d {StockMove(Tableau3,6,-4,true)};
+		// Test MoveSpec class and Peek functions
+		assert(sizeof(MoveSpec)==4);
+		MoveSpec a {StockMove(Tableau3,6,5,false)};
+		MoveSpec b {NonStockMove(Waste,Foundation2D,1,0)};
+		MoveSpec c {NonStockMove(Tableau1,Tableau6,4,1)};
+		MoveSpec d {StockMove(Tableau3,6,-4,true)};
 		assert(!a.Recycle());
 		assert(d.Recycle());
 		string peeka = Peek(a);
@@ -339,7 +339,7 @@ int main()
 		// Test ABC_Moves
 
 		// Set up a move history
-		vector<Move> made;
+		vector<MoveSpec> made;
 		made.emplace_back(NonStockMove(Tableau2,Tableau3,1,2));	// A. move one card from 2 up cards
 		made.emplace_back(NonStockMove(Tableau7,Tableau6,2,5));	// B.
 		made.emplace_back(NonStockMove(Tableau7,Tableau5,1,3)); // C.
@@ -378,7 +378,7 @@ int main()
 			for (unsigned imv = 0; imv <nMoves; ++imv){
 				QMoves avail = game.AvailableMoves(movesMade);
 				if (avail.size()) {
-					Move move = avail[rng()%avail.size()];
+					MoveSpec move = avail[rng()%avail.size()];
 					game.MakeMove(move);
 					movesMade.push_back(move);
 					Validate(game);
@@ -516,7 +516,7 @@ int main()
 		assert(MoveCount(outcome._solution) == 87);
 	}
 	{
-		// Test IsValid(Move m) and IsValid(XMove xm)
+		// Test IsValid(MoveSpec m) and IsValid(XMove xm)
 		// Game 36394, drawing 1, can be solved in 100 moves
 		Game game(NumberedDeal(36394), 1, 8);
 		auto outcome = KSolveAStar(game,700'000);

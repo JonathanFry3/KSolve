@@ -159,9 +159,9 @@ public:
 // Converts a card to a string and prints an error message if
 // that fails.  Returns true and the card if the conversion succeeds.
 // or false and garbage if it fails.
-auto CardFromString(const string& str)
+auto MakeCardFromString(const string& str)
 {
-    auto result = Card::CardFromString(str);
+    auto result = CardFromString(str);
     if (!result) {
         cerr << "Invalid card '" << str <<"'" << endl;
     }
@@ -214,7 +214,7 @@ CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]) {
         // skip over punctuation and white space
         while (j < cardSet.size() && eyeCandy.find(cardSet[j]) != string::npos) ++j;
         if (j+1 < cardSet.size()){
-            auto cd = CardFromString(cardSet.substr(j,2));
+            auto cd = MakeCardFromString(cardSet.substr(j,2));
             if (!cd || dupchk(*cd)) {
                 valid = false;
             } else {

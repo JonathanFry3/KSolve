@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
     for (unsigned rep = 0; rep != spec._repeat; ++rep) {
         for (unsigned threads = spec._begin; threads <= spec._end; threads+=spec._incr){
             CardDeck deck(NumberedDeal(seed));
-            Game game(deck, spec._drawSpec,24,recycleLimit);
+            Game game(deck, spec._drawSpec,recycleLimit);
             cout << sample++ << "\t"
                 << seed << "\t"
                 << threads << "\t"			 
