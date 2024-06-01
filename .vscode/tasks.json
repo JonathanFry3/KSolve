@@ -164,7 +164,7 @@
                 "-g",
                 "-pthread",
                 "-std=c++20",
-				"-NDEBUG",
+				"-DNDEBUG",
                 "-O3",
                 "-Wno-placement-new",
                 "Game.cpp",
