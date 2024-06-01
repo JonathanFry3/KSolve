@@ -13,7 +13,7 @@
 				"-std=c++20",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
-				//	"-DNDEBUG",
+				"-DNDEBUG",
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -135,7 +135,7 @@
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
-			//	"-DNDEBUG",		// comment out to activate assert()
+				"-DNDEBUG",		// comment out to activate assert()
 			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -164,6 +164,7 @@
                 "-g",
                 "-pthread",
                 "-std=c++20",
+				"-NDEBUG",
                 "-O3",
                 "-Wno-placement-new",
                 "Game.cpp",
@@ -197,7 +198,7 @@
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
-			//	"-DNDEBUG",		// comment out to activate assert()
+				"-DNDEBUG",		// comment out to activate assert()
 			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
 				"Game.cpp",
 				"KSolveAStar.cpp",
