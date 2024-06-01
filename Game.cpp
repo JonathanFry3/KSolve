@@ -178,6 +178,16 @@ void Game::MakeMove(MoveSpec mv) noexcept
             _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
             fromPile.SetUpCount(0);
         }
+        if (mv.NMoves() == 2)
+        {
+            // Ladder move.  
+            assert(IsTableau(mv.From()));
+            assert(IsTableau(mv.To()));
+            assert(CanMoveToFoundation(fromPile.back()));
+            assert(mv.LadderSuit() == fromPile.back().Suit());
+            MakeMove(NonStockMove(fromPile.Code(), 
+                _foundation[mv.LadderSuit()].Code(),1,fromPile.UpCount()));
+        }
     }
 }
 
@@ -193,6 +203,11 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
     } else {
         const auto n = mv.NCards();
         Pile & fromPile = AllPiles()[mv.From()];
+        if (mv.NMoves() == 2) {
+            // Ladder move
+            UnMakeMove(NonStockMove(fromPile.Code(), 
+                _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
+        }
         if (fromPile.IsTableau()) {
             _kingSpaces -= fromPile.empty();  // uncount newly cleared columns
             fromPile.SetUpCount(mv.FromUpCount());
@@ -337,7 +352,8 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             // This move will uncover a card that can be moved to 
                             // its foundation pile.
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
-                            moves.AddNonStockMove(fromPile.Code(),toPile.Code(),moveCount,upCount);
+                            moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
+                                upCount,uncovered);
                         }
                     }
                 }
@@ -658,6 +674,12 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
             if (mv.From() == Waste){
                 assert (wasteSize >= 1);
                 wasteSize -= 1;
+            }
+            if (mv.NMoves() == 2) {
+                // Ladder move. Generate the extra move to foundation
+                ++mvnum;
+                PileCodeT ladderPile = PileCodeT(unsigned(mv.LadderSuit())+FoundationBase);
+                result.emplace_back(mvnum,from,ladderPile,1,mv.FromUpCount() == n+1);
             }
         } else {
             assert(stockSize+wasteSize > 0);
