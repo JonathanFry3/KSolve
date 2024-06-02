@@ -166,27 +166,21 @@ void Game::MakeMove(MoveSpec mv) noexcept
     } else {
         const auto n = mv.NCards();
         Pile& fromPile = AllPiles()[mv.From()];
+        bool isLadderMove{mv.NMoves() == 2};
         toPile.Take(fromPile, n);
+        if (isLadderMove) {
+            _foundation[fromPile.back().Suit()].Draw(fromPile);
+        }
         // For tableau piles, UpCount counts face-up cards.  
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
         if (fromPile.size()) {
-            fromPile.IncrUpCount(-n
-                + (fromPile.UpCount()==n));      // flip top card up
+            fromPile.IncrUpCount(-n-isLadderMove
+                + (fromPile.UpCount() == n+isLadderMove));      // flip top card up
         }
         else {
             _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
             fromPile.SetUpCount(0);
-        }
-        if (mv.NMoves() == 2)
-        {
-            // Ladder move.  
-            // assert(IsTableau(mv.From()));
-            // assert(IsTableau(mv.To()));
-            // assert(CanMoveToFoundation(fromPile.back()));
-            // assert(mv.LadderSuit() == fromPile.back().Suit());
-            MakeMove(NonStockMove(fromPile.Code(), 
-                _foundation[mv.LadderSuit()].Code(),1,fromPile.UpCount()));
         }
     }
 }
@@ -205,8 +199,10 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
         Pile & fromPile = AllPiles()[mv.From()];
         if (mv.NMoves() == 2) {
             // Ladder move
-            UnMakeMove(NonStockMove(fromPile.Code(), 
-                _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
+            // UnMakeMove(NonStockMove(fromPile.Code(), 
+            //    _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
+            _kingSpaces -= fromPile.empty();
+            fromPile.Take(_foundation[mv.LadderSuit()],1);
         }
         if (fromPile.IsTableau()) {
             _kingSpaces -= fromPile.empty();  // uncount newly cleared columns
