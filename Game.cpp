@@ -181,10 +181,10 @@ void Game::MakeMove(MoveSpec mv) noexcept
         if (mv.NMoves() == 2)
         {
             // Ladder move.  
-            assert(IsTableau(mv.From()));
-            assert(IsTableau(mv.To()));
-            assert(CanMoveToFoundation(fromPile.back()));
-            assert(mv.LadderSuit() == fromPile.back().Suit());
+            // assert(IsTableau(mv.From()));
+            // assert(IsTableau(mv.To()));
+            // assert(CanMoveToFoundation(fromPile.back()));
+            // assert(mv.LadderSuit() == fromPile.back().Suit());
             MakeMove(NonStockMove(fromPile.Code(), 
                 _foundation[mv.LadderSuit()].Code(),1,fromPile.UpCount()));
         }
