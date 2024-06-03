@@ -479,6 +479,8 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
                     return false;
             }
             return  mv.NCards() == trial.NCards();
+        } else if (Z == mv.From() && mv.NMoves() == 2 && Y == mv.LadderSuit()+FoundationBase) {
+            return true;
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)

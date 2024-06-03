@@ -169,13 +169,13 @@ void Game::MakeMove(MoveSpec mv) noexcept
         bool isLadderMove{mv.NMoves() == 2};
         toPile.Take(fromPile, n);
         if (isLadderMove) {
-            _foundation[fromPile.back().Suit()].Draw(fromPile);
+            _foundation[mv.LadderSuit()].Draw(fromPile);
         }
         // For tableau piles, UpCount counts face-up cards.  
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
         if (fromPile.size()) {
-            fromPile.IncrUpCount(-n-isLadderMove
+            fromPile.IncrUpCount(-(n+isLadderMove)
                 + (fromPile.UpCount() == n+isLadderMove));      // flip top card up
         }
         else {
@@ -202,7 +202,7 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
             // UnMakeMove(NonStockMove(fromPile.Code(), 
             //    _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
             _kingSpaces -= fromPile.empty();
-            fromPile.Take(_foundation[mv.LadderSuit()],1);
+            fromPile.Draw(_foundation[mv.LadderSuit()]);
         }
         if (fromPile.IsTableau()) {
             _kingSpaces -= fromPile.empty();  // uncount newly cleared columns
