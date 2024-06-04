@@ -38,7 +38,7 @@ CardDeck ReversedPysolDeck(const string& s);
 CardDeck DeckLoader(string const& cardSet, const int order[CardsPerDeck]);
 CardDeck Shuffle1(int &seed);
 CardDeck SolitaireDeck(const string& s);
-string GameDiagram(const Game& game);
+string GameDiagram(const Game& game, unsigned minMoves);
 string GameDiagramPysol(const Game& game);
 string GetMoveInfo(XMove xmove, const Game& game);
 string MovesMade(const XMoves & xmoves);
@@ -213,7 +213,7 @@ int main(int argc, char * argv[]) {
         }
         Game game(deck,drawCount);
         if (outputMethod == 0) {
-            cout << GameDiagram(game) << "\n\n";
+            cout << GameDiagram(game,0) << "\n\n";
         } else if (outputMethod == 1) {
             cout << GameDiagramPysol(game) << "\n\n";
         }
@@ -259,7 +259,7 @@ int main(int argc, char * argv[]) {
                 game.MakeMove(xmove);
                 if (!isTalonMove){
                     if (outputMethod == 0) {
-                        cout << "\n" << GameDiagram(game) << "\n\n";
+                        cout << "\n" << GameDiagram(game,xmove.MoveNum()) << "\n\n";
                     } else {
                         cout << "\n" << GameDiagramPysol(game) << "\n\n";
                     }
@@ -535,7 +535,7 @@ CardDeck SolitaireDeck(string const& cardSet) {
     }
     return result;
 }
-string GameDiagram(const Game& game) {
+string GameDiagram(const Game& game, unsigned moveNum) {
     stringstream ss;
     string pilestring[]{
         "WASTE    ",
@@ -567,7 +567,7 @@ string GameDiagram(const Game& game) {
         }
         ss << '\n';
     }
-    ss << "Minimum Moves Needed: " << game.MinimumMovesLeft();
+    ss << "Minimum Moves: " << moveNum+game.MinimumMovesLeft();
     return ss.str();
 }
 
