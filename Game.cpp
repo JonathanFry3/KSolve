@@ -166,7 +166,7 @@ void Game::MakeMove(MoveSpec mv) noexcept
     } else {
         const auto n = mv.NCards();
         Pile& fromPile = AllPiles()[mv.From()];
-        bool isLadderMove{mv.NMoves() == 2};
+        bool isLadderMove{mv.IsLadderMove()};
         toPile.Take(fromPile, n);
         if (isLadderMove) {
             _foundation[mv.LadderSuit()].Draw(fromPile);
@@ -197,7 +197,7 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
     } else {
         const auto n = mv.NCards();
         Pile & fromPile = AllPiles()[mv.From()];
-        if (mv.NMoves() == 2) {
+        if (mv.IsLadderMove()) {
             // Ladder move
             // UnMakeMove(NonStockMove(fromPile.Code(), 
             //    _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
@@ -671,11 +671,17 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
                 assert (wasteSize >= 1);
                 wasteSize -= 1;
             }
-            if (mv.NMoves() == 2) {
+            if (mv.IsLadderMove()) {
                 // Ladder move. Generate the extra move to foundation
+                totalCount[from-TableauBase] -= 1;
+                upCount[from-TableauBase] -= 1;
+                if (totalCount[from-TableauBase] && !upCount[from-TableauBase]){
+                    flip = true;
+                    upCount[from-TableauBase] = 1;
+                }
                 ++mvnum;
                 PileCodeT ladderPile = PileCodeT(unsigned(mv.LadderSuit())+FoundationBase);
-                result.emplace_back(mvnum,from,ladderPile,1,mv.FromUpCount() == n+1);
+                result.emplace_back(mvnum,from,ladderPile,1,flip);
             }
         } else {
             assert(stockSize+wasteSize > 0);

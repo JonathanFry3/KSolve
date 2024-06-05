@@ -279,6 +279,7 @@ public:
     Card::SuitT LadderSuit() const noexcept{return _ladderSuit;}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
+    bool IsLadderMove() const noexcept  {return _nMoves == 2 && IsTableau(_from);}
 
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
@@ -478,9 +479,12 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
                 if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
                     return false;
             }
-            return  mv.NCards() == trial.NCards();
-        } else if (Z == mv.From() && mv.NMoves() == 2 && Y == mv.LadderSuit()+FoundationBase) {
+            bool result =  mv.NCards() == trial.NCards();
+            return result;
+        } else if (Z == mv.From() && mv.IsLadderMove() && Y == mv.LadderSuit()+FoundationBase) {
             return true;
+        } else if (mv.IsLadderMove() && Z == mv.LadderSuit()+FoundationBase) {
+            return false;
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)
