@@ -6,8 +6,8 @@ if len(sys.argv) == 3:
         base = pd.read_csv(sys.argv[1], sep="\t")
         test = pd.read_csv(sys.argv[2], sep="\t")
 elif len(sys.argv) == 1:
-        base = pd.read_csv("tests/sm-3-base-1000.txt", sep="\t")
-        test = pd.read_csv("tests/sm-3-test-100.txt", sep="\t")
+        base = pd.read_csv("tests/lg-1-base-1000.txt", sep="\t")
+        test = pd.read_csv("tests/lg-1-test-1000.txt", sep="\t")
 else:
         print("Expected two filenames or none.")
         exit
@@ -31,6 +31,10 @@ baseTot = sum(basex.time)
 testTot = sum(test.time)
 print("Base time:", form.format(baseTot))
 print("Test time:", form.format(testTot), pctForm.format((testTot-baseTot)*100./baseTot))
+baseTot = sum(basex.branches)
+testTot = sum(test.branches)
+print ("Base branches:", baseTot )
+print ("Test branches:", testTot, pctForm.format((testTot-baseTot)*100./baseTot) )
 baseTot = sum(basex.treemoves)
 testTot = sum(test.treemoves)
 print ("Base tree moves:", baseTot )

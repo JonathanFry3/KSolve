@@ -202,6 +202,7 @@ static_assert(sizeof(Pile) <= 32, "Good to make Pile fit in 32 bytes");
 std::string Peek(const Pile& pile);
 
 // Directions for a move.  Game::AvailableMoves() creates these.
+//
 // Game::UnMakeMove() cannot infer the value of the from tableau pile's
 // up count before the move (because of flips), so Game::AvailableMoves() 
 // includes that in any Move from a tableau pile.
@@ -210,16 +211,23 @@ std::string Peek(const Pile& pile);
 // stock piles) that must be counted as multiple moves.  The number
 // of actual moves implied by a MoveSpec object is given by NMoves().
 //
+// A "ladder move" is a move from one tableau pile to another which
+// is made for the purpose of exposing a card that can be moved to
+// the tableau.  The MoveSpec for such a move makes that move and then
+// moves the exposed card to the foundation. It retains the suit of 
+// the exposed card because UnMakeMove() needs it.
+//
 // Since making this class type-safe at compile time (using std::variant) 
 // requires making it larger (doubling the size of the move tree),
 // it has been made type-safe at run time using asserts.
 class MoveSpec
 {
 private:
-    PileCodeT _from;    // _from == Stock means stock MoveSpec
-    PileCodeT _to;
-    unsigned char _nMoves:7;
-    unsigned char _recycle:1;
+    PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
+    PileCodeT _to = PileCount;
+    unsigned char _nMoves:5 = 0;
+    Card::SuitT _ladderSuit :2 = Card::Clubs; 
+    bool _recycle:1 = false;
     union {
         // Non-stock MoveSpec
         struct {
@@ -254,6 +262,7 @@ private:
         }
     friend MoveSpec StockMove(PileCodeT, unsigned, int, bool) noexcept;
     friend MoveSpec NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
+    friend MoveSpec LadderMove(PileCodeT, PileCodeT, unsigned, unsigned, Card) noexcept;
 
 public:
     MoveSpec() = default;
@@ -267,8 +276,13 @@ public:
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
+    Card::SuitT LadderSuit() const noexcept
+                                        {return _ladderSuit;}
+    PileCodeT LadderPileCode() const noexcept
+                                        {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
+    bool IsLadderMove() const noexcept  {return _nMoves == 2 && IsTableau(_from);}
 
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
@@ -282,8 +296,14 @@ inline MoveSpec StockMove(PileCodeT to, unsigned nMoves, int draw, bool recycle)
 inline MoveSpec NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
 {
     return MoveSpec(from,to,n,fromUpCount);
-}     
-
+}
+inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
+{
+    MoveSpec result{from,to,n,fromUpCount};
+    result._nMoves = 2;
+    result._ladderSuit = ladderCard.Suit();
+    return result;
+}
 
 typedef std::vector<MoveSpec> Moves;
 
@@ -300,6 +320,11 @@ public:
         unsigned n, unsigned fromUpCount) noexcept
     {
         push_back(NonStockMove(from,to,n,fromUpCount));
+    }
+    void AddLadderMove(PileCodeT from, PileCodeT to, 
+        unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
+    {
+        push_back(LadderMove(from,to,n,fromUpCount,ladderCard));
     }
 };
 
@@ -457,7 +482,16 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
                 if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
                     return false;
             }
-            return  mv.NCards() == trial.NCards();
+            bool result =  mv.NCards() == trial.NCards();
+            return result;
+        } else if (mv.IsLadderMove()) {
+            [[unlikely]];
+            const auto ladderPileCode = mv.LadderPileCode();
+            if (Z == mv.From() && Y == ladderPileCode) {
+                return true;
+            } else if (Z == ladderPileCode) {
+                return false;
+            }
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)
