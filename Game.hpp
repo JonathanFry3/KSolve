@@ -276,7 +276,10 @@ public:
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
     unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
-    Card::SuitT LadderSuit() const noexcept{return _ladderSuit;}
+    Card::SuitT LadderSuit() const noexcept
+                                        {return _ladderSuit;}
+    PileCodeT LadderPileCode() const noexcept
+                                        {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
     bool IsLadderMove() const noexcept  {return _nMoves == 2 && IsTableau(_from);}
@@ -481,10 +484,14 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
             }
             bool result =  mv.NCards() == trial.NCards();
             return result;
-        } else if (Z == mv.From() && mv.IsLadderMove() && Y == mv.LadderSuit()+FoundationBase) {
-            return true;
-        } else if (mv.IsLadderMove() && Z == mv.LadderSuit()+FoundationBase) {
-            return false;
+        } else if (mv.IsLadderMove()) {
+            [[unlikely]];
+            auto ladderPileCode = mv.LadderPileCode();
+            if (Z == mv.From() && Y == ladderPileCode) {
+                return true;
+            } else if (Z == ladderPileCode) {
+                return false;
+            }
         } else {
             // intervening move
             if (mv.To() == Z || mv.From() == Z)

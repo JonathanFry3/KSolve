@@ -680,7 +680,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
                     upCount[from-TableauBase] = 1;
                 }
                 ++mvnum;
-                PileCodeT ladderPile = PileCodeT(unsigned(mv.LadderSuit())+FoundationBase);
+                PileCodeT ladderPile = mv.LadderPileCode();
                 result.emplace_back(mvnum,from,ladderPile,1,flip);
             }
         } else {
