@@ -166,7 +166,7 @@ void Game::MakeMove(MoveSpec mv) noexcept
     } else {
         const auto n = mv.NCards();
         Pile& fromPile = AllPiles()[mv.From()];
-        bool isLadderMove{mv.IsLadderMove()};
+        const auto isLadderMove{mv.IsLadderMove()};
         toPile.Take(fromPile, n);
         if (isLadderMove) {
             _foundation[mv.LadderSuit()].Draw(fromPile);
@@ -634,7 +634,7 @@ bool Game::IsValid(XMove mv) const noexcept
     return Valid(*this, mv.From(), mv.To(), mv.NCards());
 }
 
-// Enumerate the moves in a vector of Moves.
+// Enumerate the moves in a vector of MoveSpecs.
 std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
 {
     unsigned stockSize = 24;
@@ -680,7 +680,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
                     upCount[from-TableauBase] = 1;
                 }
                 ++mvnum;
-                PileCodeT ladderPile = mv.LadderPileCode();
+                const auto ladderPile = mv.LadderPileCode();
                 result.emplace_back(mvnum,from,ladderPile,1,flip);
             }
         } else {

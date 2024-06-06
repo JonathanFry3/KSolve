@@ -486,7 +486,7 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
             return result;
         } else if (mv.IsLadderMove()) {
             [[unlikely]];
-            auto ladderPileCode = mv.LadderPileCode();
+            const auto ladderPileCode = mv.LadderPileCode();
             if (Z == mv.From() && Y == ladderPileCode) {
                 return true;
             } else if (Z == ladderPileCode) {
