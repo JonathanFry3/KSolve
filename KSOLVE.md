@@ -36,12 +36,17 @@ When using the -MOVES command, the program will print the moves neccesary such t
 
 This program does not count flips or recycles of the stock pile in its move count.
 ## Input File
-Problems can be entered four different ways in an input file.  The file SampleDeals.txt shows examples of each.
+Problems can be entered five different ways in an input file.  The file SampleDeals.txt shows examples of each.
 ### -DECK String
 The same kind of string of 156 digits as follows the -DECK command flag can be appear in the input file.
 ### -GAME Number
 Start a line with "Game: " and follow with a whole number to have the program generate a pseudo-random
-shuffle using your number as the seed.
+shuffle using your number as the seed. This uses the same random number generator as the *KlondikeSolver* 
+program and will generate the same shuffles.
+### -RAN number
+Start a line with "Ran: " and follow with a whole number to have the progam generate a pseudo-random suffle 
+using your number a seed. This uses the same random number generator as the *ran* program, and will 
+generate the same shuffles.
 ### Pysol Format
 (Pysol is a program that can play a thousand solitaire games on a computer.  It can write game files
 in this format.)
@@ -62,10 +67,19 @@ This is like the Pysol format explained above, except that the cards are in the 
 ## What to Expect
 This program sometimes uses lots of memory.  
 One of its larger data structures contains a representation of the move tree - a tree structure in 
-which the nodes are game states and the arcs are moves.
+which nodes are game states and the arcs are moves.
+
+Note that the move tree data structure contains only the inner arcs of the tree. The outer arcs, the ones 
+the program has not yet examined to see if they have offspring (the "leaves", so to speak) are stored 
+in a different data structure called the *fringe*. The fringe typically contains far more moves than the
+move tree - 70% of the moves at the end when a minimum solution is found and 55% at the end
+when the deal is proved unsolvable. The move tree size is used to limit the overall memory used, not 
+because it is the largest data structure but because if it is not given an upper limit for its size
+at the beginning, it will not work properly.
+
 Playing draw one,
-the median number of moves in that structure is around five million, 
-and about 0.8% of deals need more than 150 million moves.
+the median number of moves in the move tree is around 1.7 million, 
+and about 0.8% of deals need more than 50 million moves.
 You can limit or expand the space (and time) used by using the -MVLIMIT flag.  
 If that data structure grows larger than the specified limit, the program will give up.
 If -MVLIMIT is set too high, the program may become unable to allocate memory it needs and will end. 
@@ -74,6 +88,7 @@ If much virtual memory is used, the program will slow down drastically.
 If virtual memory is not available, or is exhausted, the program will just quit.  
 On Linux systems, it may or may not print "Killed"; on Windows system, it will die quietly.
 
-There is no performance penalty for specifying a higher move limit than is needed.
+There is no performance penalty for specifying a higher move limit than is needed, as long as available memory is not exceeded.
 
-There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution is of very little help (one of the problems in SampleDeals.txt requires 170 moves in its solution but only 135,000 moves in its tree). 
+There is no way to predict, based on the deal, how large a problem you have.  The number of moves in the solution would of very little help even if were known beforehand (one of the problems in TestDeals.txt requires 170 moves in its solution
+but only 48,500 moves in its tree). 
