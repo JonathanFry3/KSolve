@@ -64,11 +64,11 @@ Specification GetSpec(int argc, char * argv[])
             cout << "thread-test - generate threading effectiveness data\n" <<endl;
             cout << "Flags:\n";
             cout << "-? or --help          Gets this explanation.\n";
-            cout << "-s # or --seed #      Sets the initial random number seed (default 1)"  << endl;
+            cout << "-s # or --seed #      Sets the random number seed (default 1)"  << endl;
             cout << "-b # or --begin #     Sets the first number of threads (default 1).\n";
             cout << "-i # or --incr #      Sets the increment between numers of threads (default 1).\n";
             cout << "-e # or --end #       Sets the last number of threads (default 10).\n";
-            cout << "-r # or --repeat #    Sets the number of times to repeat with each number of threads.\n";
+            cout << "-r # or --repeat #    Sets the number of times to repeat with each number of threads (default 1).\n";
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1).\n";
             cout << "-mv # or --mvlimit    Set the maximum size of the move tree (default 30 million).\n";
             cout << flush;
@@ -120,9 +120,9 @@ int main(int argc, char * argv[])
     
     unsigned seed = spec._seed0;
     unsigned sample{1};
+    CardDeck deck(NumberedDeal(seed));
     for (unsigned rep = 0; rep != spec._repeat; ++rep) {
         for (unsigned threads = spec._begin; threads <= spec._end; threads+=spec._incr){
-            CardDeck deck(NumberedDeal(seed));
             Game game(deck, spec._drawSpec,recycleLimit);
             cout << sample++ << "\t"
                 << seed << "\t"
