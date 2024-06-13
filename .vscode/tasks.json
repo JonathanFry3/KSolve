@@ -66,6 +66,66 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  g++ build KSolve2Solvitaire",
+			"command": "g++",
+			"args": [
+				"-g",
+			//	"-m32",
+			//	"-pg",
+				"-std=c++20",
+				"-O3",
+				"-Wno-placement-new",
+				"-DFRYSTL_DEBUG",
+				//	"-DNDEBUG",
+				"-pthread",
+				"Game.cpp",
+				"KSolve2Solvitaire.cpp", 
+				"-o",
+				"${workspaceFolder}/KSolve2Solvitaire"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}, 
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++:  g++ build AvailableMovesTester",
+			"command": "g++",
+			"args": [
+				"-g",
+			//	"-m32",
+			//	"-pg",
+				"-std=c++20",
+			//	"-O1",
+				"-Wno-placement-new",
+				"-DFRYSTL_DEBUG",
+			//	"-DNDEBUG",
+				"-pthread",
+				"Game.cpp",
+				"AvailableMovesTester.cpp", 
+				"-o",
+				"${workspaceFolder}/AvailableMovesTester"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}, 
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++:  g++ build and run unittests",
 			"command": "g++",
 			"args": [

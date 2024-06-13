@@ -14,5 +14,6 @@ frystl/.editorconfig
 statistics/__pycache__/*
 frystl/.gitignore
 thread-test
+AvailableMovesTester
 callgrind.out.*
 
