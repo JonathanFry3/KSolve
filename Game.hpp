@@ -444,6 +444,35 @@ public:
 typedef std::vector<XMove> XMoves;
 XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
+
+enum Dir: unsigned {
+    returnTrue,
+    returnFalse,
+    keepLooking
+};
+static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
+{
+    const auto Y = trial.From();
+    const auto Z = trial.To();
+    if (mv.To() == Y){
+        // candidate T0 move
+        if (mv.From() == Z) {
+            // If X=Z and the X to Y move flipped a tableau card
+            // face up, then it changed Z.
+            if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
+                return returnFalse;
+        }
+        return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
+    } else {
+        // intervening move
+        if (mv.To() == Z || mv.From() == Z)
+            return returnFalse;			// trial move's to-pile (Z) has changed
+        if (mv.From() == Y) 
+            return returnFalse;			// trial move's from-pile (Y) has changed
+    }
+    return keepLooking;
+}    
+
 // Return true if this move cannot be in a minimum solution.
 template <class V>
 static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
@@ -472,42 +501,23 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
     // moves that exactly reverse previous moves.
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
-    const auto Z = trial.To();
     for (auto mv: views::reverse(movesMade)){ 
-        if (mv.To() == Y){
-            // candidate T0 move
-            if (mv.From() == Z) {
-                // If X=Z and the X to Y move flipped a tableau card
-                // face up, then it changed Z.
-                if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
-                    return false;
+        Dir dir;
+        if (mv.IsLadderMove()) {
+            MoveSpec fndMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-1);
+            dir = XYZ_Test(fndMove, trial);
+            switch (dir) {
+                case returnTrue: return true;
+                case returnFalse: return false;
             }
-            bool result =  mv.NCards() == trial.NCards();
-            return result;
-        } else if (mv.IsLadderMove()) {
-            [[unlikely]];
-            const auto ladderPileCode = mv.LadderPileCode();
-            if (Z == mv.From() && Y == ladderPileCode) {
-                return true;
-            } else if (Z == ladderPileCode) {
-                return false;
-            }
-        } else {
-            // intervening move
-            if (mv.To() == Z || mv.From() == Z)
-                return false;			// trial move's to-pile (Z) has changed
-            if (mv.From() == Y) 
-                return false;			// trial move's from-pile (Y) has changed
         }
+        dir = XYZ_Test(mv, trial);
+        switch (dir) {
+            case returnTrue: return true;
+            case returnFalse: return false;
+        } 
     }
     return false;
-
-    // UnfilteredAvailableMoves() generates moves among tableau files for only two purposes:
-    // to move all the face-up cards, or to uncover a card that can be moved to the 
-    // foundation.  I have tried filtering out later moves that would re-cover a 
-    // card that had been uncovered in the latter fashion.  That did not break anything, but
-    // cost more time than it saved.
-    // Jonathan Fry 7/12/2020
 }
 
 class Game
