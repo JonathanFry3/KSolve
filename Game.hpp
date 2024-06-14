@@ -217,9 +217,14 @@ std::string Peek(const Pile& pile);
 // moves the exposed card to the foundation. It retains the suit of 
 // the exposed card because UnMakeMove() needs it.
 //
+// It is called a ladder move because the author refers to the fairly 
+// common tactic of using a sequence of such moves to dislodge a card 
+// on a tableau pile covering another near the end of the game "climbing
+// the ladder."
+//
 // Since making this class type-safe at compile time (using std::variant) 
-// requires making it larger (doubling the size of the move tree),
-// it has been made type-safe at run time using asserts.
+// requires making it larger (doubling the size of the move tree and the 
+// fringe), it has been made type-safe at run time using asserts.
 class MoveSpec
 {
 private:
@@ -452,31 +457,6 @@ enum Dir: unsigned {
 };
 static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
 {
-    const auto Y = trial.From();
-    const auto Z = trial.To();
-    if (mv.To() == Y){
-        // candidate T0 move
-        if (mv.From() == Z) {
-            // If X=Z and the X to Y move flipped a tableau card
-            // face up, then it changed Z.
-            if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
-                return returnFalse;
-        }
-        return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
-    } else {
-        // intervening move
-        if (mv.To() == Z || mv.From() == Z)
-            return returnFalse;			// trial move's to-pile (Z) has changed
-        if (mv.From() == Y) 
-            return returnFalse;			// trial move's from-pile (Y) has changed
-    }
-    return keepLooking;
-}    
-
-// Return true if this move cannot be in a minimum solution.
-template <class V>
-static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
-{
     // Consider a move at time T0 from X to Y and the next move
     // from Y, which goes from Y to Z at time Tn.  The move at Tn can
     // be skipped if the same result could have been achieved 
@@ -499,17 +479,47 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
 
     // Since nothing says X cannot equal Z, this test catches 
     // moves that exactly reverse previous moves.
+    //
+    const auto Y = trial.From();
+    const auto Z = trial.To();
+    if (mv.To() == Y){
+        // candidate T0 move
+        if (mv.From() == Z) {
+            // If X=Z and the X to Y move flipped a tableau card
+            // face up, then it changed Z.
+            if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
+                return returnFalse;
+        }
+        return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
+    } else {
+        // intervening move
+        if (mv.To() == Z || mv.From() == Z)
+            return returnFalse;			// trial move's to-pile (Z) has changed
+        if (mv.From() == Y) 
+            return returnFalse;			// trial move's from-pile (Y) has changed
+    }
+    return keepLooking;
+}    
+
+// Return true if this move cannot be in a minimum solution because
+// it does in two moves what could have been done in one when the first of
+// the two moves was made.
+template <class V>
+static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
+{
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
     for (auto mv: views::reverse(movesMade)){ 
         Dir dir;
         if (mv.IsLadderMove()) {
-            MoveSpec fndMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-1);
+            // Test the move-to-foundation implied by a ladder move
+            MoveSpec fndMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-mv.NCards());
             dir = XYZ_Test(fndMove, trial);
             switch (dir) {
                 case returnTrue: return true;
                 case returnFalse: return false;
             }
+            // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
         dir = XYZ_Test(mv, trial);
         switch (dir) {
