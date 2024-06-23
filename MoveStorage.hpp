@@ -31,7 +31,7 @@ private:
     size_type _maxSize {0};
 };
 
-struct SharedMoveStorage
+class SharedMoveStorage
 {
 private:
     size_t _moveTreeSizeLimit;
