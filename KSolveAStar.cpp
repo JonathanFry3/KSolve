@@ -158,9 +158,9 @@ static void Worker(
                     }
                     game.UnMakeMove(mv);
                 }
-                // Share the moves made here
-                moveStorage.ShareMoves();
             }
+            // Share the moves made here
+            moveStorage.EndIteration();
         }
     } 
     catch(std::bad_alloc&) {
@@ -225,8 +225,8 @@ KSolveAStarResult KSolveAStar(
         outcome,
         solution.GetMoves(),
         state._closedList.Size(),
-        sharedMoveStorage.MoveCount(),
-        sharedMoveStorage.MaxFringeElementSize());
+        sharedMoveStorage.MoveTreeSize(),
+        sharedMoveStorage.GeneratedMoveCount());
     ;
 }
 

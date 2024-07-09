@@ -373,6 +373,7 @@
 				"-Zi",			// debug information format
 				"-EHsc",		// Exception handling options
 				"-std:c++20",   // language standard - c++ 20
+                "-DFRYSTL_DEBUG",
 				"-Fe:",			// name EXE file
 				"unittests.exe",
 				"Game.cpp",

@@ -17,15 +17,19 @@ void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
     assert(_shared._startStackIndex <= nMoves);
     _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
 }
-void MoveStorage::ShareMoves()
+void MoveStorage::EndIteration()
 {
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
-        NodeX stemEnd      // index in _moveTree of last stem MoveSpec
+        auto stemEnd      // index in _moveTree of last stem MoveSpec
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
     }
+    auto & fringe = _shared._fringe;
+    auto& el  {fringe[_threadOffset]};
+    Guard tracie(el._mutex);
+    ++el._threadCount;
 }
 
 // Returns move tree index of last stem node
@@ -65,7 +69,6 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
-    unsigned offset;
     unsigned size;
     unsigned result = 0;
     _leaf = MoveNode{};
@@ -83,19 +86,20 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
     for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
     {
         size = fringe.size();
-        // Set offset to the index of the first non-empty leaf node stack
+        // Set _threadOffset to the index of the first non-empty leaf node stack
         // or size if all are empty.
         auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-        offset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
+        _threadOffset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
 
-        if (offset < size) {
-            auto & stack = fringe[offset]._stack;
+        if (_threadOffset < size) {
+            auto & stack = fringe[_threadOffset]._stack;
             {
-                Guard methuselah(fringe[offset]._mutex);
+                Guard methuselah(fringe[_threadOffset]._mutex);
                 if (stack.size()) {
                     _leaf = stack.back();
                     stack.pop_back();
-                    result = offset+_shared._startStackIndex;
+                    result = _threadOffset+_shared._startStackIndex;
+                    ++fringe[_threadOffset]._threadCount;
                 }
             }
         } 

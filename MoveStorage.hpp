@@ -11,24 +11,39 @@ using namespace frystl;
 typedef std::mutex Mutex;
 typedef std::lock_guard<Mutex> Guard;
 
-// Mix-in to measure max size
+// Mix-in to count elements pushed onto a sequence
 template <class VectorType>
-class MaxSizeCollector : public VectorType
+class PushCounter : public VectorType
 {
 public:
     using size_type = typename VectorType::size_type;
-    MaxSizeCollector() = default;
+    PushCounter() = default;
 
-    size_type MaxSize() const {
-        return std::max(VectorType::size(),_maxSize);
+    size_type PushCount() const noexcept {
+        return _pushCount;
     }
-    void pop_back()
-    {
-        _maxSize = MaxSize();
-        VectorType::pop_back();
+    /*
+    void push_back(const VectorType::value_type& value) {
+        ++_pushCount;
+        VectorType::push_back(value);
     }
+    template <class... Args>
+    void emplace_back(Args && ... args) {
+        ++_pushCount;
+        VectorType::emplace_back(std::forward<Args>(args)...);
+    }
+    void push_front(const VectorType::value_type& value) {
+        ++_pushCount;
+        VectorType::push_front(value);
+    }
+    template <class... Args>
+    void emplace_front(Args && ... args) {
+        ++_pushCount;
+        VectorType::emplace_front(std::forward<Args>(args)...);
+    }
+    */
 private:
-    size_type _maxSize {0};
+    size_type _pushCount {0};
 };
 
 class SharedMoveStorage
@@ -52,16 +67,18 @@ private:
     };
     mf_vector<MoveNode,1024> _moveTree;
     Mutex _moveTreeMutex;
+
     // Stack of indexes to leaf nodes in _moveTree
-    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,1024> >;
+    using LeafNodeStack  = PushCounter<mf_vector<MoveNode,1024> >;
     using FringeSizeType = LeafNodeStack::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
     struct FringeElement {
-        Mutex _mutex;
         LeafNodeStack _stack;
+        Mutex _mutex;
+        short _threadCount{0}; // n of threads processing leaves from this stack
     };
     static_vector<FringeElement,256> _fringe;
     Mutex _fringeMutex;
@@ -79,12 +96,11 @@ public:
         _firstTime = true;
     }
 
-    FringeSizeType MaxFringeElementSize() const noexcept{
-        return ranges::max_element(_fringe,{},
-            [](const auto& f){return f._stack.MaxSize();})
-            ->_stack.MaxSize();
+    FringeSizeType GeneratedMoveCount() const noexcept{
+        return std::accumulate(_fringe.begin(),_fringe.end(),size_t(0),
+            [](auto acc,const auto& p){return acc+p._stack.PushCount();});
     }
-    unsigned MoveCount() const noexcept{
+    unsigned MoveTreeSize() const noexcept{
         return _moveTree.size();
     }
     bool OverLimit() const noexcept{
@@ -107,7 +123,7 @@ public:
     void PushBranch(MoveSpec move, unsigned moveCount) noexcept;
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
-    void ShareMoves();
+    void EndIteration();
     // Identify a move sequence with the lowest available minimum move count, 
     // return its minimum move count or, if no more sequences are available.
     // return 0. Remove that sequence from the open queue and make it current.
@@ -129,6 +145,7 @@ private:
     MoveSequenceType _currentSequence;
     MoveNode _leaf;			// current sequence's leaf node 
     unsigned _startSize;
+    unsigned _threadOffset;
     struct MovePair
     {
         MoveSpec _mv;

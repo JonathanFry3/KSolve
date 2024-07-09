@@ -118,10 +118,10 @@ namespace frystl
     static long MFVectorDummyEnd = 0;
 
     template <
-        class T,           // Value type
+        typename T,        // Value type
         unsigned BlockSize // Number of T elements per block.
                            // Powers of 2 are faster.
-        = std::max<unsigned>(4096 / sizeof(T), 16),
+            = std::max<unsigned>(4096 / sizeof(T), 16),
         size_t NBlocks = BlockSize>
     class mf_vector
     {
@@ -294,7 +294,7 @@ namespace frystl
 /***********************************************************************************/    
 /***********************************************************************************/    
 
-
+    public:
         using value_type        = T;
         using reference         = T&;
         using pointer           = T*;
