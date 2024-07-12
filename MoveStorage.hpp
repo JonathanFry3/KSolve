@@ -78,10 +78,11 @@ private:
     struct FringeElement {
         LeafNodeStack _stack;
         Mutex _mutex;
-        short _threadCount{0}; // n of threads processing leaves from this stack
+        int _threadCount{0}; // n of threads processing leaves from this stack
     };
     static_vector<FringeElement,256> _fringe;
     Mutex _fringeMutex;
+    unsigned _fringeRangeFront{0};
     unsigned _startStackIndex {-1U};
     bool _firstTime;
     friend class MoveStorage;

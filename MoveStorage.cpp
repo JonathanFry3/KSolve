@@ -69,7 +69,6 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 }
 unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
 {
-    unsigned size;
     unsigned result = 0;
     _leaf = MoveNode{};
     auto & fringe = _shared._fringe;
@@ -85,16 +84,30 @@ unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
     //
     // It's not quite that simple with more than one thread, but that's the idea.
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
-    for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
-    {
-        size = std::min<unsigned>(fringe.size(), solMoves-_shared._startStackIndex);
-        // Set _threadOffset to the index of the first non-empty leaf node stack
-        // or size if all are empty.
-        auto searchRange = ranges::subrange(fringe.cbegin(), fringe.cbegin()+size);
-        auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-        _threadOffset = ranges::find_if(searchRange, nonEmpty) - fringe.cbegin();
 
-        if (_threadOffset < size) {
+    auto& rngFirst{_shared._fringeRangeFront};
+    unsigned rngEnd = std::min<unsigned>(fringe.size(), solMoves-_shared._startStackIndex);
+    while (result == 0 && rngFirst < rngEnd) 
+    {
+        // Set _threadOffset to the index of the first non-empty leaf node stack
+        // or rngLast if all are empty.
+       _threadOffset = rngEnd;
+       // _threadOffset = ranges::find_if(searchRange, nonEmpty) - fringe.cbegin();
+       for (auto i = rngFirst; i < rngEnd; ++i) {
+            auto & elem {fringe[i]};
+            if (elem._stack.size()) {
+                _threadOffset = i;
+                break;
+            } else if (i == rngFirst) {
+                Guard eddie(elem._mutex);
+                if (elem._threadCount == 0) {
+                    Guard freddie(_shared._fringeMutex);
+                    rngFirst = std::max(rngFirst,i+1);
+                }
+            }
+        }
+
+        if (_threadOffset < rngEnd) {
             auto & stack = fringe[_threadOffset]._stack;
             {
                 Guard methuselah(fringe[_threadOffset]._mutex);
