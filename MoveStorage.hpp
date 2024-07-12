@@ -124,10 +124,11 @@ public:
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
     void EndIteration();
-    // Identify a move sequence with the lowest available minimum move count, 
-    // return its minimum move count or, if no more sequences are available.
-    // return 0. Remove that sequence from the open queue and make it current.
-    unsigned PopNextSequenceIndex() noexcept;
+    // Identify a move sequence with the lowest available minimum move count
+    // less than solMoves, the lowest move count in any solution yet found. 
+    // Return its minimum move count, remove it from the open queue,
+    // and make it current. If no more sequences are available, return 0. 
+    unsigned PopNextSequenceIndex(unsigned solMoves) noexcept;
     // Copy the moves in the current sequence from the move tree.
     void LoadMoveSequence() noexcept; 
     // Make all the moves in the current sequence
@@ -145,7 +146,7 @@ private:
     MoveSequenceType _currentSequence;
     MoveNode _leaf;			// current sequence's leaf node 
     unsigned _startSize;
-    unsigned _threadOffset;
+    unsigned _threadOffset{0};
     struct MovePair
     {
         MoveSpec _mv;

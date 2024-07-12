@@ -113,8 +113,9 @@ static void Worker(
         unsigned minMoves0;
         while ( !moveStorage.Shared().OverLimit()
                 && !state.k_blewMemory
-                && (minMoves0 = moveStorage.PopNextSequenceIndex())    // <- side effect
-                && minMoves0 < minSolution.MoveCount()) { 
+                && (minMoves0 =
+                    moveStorage.PopNextSequenceIndex(minSolution.MoveCount())))   // <- side effect
+        { 
 
             // Restore game to the state it had when this move
             // sequence was enqueued.

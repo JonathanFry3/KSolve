@@ -26,10 +26,10 @@ void MoveStorage::EndIteration()
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
     }
-    auto & fringe = _shared._fringe;
-    auto& el  {fringe[_threadOffset]};
+    auto & fringe {_shared._fringe};
+    auto& el {fringe[_threadOffset]};
     Guard tracie(el._mutex);
-    ++el._threadCount;
+    --el._threadCount;
 }
 
 // Returns move tree index of last stem node
@@ -67,16 +67,18 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
         elem._stack.emplace_back(br._mv,stemEnd);
     }
 }
-unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
+unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
 {
     unsigned size;
     unsigned result = 0;
     _leaf = MoveNode{};
     auto & fringe = _shared._fringe;
 
-    if (fringe.empty() && _shared._firstTime) {
-        // first time 
+    if (_shared._firstTime) {
+        // First time.  This runs in a single-thread context.
         _shared._firstTime = false;
+        fringe.emplace_back();
+        ++fringe[0]._threadCount;
         return _shared._startStackIndex;
     }
     // Find the first non-empty leaf node stack, pop its top into _leaf.
@@ -85,11 +87,12 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
     // When we don't have a lock on it, any of the stacks may become empty or non-empty.
     for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
     {
-        size = fringe.size();
+        size = std::min<unsigned>(fringe.size(), solMoves-_shared._startStackIndex);
         // Set _threadOffset to the index of the first non-empty leaf node stack
         // or size if all are empty.
+        auto searchRange = ranges::subrange(fringe.cbegin(), fringe.cbegin()+size);
         auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-        _threadOffset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
+        _threadOffset = ranges::find_if(searchRange, nonEmpty) - fringe.cbegin();
 
         if (_threadOffset < size) {
             auto & stack = fringe[_threadOffset]._stack;
