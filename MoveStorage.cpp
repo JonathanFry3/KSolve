@@ -26,8 +26,7 @@ void MoveStorage::EndIteration()
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
     }
-    auto & fringe {_shared._fringe};
-    auto& el {fringe[_threadOffset]};
+    auto& el {_shared._fringe[_threadOffset]};
     Guard tracie(el._mutex);
     --el._threadCount;
 }
@@ -92,7 +91,6 @@ unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
         // Set _threadOffset to the index of the first non-empty leaf node stack
         // or rngLast if all are empty.
        _threadOffset = rngEnd;
-       // _threadOffset = ranges::find_if(searchRange, nonEmpty) - fringe.cbegin();
        for (auto i = rngFirst; i < rngEnd; ++i) {
             auto & elem {fringe[i]};
             if (elem._stack.size()) {
@@ -100,7 +98,7 @@ unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
                 break;
             } else if (i == rngFirst) {
                 Guard eddie(elem._mutex);
-                if (elem._threadCount == 0) {
+                if (elem._stack.empty() && elem._threadCount == 0) {
                     Guard freddie(_shared._fringeMutex);
                     rngFirst = std::max(rngFirst,i+1);
                 }
@@ -108,15 +106,14 @@ unsigned MoveStorage::PopNextSequenceIndex(unsigned solMoves) noexcept
         }
 
         if (_threadOffset < rngEnd) {
-            auto & stack = fringe[_threadOffset]._stack;
-            {
-                Guard methuselah(fringe[_threadOffset]._mutex);
-                if (stack.size()) {
-                    _leaf = stack.back();
-                    stack.pop_back();
-                    result = _threadOffset+_shared._startStackIndex;
-                    ++fringe[_threadOffset]._threadCount;
-                }
+            auto & elem{fringe[_threadOffset]};
+            auto & stack = elem._stack;
+            Guard methuselah(elem._mutex);
+            if (stack.size()) {
+                _leaf = stack.back();
+                stack.pop_back();
+                ++elem._threadCount;
+                result = _threadOffset+_shared._startStackIndex;
             }
         } 
         if (result == 0) {

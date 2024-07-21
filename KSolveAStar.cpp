@@ -1,6 +1,7 @@
 #include "KSolveAStar.hpp"
 #include "GameStateMemory.hpp"
 #include "MoveStorage.hpp"
+#include <thread>
 
 namespace KSolveNames {
 
