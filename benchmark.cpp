@@ -28,7 +28,7 @@ static ArgVec WrapArgs(int nArgs, char* args[])
 }
 struct Specs
 {
-    unsigned nReps{5};
+    unsigned nReps{50};
     bool verbose{false};
     unsigned seed{729347};
 };
