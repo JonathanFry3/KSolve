@@ -50,7 +50,7 @@ private:
             , _prevNode(-1)
             {}
     };
-    mf_vector<MoveNode,1024> _moveTree;
+    std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
     using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,1024> >;
