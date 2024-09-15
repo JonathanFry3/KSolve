@@ -70,7 +70,7 @@ CardDeck LoadDeck(string const& f, unsigned int & index) {
     int gameType = 0;
     int startIndex = index;
     if (f[index] == '#') {
-        while (index < f.size() && f[index++] != '\n') {cout << f[index];}
+        while (index < f.size() && f[index] != '\n') {cout << f[index]; ++index;}
         cout << endl;
         return deck;
     } else if (f[index] == 'T' || f[index] == 't' || f[index] == 'n') {
