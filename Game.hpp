@@ -51,8 +51,8 @@ public:
     };
 
 private:
-    SuitT _suit:2;
-    RankT _rank:6;
+    SuitT _suit:3;  // must hold 0:4
+    RankT _rank:5;
 
 public:
     Card() = default;
