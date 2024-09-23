@@ -227,7 +227,7 @@ KSolveAStarResult KSolveAStar(
         solution.GetMoves(),
         state._closedList.Size(),
         sharedMoveStorage.MoveCount(),
-        sharedMoveStorage.MaxFringeElementSize());
+        sharedMoveStorage.FringeSize());
     ;
 }
 

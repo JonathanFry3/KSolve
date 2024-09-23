@@ -2,14 +2,92 @@
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
 #include <mutex>          	// for std::mutex, std::lock_guard
+#include <thread>
 
 namespace KSolveNames {
 
 using namespace frystl;
 
+using NodeX = std::uint32_t;
 
-typedef std::mutex Mutex;
+using Mutex = std::mutex;
 typedef std::lock_guard<Mutex> Guard;
+
+struct MoveNode
+{
+    MoveSpec _move;
+    NodeX _prevNode{-1U};
+
+    MoveNode() = default;
+    MoveNode(const MoveSpec& mv, NodeX prevNode)
+        : _move(mv)
+        , _prevNode(prevNode)
+        {}
+};
+
+using I = NodeX;
+using V = MoveNode;
+
+class ShareableIndexedQueue {
+    //  An ShareableIndexedQueue<I,V> is a thread-safe ordered queue of {I,T} pairs in
+    //  ascending order by  their I values.  It is implemented as a vector of
+    //  vectors indexed by the I values and containing the V values. It is
+    //  efficient if the I values are all small integers. I must be an unsigned type.
+    //
+    //  V values sharing the same I values are returned in LIFO order.    
+
+private:
+    using StackType = mf_vector<V,1024>;
+    Mutex _mutex;
+    mf_vector<std::pair<Mutex,StackType>,1024> _stacks;
+
+public:
+    ShareableIndexedQueue() = default;
+    ShareableIndexedQueue(unsigned initialCapacity)
+        {_stacks.reserve(initialCapacity);}
+    void Push(I index, const V& value)
+    {
+        if (_stacks.size() < index+1) {
+            Guard desposito(_mutex);
+            if (_stacks.size() < index+1)
+                _stacks.resize(index+1);
+        }
+        auto& stack = _stacks[index];
+        Guard esperanto(stack.first);
+        stack.second.push_back(value);
+    }
+    std::optional<std::pair<I,V>> Pop()
+    {
+        for (unsigned nTries = 0; nTries < 5; ++nTries) 
+        {
+            unsigned size = _stacks.size();
+            auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
+            unsigned offset = std::find_if(_stacks.begin(), _stacks.end(), nonEmpty) - _stacks.begin();
+
+            if (offset < size) {
+                auto & stack = _stacks[offset].second;
+                Guard methuselah(_stacks[offset].first);
+                if (stack.size()) {
+                    auto result = std::make_pair(offset,stack.back());
+                    stack.pop_back();
+                    return result;
+                }
+            }
+            std::this_thread::yield();
+        }
+        return std::nullopt;
+    }
+    // Returns total size.  Not accurate when threads are still making changes.
+    unsigned Size() const
+    {
+        return std::accumulate(_stacks.begin(), _stacks.end(), 0, 
+            [&](auto accum, auto& stack){return accum + stack.second.size();});
+    }
+    bool Empty() const 
+    {
+        return _stacks.empty();
+    }
+};
 
 // Mix-in to measure max size
 template <class VectorType>
@@ -35,21 +113,6 @@ class SharedMoveStorage
 {
 private:
     size_t _moveTreeSizeLimit;
-    typedef std::uint32_t NodeX;
-    struct MoveNode
-    {
-        MoveSpec _move;
-        NodeX _prevNode;
-
-        MoveNode(const MoveSpec& mv, NodeX prevNode)
-            : _move(mv)
-            , _prevNode(prevNode)
-            {}
-        MoveNode()
-            : _move()
-            , _prevNode(-1)
-            {}
-    };
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // Stack of indexes to leaf nodes in _moveTree
@@ -63,7 +126,7 @@ private:
         Mutex _mutex;
         LeafNodeStack _stack;
     };
-    static_vector<FringeElement,256> _fringe;
+    ShareableIndexedQueue _fringe;
     Mutex _fringeMutex;
     unsigned _startStackIndex {-1U};
     bool _firstTime;
@@ -79,10 +142,8 @@ public:
         _firstTime = true;
     }
 
-    FringeSizeType MaxFringeElementSize() const noexcept{
-        return ranges::max_element(_fringe,{},
-            [](const auto& f){return f._stack.MaxSize();})
-            ->_stack.MaxSize();
+    FringeSizeType FringeSize() const noexcept{
+        return _fringe.Size();
     }
     unsigned MoveCount() const noexcept{
         return _moveTree.size();
@@ -122,8 +183,7 @@ public:
     typedef MoveCounter<static_deque<MoveSpec,maxMoves> > MoveSequenceType;
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
-    typedef SharedMoveStorage::NodeX NodeX;
-    typedef SharedMoveStorage::MoveNode MoveNode;
+//    typedef SharedMoveStorage::NodeX NodeX;
     typedef SharedMoveStorage::LeafNodeStack LeafNodeStack;
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
