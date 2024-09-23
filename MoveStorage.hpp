@@ -25,11 +25,9 @@ struct MoveNode
         {}
 };
 
-using I = NodeX;
-using V = MoveNode;
-
-class ShareableIndexedQueue {
-    //  An ShareableIndexedQueue<I,V> is a thread-safe ordered queue of {I,T} pairs in
+template <typename I, typename V>
+class ShareableIndexedPriorityQueue {
+    //  An ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of {I,V} pairs in
     //  ascending order by  their I values.  It is implemented as a vector of
     //  vectors indexed by the I values and containing the V values. It is
     //  efficient if the I values are all small integers. I must be an unsigned type.
@@ -42,8 +40,8 @@ private:
     mf_vector<std::pair<Mutex,StackType>,1024> _stacks;
 
 public:
-    ShareableIndexedQueue() = default;
-    ShareableIndexedQueue(unsigned initialCapacity)
+    ShareableIndexedPriorityQueue() = default;
+    ShareableIndexedPriorityQueue(unsigned initialCapacity)
         {_stacks.reserve(initialCapacity);}
     void Push(I index, const V& value)
     {
@@ -56,7 +54,8 @@ public:
         Guard esperanto(stack.first);
         stack.second.push_back(value);
     }
-    std::optional<std::pair<I,V>> Pop()
+    std::optional<std::pair<I,V>> 
+    Pop()
     {
         for (unsigned nTries = 0; nTries < 5; ++nTries) 
         {
@@ -77,7 +76,7 @@ public:
         }
         return std::nullopt;
     }
-    // Returns total size.  Not accurate when threads are still making changes.
+    // Returns total size.  Not accurate when threads are making changes.
     unsigned Size() const
     {
         return std::accumulate(_stacks.begin(), _stacks.end(), 0, 
@@ -88,46 +87,17 @@ public:
         return _stacks.empty();
     }
 };
-
-// Mix-in to measure max size
-template <class VectorType>
-class MaxSizeCollector : public VectorType
-{
-public:
-    using size_type = typename VectorType::size_type;
-    MaxSizeCollector() = default;
-
-    size_type MaxSize() const {
-        return std::max(VectorType::size(),_maxSize);
-    }
-    void pop_back()
-    {
-        _maxSize = MaxSize();
-        VectorType::pop_back();
-    }
-private:
-    size_type _maxSize {0};
-};
-
 class SharedMoveStorage
 {
 private:
     size_t _moveTreeSizeLimit;
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
-    // Stack of indexes to leaf nodes in _moveTree
-    using LeafNodeStack  = MaxSizeCollector<mf_vector<MoveNode,1024> >;
-    using FringeSizeType = LeafNodeStack::size_type;
     // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
     // stores nodes with the same minimum number of moves in any
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
-    struct FringeElement {
-        Mutex _mutex;
-        LeafNodeStack _stack;
-    };
-    ShareableIndexedQueue _fringe;
-    Mutex _fringeMutex;
+    ShareableIndexedPriorityQueue<unsigned, MoveNode> _fringe;
     unsigned _startStackIndex {-1U};
     bool _firstTime;
     friend class MoveStorage;
@@ -142,7 +112,7 @@ public:
         _firstTime = true;
     }
 
-    FringeSizeType FringeSize() const noexcept{
+    unsigned FringeSize() const noexcept{
         return _fringe.Size();
     }
     unsigned MoveCount() const noexcept{
@@ -183,8 +153,6 @@ public:
     typedef MoveCounter<static_deque<MoveSpec,maxMoves> > MoveSequenceType;
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
-//    typedef SharedMoveStorage::NodeX NodeX;
-    typedef SharedMoveStorage::LeafNodeStack LeafNodeStack;
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
     MoveNode _leaf;			// current sequence's leaf node 
