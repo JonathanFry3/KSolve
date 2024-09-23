@@ -46,18 +46,18 @@ struct KSolveAStarResult
     Moves _solution;
     unsigned _branchCount;
     unsigned _moveTreeSize;
-    unsigned _maxFringeStackSize;
+    unsigned _finalFringeStackSize;
 
     KSolveAStarResult(KSolveAStarCode code, 
                 const Moves& moves, 
                 unsigned branchCount,
                 unsigned moveCount,
-                unsigned maxFringeStackSize)
+                unsigned finalFringeStackSize)
         : _code(code)
         , _solution(moves)
         , _branchCount(branchCount)
         , _moveTreeSize(moveCount)
-        , _maxFringeStackSize(maxFringeStackSize)
+        , _finalFringeStackSize(finalFringeStackSize)
         {}
 };
 KSolveAStarResult KSolveAStar(
