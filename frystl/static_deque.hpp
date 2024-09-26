@@ -94,8 +94,12 @@ namespace frystl
         }
         // fill c'tor with default value
         static_deque(size_type count)
-            : static_deque(count, value_type())
-        {}
+            : _begin(Centered(count)), _end(_begin + count)
+        {
+            FRYSTL_ASSERT2(count <= capacity(),"Overflow in static_deque");
+            for (pointer p = _begin; p < _end; ++p)
+                new (p) value_type();
+        }
         // range c'tor
         template <class Iter,
                   typename = RequireInputIter<Iter> > 

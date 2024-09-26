@@ -323,8 +323,10 @@ namespace frystl
                 push_back(value);
         }
         explicit mf_vector(size_type count)
-            : mf_vector(count, T())
+            : mf_vector()
         {
+            for (size_type i = 0; i < count; ++i)
+                emplace_back();
         }
         // Range constructors
         template <class InputIt,
