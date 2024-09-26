@@ -95,7 +95,8 @@
         "__verbose_abort": "cpp",
         "execution": "cpp",
         "*.ipp": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "span": "cpp"
     },
     "terminal.explorerKind": "external",
     "workbench.editor.enablePreview": false,
