@@ -37,30 +37,39 @@ class ShareableIndexedPriorityQueue {
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
-    mf_vector<std::pair<Mutex,StackType>,1024> _stacks;
+    mf_vector<std::pair<Mutex,StackType>,1024,128*1024> _stacks;
+    void Resize(I newSize)
+    {
+        if (_stacks.size() < newSize) {
+            Guard desposito(_mutex);
+            if (_stacks.size() < newSize)
+                _stacks.resize(newSize);
+        }
+    }
 
 public:
     ShareableIndexedPriorityQueue() = default;
     ShareableIndexedPriorityQueue(unsigned initialCapacity)
         {_stacks.reserve(initialCapacity);}
-    void Push(I index, const V& value)
+    template <class... Args>
+    void Emplace(I index, Args &&...args)
     {
-        if (_stacks.size() < index+1) {
-            Guard desposito(_mutex);
-            if (_stacks.size() < index+1)
-                _stacks.resize(index+1);
-        }
+        Resize(index+1);
         auto& stack = _stacks[index];
         Guard esperanto(stack.first);
-        stack.second.push_back(value);
+        stack.second.emplace_back(std::forward<Args>(args)...);
+    }
+    void Push(I index, const V& value)
+    {
+        Emplace(index, value);
     }
     std::optional<std::pair<I,V>> 
     Pop()
     {
+        auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
         for (unsigned nTries = 0; nTries < 5; ++nTries) 
         {
             unsigned size = _stacks.size();
-            auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
             unsigned offset = std::find_if(_stacks.begin(), _stacks.end(), nonEmpty) - _stacks.begin();
 
             if (offset < size) {

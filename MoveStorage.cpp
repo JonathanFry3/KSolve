@@ -48,7 +48,7 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
     auto & fringe = _shared._fringe;
 
     for (const auto &br: _branches) {
-        fringe.Push(br._offset, MoveNode(br._mv, stemEnd));
+        fringe.Emplace(br._offset, br._mv, stemEnd);
     }
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
