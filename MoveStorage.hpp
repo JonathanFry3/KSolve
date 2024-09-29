@@ -37,8 +37,8 @@ class ShareableIndexedPriorityQueue {
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
-    mf_vector<std::pair<Mutex,StackType>,1024,128*1024> _stacks;
-    void Resize(I newSize)
+    mf_vector<std::pair<Mutex,StackType>,512,4> _stacks;
+    void Resize(I newSize) noexcept
     {
         if (_stacks.size() < newSize) {
             Guard desposito(_mutex);
@@ -52,25 +52,26 @@ public:
     ShareableIndexedPriorityQueue(unsigned initialCapacity)
         {_stacks.reserve(initialCapacity);}
     template <class... Args>
-    void Emplace(I index, Args &&...args)
+    void Emplace(I index, Args &&...args) noexcept
     {
         Resize(index+1);
         auto& stack = _stacks[index];
         Guard esperanto(stack.first);
         stack.second.emplace_back(std::forward<Args>(args)...);
     }
-    void Push(I index, const V& value)
+    void Push(I index, const V& value) noexcept
     {
         Emplace(index, value);
     }
     std::optional<std::pair<I,V>> 
-    Pop()
+    Pop() noexcept
     {
         auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
         for (unsigned nTries = 0; nTries < 5; ++nTries) 
         {
             unsigned size = _stacks.size();
-            unsigned offset = std::find_if(_stacks.begin(), _stacks.end(), nonEmpty) - _stacks.begin();
+            unsigned offset = 
+                std::find_if(_stacks.begin(), _stacks.end(), nonEmpty) - _stacks.begin();
 
             if (offset < size) {
                 auto & stack = _stacks[offset].second;
@@ -86,14 +87,10 @@ public:
         return std::nullopt;
     }
     // Returns total size.  Not accurate when threads are making changes.
-    unsigned Size() const
+    unsigned Size() const noexcept
     {
-        return std::accumulate(_stacks.begin(), _stacks.end(), 0, 
+        return std::accumulate(_stacks.begin(), _stacks.end(), 0U, 
             [&](auto accum, auto& stack){return accum + stack.second.size();});
-    }
-    bool Empty() const 
-    {
-        return _stacks.empty();
     }
 };
 class SharedMoveStorage
@@ -107,7 +104,7 @@ private:
     // completed game that can grow from them.  MoveStorage uses it
     // to implement a priority queue ordered by the minimum move count.
     ShareableIndexedPriorityQueue<unsigned, MoveNode> _fringe;
-    unsigned _startStackIndex {-1U};
+    unsigned _initialMinMoves {-1U};
     bool _firstTime;
     friend class MoveStorage;
 public:
@@ -117,7 +114,7 @@ public:
     {
         _moveTreeSizeLimit = moveTreeSizeLimit;
         _moveTree.reserve(moveTreeSizeLimit+1000);
-        _startStackIndex = minMoves;
+        _initialMinMoves = minMoves;
         _firstTime = true;
     }
 

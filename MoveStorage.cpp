@@ -13,8 +13,8 @@ void MoveStorage::PushStem(MoveSpec move) noexcept
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
 {
-    assert(_shared._startStackIndex <= nMoves);
-    _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
+    assert(_shared._initialMinMoves <= nMoves);
+    _branches.emplace_back(mv,nMoves-_shared._initialMinMoves);
 }
 void MoveStorage::ShareMoves()
 {
@@ -26,7 +26,6 @@ void MoveStorage::ShareMoves()
         UpdateFringe(stemEnd);
     }
 }
-
 // Returns move tree index of last stem node
 NodeX MoveStorage::UpdateMoveTree() noexcept
 {
@@ -53,37 +52,32 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
-    unsigned result = 0;
-    _leaf = MoveNode{};
-    auto & fringe = _shared._fringe;
-
-    if (fringe.Empty() && _shared._firstTime) {
+    if (_shared._firstTime) {
         // first time 
+        _leaf = MoveNode{};
         _shared._firstTime = false;
-        return _shared._startStackIndex;
+        return _shared._initialMinMoves;
     }
-    auto nextOpt = fringe.Pop();
-    if (!nextOpt) return 0;
+    auto nextOpt = _shared._fringe.Pop();
+    if (!nextOpt) 
+        return 0;     // last time for this thread
     else {
         _leaf = nextOpt->second;
-        return nextOpt->first+_shared._startStackIndex;
+        return nextOpt->first+_shared._initialMinMoves;
     }
 }
 void MoveStorage::LoadMoveSequence() noexcept
 {
     // Follow the links to recover all the moves in a sequence in reverse order.
-    // Note that this operation requires no guard on _shared._moveTree only if 
-    // the block vector in that structure never needs reallocation.
     _currentSequence.clear();
     if (!_leaf._move.IsDefault())
         _currentSequence.push_back(_leaf._move);
-    for (NodeX node = _leaf._prevNode; 
-         node != -1U; 
-         node = _shared._moveTree[node]._prevNode){
+    for    (NodeX node = _leaf._prevNode; 
+            node != -1U; 
+            node = _shared._moveTree[node]._prevNode){
         const MoveSpec &mv = _shared._moveTree[node]._move;
         _currentSequence.push_front(mv);
     }
-
     _startSize = _currentSequence.size();
     if (_startSize > 0) _startSize--;
     _branches.clear();
