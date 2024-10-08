@@ -52,18 +52,17 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
-    if (_shared._firstTime) {
-        // first time 
+    if (_shared._firstTime) [[unlikely]]{
         _leaf = MoveNode{};
         _shared._firstTime = false;
         return _shared._initialMinMoves;
     }
     auto nextOpt = _shared._fringe.Pop();
-    if (!nextOpt) 
-        return 0;     // last time for this thread
-    else {
+    if (nextOpt) [[likely]] {
         _leaf = nextOpt->second;
         return nextOpt->first+_shared._initialMinMoves;
+    } else {
+        return 0;     // last time for this thread
     }
 }
 void MoveStorage::LoadMoveSequence() noexcept

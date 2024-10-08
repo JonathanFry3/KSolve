@@ -38,11 +38,11 @@ private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
     mf_vector<std::pair<Mutex,StackType>,512,4> _stacks;
-    void Resize(I newSize) noexcept
+    void inline Resize(I newSize) noexcept
     {
-        if (_stacks.size() < newSize) {
+        if (_stacks.size() < newSize) [[unlikely]]{
             Guard desposito(_mutex);
-            if (_stacks.size() < newSize)
+            if (_stacks.size() < newSize) [[unlikely]]
                 _stacks.resize(newSize);
         }
     }
@@ -70,14 +70,14 @@ public:
         for (unsigned nTries = 0; nTries < 5; ++nTries) 
         {
             unsigned size = _stacks.size();
-            unsigned offset = 
-                std::find_if(_stacks.begin(), _stacks.end(), nonEmpty) - _stacks.begin();
+            unsigned index;
+            for (index = 0; index < size && _stacks[index].second.empty(); ++index);
 
-            if (offset < size) {
-                auto & stack = _stacks[offset].second;
-                Guard methuselah(_stacks[offset].first);
+            if (index < size) {
+                auto & stack = _stacks[index].second;
+                Guard methuselah(_stacks[index].first);
                 if (stack.size()) {
-                    auto result = std::make_pair(offset,stack.back());
+                    auto result = std::make_pair(index,stack.back());
                     stack.pop_back();
                     return result;
                 }
