@@ -37,7 +37,7 @@ class ShareableIndexedPriorityQueue {
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
-    mf_vector<std::pair<Mutex,StackType>,512,4> _stacks;
+    static_vector<std::pair<Mutex,StackType>,512> _stacks;
     void inline Resize(I newSize) noexcept
     {
         if (_stacks.size() < newSize) [[unlikely]]{
@@ -66,17 +66,17 @@ public:
     std::optional<std::pair<I,V>> 
     Pop() noexcept
     {
-        auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
         for (unsigned nTries = 0; nTries < 5; ++nTries) 
         {
             unsigned size = _stacks.size();
             unsigned index;
+            auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
             for (index = 0; index < size && _stacks[index].second.empty(); ++index);
 
             if (index < size) {
                 auto & stack = _stacks[index].second;
                 Guard methuselah(_stacks[index].first);
-                if (stack.size()) {
+                if (stack.size()) { 
                     auto result = std::make_pair(index,stack.back());
                     stack.pop_back();
                     return result;
@@ -99,10 +99,7 @@ private:
     size_t _moveTreeSizeLimit;
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
-    // The leaf nodes waiting to grow new branches.  Each LeafNodeStack
-    // stores nodes with the same minimum number of moves in any
-    // completed game that can grow from them.  MoveStorage uses it
-    // to implement a priority queue ordered by the minimum move count.
+    // The leaf nodes waiting to grow new branches.  
     ShareableIndexedPriorityQueue<unsigned, MoveNode> _fringe;
     unsigned _initialMinMoves {-1U};
     bool _firstTime;
