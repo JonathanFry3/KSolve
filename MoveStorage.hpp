@@ -66,25 +66,25 @@ public:
     std::optional<std::pair<I,V>> 
     Pop() noexcept
     {
-        for (unsigned nTries = 0; nTries < 5; ++nTries) 
+        std::optional<std::pair<I,V>> result{std::nullopt};
+        for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
             unsigned size = _stacks.size();
             unsigned index;
             auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
             for (index = 0; index < size && _stacks[index].second.empty(); ++index);
 
-            if (index < size) {
+            if (index < size) [[likely]] {
                 auto & stack = _stacks[index].second;
                 Guard methuselah(_stacks[index].first);
-                if (stack.size()) { 
-                    auto result = std::make_pair(index,stack.back());
+                if (stack.size()) [[likely]] { 
+                    result = std::make_pair(index,stack.back());
                     stack.pop_back();
-                    return result;
                 }
             }
-            std::this_thread::yield();
+            if (!result) [[unlikely]] std::this_thread::yield();
         }
-        return std::nullopt;
+        return result;
     }
     // Returns total size.  Not accurate when threads are making changes.
     unsigned Size() const noexcept
