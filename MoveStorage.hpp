@@ -25,20 +25,21 @@ struct MoveNode
         {}
 };
 
-template <typename I, typename V>
+template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
-    //  An ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of {I,V} pairs in
-    //  ascending order by  their I values.  It is implemented as a vector of
-    //  vectors indexed by the I values and containing the V values. It is
-    //  efficient if the I values are all small integers. I must be an unsigned type.
+    // An ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
+    // {I,V} pairs in ascending order by their I values (approximately).  It is
+    // implemented as a vector of vectors indexed by the I values and containing
+    // the V values. It is efficient if the I values are all small integers.
+    // I must be an unsigned type.
     //
-    //  V values sharing the same I values are returned in LIFO order.    
+    // V values sharing the same I values are returned in LIFO order.    
 
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
-    static_vector<std::pair<Mutex,StackType>,512> _stacks;
-    void inline Resize(I newSize) noexcept
+    static_vector<std::pair<Mutex,StackType>, Sz>_stacks;
+    void inline UpsizeTo(I newSize) noexcept
     {
         if (_stacks.size() < newSize) [[unlikely]]{
             Guard desposito(_mutex);
@@ -48,13 +49,10 @@ private:
     }
 
 public:
-    ShareableIndexedPriorityQueue() = default;
-    ShareableIndexedPriorityQueue(unsigned initialCapacity)
-        {_stacks.reserve(initialCapacity);}
     template <class... Args>
     void Emplace(I index, Args &&...args) noexcept
     {
-        Resize(index+1);
+        UpsizeTo(index+1);
         auto& stack = _stacks[index];
         Guard esperanto(stack.first);
         stack.second.emplace_back(std::forward<Args>(args)...);
@@ -63,16 +61,16 @@ public:
     {
         Emplace(index, value);
     }
-    std::optional<std::pair<I,V>> 
-    Pop() noexcept
+    std::optional<std::pair<I,V>> Pop() noexcept
     {
         std::optional<std::pair<I,V>> result{std::nullopt};
+        // Another thread may make any stack empty or non-empty at
+        // any time.
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
-            unsigned size = _stacks.size();
-            unsigned index;
             auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
-            for (index = 0; index < size && _stacks[index].second.empty(); ++index);
+            unsigned index = ranges::find_if(_stacks, nonEmpty) - _stacks.begin();
+            unsigned size = _stacks.size();
 
             if (index < size) [[likely]] {
                 auto & stack = _stacks[index].second;
@@ -100,7 +98,7 @@ private:
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // The leaf nodes waiting to grow new branches.  
-    ShareableIndexedPriorityQueue<unsigned, MoveNode> _fringe;
+    ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
     unsigned _initialMinMoves {-1U};
     bool _firstTime;
     friend class MoveStorage;
