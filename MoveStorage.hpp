@@ -38,7 +38,11 @@ class ShareableIndexedPriorityQueue {
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
-    static_vector<std::pair<Mutex,StackType>, Sz>_stacks;
+    struct ProtectedStackType {
+        Mutex _mutex;
+        StackType _stack;
+    };
+    static_vector<ProtectedStackType, Sz>_stacks;
     void inline UpsizeTo(I newSize) noexcept
     {
         if (_stacks.size() < newSize) [[unlikely]]{
@@ -53,9 +57,9 @@ public:
     void Emplace(I index, Args &&...args) noexcept
     {
         UpsizeTo(index+1);
-        auto& stack = _stacks[index];
-        Guard esperanto(stack.first);
-        stack.second.emplace_back(std::forward<Args>(args)...);
+        auto& pStack = _stacks[index];
+        Guard esperanto(pStack._mutex);
+        pStack._stack.emplace_back(std::forward<Args>(args)...);
     }
     void Push(I index, const V& value) noexcept
     {
@@ -68,13 +72,13 @@ public:
         // any time.
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
-            auto nonEmpty = [] (const auto & elem) {return !elem.second.empty();};
+            auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
             unsigned index = ranges::find_if(_stacks, nonEmpty) - _stacks.begin();
             unsigned size = _stacks.size();
 
             if (index < size) [[likely]] {
-                auto & stack = _stacks[index].second;
-                Guard methuselah(_stacks[index].first);
+                auto & stack = _stacks[index]._stack;
+                Guard methuselah(_stacks[index]._mutex);
                 if (stack.size()) [[likely]] { 
                     result = std::make_pair(index,stack.back());
                     stack.pop_back();
@@ -88,7 +92,7 @@ public:
     unsigned Size() const noexcept
     {
         return std::accumulate(_stacks.begin(), _stacks.end(), 0U, 
-            [&](auto accum, auto& stack){return accum + stack.second.size();});
+            [&](auto accum, auto& pStack){return accum + pStack._stack.size();});
     }
 };
 class SharedMoveStorage
