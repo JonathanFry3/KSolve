@@ -44,8 +44,8 @@ NodeX MoveStorage::UpdateMoveTree() noexcept
 } 
 void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 {
+    std::sort(_branches.begin(), _branches.end());  // descending by offset
     auto & fringe = _shared._fringe;
-
     for (const auto &br: _branches) {
         fringe.Emplace(br._offset, br._mv, stemEnd);
     }
