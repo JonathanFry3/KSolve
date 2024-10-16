@@ -170,10 +170,6 @@ private:
             : _mv(mv)
             , _offset(offset)
         {}
-        bool operator< (const MovePair& rhs) const
-        {
-            return _offset > rhs._offset;
-        }
     };
     static_vector<MovePair,128> _branches;
 
