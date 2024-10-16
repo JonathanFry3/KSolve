@@ -1,5 +1,4 @@
 #include "MoveStorage.hpp"
-#include <thread>
 
 namespace KSolveNames {
 
@@ -14,8 +13,8 @@ void MoveStorage::PushStem(MoveSpec move) noexcept
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
 {
-    assert(_shared._startStackIndex <= nMoves);
-    _branches.emplace_back(mv,nMoves-_shared._startStackIndex);
+    assert(_shared._initialMinMoves <= nMoves);
+    _branches.emplace_back(mv,nMoves-_shared._initialMinMoves);
 }
 void MoveStorage::ShareMoves()
 {
@@ -27,9 +26,8 @@ void MoveStorage::ShareMoves()
         UpdateFringe(stemEnd);
     }
 }
-
 // Returns move tree index of last stem node
-MoveStorage::NodeX MoveStorage::UpdateMoveTree() noexcept
+NodeX MoveStorage::UpdateMoveTree() noexcept
 {
     NodeX stemEnd = _leaf._prevNode;
     Guard rupert(_shared._moveTreeMutex);
@@ -46,80 +44,39 @@ MoveStorage::NodeX MoveStorage::UpdateMoveTree() noexcept
 } 
 void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 {
+    std::sort(_branches.begin(), _branches.end());  // descending by offset
     auto & fringe = _shared._fringe;
-    // Enlarge the fringe if needed.
-    unsigned maxOffset = 
-        std::max_element(_branches.cbegin(),_branches.cend())->_offset;
-    if (fringe.size() <= maxOffset) {
-        Guard freddie(_shared._fringeMutex);
-        if (fringe.size() <= maxOffset)
-            fringe.resize(maxOffset+1);
-    }
-
     for (const auto &br: _branches) {
-        auto & elem = fringe[br._offset];
-
-        Guard clyde(elem._mutex);
-        elem._stack.emplace_back(br._mv,stemEnd);
+        fringe.Emplace(br._offset, br._mv, stemEnd);
     }
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
-    unsigned offset;
-    unsigned size;
-    unsigned result = 0;
-    _leaf = MoveNode{};
-    auto & fringe = _shared._fringe;
-
-    if (fringe.empty() && _shared._firstTime) {
-        // first time 
+    if (_shared._firstTime) [[unlikely]]{
+        _leaf = MoveNode{};
         _shared._firstTime = false;
-        return _shared._startStackIndex;
+        return _shared._initialMinMoves;
     }
-    // Find the first non-empty leaf node stack, pop its top into _leaf.
-    //
-    // It's not quite that simple with more than one thread, but that's the idea.
-    // When we don't have a lock on it, any of the stacks may become empty or non-empty.
-    for (unsigned nTries = 0; result == 0 && nTries < 5; ++nTries) 
-    {
-        size = fringe.size();
-        // Set offset to the index of the first non-empty leaf node stack
-        // or size if all are empty.
-        auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-        offset = ranges::find_if(fringe, nonEmpty) - fringe.begin();
-
-        if (offset < size) {
-            auto & stack = fringe[offset]._stack;
-            {
-                Guard methuselah(fringe[offset]._mutex);
-                if (stack.size()) {
-                    _leaf = stack.back();
-                    stack.pop_back();
-                    result = offset+_shared._startStackIndex;
-                }
-            }
-        } 
-        if (result == 0) {
-            std::this_thread::yield();
-        }
+    auto nextOpt = _shared._fringe.Pop();
+    if (nextOpt) [[likely]] {
+        _leaf = nextOpt->second;
+        return nextOpt->first+_shared._initialMinMoves;
+    } else {
+        return 0;     // last time for this thread
     }
-    return result;
 }
 void MoveStorage::LoadMoveSequence() noexcept
 {
     // Follow the links to recover all the moves in a sequence in reverse order.
-    // Note that this operation requires no guard on _shared._moveTree only if 
-    // the block vector in that structure never needs reallocation.
     _currentSequence.clear();
     if (!_leaf._move.IsDefault())
         _currentSequence.push_back(_leaf._move);
-    for (NodeX node = _leaf._prevNode; 
-         node != -1U; 
-         node = _shared._moveTree[node]._prevNode){
+    for    (NodeX node = _leaf._prevNode; 
+            node != -1U; 
+            node = _shared._moveTree[node]._prevNode){
         const MoveSpec &mv = _shared._moveTree[node]._move;
         _currentSequence.push_front(mv);
     }
-
     _startSize = _currentSequence.size();
     if (_startSize > 0) _startSize--;
     _branches.clear();

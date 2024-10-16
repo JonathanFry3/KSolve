@@ -74,8 +74,8 @@ Specification GetSpec(int argc, char * argv[])
             cout << "the number of cards to draw, the outcome code (see below), " << endl;
             cout << "the number of moves in the solution if a solution is found," << endl;
             cout << "the number of talon passes in the solution if a solution is found." << endl;
-            cout << "the clock time required in seconds, the size of the largest fringe element," << endl;
-            cout << "the number of branches of the move tree, and the number of moves in the move tree." << endl;
+            cout << "the clock time required in seconds, the final size of the fringe," << endl;
+            cout << "the final size of the closed list, and the final size of the move tree." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
             cout << "3 = too many moves in the tree, 4 = exceeded memory." << endl;
             cout << flush;
@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfrmax\tbranches\ttreemoves" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfringe\tclosed\tmvtree" << endl;
     unsigned threads = (spec._threads > 0)
                         ? spec._threads
                         : DefaultThreads();
@@ -161,7 +161,7 @@ int main(int argc, char * argv[])
         cout.precision(4);
         cout << elapsed.count()/1000. << "\t";
 
-        cout << result._maxFringeStackSize << "\t";
+        cout << result._finalFringeStackSize << "\t";
 
         cout << result._branchCount << "\t";
 
