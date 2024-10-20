@@ -13,18 +13,6 @@ using NodeX = std::uint32_t;
 using Mutex = std::mutex;
 typedef std::lock_guard<Mutex> Guard;
 
-struct MoveNode
-{
-    MoveSpec _move;
-    NodeX _prevNode{-1U};
-
-    MoveNode() = default;
-    MoveNode(const MoveSpec& mv, NodeX prevNode)
-        : _move(mv)
-        , _prevNode(prevNode)
-        {}
-};
-
 template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
     // An ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
@@ -33,8 +21,7 @@ class ShareableIndexedPriorityQueue {
     // the V values. It is efficient if the I values are all small integers.
     // I must be an unsigned type.
     //
-    // V values sharing the same I values are returned in LIFO order.    
-
+    // V values sharing the same I values are returned in LIFO order. 
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
@@ -67,9 +54,14 @@ public:
     }
     std::optional<std::pair<I,V>> Pop() noexcept
     {
+        // Something like the Uncertainty Principle applies here: in a multithreaded
+        // environment, since any of the vectors may become empty or non-empty 
+        // at any instant, which one is the first non-empty one may depend on 
+        // which thread is looking and exactly when. It is thus impossible to
+        // be certain what the correct return value is without stopping the running
+        // of other threads. No attempt is made here to
+        // eliminate that problem. In this application, it do no harm.   
         std::optional<std::pair<I,V>> result{std::nullopt};
-        // Another thread may make any stack empty or non-empty at
-        // any time.
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
             auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
@@ -95,6 +87,19 @@ public:
             [&](auto accum, auto& pStack){return accum + pStack._stack.size();});
     }
 };
+
+struct MoveNode
+{
+    MoveSpec _move;
+    NodeX _prevNode{-1U};
+
+    MoveNode() = default;
+    MoveNode(const MoveSpec& mv, NodeX prevNode)
+        : _move(mv)
+        , _prevNode(prevNode)
+        {}
+};
+
 class SharedMoveStorage
 {
 private:
