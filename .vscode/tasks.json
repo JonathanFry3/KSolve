@@ -6,7 +6,7 @@
 			"label": "C/C++:  g++ build KSolve",
 			"command": "g++",
 			"args": [
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
 			//	"-m32",
 			//	"-pg",
 				"-O3",
@@ -69,7 +69,7 @@
 			"label": "C/C++:  g++ build AvailableMovesTester",
 			"command": "g++",
 			"args": [
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
 			//	"-m32",
 			//	"-pg",
 				"-std=c++20",
@@ -100,7 +100,7 @@
 			"command": "g++",
 			"args": [
 				"-DFRYSTL_DEBUG",
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
 				"-std=c++20",
 				"-Wno-placement-new",
 				"-pthread",
@@ -158,11 +158,11 @@
 			"label": "C/C++:  g++ build ran",
 			"command": "g++",
 			"args": [
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
 				"-pthread",
-				"-pg", //"-O1",	// gprof profiling
+			//	"-pg", 	// gprof profiling
 				"-std=c++20",
-			//	"-O3",
+				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
 			//	"-DNDEBUG",		// comment out to activate assert()
@@ -191,7 +191,7 @@
             "label": "C/C++:  g++ build benchmark",
             "command": "g++",
             "args": [
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
                 "-pthread",
                 "-std=c++20",
 				"-DNDEBUG",
@@ -221,7 +221,7 @@
 			"label": "C/C++:  g++ build thread-test",
 			"command": "g++",
 			"args": [
-				"-g", "-Og", "-finline-small-functions",	// for debugging. -Ox later will override all but -g
+				"-g", "-Og", "-finline-small-functions",
 				"-pthread",
 			//	"-pg", "-O1",	// gprof profiling
 				"-std=c++20",
