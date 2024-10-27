@@ -219,7 +219,7 @@ std::string Peek(const Pile& pile);
 //
 // It is called a ladder move because the author refers to the fairly 
 // common tactic of using a sequence of such moves to dislodge a card 
-// on a tableau pile covering another near the end of the game "climbing
+// on a tableau pile covering another near the end of the game as "climbing
 // the ladder."
 //
 // Since making this class type-safe at compile time (using std::variant) 
@@ -545,7 +545,7 @@ private:
     unsigned char   _drawSetting;             // number of cards to draw from stock (usually 1 or 3)
     unsigned char   _recycleLimit;            // max number of recycles allowed
     unsigned char   _recycleCount;            // n of recycles so far
-    unsigned char   _kingSpaces;
+    unsigned char   _kingSpaces;              // empty columns + columns with kings on bottom
 
     const CardDeck _deck;
 
@@ -608,16 +608,16 @@ public:
 
 // Validate a solution
 template <class Container>
-void TestSolution(Game game, const Container& mvs)
+void TestSolution(Game game, const Container& moves)
 {
-		game.Deal();
-		// PrintGame(game);
-		for (auto mv: mvs) {
-			assert(game.IsValid(mv));
-			game.MakeMove(mv);
-		}
-		// PrintGame(game);
-		assert(game.GameOver());
+    game.Deal();
+    // PrintGame(game);
+    for (auto mv: moves) {
+        assert(game.IsValid(mv));
+        game.MakeMove(mv);
+    }
+    // PrintGame(game);
+    assert(game.GameOver());
 }
 
 // Return a string to visualize the state of a game
