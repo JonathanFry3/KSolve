@@ -264,24 +264,26 @@ void Game::OneMoveToShortFoundationPile(
     QMoves& moves, unsigned minFoundationSize) const  noexcept
 {
     // Loop over Waste, all Tableau piles, and Stock if DrawSetting()==1
-    const auto end = AllPiles().begin() + ((_drawSetting==1) ? Stock : Stock-1);
+    const auto end = AllPiles().begin() + Stock-1;
     for (auto iPile = AllPiles().begin()+Waste; iPile<=end && moves.empty(); ++iPile) {
         const Pile &pile = *iPile;
         if (pile.size()) {
             const Card& card = pile.back();
             const auto fromPile = pile.Code();
             if (card.Rank() <= minFoundationSize+1 
-                && CanMoveToFoundation(card)) {
+                    && CanMoveToFoundation(card)) { 
                 const auto toPile = FoundationPileCode(card.Suit());
-
-                if (fromPile == Stock) {
-                    // Stock MoveSpec: draw one card, move it to foundation
-                    moves.AddStockMove(toPile,2,1,false);
-                } else {
-                    const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
-                    moves.AddNonStockMove(fromPile,toPile,1,up);
-                }
+                const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
+                moves.AddNonStockMove(fromPile,toPile,1,up);
             }
+        }
+    }
+    if (_drawSetting == 1 && moves.empty() &&_stock.size()) {
+        const Card& card = _stock.back();
+        if (card.Rank() <= minFoundationSize+1 && CanMoveToFoundation(card))  {
+            // Stock MoveSpec: draw one card, move it to foundation
+            const auto toPile = FoundationPileCode(_stock.back().Suit());
+            moves.AddStockMove(toPile,2,1,false);
         }
     }
 }
@@ -550,7 +552,7 @@ unsigned MisorderCount(Iter begin, Iter end)
         if (rank < mins[suit])
             mins[suit] = rank;
         else
-            result += 1;
+            result++;
     }
     return result;
 }
