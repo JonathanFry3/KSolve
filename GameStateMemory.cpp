@@ -51,13 +51,13 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
                 <<4 | fnd[3].size();
 }
 
-GameStateMemory::GameStateMemory()
+GameStateMemory::GameStateMemory() noexcept
     : _states()
 {
     _states.reserve(MinCapacity);
 }
 
-bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount)
+bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount) noexcept
 {
     const GameState newState{game,moveCount};
     bool valueChanged{false};

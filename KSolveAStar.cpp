@@ -8,7 +8,7 @@ namespace KSolveNames {
 namespace ranges = std::ranges;
 namespace views = ranges::views;
 
-unsigned DefaultThreads()
+unsigned DefaultThreads() noexcept
 {
     return std::thread::hardware_concurrency();
 }
@@ -58,8 +58,6 @@ public:
     GameStateMemory& _closedList;
     CandidateSolution & _minSolution;
 
-    static bool k_blewMemory;
-
     explicit WorkerState(  Game & gm, 
             CandidateSolution& solution,
             SharedMoveStorage& sharedMoveStorage,
@@ -78,7 +76,6 @@ public:
             
     QMoves MakeAutoMoves() noexcept;
 };
-bool WorkerState::k_blewMemory(false);
 
 // Make available moves until a branching node or an childless one is encountered.
 // If more than one move is available but order will make no difference
@@ -100,7 +97,7 @@ QMoves WorkerState::MakeAutoMoves() noexcept
 /*************************** Main Loop ***********************************/
 /*************************************************************************/
 static void Worker(
-        WorkerState* pMasterState)
+        WorkerState* pMasterState) noexcept
 {
     WorkerState         state(*pMasterState);
 
@@ -110,67 +107,61 @@ static void Worker(
     CandidateSolution&  minSolution {state._minSolution};
     GameStateMemory&    closedList{state._closedList};
 
-    try {
-        unsigned minMoves0;
-        while ( !moveStorage.Shared().OverLimit()
-                && !state.k_blewMemory
-                && (minMoves0 = moveStorage.PopNextSequenceIndex())    // <- side effect
-                && minMoves0 < minSolution.MoveCount()) { 
+    unsigned minMoves0;
+    while ( !moveStorage.Shared().OverLimit()
+            && (minMoves0 = moveStorage.PopNextSequenceIndex())    // <- side effect
+            && minMoves0 < minSolution.MoveCount()) { 
 
-            // Restore game to the state it had when this move
-            // sequence was enqueued.
-            game.Deal();
-            moveStorage.LoadMoveSequence();
-            moveStorage.MakeSequenceMoves(game);
+        // Restore game to the state it had when this move
+        // sequence was enqueued.
+        game.Deal();
+        moveStorage.LoadMoveSequence();
+        moveStorage.MakeSequenceMoves(game);
 
-            // Make all the no-choice (stem) moves.  Returns the first choice of moves
-            // (the branches from next branching node) or an empty set.
-            QMoves availableMoves = state.MakeAutoMoves();
+        // Make all the no-choice (stem) moves.  Returns the first choice of moves
+        // (the branches from next branching node) or an empty set.
+        QMoves availableMoves = state.MakeAutoMoves();
 
-            const unsigned movesMadeCount = 
-                moveStorage.MoveSequence().MoveCount();
+        const unsigned movesMadeCount = 
+            moveStorage.MoveSequence().MoveCount();
 
-            if (availableMoves.empty()) {
-                // This could be a dead end or a win.
-                if (game.GameOver()) {
-                    // We have a win.  See if it is a new champion
-                    minSolution.ReplaceIfShorter(
-                        moveStorage.MoveSequence(), movesMadeCount);
-                }
-            } else {
-                // Save the result of each of the possible next moves.
-                for (auto mv: availableMoves){
-                    game.MakeMove(mv);
-                    const unsigned made = movesMadeCount + mv.NMoves();
-                    unsigned minRemaining = -1U;
-                    bool pass = true;
-                    if (!minSolution.IsEmpty()) { // rare condition
-                        minRemaining = game.MinimumMovesLeft(); // expensive
-                        pass = (made + minRemaining) < minSolution.MoveCount();
-                    }
-                    if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
-                        if (minRemaining == -1U) minRemaining = game.MinimumMovesLeft();
-                        const unsigned minMoves = made + minRemaining;
-                        // The following assert tests the consistency of
-                        // Game::MinimumMovesLeft(), our heuristic.  
-                        // Never remove it.
-                        assert(minMoves0 <= minMoves);
-                        moveStorage.PushBranch(mv,minMoves);
-                    }
-                    game.UnMakeMove(mv);
-                }
-                // Share the moves made here
-                moveStorage.ShareMoves();
+        if (availableMoves.empty()) {
+            // This could be a dead end or a win.
+            if (game.GameOver()) {
+                // We have a win.  See if it is a new champion
+                minSolution.ReplaceIfShorter(
+                    moveStorage.MoveSequence(), movesMadeCount);
             }
+        } else {
+            // Save the result of each of the possible next moves.
+            for (auto mv: availableMoves){
+                game.MakeMove(mv);
+                const unsigned made = movesMadeCount + mv.NMoves();
+                unsigned minRemaining = -1U;
+                bool pass = true;
+                if (!minSolution.IsEmpty()) { // rare condition
+                    minRemaining = game.MinimumMovesLeft(); // expensive
+                    pass = (made + minRemaining) < minSolution.MoveCount();
+                }
+                if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
+                    if (minRemaining == -1U) minRemaining = game.MinimumMovesLeft();
+                    const unsigned minMoves = made + minRemaining;
+                    // The following assert tests the consistency of
+                    // Game::MinimumMovesLeft(), our heuristic.  
+                    // Never remove it.
+                    assert(minMoves0 <= minMoves);
+                    moveStorage.PushBranch(mv,minMoves);
+                }
+                game.UnMakeMove(mv);
+            }
+            // Share the moves made here
+            moveStorage.ShareMoves();
         }
     } 
-    catch(std::bad_alloc&) {
-        state.k_blewMemory = true;
-    }
     return;
 }
 
-static void RunWorkers(unsigned nThreads, WorkerState & state)
+static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
 {
     if (nThreads == 0)
         nThreads = DefaultThreads();
@@ -196,7 +187,7 @@ static void RunWorkers(unsigned nThreads, WorkerState & state)
 KSolveAStarResult KSolveAStar(
         Game& game,
         unsigned moveTreeLimit,
-        unsigned nThreads)
+        unsigned nThreads) noexcept
 {
     SharedMoveStorage sharedMoveStorage;
     GameStateMemory closed;
@@ -211,9 +202,7 @@ KSolveAStarResult KSolveAStar(
     RunWorkers(nThreads, state);
     
     KSolveAStarCode outcome;
-    if (state.k_blewMemory) {
-        outcome = MemoryExceeded;
-    } else if (solution.GetMoves().size()) { 
+    if (solution.GetMoves().size()) { 
         outcome = sharedMoveStorage.OverLimit()
                 ? Solved
                 : SolvedMinimal;

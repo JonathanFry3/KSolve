@@ -94,7 +94,7 @@ struct MoveNode
     NodeX _prevNode{-1U};
 
     MoveNode() = default;
-    MoveNode(const MoveSpec& mv, NodeX prevNode)
+    MoveNode(const MoveSpec& mv, NodeX prevNode) noexcept
         : _move(mv)
         , _prevNode(prevNode)
         {}
@@ -137,7 +137,7 @@ class MoveStorage
 {
 public:
     // Constructor.
-    MoveStorage(SharedMoveStorage& shared);
+    MoveStorage(SharedMoveStorage& shared) noexcept;
     // Return a reference to the storage shared among threads
     SharedMoveStorage& Shared() const noexcept {return _shared;}
     // Push a move to the back of the current stem.
@@ -148,7 +148,7 @@ public:
     void PushBranch(MoveSpec move, unsigned moveCount) noexcept;
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
-    void ShareMoves();
+    void ShareMoves() noexcept;
     // Identify a move sequence with the lowest available minimum move count, 
     // return its minimum move count or, if no more sequences are available.
     // return 0. Remove that sequence from the open queue and make it current.

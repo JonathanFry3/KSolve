@@ -68,12 +68,12 @@ private:
     const unsigned MinCapacity = 4096*1024;
 
 public:
-    GameStateMemory();
+    GameStateMemory() noexcept;
     // Returns true if no equal Game argument has been presented before
     // to this object or the moveCount argument is lower than that
     // associated with previous calls with equal states.
-    bool IsShortPathToState(const Game& game, unsigned moveCount);
+    bool IsShortPathToState(const Game& game, unsigned moveCount) noexcept;
     // Returns the number of states stored.  
-    size_t Size() {return _states.size();}
+    size_t Size()  noexcept {return _states.size();}
 };
 }   // namespace KSolveNames

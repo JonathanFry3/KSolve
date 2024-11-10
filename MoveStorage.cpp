@@ -2,7 +2,7 @@
 
 namespace KSolveNames {
 
-MoveStorage::MoveStorage(SharedMoveStorage& shared)
+MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
     , _leaf()
     , _startSize(0)
@@ -16,7 +16,7 @@ void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
     assert(_shared._initialMinMoves <= nMoves);
     _branches.emplace_back(mv,nMoves-_shared._initialMinMoves);
 }
-void MoveStorage::ShareMoves()
+void MoveStorage::ShareMoves() noexcept
 {
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.

@@ -76,8 +76,8 @@ Specification GetSpec(int argc, char * argv[])
             cout << "the number of talon passes in the solution if a solution is found." << endl;
             cout << "the clock time required in seconds, the final size of the fringe," << endl;
             cout << "the final size of the closed list, and the final size of the move tree." << endl;
-            cout << "Result codes: 0 = minimum solution found, 1 = some solution found, 2 = impossible," << endl;
-            cout << "3 = too many moves in the tree, 4 = exceeded memory." << endl;
+            cout << "Result codes: 0 = minimum solution found, 1 = some solution found, " << endl;
+            cout << "2 = impossible, 3 = --mvlimit exceeded." << endl;
             cout << flush;
             exit(0);
         } else if (flag == "-s" || flag == "--seed") {
