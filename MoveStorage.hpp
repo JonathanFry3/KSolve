@@ -34,7 +34,7 @@ private:
     {
         if (_stacks.size() < newSize) [[unlikely]]{
             Guard desposito(_mutex);
-            if (_stacks.size() < newSize) [[unlikely]]
+            if (_stacks.size() < newSize) [[likely]]
                 _stacks.resize(newSize);
         }
     }
@@ -60,7 +60,7 @@ public:
         // which thread is looking and exactly when. It is thus impossible to
         // be certain what the correct return value is without stopping the running
         // of other threads. No attempt is made here to
-        // eliminate that problem. In this application, it do no harm.   
+        // eliminate that problem. In this application, it does no harm.   
         std::optional<std::pair<I,V>> result{std::nullopt};
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
