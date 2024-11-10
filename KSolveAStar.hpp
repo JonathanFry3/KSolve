@@ -39,7 +39,7 @@ namespace KSolveNames {
 //
 // For some insight into how it works, look up the A* algorithm.
 
-enum KSolveAStarCode {SolvedMinimal, Solved, Impossible, GaveUp, MemoryExceeded};
+enum KSolveAStarCode {SolvedMinimal, Solved, Impossible, GaveUp};
 struct KSolveAStarResult
 {
     KSolveAStarCode _code;
@@ -52,7 +52,7 @@ struct KSolveAStarResult
                 const Moves& moves, 
                 unsigned branchCount,
                 unsigned moveCount,
-                unsigned finalFringeStackSize)
+                unsigned finalFringeStackSize)  noexcept
         : _code(code)
         , _solution(moves)
         , _branchCount(branchCount)
@@ -64,9 +64,9 @@ KSolveAStarResult KSolveAStar(
         Game& gm, 			// The game to be played
         unsigned MoveTreeLimit=12'000'000,// Give up if the size of the move tree
                                         // exceeds this.
-        unsigned threads=0);            // Use as many threads as the hardware will run together
+        unsigned threads=0) noexcept;   // Use as many threads as the hardware will run together
 
-unsigned DefaultThreads();
+unsigned DefaultThreads() noexcept;
 }       // namespace KSolveNames
 
 #endif    // KSOLVEASTAR_HPP 
