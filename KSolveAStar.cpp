@@ -139,7 +139,7 @@ static void Worker(
                 const unsigned made = movesMadeCount + mv.NMoves();
                 unsigned minRemaining = -1U;
                 bool pass = true;
-                if (!minSolution.IsEmpty()) { // rare condition
+                if (!minSolution.IsEmpty()) [[unlikely]] { 
                     minRemaining = game.MinimumMovesLeft(); // expensive
                     pass = (made + minRemaining) < minSolution.MoveCount();
                 }
