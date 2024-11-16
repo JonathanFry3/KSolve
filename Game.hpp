@@ -310,26 +310,28 @@ inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fr
     return result;
 }
 
-typedef std::vector<MoveSpec> Moves;
+using Moves = std::vector<MoveSpec>;
 
 // Class for collecting freshly-built Moves in AvailableMoves()
-class QMoves : public frystl::static_vector<MoveSpec,43>
+template <unsigned Capacity>
+class QMovesTemplate : public frystl::static_vector<MoveSpec,Capacity>
 {
+    using BaseType = frystl::static_vector<MoveSpec,Capacity>;
 public:
     void AddStockMove(PileCodeT to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
-        push_back(StockMove(to,nMoves,draw,recycle));
+        BaseType::push_back(StockMove(to,nMoves,draw,recycle));
     }
     void AddNonStockMove(PileCodeT from, PileCodeT to, 
         unsigned n, unsigned fromUpCount) noexcept
     {
-        push_back(NonStockMove(from,to,n,fromUpCount));
+        BaseType::push_back(NonStockMove(from,to,n,fromUpCount));
     }
     void AddLadderMove(PileCodeT from, PileCodeT to, 
         unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
     {
-        push_back(LadderMove(from,to,n,fromUpCount,ladderCard));
+        BaseType::push_back(LadderMove(from,to,n,fromUpCount,ladderCard));
     }
 };
 
@@ -530,6 +532,8 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
     return false;
 }
 
+typedef QMovesTemplate<43> QMoves;
+
 class Game
 {
 public:
@@ -548,6 +552,7 @@ private:
     unsigned char   _kingSpaces;              // empty columns + columns with kings on bottom
 
     const CardDeck _deck;
+    mutable QMovesTemplate<4> _domMovesCache;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
