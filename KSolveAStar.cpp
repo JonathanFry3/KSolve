@@ -80,8 +80,8 @@ public:
 };
 bool WorkerState::k_blewMemory(false);
 
-// Make available moves until a branching node or an childless one is encountered.
-// If more than one move is available but order will make no difference
+// Make available moves until a branching node or an childless one is
+// encountered. If more than one dominant move is available
 // (as when two aces are dealt face up), AvailableMoves() will
 // return them one at a time.
 QMoves WorkerState::MakeAutoMoves() noexcept
@@ -144,7 +144,7 @@ static void Worker(
                     const unsigned made = movesMadeCount + mv.NMoves();
                     unsigned minRemaining = -1U;
                     bool pass = true;
-                    if (!minSolution.IsEmpty()) { // rare condition
+                    if (!minSolution.IsEmpty()) [[unlikely]] {
                         minRemaining = game.MinimumMovesLeft(); // expensive
                         pass = (made + minRemaining) < minSolution.MoveCount();
                     }
