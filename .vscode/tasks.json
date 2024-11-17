@@ -100,7 +100,7 @@
 			"command": "g++",
 			"args": [
 				"-DFRYSTL_DEBUG",
-				"-g", "-Og", "-finline-small-functions",
+				"-g", "-finline-small-functions",
 				"-std=c++20",
 				"-Wno-placement-new",
 				"-pthread",

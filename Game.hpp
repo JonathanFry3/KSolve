@@ -229,7 +229,8 @@ class MoveSpec
 {
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
-    PileCodeT _to = PileCount;
+    PileCodeT _to:7 = PileCount;
+    bool _isDominant:1 = false;
     unsigned char _nMoves:5 = 0;
     Card::SuitT _ladderSuit :2 = Card::Clubs; 
     bool _recycle:1 = false;
@@ -288,7 +289,8 @@ public:
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
     bool IsLadderMove() const noexcept  {return _nMoves == 2 && IsTableau(_from);}
-
+    bool IsDominant() const noexcept    {return _isDominant;}
+    void Dominant() noexcept            {_isDominant = true;}
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
@@ -509,6 +511,7 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
 template <class V>
 static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
 {
+    if (trial.IsDominant()) return false;
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
     for (auto mv: views::reverse(movesMade)){ 
@@ -553,6 +556,7 @@ private:
 
     const CardDeck _deck;
     mutable QMovesTemplate<4> _domMovesCache;
+    mutable QMovesTemplate<4> _cacheDup;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
