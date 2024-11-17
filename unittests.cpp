@@ -363,7 +363,7 @@ int main()
 			"dk","h8","dj","h6","ca","ha","d4","d8","s4","d9","c7","s5","sj"
 		};
 		rng.seed(12345);
-		Game game(Cards(deal102));
+		Game masterGame(Cards(deal102));
 		unsigned nMoves = 100;
 		std::vector<GameState> states;
 		states.reserve(nMoves);
@@ -373,6 +373,7 @@ int main()
 		for (unsigned rep = 0; rep < 1000; ++rep){
 			states.clear();
 			prevGames.clear();
+			Game game(masterGame);
 			game.Deal();
 			movesMade.clear();
 			for (unsigned imv = 0; imv <nMoves; ++imv){
