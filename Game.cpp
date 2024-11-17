@@ -269,7 +269,9 @@ void Game::OneMoveToShortFoundationPile(
         return;
     }
     // Loop over Waste, all Tableau piles
-    for (Pile pile: _tableau) {
+    const auto end = AllPiles().begin() + Tableau7;
+    for (auto iPile = AllPiles().begin() + Waste; iPile<=end; ++iPile) {
+        const Pile &pile = *iPile;
         if (pile.size()) {
             const Card& card = pile.back();
             const auto fromPile = pile.Code();
@@ -278,6 +280,7 @@ void Game::OneMoveToShortFoundationPile(
                 const auto toPile = FoundationPileCode(card.Suit());
                 const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
                 _domMovesCache.AddNonStockMove(fromPile,toPile,1,up);
+                _domMovesCache.back().Dominant();
             }
         }
     }
@@ -288,8 +291,10 @@ void Game::OneMoveToShortFoundationPile(
             // Stock MoveSpec: draw one card, move it to foundation
             const auto toPile = FoundationPileCode(_stock.back().Suit());
             _domMovesCache.AddStockMove(toPile,2,1,false);
+            _domMovesCache.back().Dominant();
         }
     }
+    _cacheDup = _domMovesCache;
     if (_domMovesCache.size()) {
         moves.push_back(_domMovesCache.back());
         _domMovesCache.pop_back();
@@ -533,16 +538,16 @@ QMoves Game::UnfilteredAvailableMoves() const noexcept
     QMoves moves;
     const unsigned minFoundationSize = MinFoundationPileSize();
     if (minFoundationSize == CardsPerSuit) return moves;		// game over
+
     OneMoveToShortFoundationPile(moves,minFoundationSize);
     if (moves.size()) return moves;
 
+    assert(_domMovesCache.empty());
     MovesFromTableau(moves);
     // MovesFromStock returns true if it finds a short foundation move
     // when no other moves have been found.
     if (!MovesFromStock(moves, minFoundationSize)) 
         MovesFromFoundation(moves, minFoundationSize);
-    assert(_domMovesCache.empty());
-
     return moves;
 }
 

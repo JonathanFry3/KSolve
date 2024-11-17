@@ -420,20 +420,6 @@ int main()
 					}
 					prevGames.push_back(game);
 					states.push_back(state);
-				} else {
-					// We hit a dead end.  If we're not too close to the end
-					// of a game, back up and try a different random
-					// branch.
-					if (FoundationCardCount(game) > 40)
-						break;
-					for (unsigned jmv = 0; jmv < 3 && movesMade.size(); ++jmv)
-					{
-						game.UnMakeMove(movesMade.back());
-						movesMade.pop_back();
-						states.pop_back();
-						prevGames.pop_back();
-						Validate(game);
-					}
 				}
 			}
 		}
@@ -483,7 +469,7 @@ int main()
 		// deal3 can be solved in two passes but not in one drawing one card.
 		Game game(Cards(deal3), 1, 0);
 		// PrintGame(game);
-		auto outcome = KSolveAStar(game,9'600'000); 
+		auto outcome = KSolveAStar(game,9'600'000,1); 
 		assert(outcome._code == Impossible);
 		// PrintOutcome(game, outcome);
 	}
