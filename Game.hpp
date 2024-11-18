@@ -318,8 +318,8 @@ using Moves = std::vector<MoveSpec>;
 template <unsigned Capacity>
 class QMovesTemplate : public frystl::static_vector<MoveSpec,Capacity>
 {
-    using BaseType = frystl::static_vector<MoveSpec,Capacity>;
 public:
+    using BaseType = frystl::static_vector<MoveSpec,Capacity>;
     void AddStockMove(PileCodeT to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
@@ -511,7 +511,6 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
 template <class V>
 static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
 {
-    if (trial.IsDominant()) return false;
     const auto Y = trial.From();
     if (Y == Stock || Y == Waste) return false; 
     for (auto mv: views::reverse(movesMade)){ 
@@ -556,17 +555,17 @@ private:
 
     const CardDeck _deck;
     mutable QMovesTemplate<4> _domMovesCache;
-    mutable QMovesTemplate<4> _cacheDup;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
-    // Parts of UnfilteredAvailableMoves()
-    void OneMoveToShortFoundationPile(QMoves & moves, unsigned minFndSize) const noexcept;
+
+    void DominantAvailableMoves(QMovesTemplate<4> & moves, unsigned minFndSize) const noexcept;
+
+    void NonDominantAvailableMoves(QMoves& avail, unsigned minFoundationSize) const noexcept;
+    // Parts of NonDominantAvailableMoves()
     void MovesFromTableau(QMoves & moves) const noexcept;
     bool MovesFromStock(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
-
-    QMoves UnfilteredAvailableMoves() const noexcept;
     std::array<Pile,PileCount>& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }
@@ -601,15 +600,43 @@ public:
     unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
 
-    // Return a vector of the available moves that pass the XYZ_Move filter
+    // Remove some provably non-optimal moves.
+    // Returns true iff any were removed.
+    template <class V1, class V2>
+    [[maybe_unused]] bool XYZ_Scan(V1& newMoves, const V2& movesMade)
+    {
+        auto newEnd = ranges::remove_if(newMoves,
+            [&movesMade] (MoveSpec move) 
+                {return XYZ_Move(move, movesMade);}).begin();
+        bool result = newMoves.end() != newEnd;
+        while (newMoves.end() != newEnd) newMoves.pop_back();
+        return result;
+    }
+
+    // Return a vector of the available moves that pass the XYZ_Move filter.
+    // Dominant moves are returned one at a time, others all at once.
     template <class V>
     QMoves AvailableMoves(const V& movesMade) noexcept
     {
-        QMoves avail = UnfilteredAvailableMoves();
-        auto newEnd = ranges::remove_if(avail,
-            [&movesMade] (MoveSpec move) 
-                {return XYZ_Move(move, movesMade);}).begin();
-        while (avail.end() != newEnd) avail.pop_back();
+        QMoves avail;
+        const unsigned minFoundationSize = MinFoundationPileSize();
+        if (minFoundationSize == CardsPerSuit) return avail;		// game over
+
+        if (_domMovesCache.empty()) {
+            DominantAvailableMoves(_domMovesCache, minFoundationSize);
+            if (XYZ_Scan(_domMovesCache, movesMade)) {
+                _domMovesCache.clear();
+                return avail;
+            }
+        }
+        if (_domMovesCache.size()) {
+            avail.push_back(_domMovesCache.back());
+            _domMovesCache.pop_back();
+            return avail;
+        }
+
+        NonDominantAvailableMoves(avail, minFoundationSize);
+        XYZ_Scan(avail, movesMade);
         return avail;
     }
 

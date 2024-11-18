@@ -260,14 +260,9 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // game can be won from this position, no sequence that
 // does not start with such a move can be shorter than
 // the shortest sequences that start with it.
-void Game::OneMoveToShortFoundationPile(
-    QMoves& moves, unsigned minFoundationSize) const noexcept
+void Game::DominantAvailableMoves(
+    QMovesTemplate<4>& moves, unsigned minFoundationSize) const noexcept
 {
-    if (_domMovesCache.size()) {
-        moves.push_back(_domMovesCache.back());
-        _domMovesCache.pop_back();
-        return;
-    }
     // Loop over Waste, all Tableau piles
     const auto end = AllPiles().begin() + Tableau7;
     for (auto iPile = AllPiles().begin() + Waste; iPile<=end; ++iPile) {
@@ -293,11 +288,6 @@ void Game::OneMoveToShortFoundationPile(
             _domMovesCache.AddStockMove(toPile,2,1,false);
             _domMovesCache.back().Dominant();
         }
-    }
-    _cacheDup = _domMovesCache;
-    if (_domMovesCache.size()) {
-        moves.push_back(_domMovesCache.back());
-        _domMovesCache.pop_back();
     }
 }
 
@@ -528,27 +518,19 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
     }
 }
 
-// If any short-foundation moves exist, returns one of those.
-// Otherwise, returns a list of moves that are legal and not
-// known to be wasted.  Rather than generate individual draws from
+// Returns a list of valid non-dominant moves - they either do not move
+// a card to the foundation or they create foundation imbalance.
+// Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-QMoves Game::UnfilteredAvailableMoves() const noexcept
+void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) const noexcept
 {
-    QMoves moves;
-    const unsigned minFoundationSize = MinFoundationPileSize();
-    if (minFoundationSize == CardsPerSuit) return moves;		// game over
-
-    OneMoveToShortFoundationPile(moves,minFoundationSize);
-    if (moves.size()) return moves;
-
-    assert(_domMovesCache.empty());
     MovesFromTableau(moves);
     // MovesFromStock returns true if it finds a short foundation move
     // when no other moves have been found.
     if (!MovesFromStock(moves, minFoundationSize)) 
         MovesFromFoundation(moves, minFoundationSize);
-    return moves;
+    return;
 }
 
 // Counts the number of times a card is higher in the stack
