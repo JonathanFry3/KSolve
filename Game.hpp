@@ -603,31 +603,27 @@ public:
     // Remove some provably non-optimal moves.
     // Returns true iff any were removed.
     template <class V1, class V2>
-    [[maybe_unused]] bool XYZ_Scan(V1& newMoves, const V2& movesMade)
+    void XYZ_Scan(V1& newMoves, const V2& movesMade)
     {
         auto newEnd = ranges::remove_if(newMoves,
             [&movesMade] (MoveSpec move) 
                 {return XYZ_Move(move, movesMade);}).begin();
-        bool result = newMoves.end() != newEnd;
         while (newMoves.end() != newEnd) newMoves.pop_back();
-        return result;
+        return;
     }
 
     // Return a vector of the available moves that pass the XYZ_Move filter.
-    // Dominant moves are returned one at a time, others all at once.
+    // Dominant moves are returned one at a time; others, all at once.
     template <class V>
     QMoves AvailableMoves(const V& movesMade) noexcept
     {
         QMoves avail;
         const unsigned minFoundationSize = MinFoundationPileSize();
-        if (minFoundationSize == CardsPerSuit) return avail;		// game over
+        if (minFoundationSize == CardsPerSuit) return avail;		// game won
 
         if (_domMovesCache.empty()) {
             DominantAvailableMoves(_domMovesCache, minFoundationSize);
-            if (XYZ_Scan(_domMovesCache, movesMade)) {
-                _domMovesCache.clear();
-                return avail;
-            }
+            XYZ_Scan(_domMovesCache, movesMade);
         }
         if (_domMovesCache.size()) {
             avail.push_back(_domMovesCache.back());
