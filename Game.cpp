@@ -501,7 +501,7 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
 void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     for (const auto& fPile: _foundation) {
-        if (fPile.size() <= minFoundationSize+1) continue;
+        if (fPile.size() <= minFoundationSize+2) continue;
         const Card& top = fPile.back();
         for (const auto& tPile: _tableau) {
             if (tPile.size() > 0) {
