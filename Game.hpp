@@ -554,12 +554,13 @@ private:
     unsigned char   _kingSpaces;              // empty columns + columns with kings on bottom
 
     const CardDeck _deck;
-    mutable QMovesTemplate<4> _domMovesCache;
+    using MoveCacheType = QMovesTemplate<9>;
+    mutable MoveCacheType _domMovesCache;
 
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
 
-    void DominantAvailableMoves(QMovesTemplate<4> & moves, unsigned minFndSize) const noexcept;
+    void DominantAvailableMoves(MoveCacheType & moves, unsigned minFndSize) const noexcept;
 
     void NonDominantAvailableMoves(QMoves& avail, unsigned minFoundationSize) const noexcept;
     // Parts of NonDominantAvailableMoves()

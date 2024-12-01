@@ -261,7 +261,7 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // does not start with such a move can be shorter than
 // the shortest sequences that start with it.
 void Game::DominantAvailableMoves(
-    QMovesTemplate<4>& moves, unsigned minFoundationSize) const noexcept
+    MoveCacheType& moves, unsigned minFoundationSize) const noexcept
 {
     // Loop over Waste, all Tableau piles
     const auto end = AllPiles().begin() + Tableau7;
@@ -279,7 +279,6 @@ void Game::DominantAvailableMoves(
             }
         }
     }
-    // Check Stock if DrawSetting() == 1
     if (_drawSetting == 1 && _stock.size()) {
         const Card& card = _stock.back();
         if (card.Rank() <= minFoundationSize+1 && CanMoveToFoundation(card))  {
@@ -501,6 +500,7 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
 void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
     for (const auto& fPile: _foundation) {
+        // Avoid generating moves whose reversals are dominant.
         if (fPile.size() <= minFoundationSize+2) continue;
         const Card& top = fPile.back();
         for (const auto& tPile: _tableau) {
