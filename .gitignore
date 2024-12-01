@@ -13,6 +13,7 @@ frystl/.vscode
 frystl/.editorconfig
 statistics/__pycache__/*
 frystl/.gitignore
+tests/lg-*-test-*.txt
 thread-test
 AvailableMovesTester
 callgrind.out.*
