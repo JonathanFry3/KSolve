@@ -25,13 +25,14 @@ void MoveStorage::ShareMoves() noexcept
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
     }
+    _branches.clear();
 }
 // Returns move tree index of last stem node
 NodeX MoveStorage::UpdateMoveTree() noexcept
 {
     NodeX stemEnd = _leaf._prevNode;
-    Guard rupert(_shared._moveTreeMutex);
     {
+        Guard rupert(_shared._moveTreeMutex);
         // Copy all the stem moves into the move tree.
         for (auto m: _currentSequence | views::drop(_startSize))
         {
@@ -79,7 +80,6 @@ void MoveStorage::LoadMoveSequence() noexcept
     }
     _startSize = _currentSequence.size();
     if (_startSize > 0) _startSize--;
-    _branches.clear();
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {

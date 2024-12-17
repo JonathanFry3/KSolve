@@ -506,8 +506,9 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
 }    
 
 // Return true if this move cannot be in a minimum solution because
-// it does in two moves what could have been done in one when the first of
-// the two moves was made.
+// when combined with an earlier move, the combined effect could  have
+// been achieved at the time of the earlier move. That means this sequence
+// does in two moves what other sequences will do in one.
 template <class V>
 static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
 {
