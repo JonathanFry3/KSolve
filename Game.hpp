@@ -516,17 +516,20 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
     if (Y == Stock || Y == Waste) return false; 
     for (auto mv: views::reverse(movesMade)){ 
         Dir dir;
+        MoveSpec tableauMove = mv;
         if (mv.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
-            MoveSpec fndMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-mv.NCards());
-            dir = XYZ_Test(fndMove, trial);
+            MoveSpec foundationMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-mv.NCards());
+            foundationMove.FlipsPile(mv.FlipsPile());
+            dir = XYZ_Test(foundationMove, trial);
             switch (dir) {
                 case returnTrue: return true;
                 case returnFalse: return false;
             }
+            tableauMove.FlipsPile(false);
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
-        dir = XYZ_Test(mv, trial);
+        dir = XYZ_Test(tableauMove, trial);
         switch (dir) {
             case returnTrue: return true;
             case returnFalse: return false;
