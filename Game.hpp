@@ -230,7 +230,7 @@ class MoveSpec
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
     PileCodeT _to:7 = PileCount;
-    bool _isDominant:1 = false;
+    bool _flipsPile:1 = false;
     unsigned char _nMoves:5 = 0;
     Card::SuitT _ladderSuit :2 = Card::Clubs; 
     bool _recycle:1 = false;
@@ -288,9 +288,9 @@ public:
                                         {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
-    bool IsLadderMove() const noexcept  {return _nMoves == 2 && IsTableau(_from);}
-    bool IsDominant() const noexcept    {return _isDominant;}
-    void Dominant() noexcept            {_isDominant = true;}
+    bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == _cardsToMove + 1;}
+    bool FlipsPile() const noexcept     {return _flipsPile;}
+    void FlipsPile(bool f) noexcept     {_flipsPile = f;}
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
@@ -307,7 +307,7 @@ inline MoveSpec NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned 
 inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
 {
     MoveSpec result{from,to,n,fromUpCount};
-    result._nMoves = 2;
+    result._nMoves = n+1;
     result._ladderSuit = ladderCard.Suit();
     return result;
 }
@@ -491,7 +491,7 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
         if (mv.From() == Z) {
             // If X=Z and the X to Y move flipped a tableau card
             // face up, then it changed Z.
-            if (IsTableau(Z) && mv.NCards() == mv.FromUpCount())
+            if (IsTableau(Z) && mv.FlipsPile())
                 return returnFalse;
         }
         return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
