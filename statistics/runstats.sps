@@ -1,6 +1,6 @@
 GET DATA
   /TYPE=TXT
-  /FILE="/home/jon/prj/KSolve/tests/base2000-110M-moves.txt"
+  /FILE="/home/jon/prj/KSolve/statistics/ran2kd1.txt"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -18,7 +18,7 @@ GET DATA
     branches F9.0
     treemoves F9.0.
 missing values outcome(3).
-value labels outcome 0 Solved Mimimal 1 Solved 2 Impossible 3 Gave Up.    
+value labels outcome 0 "Solved Mimimal" 1 Solved 2 Impossible 3 "Gave Up".    
 FREQUENCIES
 	/VARIABLES= outcome
 	/FORMAT=AVALUE TABLE

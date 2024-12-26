@@ -3,7 +3,7 @@ export LC_NUMERIC="en_US.utf8"
 echo "|Draw 1|Draw 2"
 echo "Move Limit|Peak Memory|Peak Memory"
 echo "-----------|------|--------"
-for moveLimit in {10000000..200000000..10000000} 
+for moveLimit in {10000000..160000000..10000000} 
 do
         /bin/time --format '%M' ../ran --seed 1809887 --end 1 --draw 1 -mv $moveLimit > ran1.out 2>pipe1.out
         peakMemory1=$(cat pipe1.out)
