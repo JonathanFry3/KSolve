@@ -345,7 +345,7 @@ int main()
 		made.emplace_back(NonStockMove(Tableau7,Tableau5,1,3)); // C.
 		made.emplace_back(NonStockMove(Tableau4,Tableau2,1,4));	// D.
 		made.emplace_back(NonStockMove(Tableau4,Tableau1,3,3));	// E.
-		made.back().FlipsPile(true);
+		made.back().FlipsTopCard(true);
 
 		// Test various candidate moves 
 		assert(XYZ_Move(NonStockMove(Tableau5,Tableau7,1,6),made));		// direct reversal of C

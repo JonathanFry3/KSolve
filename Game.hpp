@@ -230,7 +230,7 @@ class MoveSpec
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
     PileCodeT _to:7 = PileCount;
-    bool _flipsPile:1 = false;
+    bool _flipsTopCard:1 = false;
     unsigned char _nMoves:5 = 0;
     Card::SuitT _ladderSuit :2 = Card::Clubs; 
     bool _recycle:1 = false;
@@ -289,8 +289,8 @@ public:
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
     bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == 2;}
-    bool FlipsPile() const noexcept     {return _flipsPile;}
-    void FlipsPile(bool f) noexcept     {_flipsPile = f;}
+    bool FlipsTopCard() const noexcept     {return _flipsTopCard;}
+    void FlipsTopCard(bool f) noexcept     {_flipsTopCard = f;}
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
@@ -491,7 +491,7 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
         if (mv.From() == Z) {
             // If X=Z and the X to Y move flipped a tableau card
             // face up, then it changed Z.
-            if (IsTableau(Z) && mv.FlipsPile())
+            if (IsTableau(Z) && mv.FlipsTopCard())
                 return returnFalse;
         }
         return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
@@ -520,13 +520,13 @@ static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
         if (mv.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
             MoveSpec foundationMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-mv.NCards());
-            foundationMove.FlipsPile(mv.FlipsPile());
+            foundationMove.FlipsTopCard(mv.FlipsTopCard());
             dir = XYZ_Test(foundationMove, trial);
             switch (dir) {
                 case returnTrue: return true;
                 case returnFalse: return false;
             }
-            tableauMove.FlipsPile(false);
+            tableauMove.FlipsTopCard(false);
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
         dir = XYZ_Test(tableauMove, trial);
