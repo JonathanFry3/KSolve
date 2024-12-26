@@ -288,7 +288,7 @@ public:
                                         {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
-    bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == _cardsToMove + 1;}
+    bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == 2;}
     bool FlipsPile() const noexcept     {return _flipsPile;}
     void FlipsPile(bool f) noexcept     {_flipsPile = f;}
 };
@@ -307,7 +307,7 @@ inline MoveSpec NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned 
 inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
 {
     MoveSpec result{from,to,n,fromUpCount};
-    result._nMoves = n+1;
+    result._nMoves = 2;
     result._ladderSuit = ladderCard.Suit();
     return result;
 }
