@@ -149,8 +149,8 @@
             "program": "${workspaceFolder}/ran",
             "args": [
                 "--end", "1"
-                ,"--seed","153844"
-                ,"--incr","2349"
+                ,"--seed","4588"
+                ,"--draw","3"
                 ,"--mvlimit","11000000"
             //    ,"--threads","1"
             ],

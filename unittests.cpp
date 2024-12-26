@@ -91,8 +91,8 @@ static void Validate(const Game & game)
 
 	// See if the face-up cards in the tableau are in proper stacks
 	const auto& tableau = game.Tableau();
-	for(unsigned i = 0; i < TableauSize; ++i){
-		const Pile & tab = tableau[i];
+	for(unsigned j = 0; j < TableauSize; ++j){
+		const Pile & tab = tableau[j];
 		assert(tab.UpCount() <= tab.size());
 		if (tab.UpCount() > 1){
 			for (unsigned i = tab.size()-tab.UpCount()+1; i<tab.size(); ++i){
@@ -257,7 +257,7 @@ int main()
 		Validate(sol);
 
 		// Test Game::MakeMove
-		sol.MakeMove(NonStockMove(Tableau1,Tableau2,1,0));
+		sol.MakeMove(NonStockMove(Tableau1,Tableau2,1,1));
 		assert (sol.Tableau()[0].empty());
 		assert (sol.Tableau()[1].size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
@@ -345,6 +345,7 @@ int main()
 		made.emplace_back(NonStockMove(Tableau7,Tableau5,1,3)); // C.
 		made.emplace_back(NonStockMove(Tableau4,Tableau2,1,4));	// D.
 		made.emplace_back(NonStockMove(Tableau4,Tableau1,3,3));	// E.
+		made.back().FlipsTopCard(true);
 
 		// Test various candidate moves 
 		assert(XYZ_Move(NonStockMove(Tableau5,Tableau7,1,6),made));		// direct reversal of C
