@@ -14,8 +14,8 @@ uses the A* algorithm, which involves a breadth-first search of the
 state space created by all non-silly moves starting with the initial deal.
 It uses a variety of techniques to select non-silly moves and a variety
 of techniques to narrow the state space explored, but still frequently generates
-trees with tens of millions of moves.  About 99% of draw-1 deals can be solved
-within 150,000,000 moves; the other 1% would require more memory.
+trees with tens of millions of moves.  About 99.9% of draw-1 deals can be resolved
+within 160,000,000 moves; the other 0.1% would require more memory.
 The file STATISTICS.md has more informaton about memory use.
 
 This function is fully multi-threaded. The method of multithreading selected
@@ -30,23 +30,50 @@ one run to the next, but the *moves* column's move counts will not.
 different ways using the KSolveAStar function.  See the document KSOLVE.md 
 for more detailed information.
 ## ran
-*ran* is a program which generates random deals and solves them using 
+The *ran* program generates random deals and solves them using 
 the KSolveAStar function. Its purpose is to generate statistical data
 about, for example, the winnability of deals or the resource use of 
 the function. After building it, run *ran -?* for detailed information on
-its options.  See tests/base* for some sample output.
+its options.  See tests/lg*.txt for some sample output.
 ## unittests
 *unittests* is a program to run unit tests on the various parts of the 
 KSolveAStar function and on the function itself.  It will print "unittests finished OK"
 on successful completion.  Errors are detected using the *assert()* macro.
 ## benchmark
 *benchmark* solves the same deal multiple times and prints the shortest time
-required to solve it.  It is uses a quick way to determine whether changes
+required to solve it.  It is provides a quick way to determine whether changes
 to code have substantially affected run time.
 ## KSolve2Solvitaire
 *KSolve2Solvitaire* accepts the same flags and input types as KSolve. Instead
 of solving each deal, it generates a file for the program *Solvitaire*.
+# Large Data Structures
+The KSolveAStar function creates three large data structures.  
+## Closed List
+The *closed list* is a hash table mapping a compact representation of the state of 
+a game, i.e which cards are in which pile in what order, to the number of moves
+made to reach that state along a particular path. Using this
+hash table, the program can determine whether the game's current state has been
+reached before, and if it has, is the current path a more economical way to get there than
+any seen before.
+This table is the largest of the three large data structures.
+## Fringe
+The *fringe* is a queue of entries ordered by a lower bound on the total moves required 
+to win from the state implied by the entry.  Each entry (called a *leaf*)
+is a {move, index of previous move in the move tree} pair. This structure 
+serves as the *work queue*, meaning each iteration of the algorithm starts with
+its next element and adds some number of new element to consider later.
+## Move Tree
+The *move tree* is a sequence of {move, index of previous move in the move tree} pairs which forms
+a tree. Each iteration of the algorithm reconstructs the sequence of moves that led to its
+starting state by tracing the tree from a leaf (gotten from the fringe) back to root. 
+When a leaf is taken from the fringe,
+if it proves to have any children, it is moved to the move tree and those children
+are placed in the fringe pointing to its position in that sequence.
+When a winning solution is found, the move tree is actually the smallest of the three large structures; 
+when the deal is proved impossible, the fringe ends up empty.  
 
+The move tree's size is limited so that it can be implemented in a sufficiently stable way that it allows
+entries to be safely fetched in a multithreaded environment without any locking.
 # Acknowledgements
 See ACKNOWLEDGEMENT.md.  This work is substantially derived from the Github repository Klondike-Solver
 by @ShootMe. Their license follows:

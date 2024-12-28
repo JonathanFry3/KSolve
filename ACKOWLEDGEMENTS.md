@@ -4,7 +4,7 @@ The front end code KSolve.cpp is a direct edit of @ShootMe's KlondikeSolver.cpp.
 It implements a largely compatible interface to facilitate comparison or migration.
 KSolve2Solvitaire.cpp is an edit of KSolve.cpp, so indirectly of KlondikeSolver.cpp.
 
-parallel_hashmap, an unordered_map-like structure especially well adapted to 
+parallel_hashset, an unordered_set-like structure especially well adapted to 
 multi-threaded operation,
 is the work of Gregory Popovitch \(@greg7mdp on github\).
 
