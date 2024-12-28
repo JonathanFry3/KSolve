@@ -2,25 +2,25 @@
 ## How Many Moves are Needed
 This table reports the observed proportion of deals that were decided (solved or found to be unsolvable)
 using a number of moves in the move tree no greater than the given number.
-The sample size was 2,000 deals in each case. Data were generated running _ran_ with a 
-seed of 34453 and an increment of 101.
+The sample size was 20,000 deals in each case. Data were generated running _ran_ with a 
+seed of 1 and an increment of 1.
 
 Moves Limit|Draw 1 |Draw 3
 -----------|-------|------
- 10,000,000|94.5%|97.1%
- 20,000,000|97.4%|98.6%
- 30,000,000|98.0%|99.1%
- 40,000,000|98.5%|99.3%
- 50,000,000|98.8%|99.4%
- 60,000,000|99.1%|99.5%
- 70,000,000|99.2%|99.6%
- 80,000,000|99.3%|99.7%
- 90,000,000|99.3%|99.7%
- 100,000,000|99.4%|99.7%
- 110,000,000|99.4%|99.8%
- 120,000,000|99.5%|99.9%
+ 10,000,000|93.8%|96.5%
+ 20,000,000|97.0%|98.5%
+ 30,000,000|99.9%|99.1%
+ 40,000,000|98.4%|99.4%
+ 50,000,000|98.7%|99.6%
+ 60,000,000|98.9%|99.7%
+ 70,000,000|99.0%|99.7%
+ 80,000,000|99.2%|99.8%
+ 90,000,000|99.3%|99.8%
+ 100,000,000|99.4%|99.8%
+ 110,000,000|99.4%|99.9%
+ 120,000,000|99.4%|99.9%
  130,000,000|99.5%|99.9%
- 140,000,000|99.6%|99.9%
+ 140,000,000|99.5%|99.9%
  150,000,000|99.6%|99.9%
  160,000,000|99.6%|99.9%
  ## How Much Memory is Needed
