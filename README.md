@@ -57,7 +57,7 @@ reached before, and if it has, is the current path a more economical way to get 
 any seen before.
 This table is the largest of the three large data structures.
 ## Fringe
-The *fringe* is a queue of entries ordered by a lower bound on the total moves required 
+The *fringe*, or open list, is a queue of entries ordered by a lower bound on the total moves required 
 to win from the state implied by the entry.  Each entry (called a *leaf*)
 is a {move, index of previous move in the move tree} pair. This structure 
 serves as the *work queue*, meaning each iteration of the algorithm starts with
