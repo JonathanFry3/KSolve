@@ -9,6 +9,8 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     {}
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
+    // This is where the program fails when XYZ_Test fails.
+    assert(_currentSequence.size() < _currentSequence.capacity());
     _currentSequence.push_back(move);
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
