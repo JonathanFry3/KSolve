@@ -72,8 +72,6 @@ void MoveStorage::LoadMoveSequence() noexcept
 {
     // Follow the links to recover all the moves in a sequence in reverse order.
     _currentSequence.clear();
-    if (!_leaf._move.IsDefault())
-        _currentSequence.push_back(_leaf._move);
     for    (NodeX node = _leaf._prevNode; 
             node != -1U; 
             node = _shared._moveTree[node]._prevNode){
@@ -81,7 +79,8 @@ void MoveStorage::LoadMoveSequence() noexcept
         _currentSequence.push_front(mv);
     }
     _startSize = _currentSequence.size();
-    if (_startSize > 0) _startSize--;
+    if (!_leaf._move.IsDefault())  [[unlikely]]
+        _currentSequence.push_back(_leaf._move);
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {
