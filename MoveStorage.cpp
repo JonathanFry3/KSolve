@@ -9,7 +9,7 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     {}
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
-    // This is where the program fails when XYZ_Test fails.
+    // This is where the program fails when XYZ_Test give false negatives.
     assert(_currentSequence.size() < _currentSequence.capacity());
     _currentSequence.push_back(move);
 }
@@ -60,10 +60,10 @@ unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
         _shared._firstTime = false;
         return _shared._initialMinMoves;
     }
-    auto nextOpt = _shared._fringe.Pop();
-    if (nextOpt) [[likely]] {
-        _leaf = nextOpt->second;
-        return nextOpt->first+_shared._initialMinMoves;
+    auto nextLeaf = _shared._fringe.Pop();
+    if (nextLeaf) [[likely]] {
+        _leaf = nextLeaf->second;
+        return nextLeaf->first+_shared._initialMinMoves;
     } else {
         return 0;     // last time for this thread
     }

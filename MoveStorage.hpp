@@ -84,7 +84,7 @@ public:
     unsigned Size() const noexcept
     {
         return std::accumulate(_stacks.begin(), _stacks.end(), 0U, 
-            [&](auto accum, auto& pStack){return accum + pStack._stack.size();});
+            [](auto accum, auto& pStack){return accum + pStack._stack.size();});
     }
 };
 
@@ -166,7 +166,7 @@ private:
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
     MoveNode _leaf;			// current sequence's leaf node 
-    unsigned _startSize;
+    unsigned _startSize;    // number of MoveSpecs gotten from the move tree.
     struct MovePair
     {
         MoveSpec _mv;
@@ -178,7 +178,7 @@ private:
     };
     static_vector<MovePair,128> _branches;
 
-    NodeX UpdateMoveTree() noexcept; // Returns move tree index of first branch
+    NodeX UpdateMoveTree() noexcept; // Returns move tree index of last stem node
     void UpdateFringe(NodeX branchIndex) noexcept;
 };
 }   // namespace KSolveNames
