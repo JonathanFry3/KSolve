@@ -137,6 +137,15 @@ static void Worker(
             for (auto mv: availableMoves){
                 game.MakeMove(mv);
                 const unsigned made = movesMadeCount + mv.NMoves();
+                // The following rather convoluted logic for deciding whether or not
+                // to save mv attempts to minimize time used in all situations. 
+                // Both MinimumMovesLeft() and IsShortPathToState() are expensive,
+                // but IsShortPathToState() is considerably the more expensive of
+                // the two.  If we already have a solution to test against, we can
+                // call MinimumMovesLeft() first to sometimes avoid calling
+                // IsShortPathToState(). If not, the best we can do is call
+                // IsShortPathToState() first to sometimes avoid calling
+                // MinimumMovesLeft().
                 unsigned minRemaining = -1U;
                 bool pass = true;
                 if (!minSolution.IsEmpty()) [[unlikely]] { 
