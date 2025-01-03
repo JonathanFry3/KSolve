@@ -125,7 +125,7 @@ public:
     unsigned FringeSize() const noexcept{
         return _fringe.Size();
     }
-    unsigned MoveCount() const noexcept{
+    unsigned MoveTreeSize() const noexcept{
         return _moveTree.size();
     }
     bool OverLimit() const noexcept{
