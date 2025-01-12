@@ -12,7 +12,7 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
     for (unsigned i = 0; i<TableauSize; ++i) {
         const auto& cards = tableau[i];
         const unsigned upCount = cards.UpCount();
-        if (upCount == 0) {
+        if (upCount == 0) [[unlikely]] {
             tableauState[i] = 0;
         } else {
             // The rules for moving to the tableau piles guarantee
@@ -29,26 +29,29 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
                     [](unsigned acc, Card card)
                         {return acc<<1 | card.IsMajor();});
             const Card top = cards.Top();
-            tableauState[i] = ((top.Suit()<<4 | top.Rank())<<11 | isMajor)<<4 | upCount;
+            tableauState[i] = ((top.Suit()
+                         <<4  | top.Rank())
+                         <<11 | isMajor)
+                         <<4  | upCount;
         }
     }
     // Sort the tableau states because tableaus that are identical
     // except for order are considered equal
     ranges::sort(tableauState);
 
-    _part0 =    (GameState::PartType(tableauState[0])
+    _part0 =          (GameState::PartType(tableauState[0])
                 <<21 | GameState::PartType(tableauState[1]))
                 <<21 | GameState::PartType(tableauState[2]);
-    _part1 =    (GameState::PartType(tableauState[3])
+    _part1 =          (GameState::PartType(tableauState[3])
                 <<21 | GameState::PartType(tableauState[4]))
                 <<21 | GameState::PartType(tableauState[5]);
     auto& fnd{game.Foundation()};
-    _part2 =    ((((GameState::PartType(tableauState[6])
-                <<5 | game.StockPile().size())
-                <<4 | fnd[0].size())
-                <<4 | fnd[1].size()) 
-                <<4 | fnd[2].size()) 
-                <<4 | fnd[3].size();
+    _part2 =       ((((GameState::PartType(tableauState[6])
+                <<5  | game.StockPile().size())
+                <<4  | fnd[0].size())
+                <<4  | fnd[1].size()) 
+                <<4  | fnd[2].size()) 
+                <<4  | fnd[3].size();
 }
 
 GameStateMemory::GameStateMemory() noexcept
@@ -62,7 +65,7 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount) n
     const GameState newState{game,moveCount};
     bool valueChanged{false};
     bool isNewKey = _states.lazy_emplace_l(
-        newState,						// key
+        newState,						// (key, value)
         [&](auto& oldState) {	// run behind lock when key found
             if (moveCount < oldState._moveCount) {
                 oldState._moveCount = moveCount;
@@ -73,6 +76,6 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount) n
             ctor(newState);
         }
     );
-    return isNewKey || valueChanged;
+    return isNewKey | valueChanged;
 }
 }   // namespace KSolveNames

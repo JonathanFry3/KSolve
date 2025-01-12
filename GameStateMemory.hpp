@@ -7,7 +7,7 @@
 // Instances are thread-safe.
 
 #include "Game.hpp"                     // for Game
-#include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_map
+#include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_set
 #include <mutex>
 namespace KSolveNames {
 // A compact representation of the current game state.
@@ -25,12 +25,18 @@ namespace KSolveNames {
 //     that equivalence relation.
 // 2.  It should be quite compact, as we will usually be storing
 //     millions or tens of millions of instances.
+//
+// Conceptually, this is a hash map where the move count is the 
+// value and everything else is the key.  In order to save space,
+// it is implemented as a hash set so the value can be packed in
+// with the key.  The hash and compare functions operate only on
+// the key.
 struct GameState {
     typedef std::uint64_t PartType;
-    PartType _part0;
-    PartType _part1;
-    PartType _part2:48;
-    PartType _moveCount:16;
+    PartType _part0;            // key[0]
+    PartType _part1;            // key[1]
+    PartType _part2:48;         // key[2]
+    PartType _moveCount:16;     // value
     GameState(const Game& game, unsigned moveCount) noexcept;
     bool operator==(const GameState& other) const noexcept
     {
@@ -59,7 +65,7 @@ private:
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
             phmap::priv::Allocator<GameState >, 
-            8U, 									// log2(n of submaps)
+            8U, 									// log2(number of submaps)
             std::mutex								// mutex type
         > MapType;
     MapType _states;
