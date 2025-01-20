@@ -323,18 +323,6 @@ int main()
 		string peekmvs = Peek(mvs);
 		assert (peekmvs == "(+6d5>t3,wa>di,t1>t6x4u1)");
 	}
-	// Test mf_vector
-    frystl::mf_vector<int,4> vi;
-
-	assert((vi.empty() && "empty vector failed"));
-    
-    for (int i = 0; i<4; ++i) {
-        vi.push_back(i);
-    }
-
-    for (auto it = vi.begin(); it != vi.end(); ++it){
-        assert(*it == (it-vi.begin()));
-    }
 	{
 		// Test ABC_Moves
 

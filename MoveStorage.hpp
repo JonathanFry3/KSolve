@@ -6,8 +6,6 @@
 
 namespace KSolveNames {
 
-using namespace frystl;
-
 using NodeX = std::uint32_t;
 
 using Mutex = std::mutex;

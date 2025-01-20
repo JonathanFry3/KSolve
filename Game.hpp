@@ -26,6 +26,7 @@
 #include "frystl/static_vector.hpp"
 namespace KSolveNames {
 
+using namespace frystl;    
 namespace ranges = std::ranges;
 namespace views = std::views;
 
@@ -77,8 +78,8 @@ public:
     unsigned Value() const noexcept		    {return CardsPerSuit*_suit+_rank;}
     std::string AsString() const;           // Returns a string like "ha" or "d2"
     bool Covers(Card c) const noexcept	    // can this card be moved onto c on a tableau pile?
-                                            {return _rank+1 == c._rank && OddRed() == c.OddRed();}
-    bool operator==(Card o) const noexcept	{return _suit==o._suit && _rank==o._rank;}
+                                            {return _rank+1 == c._rank & OddRed() == c.OddRed();}
+    bool operator==(Card o) const noexcept	{return _suit==o._suit & _rank==o._rank;}
     bool operator!=(Card o) const noexcept	{return ! (o == *this);}
 };
 // Make a Card from a string like "ah" or "s8" or "D10" or "tc" (same as "c10").
@@ -90,11 +91,11 @@ std::optional<Card> CardFromString(const std::string& s) noexcept;
 static_assert(sizeof(Card) == 1, "Card must be 1 byte long");
 
 // Type to hold the cards in a pile after the deal.  None ever exceeds 24 cards.
-typedef frystl::static_vector<Card,24> PileVec;
+typedef static_vector<Card,24> PileVec;
 static_assert(sizeof(PileVec) <= 28, "PileVec should fit in 28 bytes");
 
 // Type to hold a complete deck
-struct CardDeck : frystl::static_vector<Card,CardsPerDeck> 
+struct CardDeck : static_vector<Card,CardsPerDeck> 
 {
     CardDeck () = default;
     CardDeck (const std::vector<Card> vec) 
@@ -102,7 +103,7 @@ struct CardDeck : frystl::static_vector<Card,CardsPerDeck>
     {
         assert(vec.size() == CardsPerDeck);
     }
-    CardDeck(const frystl::static_vector<Card,CardsPerDeck> &v)
+    CardDeck(const static_vector<Card,CardsPerDeck> &v)
         : static_vector<Card,CardsPerDeck>(v)
     {
         assert(v.size() == CardsPerDeck);
@@ -162,7 +163,7 @@ public:
     , _isFoundation(FoundationBase <= code && code < FoundationBase+SuitsPerDeck)
     {}
 
-    PileCodeT Code() const noexcept		{return _code;}
+    PileCodeT Code() const noexcept		    {return _code;}
     unsigned UpCount() const noexcept		{return _upCount;}
     bool IsTableau() const noexcept			{return _isTableau;}
     bool IsFoundation() const noexcept		{return _isFoundation;}
@@ -172,7 +173,7 @@ public:
     const PileVec& Cards() const noexcept	{return *this;}
     void Push(Card c) noexcept             	{push_back(c);}
     Card Pop() noexcept			            {Card r = back(); pop_back(); return r;}
-    void Draw(Pile & from) noexcept			{emplace_back(std::move(from.back())); from.pop_back();}
+    void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
     Card Top() const  noexcept              {return *(end()-_upCount);}
     void ClearCards() noexcept              {clear(); _upCount = 0;}
     // Take the last n cards from donor preserving order	
@@ -180,7 +181,7 @@ public:
     {
         assert(n <= donor.size());
         for (auto p = donor.end()-n; p < donor.end(); ++p)
-            emplace_back(std::move(*p));
+            push_back(*p);
         donor.resize(donor.size() - n);
     }
     // If n > 0, move the last n cards in other to the end of 
@@ -201,13 +202,14 @@ static_assert(sizeof(Pile) <= 32, "Good to make Pile fit in 32 bytes");
 // Returns a string to visualize a pile for debugging.
 std::string Peek(const Pile& pile);
 
+class MoveSpec
 // Directions for a move.  Game::AvailableMoves() creates these.
 //
 // Game::UnMakeMove() cannot infer the value of the from tableau pile's
 // up count before the move (because of flips), so Game::AvailableMoves() 
 // includes that in any Move from a tableau pile.
 //
-// Game::AvailableMoves creates Moves around the talon (the waste and
+// Game::AvailableMoves creates MoveSpecs around the talon (the waste and
 // stock piles) that must be counted as multiple moves.  The number
 // of actual moves implied by a MoveSpec object is given by NMoves().
 //
@@ -225,7 +227,6 @@ std::string Peek(const Pile& pile);
 // Since making this class type-safe at compile time (using std::variant) 
 // requires making it larger (doubling the size of the move tree and the 
 // fringe), it has been made type-safe at run time using asserts.
-class MoveSpec
 {
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
@@ -246,7 +247,7 @@ private:
     // Construct a stock MoveSpec. Their cumulative effect is to 
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
-    // to the "to" pile. Only stock Moves draw from the stock pile.
+    // to the "to" pile. Only stock MoveSpecs draw from the stock pile.
     MoveSpec(PileCodeT to, unsigned nMoves, int draw) noexcept
         : _from(Stock)
         , _to(to)
@@ -272,7 +273,7 @@ private:
 
 public:
     MoveSpec() = default;
-    bool IsDefault()                    {return _from == _to;}
+    bool IsDefault() const noexcept     {return _from == _to;}
 
     void SetRecycle(bool r) noexcept    {_recycle = r;}
 
@@ -289,8 +290,8 @@ public:
     bool Recycle() const noexcept       {return _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
     bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == 2;}
-    bool FlipsTopCard() const noexcept     {return _flipsTopCard;}
-    void FlipsTopCard(bool f) noexcept     {_flipsTopCard = f;}
+    bool FlipsTopCard() const noexcept  {return _flipsTopCard;}
+    void FlipsTopCard(bool f) noexcept  {_flipsTopCard = f;}
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
@@ -314,12 +315,12 @@ inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fr
 
 using Moves = std::vector<MoveSpec>;
 
-// Class for collecting freshly-built Moves in AvailableMoves()
+// Class for collecting freshly-built MoveSpecs in AvailableMoves()
 template <unsigned Capacity>
-class QMovesTemplate : public frystl::static_vector<MoveSpec,Capacity>
+class QMovesTemplate : public static_vector<MoveSpec,Capacity>
 {
 public:
-    using BaseType = frystl::static_vector<MoveSpec,Capacity>;
+    using BaseType = static_vector<MoveSpec,Capacity>;
     void AddStockMove(PileCodeT to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
@@ -337,7 +338,7 @@ public:
     }
 };
 
-// Return the number of actual moves implied by a sequence of Moves.
+// Return the number of actual moves implied by a sequence of MoveSpecs.
 template <class SeqType>
 unsigned MoveCount(const SeqType& moves) noexcept
 {
@@ -345,7 +346,7 @@ unsigned MoveCount(const SeqType& moves) noexcept
         [](auto acc, auto move){return acc+move.NMoves();});
 }
 
-// Return the number of stock recycles implied by a sequence of Moves.
+// Return the number of stock recycles implied by a sequence of MoveSpecs.
 template <class SeqType>
 unsigned RecycleCount(const SeqType& moves) noexcept
 {
@@ -392,7 +393,7 @@ public:
 // Return a string to visualize a move for debugging
 std::string Peek(const MoveSpec& mv);
 
-// Return a string to visualize a sequence of Moves
+// Return a string to visualize a sequence of MoveSpecs
 template <class Moves_t>
 std::string Peek(const Moves_t & mvs)
 {
@@ -407,7 +408,7 @@ std::string Peek(const Moves_t & mvs)
     return outStr.str();
 }
 
-// A vector of Moves is not very useful for enumerating the moves
+// A vector of MoveSpecs is not very useful for enumerating the moves
 // required to solve a game.  What's wanted for that is
 // a vector of XMoves - objects that can simply be listed in
 // various formats.
@@ -571,6 +572,7 @@ private:
     void MovesFromTableau(QMoves & moves) const noexcept;
     bool MovesFromStock(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
+
     std::array<Pile,PileCount>& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }
