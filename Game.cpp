@@ -56,7 +56,7 @@ std::optional<Card> CardFromString(const std::string& s0) noexcept
         auto suitIndex = suits.find(s1[0]);
         if (suitIndex != std::string::npos)	{
             // input has suit first
-            suit = static_cast<Card::Card::SuitT>(suitIndex);
+            suit = static_cast<Card::SuitT>(suitIndex);
             rankStr = s1.substr(1);
         } else {
             // suit does not appear first in input
@@ -192,7 +192,7 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
         _waste.Push(toPile.Pop());
         toPile.IncrUpCount(-1);
         _stock.Draw(_waste,mv.DrawCount());
-        if (mv.Recycle()) _recycleCount -= 1;
+        if (mv.Recycle()) --_recycleCount;
     } else {
         const auto n = mv.NCards();
         Pile & fromPile = AllPiles()[mv.From()];
