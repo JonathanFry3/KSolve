@@ -503,11 +503,10 @@ int main()
 		XMoves xms = MakeXMoves(outcome._solution,game.DrawSetting());
 		TestSolution(game, xms);
 
-		Game g515(NumberedDeal(41092));
-		outcome = KSolveAStar(g515,600'000);
-		TestSolution(g515, outcome._solution);
-		//cout << "g515 move count = " << MoveCount(outcome._solution) << endl;
-		assert(MoveCount(outcome._solution) == 130);
+		Game g41092(NumberedDeal(41092));
+		outcome = KSolveAStar(g41092,600'000);
+		TestSolution(g41092, outcome._solution);
+		assert(MoveCount(outcome._solution) == 133);
 	}
 	cout << "unittests finished OK" << endl;
 }
