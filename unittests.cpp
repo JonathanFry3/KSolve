@@ -493,10 +493,10 @@ int main()
 	}
 	{
 		// Test IsValid(MoveSpec m) and IsValid(XMove xm)
-		// Game 36394, drawing 1, can be solved in 100 moves
+		// Game 36394, drawing 1, can be solved in 109 moves
 		Game game(NumberedDeal(36394), 1, 8);
 		auto outcome = KSolveAStar(game,700'000);
-		assert(MoveCount(outcome._solution) == 100);
+		assert(MoveCount(outcome._solution) == 109);
 		// PrintGame(game);
 		// PrintOutcome(game, outcome);
 		TestSolution(game, outcome._solution);

@@ -652,7 +652,8 @@ void TestSolution(Game game, const Container& moves)
     game.Deal();
     // PrintGame(game);
     for (auto mv: moves) {
-        assert(game.IsValid(mv));
+        bool valid = game.IsValid(mv);
+        assert(valid);
         game.MakeMove(mv);
     }
     // PrintGame(game);
