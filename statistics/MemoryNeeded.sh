@@ -1,6 +1,6 @@
 #!
 export LC_NUMERIC="en_US.utf8"
-echo "|Draw 1|Draw 2"
+echo "|Draw 1|Draw 3"
 echo "Move Limit|Peak Memory|Peak Memory"
 echo "-----------|------|--------"
 for moveLimit in {10000000..160000000..10000000} 
