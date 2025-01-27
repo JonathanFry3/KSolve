@@ -1,6 +1,6 @@
 GET DATA
   /TYPE=TXT
-  /FILE="/home/jon/prj/KSolve/statistics/ran2kd1.txt"
+  /FILE="/home/jon/prj/KSolve/ran20kd3.txt"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -14,7 +14,7 @@ GET DATA
     moves F3.0
     passes F1.0
     time F7.3
-    frmax F8.0
+    fringe F8.0
     branches F9.0
     treemoves F9.0.
 missing values outcome(3).
@@ -24,7 +24,7 @@ FREQUENCIES
 	/FORMAT=AVALUE TABLE
 	/STATISTICS=NONE.
 NUMERIC mmoves.
-COMPUTE mmoves = trunc(treemoves/10000000)*10+10.
+COMPUTE mmoves = trunc((treemoves+10000000-1)/10000000)*10.
 VARIABLE LABEL mmoves 'Needs no more than this many millions of moves'.
 format mmoves(f3.0).
 missing values mmoves().
