@@ -95,22 +95,26 @@ typedef static_vector<Card,24> PileVec;
 static_assert(sizeof(PileVec) <= 28, "PileVec should fit in 28 bytes");
 
 // Type to hold a complete deck
-struct CardDeck : static_vector<Card,CardsPerDeck> 
+struct CardDeck : public static_vector<Card,CardsPerDeck> 
 {
+    using Base = static_vector<Card,CardsPerDeck>;
     CardDeck () = default;
+
     CardDeck (const std::vector<Card> vec) 
-        : static_vector<Card,CardsPerDeck>(vec.begin(),vec.end())
+        : Base(vec.begin(),vec.end())
     {
         assert(vec.size() == CardsPerDeck);
     }
-    CardDeck(const static_vector<Card,CardsPerDeck> &v)
-        : static_vector<Card,CardsPerDeck>(v)
+    CardDeck (unsigned n) : Base(n) 
+    {}
+    explicit CardDeck(const Base &v)
     {
         assert(v.size() == CardsPerDeck);
+        Base(*this) = v;
     }
 };
 
-// Function to shuffle a (possible partial) deck
+// Function to randomly shuffle a (possible partial) deck
 void Shuffle(CardDeck & deck, uint32_t seed);
 
 // Function to generate a randomly shuffled deck
