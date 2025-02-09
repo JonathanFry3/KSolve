@@ -93,7 +93,7 @@ namespace frystl
                 new (p) value_type(value);
         }
         // fill c'tor with default value
-        static_deque(size_type count)
+        explicit static_deque(size_type count)
             : _begin(Centered(count)), _end(_begin + count)
         {
             FRYSTL_ASSERT2(count <= capacity(),"Overflow in static_deque");

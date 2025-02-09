@@ -97,7 +97,7 @@ namespace frystl
             for (size_type i = 0; i < n; ++i)
                 push_back(value);
         }
-        static_vector(size_type n) : _size(0)
+        explicit static_vector(size_type n) : _size(0)
         {
             for (size_type i = 0; i < n; ++i)
                 emplace_back();

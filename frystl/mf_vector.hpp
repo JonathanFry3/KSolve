@@ -316,7 +316,7 @@ namespace frystl
             _blocks.push_back(reinterpret_cast<pointer>(&MFVectorDummyEnd));
         }
         // Fill constructors
-        explicit mf_vector(size_type count, const_reference value)
+        mf_vector(size_type count, const_reference value)
             : mf_vector()
         {
             for (size_type i = 0; i < count; ++i)
