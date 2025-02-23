@@ -105,9 +105,9 @@ struct CardDeck : public static_vector<Card,CardsPerDeck>
     {
         assert(vec.size() == CardsPerDeck);
     }
-    CardDeck (unsigned n) : Base(n) 
+    explicit CardDeck (unsigned n) : Base(n) 
     {}
-    explicit CardDeck(const Base &v)
+    CardDeck(const Base &v)
     {
         assert(v.size() == CardsPerDeck);
         Base(*this) = v;
