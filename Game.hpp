@@ -464,7 +464,7 @@ enum Dir: unsigned {
     returnFalse,
     keepLooking
 };
-static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
+static Dir XYZ_Test(MoveSpec prevMove, MoveSpec trialMove) noexcept
 {
     // Consider a move at time T0 from X to Y and the next move
     // from Y, which goes from Y to Z at time Tn.  The move at Tn can
@@ -489,22 +489,22 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
     // Since nothing says X cannot equal Z, this test catches 
     // moves that exactly reverse previous moves.
     //
-    const auto Y = trial.From();
-    const auto Z = trial.To();
-    if (mv.To() == Y){
+    const auto Y = trialMove.From();
+    const auto Z = trialMove.To();
+    if (prevMove.To() == Y){
         // candidate T0 move
-        if (mv.From() == Z) {
+        if (prevMove.From() == Z) {
             // If X=Z and the X to Y move flipped a tableau card
             // face up, then it changed Z.
-            if (IsTableau(Z) && mv.FlipsTopCard())
+            if (IsTableau(Z) && prevMove.FlipsTopCard())
                 return returnFalse;
         }
-        return  mv.NCards() == trial.NCards() ? returnTrue : returnFalse;
+        return  prevMove.NCards() == trialMove.NCards() ? returnTrue : returnFalse;
     } else {
         // intervening move
-        if (mv.To() == Z || mv.From() == Z)
+        if (prevMove.To() == Z || prevMove.From() == Z)
             return returnFalse;			// trial move's to-pile (Z) has changed
-        if (mv.From() == Y) 
+        if (prevMove.From() == Y) 
             return returnFalse;			// trial move's from-pile (Y) has changed
     }
     return keepLooking;
@@ -515,27 +515,27 @@ static Dir XYZ_Test(MoveSpec mv, MoveSpec trial) noexcept
 // been achieved at the time of the earlier move. That means this sequence
 // does in two moves what other sequences will do in one.
 template <class V>
-static bool XYZ_Move(MoveSpec trial, const V& movesMade) noexcept
+static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
 {
-    const auto Y = trial.From();
+    const auto Y = trialMove.From();
     if (Y == Stock || Y == Waste) return false; 
-    for (auto mv: views::reverse(movesMade)){ 
-        Dir dir;
-        MoveSpec tableauMove = mv;
-        if (mv.IsLadderMove()) {
+    for (MoveSpec prevMove: views::reverse(movesMade)){ 
+        if (prevMove.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
-            MoveSpec foundationMove = NonStockMove(mv.From(),mv.LadderPileCode(),1,mv.FromUpCount()-mv.NCards());
-            foundationMove.FlipsTopCard(mv.FlipsTopCard());
-            dir = XYZ_Test(foundationMove, trial);
-            switch (dir) {
+            MoveSpec foundationMove = 
+                NonStockMove(prevMove.From(),
+                             prevMove.LadderPileCode(),
+                             1,
+                             prevMove.FromUpCount()-prevMove.NCards());
+            foundationMove.FlipsTopCard(prevMove.FlipsTopCard());
+            switch (XYZ_Test(foundationMove, trialMove)) {
                 case returnTrue: return true;
                 case returnFalse: return false;
             }
-            tableauMove.FlipsTopCard(false);
+            prevMove.FlipsTopCard(false);
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
-        dir = XYZ_Test(tableauMove, trial);
-        switch (dir) {
+        switch (XYZ_Test(prevMove, trialMove)) {
             case returnTrue: return true;
             case returnFalse: return false;
         } 
