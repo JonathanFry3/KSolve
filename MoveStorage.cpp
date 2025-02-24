@@ -55,13 +55,13 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 }
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
-    if (_shared._firstTime) [[unlikely]]{
+    if (_shared._firstTime) {
         _leaf = MoveNode{};
         _shared._firstTime = false;
         return _shared._initialMinMoves;
     }
     auto nextLeaf = _shared._fringe.Pop();
-    if (nextLeaf) [[likely]] {
+    if (nextLeaf) {
         _leaf = nextLeaf->second;
         return nextLeaf->first+_shared._initialMinMoves;
     } else {
@@ -79,7 +79,7 @@ void MoveStorage::LoadMoveSequence() noexcept
         _currentSequence.push_front(mv);
     }
     _startSize = _currentSequence.size();
-    if (!_leaf._move.IsDefault())  [[unlikely]]
+    if (!_leaf._move.IsDefault()) 
         _currentSequence.push_back(_leaf._move);
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept

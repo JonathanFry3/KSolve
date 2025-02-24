@@ -148,7 +148,7 @@ static void Worker(
                 // MinimumMovesLeft().
                 unsigned minRemaining = -1U;
                 bool pass = true;
-                if (!minSolution.IsEmpty()) [[unlikely]] { 
+                if (!minSolution.IsEmpty()) { 
                     minRemaining = game.MinimumMovesLeft(); // expensive
                     pass = (made + minRemaining) < minSolution.MoveCount();
                 }

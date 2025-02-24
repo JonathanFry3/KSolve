@@ -7,9 +7,8 @@
 namespace KSolveNames {
 
 using NodeX = std::uint32_t;
-
 using Mutex = std::mutex;
-typedef std::lock_guard<Mutex> Guard;
+using Guard = std::lock_guard<Mutex>;
 
 template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
@@ -19,7 +18,7 @@ class ShareableIndexedPriorityQueue {
     // the V values. It is efficient if the I values are all small integers.
     // I must be an unsigned type.
     //
-    // V values sharing the same I values are returned in LIFO order. 
+    // Pairs sharing the same I values are returned in LIFO order. 
 private:
     using StackType = mf_vector<V,1024>;
     Mutex _mutex;
@@ -30,9 +29,9 @@ private:
     static_vector<ProtectedStackType, Sz>_stacks;
     void inline UpsizeTo(I newSize) noexcept
     {
-        if (_stacks.size() < newSize) [[unlikely]]{
+        if (_stacks.size() < newSize) {
             Guard desposito(_mutex);
-            if (_stacks.size() < newSize) [[likely]]
+            if (_stacks.size() < newSize)
                 _stacks.resize(newSize);
         }
     }
@@ -66,15 +65,15 @@ public:
             unsigned index = ranges::find_if(_stacks, nonEmpty) - _stacks.begin();
             unsigned size = _stacks.size();
 
-            if (index < size) [[likely]] {
+            if (index < size) {
                 auto & stack = _stacks[index]._stack;
                 Guard methuselah(_stacks[index]._mutex);
-                if (stack.size()) [[likely]] { 
+                if (stack.size()) { 
                     result = std::make_pair(index,stack.back());
                     stack.pop_back();
                 }
             }
-            if (!result) [[unlikely]] std::this_thread::yield();
+            if (!result) std::this_thread::yield();
         }
         return result;
     }

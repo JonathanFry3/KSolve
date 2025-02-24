@@ -12,7 +12,7 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
     for (unsigned i = 0; i<TableauSize; ++i) {
         const auto& cards = tableau[i];
         const unsigned upCount = cards.UpCount();
-        if (upCount == 0) [[unlikely]] {
+        if (upCount == 0) {
             tableauState[i] = 0;
         } else {
             // The rules for moving to the tableau piles guarantee
