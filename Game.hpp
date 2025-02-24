@@ -532,7 +532,7 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
                 case returnTrue: return true;
                 case returnFalse: return false;
             }
-            prevMove.FlipsTopCard(false);
+            prevMove.FlipsTopCard(prevMove.FromUpCount()==prevMove.NCards());
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
         switch (XYZ_Test(prevMove, trialMove)) {
