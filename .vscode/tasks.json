@@ -36,6 +36,38 @@
 		},
 		{
 			"type": "shell",
+			"label": "C/C++:  clang++ build KSolve",
+			"command": "clang++",
+			"args": [
+				"-g", "-Og", 
+			//	"-m32",
+			//	"-pg",
+				"-O3",
+				"-std=c++20",
+				"-DFRYSTL_DEBUG",
+				"-DNDEBUG",
+				"-pthread",
+				"Game.cpp",
+				"KSolveAStar.cpp",
+				"GameStateMemory.cpp",
+				"MoveStorage.cpp",
+				"KSolve.cpp", 
+				"-o",
+				"${workspaceFolder}/KSolve"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}, 
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
 			"label": "C/C++:  g++ build KSolve2Solvitaire",
 			"command": "g++",
 			"args": [
