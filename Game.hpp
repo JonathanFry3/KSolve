@@ -522,26 +522,18 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
     for (MoveSpec prevMove: views::reverse(movesMade)){ 
         if (prevMove.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
-            bool ladderFlip = prevMove.FromUpCount()==prevMove.NCards();
-            if (!ladderFlip) {
-                // prevMove first moves all the face-up cards in a pile,
-                // which exposes a new card, moves the exposed card to
-                // the foundation. The move of the exposed card can't
-                // fail the XYZ_Test because that card was not previously
-                // exposed.
-                MoveSpec foundationMove = 
-                    NonStockMove(prevMove.From(),
-                                prevMove.LadderPileCode(),
-                                1,
-                                prevMove.FromUpCount()-prevMove.NCards());
-                foundationMove.FlipsTopCard(prevMove.FlipsTopCard());
-                switch (XYZ_Test(foundationMove, trialMove)) {
-                    case returnTrue: return true;
-                    case returnFalse: return false;
-                    case keepLooking: ;
-                }
+            MoveSpec foundationMove = 
+                NonStockMove(prevMove.From(),
+                             prevMove.LadderPileCode(),
+                             1,
+                             prevMove.FromUpCount()-prevMove.NCards());
+            foundationMove.FlipsTopCard(prevMove.FlipsTopCard());
+            switch (XYZ_Test(foundationMove, trialMove)) {
+                case returnTrue: return true;
+                case returnFalse: return false;
+                case keepLooking: ;
             }
-            prevMove.FlipsTopCard(ladderFlip);
+            prevMove.FlipsTopCard(prevMove.FromUpCount()==prevMove.NCards());
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
         switch (XYZ_Test(prevMove, trialMove)) {
