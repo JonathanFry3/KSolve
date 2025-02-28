@@ -496,7 +496,7 @@ static Dir XYZ_Test(MoveSpec prevMove, MoveSpec trialMove) noexcept
         if (prevMove.From() == Z) {
             // If X=Z and the X to Y move flipped a tableau card
             // face up, then it changed Z.
-            if (IsTableau(Z) && prevMove.FlipsTopCard())
+            if (prevMove.FlipsTopCard())
                 return returnFalse;
         }
         return  prevMove.NCards() == trialMove.NCards() ? returnTrue : returnFalse;
