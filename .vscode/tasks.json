@@ -13,7 +13,7 @@
 				"-std=c++20",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
-				"-DNDEBUG",
+			//	"-DNDEBUG",		// comment out to activate assert()
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -45,7 +45,7 @@
 				"-O3",
 				"-std=c++20",
 				"-DFRYSTL_DEBUG",
-				"-DNDEBUG",
+			//	"-DNDEBUG",		// comment out to activate assert()
 				"-pthread",
 				"Game.cpp",
 				"KSolveAStar.cpp",
@@ -78,7 +78,7 @@
 				"-O3",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
-				//	"-DNDEBUG",
+			//	"-DNDEBUG",		// comment out to activate assert()
 				"-pthread",
 				"Game.cpp",
 				"KSolve2Solvitaire.cpp", 
@@ -108,7 +108,7 @@
 			//	"-O1",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
-			//	"-DNDEBUG",
+			//	"-DNDEBUG",		// comment out to activate assert()
 				"-pthread",
 				"Game.cpp",
 				"AvailableMovesTester.cpp", 
@@ -198,7 +198,7 @@
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
 			//	"-DNDEBUG",		// comment out to activate assert()
-			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+				"-DFRYSTL_DEBUG",// activate FRYSTL_ASSERT()
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
@@ -226,8 +226,8 @@
 				"-g", "-Og", "-finline-small-functions",
                 "-pthread",
                 "-std=c++20",
-				"-DNDEBUG",
-                "-O3",
+			//	"-DNDEBUG",		// comment out to activate assert()
+				"-O3",
                 "-Wno-placement-new",
                 "Game.cpp",
                 "GameStateMemory.cpp",
@@ -315,7 +315,7 @@
 				"-O3",
 			//	"-O",			// for valgrind builds
 			//	"-DNDEBUG",		// comment out to activate assert()
-			//	"-DFRYSTL_DEBUG",// uncomment to activate FRYSTL_ASSERT()
+				"-DFRYSTL_DEBUG",// activate FRYSTL_ASSERT()
 				"Game.cpp",
 				"KSolveAStar.cpp",
 				"GameStateMemory.cpp",
@@ -431,6 +431,7 @@
 			"-Zi",			// debug information format
 			"-EHsc",		// Exception handling options
 			"-O2",			// maximize speed
+			"-DFRYSTL_DEBUG", // activate debug asserts in frystl templates
 			"-utf-8",
 			"-GL",			// Optimize across whole program
 			"-std:c++20",   // language standard - c++ 20
@@ -460,7 +461,7 @@
 			"-Zi",			// debug information format
 			"-EHsc",		// Exception handling options
 			"-O2",			// maximize speed
-			"-DNDEBUG",		// turn off assert()
+			//	"-DNDEBUG",		// comment out to activate assert()
 			"-utf-8",
 			"-GL",			// Optimize across whole program
 			"-std:c++20",   // language standard - c++ 20
