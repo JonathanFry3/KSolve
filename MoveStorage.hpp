@@ -12,7 +12,7 @@ using Guard = std::lock_guard<Mutex>;
 
 template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
-    // An ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
+    // A ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
     // {I,V} pairs in ascending order by their I values (approximately).  It is
     // implemented as a vector of vectors indexed by the I values and containing
     // the V values. It is efficient if the I values are all small integers.
@@ -58,7 +58,7 @@ public:
         // be certain what the correct return value is without stopping the running
         // of other threads. No attempt is made here to
         // eliminate that problem. In this application, it does no harm.   
-        std::optional<std::pair<I,V>> result{std::nullopt};
+        std::optional<std::pair<I,V>> result;
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
             auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
@@ -109,15 +109,7 @@ private:
     bool _firstTime;
     friend class MoveStorage;
 public:
-    // Start move storage with the minimum number of moves from
-    // the dealt deck before the first move.
-    void Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
-    {
-        _moveTreeSizeLimit = moveTreeSizeLimit;
-        _moveTree.reserve(moveTreeSizeLimit+1000);
-        _initialMinMoves = minMoves;
-        _firstTime = true;
-    }
+    void Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept;
 
     unsigned FringeSize() const noexcept{
         return _fringe.Size();
@@ -133,15 +125,14 @@ public:
 class MoveStorage
 {
 public:
-    // Constructor.
     MoveStorage(SharedMoveStorage& shared) noexcept;
     // Return a reference to the storage shared among threads
     SharedMoveStorage& Shared() const noexcept {return _shared;}
     // Push a move to the back of the current stem.
     void PushStem(MoveSpec move) noexcept;
     // Push the first move of a new branch off the current stem,
-    // along with the total number of moves to reach the end state
-    // that move produces.
+    // along with the heuristic value associated with that move,
+    // i.e. its the minimum move count.
     void PushBranch(MoveSpec move, unsigned moveCount) noexcept;
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
@@ -156,14 +147,13 @@ public:
     void MakeSequenceMoves(Game&game) const noexcept;
     // Return a const reference to the current move sequence in its
     // native type.
-    enum {maxMoves = 500};
-    typedef MoveCounter<static_deque<MoveSpec,maxMoves> > MoveSequenceType;
+    typedef MoveCounter<static_deque<MoveSpec,500> > MoveSequenceType;
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
-    MoveNode _leaf;			// current sequence's leaf node 
-    unsigned _startSize;    // number of MoveSpecs gotten from the move tree.
+    MoveNode _leaf{};	    // current sequence's leaf node 
+    unsigned _startSize{0}; // number of MoveSpecs gotten from the move tree.
     struct MovePair
     {
         MoveSpec _mv;
@@ -173,7 +163,7 @@ private:
             , _offset(offset)
         {}
     };
-    static_vector<MovePair,128> _branches;
+    static_vector<MovePair,32> _branches;
 
     NodeX UpdateMoveTree() noexcept; // Returns move tree index of last stem node
     void UpdateFringe(NodeX branchIndex) noexcept;

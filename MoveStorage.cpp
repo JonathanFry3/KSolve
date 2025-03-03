@@ -2,9 +2,15 @@
 
 namespace KSolveNames {
 
+void SharedMoveStorage::Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
+{
+    _moveTreeSizeLimit = moveTreeSizeLimit;
+    _moveTree.reserve(moveTreeSizeLimit+1000);
+    _initialMinMoves = minMoves;
+    _firstTime = true;
+}
 MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
-    , _leaf()
     , _startSize(0)
     {}
 void MoveStorage::PushStem(MoveSpec move) noexcept
@@ -23,11 +29,11 @@ void MoveStorage::ShareMoves() noexcept
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem nodes that led to it.
     if (_branches.size()) {
-        NodeX stemEnd      // index in _moveTree of last stem MoveSpec
+        NodeX stemEnd      // index in _moveTree of last stem MoveNode
             = UpdateMoveTree();
         UpdateFringe(stemEnd);
+        _branches.clear();
     }
-    _branches.clear();
 }
 // Returns move tree index of last stem node
 NodeX MoveStorage::UpdateMoveTree() noexcept
@@ -56,7 +62,6 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
 unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
 {
     if (_shared._firstTime) {
-        _leaf = MoveNode{};
         _shared._firstTime = false;
         return _shared._initialMinMoves;
     }
