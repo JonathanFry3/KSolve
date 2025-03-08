@@ -1,6 +1,6 @@
 // benchmark.cpp 
 //
-// This code repeatedly runs KSolveAStar() on a medium-large problem
+// This code repeatedly runs KSolveAStar() on a medium-sized problem
 // and computes the minimum of the elapsed times of those runs.
 // The minimum gives a low-variance estimate of the true speed.
 
@@ -28,9 +28,10 @@ static ArgVec WrapArgs(int nArgs, char* args[])
 }
 struct Specs
 {
-    unsigned nReps{50};
+    unsigned nReps{10};
     bool verbose{false};
     unsigned seed{828011};
+    unsigned threads{1};
 };
 
 static unsigned GetUnsignedInt(const ArgVec& args, unsigned i)
@@ -69,6 +70,10 @@ static Specs GetSpecs(const ArgVec& args)
         {
             i++;
             result.nReps = GetUnsignedInt(args, i);
+        } else if (arg == "-t" || arg == "--threads")
+        {
+            i++;
+            result.threads = GetUnsignedInt(args, i);
         } else if (arg == "-g" || arg == "--gameID")
         {
             i++;
@@ -80,17 +85,17 @@ static Specs GetSpecs(const ArgVec& args)
     }
     return result;
 }
-static vector<double> Measure(unsigned nReps, unsigned seed)
+static vector<double> Measure(Specs specs)
 {
     vector<double> result;
-    result.reserve(nReps);
+    result.reserve(specs.nReps);
 
-    CardDeck deck(NumberedDeal(seed));
+    CardDeck deck(NumberedDeal(specs.seed));
     Game game(deck);
 
-    for (unsigned i = 0; i < nReps; ++i) {
+    for (unsigned i = 0; i < specs.nReps; ++i) {
         auto startTime = chrono::steady_clock::now();
-        KSolveAStarResult slv = KSolveAStar(game,100'000'000);
+        KSolveAStarResult slv = KSolveAStar(game,100'000'000,specs.threads);
         double elapsed = 
             (chrono::steady_clock::now() - startTime)/1.0s;
         result.push_back((elapsed));
@@ -121,6 +126,12 @@ static void PrintVerbose(vector<double> secs)
         copy(diffs.begin()+1,diffs.end(), 
             ostream_iterator<double>(cout, " "));
         cout << "\n";
+
+        cout << "Percentage differences:   ";
+        for (unsigned i = 1; i < diffs.size(); ++i) {
+            cout << 100.0*diffs[i]/secs[i-1] << " ";
+        }
+        cout << endl;
     }
 }
 
@@ -131,9 +142,8 @@ int main(int nArgs, char* args[])
     if (specs.nReps > 0) {
         fixed(cout);
         cout.precision(3);
-        (void) Measure(1,specs.seed);   // Discard the first try.
 
-        auto elapsedSeconds = Measure(specs.nReps, specs.seed);
+        auto elapsedSeconds = Measure(specs);
 
         if (specs.verbose) PrintVerbose(elapsedSeconds);
         else PrintConcise(elapsedSeconds);
