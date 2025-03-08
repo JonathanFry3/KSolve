@@ -614,7 +614,6 @@ public:
     bool        GameOver() const noexcept;
 
     // Remove some provably non-optimal moves.
-    // Returns true iff any were removed.
     template <class V1, class V2>
     void XYZ_Scan(V1& newMoves, const V2& movesMade)
     {
