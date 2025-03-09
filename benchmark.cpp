@@ -11,6 +11,7 @@
 #include <iterator>
 #include <chrono>
 #include <numeric>
+#include <cmath>
 
 #include "KSolveAStar.hpp"
 
@@ -28,9 +29,10 @@ static ArgVec WrapArgs(int nArgs, char* args[])
 }
 struct Specs
 {
-    unsigned nReps{50};
+    unsigned nReps{32};
     bool verbose{false};
-    unsigned seed{828011};
+    unsigned seed{828016};
+    unsigned threads{1};
 };
 
 static unsigned GetUnsignedInt(const ArgVec& args, unsigned i)
@@ -69,6 +71,10 @@ static Specs GetSpecs(const ArgVec& args)
         {
             i++;
             result.nReps = GetUnsignedInt(args, i);
+        } else if (arg == "-t" || arg == "--threads")
+        {
+            i++;
+            result.threads = GetUnsignedInt(args, i);
         } else if (arg == "-g" || arg == "--gameID")
         {
             i++;
@@ -80,27 +86,43 @@ static Specs GetSpecs(const ArgVec& args)
     }
     return result;
 }
-static vector<double> Measure(unsigned nReps, unsigned seed)
+static vector<double> Measure(Specs specs)
 {
     vector<double> result;
-    result.reserve(nReps);
+    result.reserve(specs.nReps);
 
-    CardDeck deck(NumberedDeal(seed));
+    CardDeck deck(NumberedDeal(specs.seed));
     Game game(deck);
 
-    for (unsigned i = 0; i < nReps; ++i) {
+    for (unsigned i = 0; i < specs.nReps+1; ++i) {
         auto startTime = chrono::steady_clock::now();
-        KSolveAStarResult slv = KSolveAStar(game,100'000'000);
+        KSolveAStarResult slv = KSolveAStar(game,100'000'000,specs.threads);
         double elapsed = 
             (chrono::steady_clock::now() - startTime)/1.0s;
         result.push_back((elapsed));
     }
+    result.erase(result.begin());
     return result;
 }
-static void PrintConcise(vector<double> elapsedSeconds)
+double Mean(const std::vector<double>& data) {
+  double sum = std::accumulate(data.begin(), data.end(), 0.0);
+  return sum / data.size();
+}
+double Variance(double mean, const std::vector<double>& data) {
+    auto f = [mean](double acc, double x) {return acc + (x-mean)*(x-mean);};
+    double ssq =  accumulate(data.begin(), data.end(), 0.0, f);
+    return ssq/(data.size()-1);
+}
+double StdError(double mean, const std::vector<double>& data) {
+    double std = sqrt(Variance(mean,data));
+    return std/sqrt(double(data.size()));
+}
+static void PrintConcise(const vector<double> &elapsedSeconds)
 {
-    cout << "Minimum time: " 
-         << *ranges::min_element(elapsedSeconds) 
+    double mean;
+    cout << "Minimum time: " << *ranges::min_element(elapsedSeconds) 
+         << "    Mean: " << (mean = Mean(elapsedSeconds))
+         << "    SE: " << StdError(mean, elapsedSeconds)
          << "\n";
 }
 static void PrintVerbose(vector<double> secs)
@@ -129,14 +151,11 @@ int main(int nArgs, char* args[])
     auto argVec = WrapArgs(nArgs, args);
     auto specs = GetSpecs(argVec);
     if (specs.nReps > 0) {
-        fixed(cout);
+        auto elapsedSeconds = Measure(specs);
+
         cout.precision(3);
-        (void) Measure(1,specs.seed);   // Discard the first try.
-
-        auto elapsedSeconds = Measure(specs.nReps, specs.seed);
-
         if (specs.verbose) PrintVerbose(elapsedSeconds);
-        else PrintConcise(elapsedSeconds);
+        PrintConcise(elapsedSeconds);
     }
     return 0;
 }
