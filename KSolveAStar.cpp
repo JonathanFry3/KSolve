@@ -77,7 +77,7 @@ public:
     QMoves MakeAutoMoves() noexcept;
 };
 
-// Make available moves until a branching node or an childless one is
+// Make available moves until a branching node or a childless one is
 // encountered. If more than one dominant move is available
 // (as when two aces are dealt face up), AvailableMoves() will
 // return them one at a time.
@@ -180,7 +180,8 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        if (t == 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     // Run one more worker in this (main) thread
