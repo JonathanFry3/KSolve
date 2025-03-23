@@ -361,8 +361,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
                                 upCount,uncovered);
-                            moves.back().FlipsTopCard(upCount == moveCount+1 &&
-                                                   upCount < fromPile.size());
+                            moves.back().FlipsTopCard(upCount == moveCount+1);
                         }
                     }
                 }
