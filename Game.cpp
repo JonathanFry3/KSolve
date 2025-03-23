@@ -545,15 +545,15 @@ void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) 
 // than a lower card of the same suit.  Remember that the 
 // stack tops are at the back.
 template <class Iter>
-unsigned MisorderCount(Iter begin, Iter end)
+unsigned MisorderCount(Iter begin, Iter end) noexcept
 {
-    unsigned  mins[SuitsPerDeck] {14,14,14,14};
+    unsigned  minRanks[SuitsPerDeck] {14,14,14,14};
     unsigned result = 0;
     for (auto i = begin; i != end; ++i){
-        const Card::RankT rank = i->Rank();
-        const Card::SuitT suit = i->Suit();
-        if (rank < mins[suit])
-            mins[suit] = rank;
+        const auto rank = i->Rank();
+        const auto suit = i->Suit();
+        if (rank < minRanks[suit])
+            minRanks[suit] = rank;
         else
             result++;
     }
