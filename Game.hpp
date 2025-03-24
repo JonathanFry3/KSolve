@@ -223,7 +223,12 @@ class MoveSpec
 // moves the exposed card to the foundation. It retains the suit of 
 // the exposed card because UnMakeMove() needs it.
 //
-// It is called a ladder move because the author refers to the fairly 
+// For a ladder move, FlipsTopCard() indicates whether the move to 
+// the foundation flips a face-down card, not whether the move to
+// a different tableau pile does so.  The card that a ladder move
+// moves to the foundation is always face-up before the ladder move.
+//
+// A ladder move is called that because the author refers to the fairly 
 // common tactic of using a sequence of such moves to dislodge a card 
 // on a tableau pile covering another near the end of the game as "climbing
 // the ladder."
@@ -533,6 +538,7 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
                 case returnFalse: return false;
                 case keepLooking: ;
             }
+            prevMove.FlipsTopCard(false);
             // Fall through to test the tableau-to-tableau move specified by a ladder move
         }
         switch (XYZ_Test(prevMove, trialMove)) {

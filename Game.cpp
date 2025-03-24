@@ -182,7 +182,7 @@ void Game::MakeMove(MoveSpec mv) noexcept
         // For other piles, it is undefined.
         toPile.IncrUpCount(n);
         if (fromPile.size()) {
-            fromPile.IncrUpCount(mv.FlipsTopCard()-n-isLadderMove); 
+            fromPile.IncrUpCount(mv.FlipsTopCard()-(n+isLadderMove)); 
         } else {
             _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
             fromPile.SetUpCount(0);
@@ -645,8 +645,6 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
     unsigned stockSize = 24;
     unsigned wasteSize = 0;
     unsigned mvnum = 0;
-    std::array<unsigned char,TableauSize> upCount {1,1,1,1,1,1,1};
-    std::array<unsigned char,TableauSize> totalCount {1,2,3,4,5,6,7};
     std::vector<XMove> result;
 
     for (auto mv : solution){
@@ -655,35 +653,16 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
         
         if (!mv.IsStockMove()){
             unsigned n = mv.NCards();
-            bool flip = false;
-            if (IsTableau(from)) {
-                assert(totalCount[from-TableauBase] >= n);
-                assert(upCount[from-TableauBase] >= n);
-                totalCount[from-TableauBase] -= n;
-                upCount[from-TableauBase] -= n;
-                if (totalCount[from-TableauBase] && !upCount[from-TableauBase]){
-                    flip = true;
-                    upCount[from-TableauBase] = 1;
-                }
-            }
-            if (IsTableau(to)) {
-                totalCount[to-TableauBase] += n;
-                upCount[to-TableauBase] += n;
-            }
-            mvnum += 1;
+            bool flip = mv.FlipsTopCard() && !mv.IsLadderMove();
+            mvnum++;
             result.emplace_back(mvnum,from, to, n,flip);
             if (mv.From() == Waste){
                 assert (wasteSize >= 1);
-                wasteSize -= 1;
+                wasteSize--;
             }
             if (mv.IsLadderMove()) {
                 // Ladder move. Generate the extra move to foundation
-                totalCount[from-TableauBase] -= 1;
-                upCount[from-TableauBase] -= 1;
-                if (totalCount[from-TableauBase] && !upCount[from-TableauBase]){
-                    flip = true;
-                    upCount[from-TableauBase] = 1;
-                }
+                flip = mv.FlipsTopCard();
                 ++mvnum;
                 const auto ladderPile = mv.LadderPileCode();
                 result.emplace_back(mvnum,from,ladderPile,1,flip);
@@ -694,7 +673,7 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
             const unsigned stockMovesLeft = QuotientRoundedUp(stockSize,draw);
             if (nTalonMoves > stockMovesLeft && stockSize) {
                 // Draw all remaining cards from stock
-                mvnum += 1;
+                mvnum++;
                 result.emplace_back(mvnum,Stock,Waste,stockSize,false);
                 mvnum += stockMovesLeft-1;
                 wasteSize += stockSize;
@@ -718,14 +697,10 @@ std::vector<XMove> MakeXMoves(const Moves& solution, unsigned draw)
                 assert(wasteSize <= 24);
                 mvnum += nTalonMoves-1;
             }
-            mvnum += 1;
+            mvnum++;
             result.emplace_back(mvnum,Waste,to,1,false);
             assert(wasteSize >= 1);
-            wasteSize -= 1;
-            if (IsTableau(to)) {
-                totalCount[to-TableauBase] += 1;
-                upCount[to-TableauBase] += 1;
-            }
+            wasteSize--;
         }
     }
     return result;
