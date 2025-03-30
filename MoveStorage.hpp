@@ -52,7 +52,7 @@ public:
     std::optional<std::pair<I,V>> Pop() noexcept
     {
         // Something like the Uncertainty Principle applies here: in a multithreaded
-        // environment, since any of the stacks may become empty or non-empty 
+        // environment, since a stack may become empty or non-empty 
         // at any instant, which one is the first non-empty one may depend on 
         // which thread is looking and exactly when. It is thus impossible to
         // be certain what the correct return value is without stopping the running
