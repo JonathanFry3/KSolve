@@ -14,19 +14,19 @@ template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
     // A ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
     // {I,V} pairs in ascending order by their I values (approximately).  It is
-    // implemented as a vector of vectors indexed by the I values and containing
-    // the V values. It is efficient if the I values are all small integers.
+    // implemented as a vector indexed by the I values of stacks of V values.
+    // It is efficient if the I values are all small integers.
     // I must be an unsigned type.
     //
     // Pairs sharing the same I values are returned in LIFO order. 
 private:
-    using StackType = mf_vector<V,1024>;
+    using StackT = mf_vector<V,1024>;
     Mutex _mutex;
-    struct ProtectedStackType {
+    struct ProtectedStackT {
         Mutex _mutex;
-        StackType _stack;
+        StackT _stack;
     };
-    static_vector<ProtectedStackType, Sz>_stacks;
+    static_vector<ProtectedStackT, Sz>_stacks;
     void inline UpsizeTo(I newSize) noexcept
     {
         if (_stacks.size() < newSize) {
@@ -52,7 +52,7 @@ public:
     std::optional<std::pair<I,V>> Pop() noexcept
     {
         // Something like the Uncertainty Principle applies here: in a multithreaded
-        // environment, since any of the vectors may become empty or non-empty 
+        // environment, since any of the stacks may become empty or non-empty 
         // at any instant, which one is the first non-empty one may depend on 
         // which thread is looking and exactly when. It is thus impossible to
         // be certain what the correct return value is without stopping the running
@@ -61,14 +61,15 @@ public:
         std::optional<std::pair<I,V>> result;
         for (unsigned nTries = 0; !result && nTries < 5; ++nTries) 
         {
-            auto nonEmpty = [] (const auto & elem) {return !elem._stack.empty();};
-            unsigned index = ranges::find_if(_stacks, nonEmpty) - _stacks.begin();
+            auto nonEmpty = [] (const ProtectedStackT & elem) 
+                {return !elem._stack.empty();};
+            unsigned index = ranges::find_if(_stacks,nonEmpty) - _stacks.begin();
             unsigned size = _stacks.size();
 
             if (index < size) {
-                auto & stack = _stacks[index]._stack;
+                StackT & stack = _stacks[index]._stack;
                 Guard methuselah(_stacks[index]._mutex);
-                if (stack.size()) { 
+                if (stack.size()) {
                     result = std::make_pair(index,stack.back());
                     stack.pop_back();
                 }
@@ -140,19 +141,19 @@ public:
     // Identify a move sequence with the lowest available minimum move count, 
     // return its minimum move count or, if no more sequences are available.
     // return 0. Remove that sequence from the open queue and make it current.
-    unsigned PopNextSequenceIndex() noexcept;
+    unsigned PopNextMoveSequence() noexcept;
     // Copy the moves in the current sequence from the move tree.
     void LoadMoveSequence() noexcept; 
     // Make all the moves in the current sequence
     void MakeSequenceMoves(Game&game) const noexcept;
     // Return a const reference to the current move sequence in its
     // native type.
-    typedef MoveCounter<static_deque<MoveSpec,500> > MoveSequenceType;
+    using MoveSequenceType = MoveCounter<static_deque<MoveSpec,500>>;
     const MoveSequenceType& MoveSequence() const noexcept {return _currentSequence;}
 private:
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
-    MoveNode _leaf{};	    // current sequence's leaf node 
+    MoveNode _leaf{};	    // current sequence's starting leaf node 
     unsigned _startSize{0}; // number of MoveSpecs gotten from the move tree.
     struct MovePair
     {
