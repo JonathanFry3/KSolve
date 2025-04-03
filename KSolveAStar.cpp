@@ -180,13 +180,8 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-<<<<<<< HEAD
-        if (t == 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-=======
         if (t == 0)     // MoveStorage must start singe-threaded.
             std::this_thread::sleep_for(std::chrono::milliseconds(3));
->>>>>>> 99238ca2 (File omitted from previous commit)
     }
 
     // Run one more worker in this (main) thread
