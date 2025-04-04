@@ -180,7 +180,7 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-        if (t == 0)     // MoveStorage must start singe-threaded.
+        if (t == 0)     // MoveStorage must start single-threaded.
             std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 

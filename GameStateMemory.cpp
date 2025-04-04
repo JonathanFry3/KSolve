@@ -39,14 +39,14 @@ GameState::GameState(const Game& game, unsigned moveCount) noexcept
     // except for order are considered equal
     ranges::sort(tableauState);
 
-    _part0 =          (GameState::PartType(tableauState[0])
-                <<21 | GameState::PartType(tableauState[1]))
-                <<21 | GameState::PartType(tableauState[2]);
-    _part1 =          (GameState::PartType(tableauState[3])
-                <<21 | GameState::PartType(tableauState[4]))
-                <<21 | GameState::PartType(tableauState[5]);
+    _part0 =          (PartType(tableauState[0])
+                <<21 | PartType(tableauState[1]))
+                <<21 | PartType(tableauState[2]);
+    _part1 =          (PartType(tableauState[3])
+                <<21 | PartType(tableauState[4]))
+                <<21 | PartType(tableauState[5]);
     auto& fnd{game.Foundation()};
-    _part2 =       ((((GameState::PartType(tableauState[6])
+    _part2 =       ((((PartType(tableauState[6])
                 <<5  | game.StockPile().size())
                 <<4  | fnd[0].size())
                 <<4  | fnd[1].size()) 

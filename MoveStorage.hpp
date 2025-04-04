@@ -2,7 +2,7 @@
 #include "frystl/mf_vector.hpp"
 #include "frystl/static_deque.hpp"
 #include <mutex>          	// for std::mutex, std::lock_guard
-#include <thread>
+#include <thread>           // for std::this_thread::yield()
 
 namespace KSolveNames {
 
