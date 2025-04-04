@@ -109,7 +109,7 @@ static void Worker(
 
     unsigned minMoves0;
     while ( !moveStorage.Shared().OverLimit()
-            && (minMoves0 = moveStorage.PopNextSequenceIndex())    // <- side effect
+            && (minMoves0 = moveStorage.PopNextMoveSequence())    // <- side effect
             && minMoves0 < minSolution.MoveCount()) { 
 
         // Restore game to the state it had when this move
@@ -180,8 +180,8 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-        if (t == 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        if (t == 0)     // MoveStorage must start single-threaded.
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     // Run one more worker in this (main) thread

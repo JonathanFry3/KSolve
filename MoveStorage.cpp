@@ -59,7 +59,7 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
         fringe.Emplace(br._offset, br._mv, stemEnd);
     }
 }
-unsigned MoveStorage::PopNextSequenceIndex( ) noexcept
+unsigned MoveStorage::PopNextMoveSequence( ) noexcept
 {
     if (_shared._firstTime) {
         _shared._firstTime = false;

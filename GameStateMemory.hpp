@@ -27,12 +27,12 @@ namespace KSolveNames {
 //     millions or tens of millions of instances.
 //
 // Conceptually, this is a hash map where the move count is the 
-// value and everything else is the key.  In order to save space,
+// value and game state is the key.  In order to save space,
 // it is implemented as a hash set so the value can be packed in
 // with the key.  The hash and compare functions operate only on
 // the key.
 struct GameState {
-    typedef std::uint64_t PartType;
+    using PartType = std::uint64_t;
     PartType _part0;            // key[0]
     PartType _part1;            // key[1]
     PartType _part2:48;         // key[2]
