@@ -5,7 +5,8 @@
 
 namespace KSolveNames {
 
-static inline uint32_t DeflateTableau(const Pile& cards)
+// 32 bytes --> 21 bits
+static inline uint32_t DeflateTableau(const Pile& cards) noexcept
 {
     uint32_t result {0};
     const unsigned upCount = cards.UpCount();
