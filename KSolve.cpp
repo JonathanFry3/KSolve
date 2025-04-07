@@ -46,7 +46,7 @@ bool IsNumber (const char * a);
 
 const char RANKS[] = { "A23456789TJQK" };
 const char SUITS[] = { "CDSH" };
-const auto missingCard = Card(CardsPerDeck);
+const auto missingCard = Card();
 
 using TokenList = vector<string>;
 TokenList Tokenize(const string& text, string separators)

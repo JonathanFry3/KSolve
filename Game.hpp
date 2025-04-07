@@ -56,7 +56,10 @@ private:
     RankT _rank:5;
 
 public:
-    Card() = default;
+    Card() : 
+        _suit(SuitT(Hearts+1))
+        ,_rank(RankT(King+1))
+        {}
     Card(const Card& orig) = default;
 
     Card(Card::SuitT suit, Card::RankT rank) : 
