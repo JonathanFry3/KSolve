@@ -94,6 +94,7 @@ static void Validate(const Game & game)
 	for(unsigned j = 0; j < TableauSize; ++j){
 		const Pile & tab = tableau[j];
 		assert(tab.UpCount() <= tab.size());
+		assert((tab.UpCount()==0) == (tab.size()==0));
 		if (tab.UpCount() > 1){
 			for (unsigned i = tab.size()-tab.UpCount()+1; i<tab.size(); ++i){
 				assert((tab[i].Covers(tab[i-1])));
@@ -276,7 +277,7 @@ int main()
 
 	// Test AvailableMoves, UnMakeMove
 	{
-		Game sol(Game(deck,3));
+		Game sol(Game(deck,1));
 		PileVec svstock = sol.StockPile().Cards();
 		PileVec svwaste = sol.WastePile().Cards();
 		vector<PileVec> svtableau;
@@ -321,7 +322,7 @@ int main()
 		assert(peekd == "+6d-4c>t3");
 		Moves mvs{a,b,c};
 		string peekmvs = Peek(mvs);
-		assert (peekmvs == "(+6d5>t3,wa>di,t1>t6x4u1)");
+		assert (peekmvs == "(+6d5>t3, wa>di, t1>t6x4u1)");
 	}
 	{
 		// Test ABC_Moves

@@ -35,8 +35,11 @@
   <Type Name="frystl::mf_vector&lt;*,*,*&gt;">
     <DisplayString>size = {_size}</DisplayString>
   </Type>
-  <Type Name="Card">
+  <Type Name="KSolveNames::Card">
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
+  </Type>
+  <Type Name="KSolveNames::MoveSpec">
+    <DisplayString>Move from {_from} to {_to} {_nMoves} moves draw {_drawCount} n {_n} up {_fromUpCount} </DisplayString>
   </Type>
   <!-- flat map/set  -->
   <Type            Name="phmap::flat_hash_set&lt;*,*,*,*&gt;">  
@@ -172,8 +175,5 @@
 
   <Type Name="phmap::priv::parallel_hash_set&lt;*,*,*,*,*,*,*&gt;::iterator">
        <DisplayString>{it_,na}</DisplayString>
-  </Type>
-  <Type Name="Move">
-    <DisplayString>Move from {_from} to {_to} {_nMoves} moves draw {_drawCount} n {_n} up {_fromUpCount} </DisplayString>
   </Type>
 </AutoVisualizer>

@@ -52,8 +52,8 @@ public:
     };
 
 private:
-    SuitT _suit:3;  // must hold 0:4
-    RankT _rank:5;
+    SuitT _suit:4;  // must hold 0:4
+    RankT _rank:4;
 
 public:
     Card() : 
@@ -414,7 +414,7 @@ std::string Peek(const Moves_t & mvs)
     if (mvs.size()) {
         outStr << Peek(mvs[0]);
         for (unsigned imv = 1; imv < mvs.size(); imv+=1)
-            outStr << "," <<  Peek(mvs[imv]);
+            outStr << ", " <<  Peek(mvs[imv]);
     }
     outStr << ")";
     return outStr.str();

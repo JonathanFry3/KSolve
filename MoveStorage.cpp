@@ -1,4 +1,5 @@
 #include "MoveStorage.hpp"
+#include <iostream>
 
 namespace KSolveNames {
 
@@ -16,7 +17,11 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
     // This is where the program fails when XYZ_Test give false negatives.
-    assert(_currentSequence.size() < _currentSequence.capacity());
+    if (!(_currentSequence.size() < _currentSequence.capacity())) {
+        std::string movesString = Peek(_currentSequence);
+        std::cerr << movesString << std::endl;
+        assert(false && "XYZ_Test false negatives");
+    }
     _currentSequence.push_back(move);
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
