@@ -30,10 +30,11 @@ using namespace frystl;
 namespace ranges = std::ranges;
 namespace views = std::views;
 
-const unsigned CardsPerSuit {13};
-const unsigned SuitsPerDeck {4};
-const unsigned CardsPerDeck {CardsPerSuit*SuitsPerDeck};
-const unsigned TableauSize  {7};
+const unsigned CardsPerSuit     {13};
+const unsigned SuitsPerDeck     {4};
+const unsigned CardsPerDeck     {CardsPerSuit*SuitsPerDeck};
+const unsigned TableauSize      {7};
+const unsigned FoundationSize   {4};
 
 class Card
 {
@@ -151,7 +152,12 @@ static PileCodeT FoundationPileCode(Card::SuitT suit)
 
 static bool IsTableau(PileCodeT pile) noexcept
 {
-    return TableauBase <= pile && pile < TableauBase+TableauSize;
+    return (TableauBase <= pile) && (pile < TableauBase+TableauSize);
+}
+
+static bool IsFoundation(PileCodeT pile) noexcept
+{
+    return (FoundationBase <= pile) && (pile <= FoundationBase+FoundationSize);
 }
 
 class alignas(32) Pile : public PileVec
@@ -304,6 +310,18 @@ public:
     bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == 2;}
     bool FlipsTopCard() const noexcept  {return _flipsTopCard;}
     void FlipsTopCard(bool f) noexcept  {_flipsTopCard = f;}
+
+    bool operator==(const MoveSpec rhs) const noexcept
+    {
+        return  _from == rhs._from &&
+                _to == rhs._to &&
+                _flipsTopCard == rhs._flipsTopCard &&
+                _nMoves == rhs._nMoves &&
+                _ladderSuit == rhs._ladderSuit &&
+                _recycle == rhs._recycle &&
+                _drawCount == rhs._drawCount;
+    }
+
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 

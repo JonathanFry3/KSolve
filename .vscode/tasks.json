@@ -305,7 +305,7 @@
 		},		
 		{
 			"type": "shell",
-			"label": "C/C++:  clang build ran",
+			"label": "C/C++:  clang++ build ran",
 			"command": "clang++",
 			"args": [
 				"-g",

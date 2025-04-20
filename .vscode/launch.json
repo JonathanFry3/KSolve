@@ -178,10 +178,10 @@
             "program": "${workspaceFolder}/ran",
             "args": [
                 "--end", "1"
-                ,"--seed","4588"
-                ,"--draw","3"
+                ,"--seed","34049"
+                ,"--draw","1"
                 ,"--mvlimit","11000000"
-            //    ,"--threads","1"
+                ,"--threads","1"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -199,7 +199,7 @@
             ]
         },
 		{
-			"name": "Launch unittests",
+			"name": "(gdb) Launch unittests",
             "type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/unittests",
