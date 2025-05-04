@@ -11,10 +11,6 @@ const std::string suits("cdsh");
 const std::string ranks("a23456789tjqk");
 
 namespace KSolveNames {
-static unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
-{
-    return (numerator+denominator-1)/denominator;
-}
 
 // Returns a string composed only of the characters in input that also appear in filter
 static std::string Filtered(std::string input, std::string filter)
@@ -539,61 +535,6 @@ void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) 
     if (!MovesFromStock(moves, minFoundationSize)) 
         MovesFromFoundation(moves, minFoundationSize);
     return;
-}
-
-// Counts the number of times a card is higher in the stack
-// than a lower card of the same suit.  Remember that the 
-// stack tops are at the back.
-template <class Iter>
-unsigned MisorderCount(Iter begin, Iter end) noexcept
-{
-    unsigned  minRanks[SuitsPerDeck] {14,14,14,14};
-    unsigned result = 0;
-    for (auto i = begin; i != end; ++i){
-        const auto rank = i->Rank();
-        const auto suit = i->Suit();
-        if (rank < minRanks[suit])
-            minRanks[suit] = rank;
-        else
-            result++;
-    }
-    return result;
-}
-
-// Return a lower bound on the number of moves required to complete
-// this game.  This function must return a result that does not 
-// decrease by more than one after any single move.  The sum of 
-// this result plus the number of moves made (from MoveCount())
-// must never decrease when a new move is made (consistency).
-// If it does, we may stop too soon.
-//
-// From https://en.wikipedia.org/wiki/Consistent_heuristic:
-//
-//		In the study of path-finding problems in artificial 
-//		intelligence, a heuristic function is said to be consistent, 
-//		or monotone, if its estimate is always less than or equal 
-//		to the estimated distance from any neighbouring vertex to 
-//		the goal, plus the cost of reaching that neighbour.
-unsigned Game::MinimumMovesLeft() const noexcept
-{
-    const unsigned draw = DrawSetting();
-    const unsigned talonCount = _waste.size() + _stock.size();
-
-    unsigned result = talonCount + QuotientRoundedUp(_stock.size(),draw);
-
-    if (draw == 1) {
-        // This can fail the consistency test for draw setting > 1.
-        result += MisorderCount(_waste.begin(), _waste.end());
-    }
-
-    for (const auto & tPile: _tableau) {
-        if (tPile.size()) {
-            const auto begin = tPile.begin();
-            const unsigned downCount = tPile.size() - tPile.UpCount();
-            result += tPile.size() + MisorderCount(begin, begin+downCount+1);
-        }
-    }
-    return result;
 }
 
 static bool Valid(const Game& gm, 

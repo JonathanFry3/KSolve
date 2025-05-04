@@ -67,6 +67,9 @@ KSolveAStarResult KSolveAStar(
         unsigned threads=0) noexcept;   // Use as many threads as the hardware will run together
 
 unsigned DefaultThreads() noexcept;
+
+unsigned MinimumMovesLeft(const Game& game) noexcept;
 }       // namespace KSolveNames
+
 
 #endif    // KSOLVEASTAR_HPP 

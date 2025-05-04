@@ -41,6 +41,62 @@ public:
     bool IsEmpty() const noexcept {return _sol.empty();}
 };
 
+// Counts the number of times a card is higher in the stack
+// than a lower card of the same suit.  Remember that the 
+// stack tops are at the back.
+template <class Iter>
+unsigned MisorderCount(Iter begin, Iter end) noexcept
+{
+    unsigned  minRanks[SuitsPerDeck] {14,14,14,14};
+    unsigned result = 0;
+    for (auto i = begin; i != end; ++i){
+        const auto rank = i->Rank();
+        const auto suit = i->Suit();
+        if (rank < minRanks[suit])
+            minRanks[suit] = rank;
+        else
+            result++;
+    }
+    return result;
+}
+
+// Return a lower bound on the number of moves required to complete
+// this game.  This function must return a result that does not 
+// decrease by more than one after any single move.  The sum of 
+// this result plus the number of moves made (from MoveCount())
+// must never decrease when a new move is made (consistency).
+// If it does, we may stop too soon.
+//
+// From https://en.wikipedia.org/wiki/Consistent_heuristic:
+//
+//		In the study of path-finding problems in artificial 
+//		intelligence, a heuristic function is said to be consistent, 
+//		or monotone, if its estimate is always less than or equal 
+//		to the estimated distance from any neighbouring vertex to 
+//		the goal, plus the cost of reaching that neighbour.
+unsigned MinimumMovesLeft(const Game& game) noexcept
+{
+    const unsigned draw = game.DrawSetting();
+    const unsigned talonCount = 
+        game.WastePile().size() + game.StockPile().size();
+
+    unsigned result = talonCount + QuotientRoundedUp(game.StockPile().size(),draw);
+
+    if (draw == 1) {
+        // This can fail the consistency test for draw setting > 1.
+        result += MisorderCount(game.WastePile().begin(), game.WastePile().end());
+    }
+
+    for (const auto & tPile: game.Tableau()) {
+        if (tPile.size()) {
+            const auto begin = tPile.begin();
+            const unsigned downCount = tPile.size() - tPile.UpCount();
+            result += tPile.size() + MisorderCount(begin, begin+downCount+1);
+        }
+    }
+    return result;
+}
+
 struct WorkerState {
 public:
     Game _game;
@@ -149,14 +205,14 @@ static void Worker(
                 unsigned minRemaining = -1U;
                 bool pass = true;
                 if (!minSolution.IsEmpty()) { 
-                    minRemaining = game.MinimumMovesLeft(); // expensive
+                    minRemaining = MinimumMovesLeft(game); // expensive
                     pass = (made + minRemaining) < minSolution.MoveCount();
                 }
                 if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
-                    if (minRemaining == -1U) minRemaining = game.MinimumMovesLeft();
+                    if (minRemaining == -1U) minRemaining = MinimumMovesLeft(game);
                     const unsigned minMoves = made + minRemaining;
-                    // The following assert tests the consistency of
-                    // Game::MinimumMovesLeft(), our heuristic.  
+                    // The following assert tests the consistency (monotonicity)
+                    // of MinimumMovesLeft(), our heuristic.  
                     // Never remove it.
                     assert(minMoves0 <= minMoves);
                     moveStorage.PushBranch(mv,minMoves);
@@ -204,7 +260,7 @@ KSolveAStarResult KSolveAStar(
     CandidateSolution solution;
     WorkerState state(game,solution,sharedMoveStorage,closed);
 
-    const unsigned startMoves = state._game.MinimumMovesLeft();
+    const unsigned startMoves = MinimumMovesLeft(state._game);
 
     // Prime the pump
     state._moveStorage.Shared().Start(moveTreeLimit,startMoves);

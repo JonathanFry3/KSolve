@@ -36,6 +36,12 @@ const unsigned CardsPerDeck     {CardsPerSuit*SuitsPerDeck};
 const unsigned TableauSize      {7};
 const unsigned FoundationSize   {4};
 
+inline unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
+{
+    return (numerator+denominator-1)/denominator;
+}
+
+
 class Card
 {
 public:
@@ -632,7 +638,6 @@ public:
     void        Deal() noexcept;
     void        MakeMove(MoveSpec mv) noexcept;
     void        UnMakeMove(MoveSpec mv) noexcept;
-    unsigned    MinimumMovesLeft() const noexcept;
     void        MakeMove(const XMove& xmv) noexcept;
     bool        IsValid(MoveSpec mv) const noexcept;
     bool        IsValid(XMove xmv) const noexcept;

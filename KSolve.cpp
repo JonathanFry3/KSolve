@@ -565,7 +565,7 @@ string GameDiagram(const Game& game, unsigned moveNum) {
         }
         ss << '\n';
     }
-    ss << "Minimum Moves: " << moveNum+game.MinimumMovesLeft();
+    ss << "Minimum Moves: " << moveNum+MinimumMovesLeft(game);
     return ss.str();
 }
 
