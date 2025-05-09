@@ -577,7 +577,18 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
     return false;
 }
 
-typedef QMovesTemplate<43> QMoves;
+// Remove some provably non-optimal moves.
+template <class V1, class V2>
+static void XYZ_Filter(V1& newMoves, const V2& movesMade)
+{
+    auto newEnd = ranges::remove_if(newMoves,
+        [&movesMade] (MoveSpec move) 
+            {return XYZ_Move(move, movesMade);}).begin();
+    while (newMoves.end() != newEnd) newMoves.pop_back();
+    return;
+}
+
+using QMoves = QMovesTemplate<43>;
 
 class Game
 {
@@ -644,17 +655,6 @@ public:
     unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
 
-    // Remove some provably non-optimal moves.
-    template <class V1, class V2>
-    void XYZ_Scan(V1& newMoves, const V2& movesMade)
-    {
-        auto newEnd = ranges::remove_if(newMoves,
-            [&movesMade] (MoveSpec move) 
-                {return XYZ_Move(move, movesMade);}).begin();
-        while (newMoves.end() != newEnd) newMoves.pop_back();
-        return;
-    }
-
     // Return a vector of the available moves that pass the XYZ_Move filter.
     // Dominant moves are returned one at a time; others, all at once.
     template <class V>
@@ -666,7 +666,7 @@ public:
 
         if (_domMovesCache.empty()) {
             DominantAvailableMoves(_domMovesCache, minFoundationSize);
-            XYZ_Scan(_domMovesCache, movesMade);
+            XYZ_Filter(_domMovesCache, movesMade);
         }
         if (_domMovesCache.size()) {
             avail.push_back(_domMovesCache.back());
@@ -675,7 +675,7 @@ public:
         }
 
         NonDominantAvailableMoves(avail, minFoundationSize);
-        XYZ_Scan(avail, movesMade);
+        XYZ_Filter(avail, movesMade);
         return avail;
     }
 
