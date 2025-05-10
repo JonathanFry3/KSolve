@@ -619,7 +619,7 @@ private:
     void NonDominantAvailableMoves(QMoves& avail, unsigned minFoundationSize) const noexcept;
     // Parts of NonDominantAvailableMoves()
     void MovesFromTableau(QMoves & moves) const noexcept;
-    bool MovesFromStock(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
     void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
 
     std::array<Pile,PileCount>& AllPiles() {

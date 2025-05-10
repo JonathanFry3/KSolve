@@ -464,10 +464,9 @@ static TalonFutureVec TalonCards(const Game & game)
 }
 
 // Append to "moves" any available moves from the talon.
-// Returns true if the one move in moves is a short foundation move, otherwise false.
-bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noexcept
+void Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noexcept
 {
-    // Look for move from waste to tableau or foundation, including moves that become available 
+    // Look for move from the talon to tableau or foundation, including moves that become available 
     // after one or more draws.  
     const TalonFutureVec talon(TalonCards(*this));
     for (auto talonCard : talon){
@@ -477,7 +476,6 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
             moves.AddStockMove(pileNo, talonCard._nMoves+1, talonCard._drawCount, recycle);
             if (talonCard._card.Rank() <= minFoundationSize+1){
                 if (_drawSetting == 1) {
-                    if (moves.size() == 1) return true;
                     break;		// This is best next move from among the remaining talon cards
                 } else
                     continue;  	// This is best move for this card.  A card further on might be a better move.
@@ -497,7 +495,6 @@ bool Game::MovesFromStock(QMoves & moves, unsigned minFoundationSize) const noex
             }
         }
     }
-    return false;
 }
 
 // Look for moves from foundation piles to tableau piles.
@@ -523,17 +520,15 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
 }
 
 // Returns a list of valid non-dominant moves - they either do not move
-// a card to the foundation or they create foundation imbalance.
+// a card to the foundation or they unbalance the foundation.
 // Rather than generate individual draws from
 // stock to waste, it generates Move objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
 void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) const noexcept
 {
     MovesFromTableau(moves);
-    // MovesFromStock returns true if it finds a short foundation move
-    // when no other moves have been found.
-    if (!MovesFromStock(moves, minFoundationSize)) 
-        MovesFromFoundation(moves, minFoundationSize);
+    MovesFromTalon(moves, minFoundationSize); 
+    MovesFromFoundation(moves, minFoundationSize);
     return;
 }
 
