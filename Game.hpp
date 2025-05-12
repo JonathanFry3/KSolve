@@ -270,6 +270,8 @@ private:
             bool _recycle:1;
         };
     };
+
+public:
     // Construct a stock MoveSpec. Their cumulative effect is to 
     // draw 'draw' cards (may be negative) from stock to (from)
     // the waste pile. One card is then moved from the waste pile
@@ -292,11 +294,18 @@ private:
         {
             assert(from != Stock);
         }
-    friend MoveSpec StockMove(PileCodeT, unsigned, int, bool) noexcept;
-    friend MoveSpec NonStockMove(PileCodeT, PileCodeT, unsigned, unsigned) noexcept;
-    friend MoveSpec LadderMove(PileCodeT, PileCodeT, unsigned, unsigned, Card) noexcept;
-
-public:
+    // Construct a ladder MoveSpec
+    MoveSpec(PileCodeT from, PileCodeT to, unsigned n, 
+        unsigned fromUpCount, Card::SuitT ladderSuit) noexcept
+    : _from(from)
+    , _to(to)
+    , _nMoves(2)
+    , _cardsToMove(n)
+    , _fromUpCount(fromUpCount)
+    , _ladderSuit(ladderSuit)
+    {
+        assert(IsTableau(from) && IsTableau(to));
+    }
     MoveSpec() = default;
     bool IsDefault() const noexcept     {return _from == _to;}
 
@@ -332,24 +341,6 @@ public:
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
 
-inline MoveSpec StockMove(PileCodeT to, unsigned nMoves, int draw, bool recycle) noexcept
-{
-    MoveSpec result(to, nMoves, draw);
-    result.SetRecycle(recycle);
-    return result; 
-}
-inline MoveSpec NonStockMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
-{
-    return MoveSpec(from,to,n,fromUpCount);
-}
-inline MoveSpec LadderMove(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
-{
-    MoveSpec result{from,to,n,fromUpCount};
-    result._nMoves = 2;
-    result._ladderSuit = ladderCard.Suit();
-    return result;
-}
-
 using Moves = std::vector<MoveSpec>;
 
 // Class for collecting freshly-built MoveSpecs in AvailableMoves()
@@ -361,17 +352,18 @@ public:
     void AddStockMove(PileCodeT to, unsigned nMoves, 
         int draw, bool recycle) noexcept
     {
-        BaseType::push_back(StockMove(to,nMoves,draw,recycle));
+        BaseType::emplace_back(to,nMoves,draw);
+        BaseType::back().SetRecycle(recycle);
     }
     void AddNonStockMove(PileCodeT from, PileCodeT to, 
         unsigned n, unsigned fromUpCount) noexcept
     {
-        BaseType::push_back(NonStockMove(from,to,n,fromUpCount));
+        BaseType::emplace_back(from,to,n,fromUpCount);
     }
     void AddLadderMove(PileCodeT from, PileCodeT to, 
         unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
     {
-        BaseType::push_back(LadderMove(from,to,n,fromUpCount,ladderCard));
+        BaseType::emplace_back(from,to,n,fromUpCount,ladderCard.Suit());
     }
 };
 
@@ -555,11 +547,12 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
     for (MoveSpec prevMove: views::reverse(movesMade)){ 
         if (prevMove.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
-            MoveSpec foundationMove = 
-                NonStockMove(prevMove.From(),
-                             prevMove.LadderPileCode(),
-                             1,
-                             prevMove.FromUpCount()-prevMove.NCards());
+            MoveSpec foundationMove{
+                prevMove.From(),
+                prevMove.LadderPileCode(),
+                1,
+                prevMove.FromUpCount()-prevMove.NCards()
+            };
             foundationMove.FlipsTopCard(prevMove.FlipsTopCard());
             switch (XYZ_Test(foundationMove, trialMove)) {
                 case returnTrue: return true;

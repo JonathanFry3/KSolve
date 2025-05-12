@@ -689,6 +689,10 @@ std::string Peek(const MoveSpec & mv)
         unsigned n = mv.NCards();
         if (n != 1) outStr << "x" << n;
         if (mv.FromUpCount()) outStr << "u" << mv.FromUpCount();
+        if (mv.IsLadderMove()) {
+            outStr << ", ";
+            outStr << Peek(MoveSpec(mv.From(), mv.LadderPileCode(), 1, mv.FromUpCount()-n));
+        }
     }
     return outStr.str();
 }
