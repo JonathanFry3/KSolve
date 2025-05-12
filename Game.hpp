@@ -254,11 +254,10 @@ class MoveSpec
 {
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
-    PileCodeT _to:7 = PileCount;
+    PileCodeT _to   = PileCount;
     bool _flipsTopCard:1 = false;
     unsigned char _nMoves:5 = 0;
     Card::SuitT _ladderSuit :2 = Card::Clubs; 
-    bool _recycle:1 = false;
     union {
         // Non-stock MoveSpec
         struct {
@@ -266,7 +265,10 @@ private:
             unsigned char _fromUpCount:4;
         };
         // Stock MoveSpec
-        signed char _drawCount;			// draw this many cards (may be negative)
+        struct {
+            signed char _drawCount:7;			// draw this many cards (may be negative)
+            bool _recycle:1;
+        };
     };
     // Construct a stock MoveSpec. Their cumulative effect is to 
     // draw 'draw' cards (may be negative) from stock to (from)
@@ -285,7 +287,6 @@ private:
         : _from(from)
         , _to(to)
         , _nMoves(1)
-        , _recycle(0)
         , _cardsToMove(n)
         , _fromUpCount(fromUpCount)
         {
