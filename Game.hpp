@@ -166,7 +166,8 @@ static bool IsFoundation(PileCodeT pile) noexcept
     return (FoundationBase <= pile) && (pile <= FoundationBase+FoundationSize);
 }
 
-class alignas(32) Pile : public PileVec
+class alignas(32)   // align to a cache line
+    Pile : public PileVec
 {
 private:
     PileCodeT _code;
@@ -226,7 +227,7 @@ class MoveSpec
 //
 // Game::UnMakeMove() cannot infer the value of the from tableau pile's
 // up count before the move (because of flips), so Game::AvailableMoves() 
-// includes that in any Move from a tableau pile.
+// includes that in any MoveSpec from a tableau pile.
 //
 // Game::AvailableMoves creates MoveSpecs around the talon (the waste and
 // stock piles) that must be counted as multiple moves.  The number
@@ -235,8 +236,7 @@ class MoveSpec
 // A "ladder move" is a move from one tableau pile to another which
 // is made for the purpose of exposing a card that can be moved to
 // the tableau.  The MoveSpec for such a move makes that move and then
-// moves the exposed card to the foundation. It retains the suit of 
-// the exposed card because UnMakeMove() needs it.
+// moves the exposed card to the foundation.
 //
 // For a ladder move, FlipsTopCard() indicates whether the move to 
 // the foundation flips a face-down card, not whether the move to
@@ -397,14 +397,14 @@ class MoveCounter : public Container
     unsigned _nMoves;
     using Base = Container;
 public:
-    unsigned MoveCount() const           {return _nMoves;}
+    unsigned MoveCount() const noexcept     {return _nMoves;}
 
-    void clear()
+    void clear() noexcept
     {
         _nMoves = 0;
         Base::clear();
     }
-    void push_front(const MoveSpec& mv)
+    void push_front(const MoveSpec& mv) 
     {
         _nMoves += mv.NMoves();
         Base::push_front(mv);
@@ -415,7 +415,7 @@ public:
         Base::pop_front();
     }
 
-    void push_back(const MoveSpec& mv)
+    void push_back(const MoveSpec& mv) 
     {
         _nMoves += mv.NMoves();
         Base::push_back(mv);
