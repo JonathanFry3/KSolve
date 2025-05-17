@@ -222,6 +222,7 @@ int main(int argc, char * argv[]) {
         KSolveAStarResult outcome = KSolveAStar(game, moveLimit, threads);
         auto & result(outcome._code);
         Moves & moves(outcome._solution); 
+        TestSolution(game,moves);
         unsigned moveCount = MoveCount(moves);
         bool canReplay = false;
         if (result == SolvedMinimal || result == Solved) {
@@ -244,8 +245,8 @@ int main(int argc, char * argv[]) {
             cout << "Unknown.";
         }
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
-        cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec. ";
-        cout << setprecision(4) << outcome._moveTreeSize/1e6 << " million moves generated.\n";
+        cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec., ";
+        cout << setprecision(4) << outcome._moveTreeSize/1e6 << " million moves in the move tree.\n";
         if (outputMethod < 2 && replay && canReplay) {
             game.Deal();
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
