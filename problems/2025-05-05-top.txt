@@ -1,0 +1,16 @@
+# 112 moves on phone, one solver; 111 moves from KSolve
+naloT: ha cj s5 s6 dq s3 sj sq hj dt s4 d5 d8 c4 sk ca s8 h7 c5 cq c9 ct d6 hq 
+c2
+s9 d3
+h6 da h5 
+c3 sa dk d7 
+ck c6 d9 st s2
+h2 dj c7 ht h4 h3
+h9 s7 d4 h8 c8 hk d2 
+# Minimal solution in 111 moves + 21 flips in 2 passes.
+# Took 8.801 sec., 3.395 million moves generated.
+# DR1 WH 6H F6 DR2 W3 DR2 W5 DR2 W5 DR6 W2 DR3 WC 1C W1 4C F4 4S F4 WC DR3 WC 
+# DR1 W4 DR2 W6 76 F7 64-3 F6 36-2 F3 3D F3 62-3 F6 65 F6 62 F6 6H 56-4 F5 5C
+# F5 2H 3H DR1 W7 27 2H 2C 72-3 F7 72 F7 W6 WH W5 7H F7 7C F7 6C 26-6 F2 73 F7
+# 7D 2D 6D WD 42-5 F4 2H 52-2 F5 25-2 2C DR1 NEW DR1 WC DR1 W4 52-3 F5 5S DR1
+# WS DR4 WS 6S 6D 4S 6S 4D 6D 2S 6S 2D 6H 2S WD 6S 2D WH DR1 WH 6D 2C WS 6C 3H 2D 1S 
