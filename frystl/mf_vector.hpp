@@ -755,13 +755,12 @@ namespace frystl
             size_type nu = std::min(size()-index, n);
             Grow(_size + n);    // invalidates iterators, does not change _size
             iterator result = MakeIterator(index);
-            // fill the uninitialized target cells by move construction
             iterator from = MakeIterator(_size-nu);
-            iterator to = MakeIterator(_size-nu+n);
-            for (size_type i = 0; i < nu; ++i)
-                Construct((to++).operator->(), std::move(*(from++)));
+            iterator to = MakeIterator(_size+n);
+            // fill the uninitialized target cells by move construction
+            auto a = MoveConstructBackward(from, End(), to);
             // shift elements to previously occupied cells by move assignment
-            std::move_backward(result, MakeIterator(_size-nu), from);
+            std::move_backward(result, End()-nu, a);
             _size += n;
             return result;
         }

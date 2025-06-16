@@ -263,7 +263,7 @@ namespace frystl
         }
         iterator erase(const_iterator position) noexcept
         {
-            FRYSTL_ASSERT2(GoodIter(position + 1), 
+            FRYSTL_ASSERT2(Dereferenceable(position), 
                 "static_vector::erase(pos): pos out of range");
             iterator x = const_cast<iterator>(position);
             Destroy(x);
@@ -277,9 +277,9 @@ namespace frystl
             iterator l = const_cast<iterator>(last);
             if (first != last)
             {
-                FRYSTL_ASSERT2(GoodIter(first + 1),
+                FRYSTL_ASSERT2(Valid(first),
                     "static_vector::erase(first,last): bad first");
-                FRYSTL_ASSERT2(GoodIter(last),
+                FRYSTL_ASSERT2(Valid(last),
                     "static_vector::erase(first,last): bad last");
                 FRYSTL_ASSERT2(first < last,
                     "static_vector::erase(first,last): last < first");
@@ -317,7 +317,7 @@ namespace frystl
         iterator insert(const_iterator position, const value_type &val)
         {
             FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
-            FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
+            FRYSTL_ASSERT2(Valid(position),"static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p,1);
             FillCell(p, val);
@@ -328,14 +328,14 @@ namespace frystl
         iterator insert(const_iterator position, value_type &&val) noexcept
         {
             FRYSTL_ASSERT2(_size < Capacity, "static_vector::insert: overflow");
-            FRYSTL_ASSERT2(GoodIter(position),"static_vector::insert(): bad position");
+            FRYSTL_ASSERT2(Valid(position),"static_vector::insert(): bad position");
             return emplace(position, std::move(val));
         }
         // fill insert
         iterator insert(const_iterator position, size_type n, const value_type &val)
         {
             FRYSTL_ASSERT2(_size + n <= Capacity, "static_vector::insert: overflow");
-            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+            FRYSTL_ASSERT2(Valid(position),
                 "static_vector::insert(): bad position");
             iterator p = const_cast<iterator>(position);
             MakeRoom(p, n);
@@ -447,17 +447,22 @@ namespace frystl
         // Move cells at and to the right of p to the right by n spaces.
         void MakeRoom(iterator p, size_type n) noexcept
         {
+            // nu = the number of uninitiallized cells to occupy.
             size_type nu = std::min(size_type(end() - p), n);
-            // fill the uninitialized target cells by move construction
-            for (iterator src = end()-nu; src < end(); src++)
-                Construct(src + n , std::move(*src));
             // shift elements to previously occupied cells by move assignment
-            std::move_backward(p, end() - nu, end());
+            std::move_backward(p, end()-nu, 
+                // fill the uninitialized target cells by move construction
+                MoveConstructBackward(end()-nu, end(), end()+n));
         }
-        // returns true iff it-1 can be dereferenced.
-        bool GoodIter(const const_iterator &it) noexcept
+        // returns true iff it can be dereferenced.
+        bool Dereferenceable(const const_iterator &it) noexcept
         {
-            return begin() < it && it <= end();
+            return cbegin() <= it && it < cend();
+        }
+        // returns true iff it refers to this vector
+        bool Valid(const_iterator &it) const noexcept
+        {
+            return cbegin() <= it && it <= cend();
         }
         template <class... Args>
         void FillCell(iterator pos, Args && ... args)

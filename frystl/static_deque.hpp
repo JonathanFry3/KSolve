@@ -125,7 +125,7 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= capacity(), "Too big");
+            FRYSTL_ASSERT2(donor.size() <= capacity(), "Overflowin static_deque");
             for (auto &m : donor)
                 emplace_back(m);
         }
@@ -146,7 +146,7 @@ namespace frystl
             : _begin(Centered(donor.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(donor.size() <= capacity(),"Overflow");
+            FRYSTL_ASSERT2(donor.size() <= capacity(),"Overflowin static_deque");
             for (auto &m : donor)
                 emplace_back(std::move(m));
             donor.clear();
@@ -156,13 +156,13 @@ namespace frystl
             : _begin(Centered(il.size()))
             , _end(_begin)
         {
-            FRYSTL_ASSERT2(il.size() <= capacity(),"Overflow");
+            FRYSTL_ASSERT2(il.size() <= capacity(),"Overflowin static_deque");
             for (auto &value : il)
                 emplace_back(value);
         }
         ~static_deque() noexcept
         {
-            DestroyAll();
+            clear();
         }
         void clear() noexcept
         {
@@ -206,7 +206,7 @@ namespace frystl
         }
         void pop_front() noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end, "pop_front called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end, "static_deque underflow");
             ++_begin;
             Destroy(_begin-1);
         }
@@ -235,7 +235,7 @@ namespace frystl
         }
         void pop_back() noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end,"pop_back() called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end,"static_deque underflow");
             --_end;
             Destroy(_end);
         }
@@ -273,28 +273,28 @@ namespace frystl
         }
         reference front() noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end,"front() called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end,"static_deque underflow");
             return *_begin;
         }
         const_reference front() const noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end,"front() called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end,"static_deque underflow");
             return *_begin;
         }
         reference back() noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end,"back() called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end,"static_deque underflow");
             return *(_end-1);
         }
         const_reference back() const noexcept
         {
-            FRYSTL_ASSERT2(_begin < _end,"back() called on empty static_deque");
+            FRYSTL_ASSERT2(_begin < _end,"static_deque underflow");
             return *(_end-1);
         }
         template <class... Args>
         iterator emplace(const_iterator pos, Args && ... args)
         {
-            FRYSTL_ASSERT2(cbegin() <= pos && pos <= cend(),
+            FRYSTL_ASSERT2(Valid(pos),
                 "Invalid position in static_deque::emplace()");
             unsigned offset = pos - cbegin();
             if (pos == _begin) emplace_front(std::forward<Args>(args)...);
@@ -364,7 +364,7 @@ namespace frystl
         // move insert()
         iterator insert(const_iterator position, value_type &&val) noexcept
         {
-            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+            FRYSTL_ASSERT2(Valid(position),
                 "Bad position argument in static_deque::insert()");
             iterator b = begin();
             iterator e = end();
@@ -378,7 +378,7 @@ namespace frystl
         // fill insert
         iterator insert(const_iterator position, size_type n, const_reference val)
         {
-            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+            FRYSTL_ASSERT2(Valid(position),
                 "Bad position argument in static_deque::insert()");
             iterator b = begin();
             iterator e = end();
@@ -437,7 +437,7 @@ namespace frystl
         iterator insert(const_iterator position, std::initializer_list<value_type> il)
         {
             size_type n = il.size();
-            FRYSTL_ASSERT2(begin() <= position && position <= end(),
+            FRYSTL_ASSERT2(Valid(position),
                 "Bad position argument in static_deque::insert()");
             iterator b = begin();
             iterator e = end();
@@ -518,8 +518,8 @@ namespace frystl
             if (first != last)
             {
                 FRYSTL_ASSERT2(first < last,"Bad arguments to static_deque::erase()");
-                FRYSTL_ASSERT2(Dereferencable(first),"Bad arguments to static_deque::erase()");
-                FRYSTL_ASSERT2(Dereferencable(last-1),"Bad arguments to static_deque::erase()");
+                FRYSTL_ASSERT2(Valid(first),"Bad arguments to static_deque::erase()");
+                FRYSTL_ASSERT2(Valid(last),"Bad arguments to static_deque::erase()");
                 const iterator f = const_cast<iterator>(first);
                 const iterator l = const_cast<iterator>(last);
                 unsigned nToErase = last-first;
@@ -576,10 +576,10 @@ namespace frystl
             if (!cond)
                 throw std::out_of_range("static_deque range error");
         }
-        // returns true iff iter can be dereferenced.
-        bool Dereferencable(const const_iterator &iter) const noexcept
+        // returns true iff iter is a valid iterator in this vector.
+        bool Valid(const const_iterator &iter) const noexcept
         {
-            return begin() <= iter && iter < end();
+            return begin() <= iter && iter <= end();
         }
         // Slide cells at and behind p to the back by n spaces.
         // Return an iterator pointing to the first cleared cell (p).
@@ -628,7 +628,7 @@ namespace frystl
         template <class RAIter>
         void Center(RAIter begin, RAIter end, std::random_access_iterator_tag) noexcept
         {
-            FRYSTL_ASSERT2(end-begin <= capacity(), "Overflow");
+            FRYSTL_ASSERT2(end-begin <= capacity(), "Overflowin static_deque");
             _begin = _end = Centered(end-begin);
         }
         template <class InpIter>
@@ -659,11 +659,9 @@ namespace frystl
         }
         void SlideToFront(pointer last, pointer tgt) noexcept
         {
-            pointer src = _begin;
-            while (src != last && tgt < _begin) {
-                    new(tgt++) value_type(std::move(*src++));                
-            }
-            std::move(src, last, tgt);
+            auto n = std::min(_begin-tgt, last-_begin);
+            MoveConstruct(_begin, _begin+n, tgt); 
+            std::move(_begin+n, last, tgt+n);           
         }
         void SlideAllToBack() noexcept
         {
@@ -674,12 +672,9 @@ namespace frystl
         }
         void SlideToBack(pointer first, pointer end) noexcept
         {
-            pointer tgt = end;
-            pointer src = _end;
-            while (first < src && _end < tgt) {
-                new(--tgt) value_type(std::move(*--src));
-            }
-            std::move_backward(first, src, tgt);
+            auto nToMoveConstruct = std::min(_end-first, end-_end);
+            std::move_backward(first, _end-nToMoveConstruct, 
+                MoveConstructBackward(_end-nToMoveConstruct, _end, end));
         }
     };
     //
