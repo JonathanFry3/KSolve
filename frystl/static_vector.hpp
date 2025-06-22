@@ -447,12 +447,12 @@ namespace frystl
         // Move cells at and to the right of p to the right by n spaces.
         void MakeRoom(iterator p, size_type n) noexcept
         {
+            // nu = the number of uninitiallized cells to occupy.
             size_type nu = std::min(size_type(end() - p), n);
-            // fill the uninitialized target cells by move construction
-            for (iterator src = end()-nu; src < end(); src++)
-                Construct(src + n , std::move(*src));
             // shift elements to previously occupied cells by move assignment
-            std::move_backward(p, end() - nu, end());
+            std::move_backward(p, end()-nu, 
+                // fill the uninitialized target cells by move construction
+                MoveConstructBackward(end()-nu, end(), end()+n));
         }
         // returns true iff it can be dereferenced.
         bool Dereferenceable(const const_iterator &it) noexcept

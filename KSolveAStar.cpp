@@ -255,25 +255,24 @@ KSolveAStarResult KSolveAStar(
         unsigned moveTreeLimit,
         unsigned nThreads) noexcept
 {
-    SharedMoveStorage sharedMoveStorage;
     GameStateMemory closed;
     CandidateSolution solution;
+
+    const unsigned startMoves = MinimumMovesLeft(game);
+    SharedMoveStorage sharedMoveStorage(moveTreeLimit, startMoves);
+
     WorkerState state(game,solution,sharedMoveStorage,closed);
 
-    const unsigned startMoves = MinimumMovesLeft(state._game);
-
-    // Prime the pump
-    state._moveStorage.Shared().Start(moveTreeLimit,startMoves);
-    
     RunWorkers(nThreads, state);
     
+    bool overLimit = sharedMoveStorage.OverLimit();
     KSolveAStarCode outcome;
     if (solution.GetMoves().size()) { 
-        outcome = sharedMoveStorage.OverLimit()
+        outcome = overLimit
                 ? Solved
                 : SolvedMinimal;
     } else {
-        outcome = sharedMoveStorage.OverLimit()
+        outcome = overLimit
                 ? GaveUp
                 : Impossible;
     }
@@ -283,7 +282,6 @@ KSolveAStarResult KSolveAStar(
         state._closedList.Size(),
         sharedMoveStorage.MoveTreeSize(),
         sharedMoveStorage.FringeSize());
-    ;
 }
 
 }   // namespace KSolveNames

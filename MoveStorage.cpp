@@ -3,13 +3,6 @@
 
 namespace KSolveNames {
 
-void SharedMoveStorage::Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
-{
-    _moveTreeSizeLimit = moveTreeSizeLimit;
-    _moveTree.reserve(moveTreeSizeLimit+1000);
-    _initialMinMoves = minMoves;
-    _firstTime = true;
-}
 MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
     , _startSize(0)
@@ -17,11 +10,12 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
     // This is where the program fails when XYZ_Test give false negatives.
+    #ifndef NDEBUG
     if (!(_currentSequence.size() < _currentSequence.capacity())) {
-        std::string movesString = Peek(_currentSequence);
-        std::cerr << movesString << std::endl;
+        std::cerr << Peek(_currentSequence) << std::endl;
         assert(false && "XYZ_Test false negatives");
     }
+    #endif
     _currentSequence.push_back(move);
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
@@ -75,7 +69,7 @@ unsigned MoveStorage::PopNextMoveSequence( ) noexcept
         _leaf = nextLeaf->second;
         return nextLeaf->first+_shared._initialMinMoves;
     } else {
-        return 0;     // last time for this thread
+        return 0;     // fringe is empty
     }
 }
 void MoveStorage::LoadMoveSequence() noexcept

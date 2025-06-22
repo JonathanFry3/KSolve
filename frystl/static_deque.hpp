@@ -659,11 +659,9 @@ namespace frystl
         }
         void SlideToFront(pointer last, pointer tgt) noexcept
         {
-            pointer src = _begin;
-            while (src != last && tgt < _begin) {
-                    new(tgt++) value_type(std::move(*src++));                
-            }
-            std::move(src, last, tgt);
+            auto n = std::min(_begin-tgt, last-_begin);
+            MoveConstruct(_begin, _begin+n, tgt); 
+            std::move(_begin+n, last, tgt+n);           
         }
         void SlideAllToBack() noexcept
         {
@@ -674,12 +672,9 @@ namespace frystl
         }
         void SlideToBack(pointer first, pointer end) noexcept
         {
-            pointer tgt = end;
-            pointer src = _end;
-            while (first < src && _end < tgt) {
-                new(--tgt) value_type(std::move(*--src));
-            }
-            std::move_backward(first, src, tgt);
+            auto nToMoveConstruct = std::min(_end-first, end-_end);
+            std::move_backward(first, _end-nToMoveConstruct, 
+                MoveConstructBackward(_end-nToMoveConstruct, _end, end));
         }
     };
     //

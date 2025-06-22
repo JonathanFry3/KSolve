@@ -410,7 +410,7 @@ namespace frystl
         {
             Grow(_size + 1);
             iterator e = End();
-            Construct(e.operator->(), std::forward<Args>(args)...);
+            Construct(&*e, std::forward<Args>(args)...);
             ++_size;
             return *e;
         }
@@ -418,26 +418,26 @@ namespace frystl
         iterator emplace(const_iterator position, Args&&... args)
         {
             iterator pos = MakeRoom(position,1);
-            Construct(pos.operator->(), std::forward<Args>(args)...);
+            Construct(&*pos, std::forward<Args>(args)...);
             return pos;
         }
         void push_back(const_reference t)
         {
             Grow(_size + 1);
-            Construct(End().operator->(), t);
+            Construct(&*End(), t);
             ++_size;
         }
         void push_back(value_type&& value)
         {
             Grow(_size + 1);
-            Construct(End().operator->(), std::move(value));
+            Construct(&*End(), std::move(value));
             ++_size;
         }
         void pop_back() noexcept
         {
             FRYSTL_ASSERT2(_size,"mf_vector::pop_back() on empty vector");
             iterator e = MakeIterator(--_size);
-            Destroy(e.operator->());
+            Destroy(&*e);
             if (e.First() == e._current)
                 Shrink();
         }
@@ -579,7 +579,7 @@ namespace frystl
             // copy val n times into newly available cells
             for (iterator i = p; i < p + n; ++i)
             {
-                Construct(i.operator->(), val);
+                Construct(&*i, val);
             }
             return p;
         }
@@ -755,13 +755,12 @@ namespace frystl
             size_type nu = std::min(size()-index, n);
             Grow(_size + n);    // invalidates iterators, does not change _size
             iterator result = MakeIterator(index);
-            // fill the uninitialized target cells by move construction
             iterator from = MakeIterator(_size-nu);
-            iterator to = MakeIterator(_size-nu+n);
-            for (size_type i = 0; i < nu; ++i)
-                Construct((to++).operator->(), std::move(*(from++)));
+            iterator to = MakeIterator(_size+n);
             // shift elements to previously occupied cells by move assignment
-            std::move_backward(result, MakeIterator(_size-nu), from);
+            std::move_backward(result, from, 
+                // fill the uninitialized target cells by move construction
+                MoveConstructBackward(from, End(), to));
             _size += n;
             return result;
         }

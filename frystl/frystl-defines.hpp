@@ -45,6 +45,24 @@ namespace frystl {
     {
         new ((void*)where) value_type(std::forward<Args>(args)...);
     }
+    // Like std::move(a,b,c) but does not assume target cells are
+    // initialized.
+    template< class InputIt, class OutputIt >
+    OutputIt MoveConstruct(InputIt first, InputIt last, OutputIt firstOut)
+    {
+        for (; first != last; ++firstOut, ++first)
+            Construct(&*firstOut, std::move(*first));
+        return firstOut;
+    }    
+    // Like std::move_backward(a,b,c) but does not assume target cells are
+    // initialized.
+    template< class BidirIt1, class BidirIt2 >
+    BidirIt2 MoveConstructBackward( BidirIt1 first, BidirIt1 last, BidirIt2 firstOut)
+    {
+        while (first != last)
+            Construct(&*(--firstOut), std::move(*--last));
+        return firstOut;
+    }    
     template <class value_type>
     void Destroy(value_type * x)
     {
