@@ -282,7 +282,6 @@ KSolveAStarResult KSolveAStar(
         state._closedList.Size(),
         sharedMoveStorage.MoveTreeSize(),
         sharedMoveStorage.FringeSize());
-    ;
 }
 
 }   // namespace KSolveNames

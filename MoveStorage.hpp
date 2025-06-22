@@ -111,9 +111,11 @@ private:
     friend class MoveStorage;
 public:
     SharedMoveStorage(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
-    : _moveTreeSizeLimit(moveTreeSizeLimit)
-    , _initialMinMoves(minMoves)
-    {}
+        : _moveTreeSizeLimit(moveTreeSizeLimit)
+        , _initialMinMoves(minMoves)
+    {
+        _moveTree.reserve(moveTreeSizeLimit+1000);
+    }
     unsigned FringeSize() const noexcept{
         return _fringe.Size();
     }
