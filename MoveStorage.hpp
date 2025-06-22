@@ -101,17 +101,19 @@ struct MoveNode
 class SharedMoveStorage
 {
 private:
-    size_t _moveTreeSizeLimit;
+    size_t _moveTreeSizeLimit{0};
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // The leaf nodes waiting to grow new branches.  
     ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
     unsigned _initialMinMoves {-1U};
-    bool _firstTime;
+    bool _firstTime{true};
     friend class MoveStorage;
 public:
-    void Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept;
-
+    SharedMoveStorage(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
+    : _moveTreeSizeLimit(moveTreeSizeLimit)
+    , _initialMinMoves(minMoves)
+    {}
     unsigned FringeSize() const noexcept{
         return _fringe.Size();
     }

@@ -3,13 +3,6 @@
 
 namespace KSolveNames {
 
-void SharedMoveStorage::Start(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
-{
-    _moveTreeSizeLimit = moveTreeSizeLimit;
-    _moveTree.reserve(moveTreeSizeLimit+1000);
-    _initialMinMoves = minMoves;
-    _firstTime = true;
-}
 MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
     , _startSize(0)
