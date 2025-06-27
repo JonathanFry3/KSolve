@@ -101,12 +101,12 @@ struct MoveNode
 class SharedMoveStorage
 {
 private:
-    size_t _moveTreeSizeLimit{0};
+    const size_t _moveTreeSizeLimit;
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // The leaf nodes waiting to grow new branches.  
     ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
-    unsigned _initialMinMoves {-1U};
+    const unsigned _initialMinMoves;
     bool _firstTime{true};
     friend class MoveStorage;
 public:
