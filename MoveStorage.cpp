@@ -20,8 +20,8 @@ void MoveStorage::PushStem(MoveSpec move) noexcept
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
 {
-    assert(_shared._initialMinMoves <= nMoves);
-    _branches.emplace_back(mv,nMoves-_shared._initialMinMoves);
+    assert(Shared()._initialMinMoves <= nMoves);
+    _branches.emplace_back(mv,nMoves-Shared()._initialMinMoves);
 }
 void MoveStorage::ShareMoves() noexcept
 {

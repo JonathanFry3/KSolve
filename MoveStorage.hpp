@@ -105,6 +105,7 @@ private:
     std::vector<MoveNode> _moveTree;
     Mutex _moveTreeMutex;
     // The leaf nodes waiting to grow new branches.  
+    // Also, the task queue.
     ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
     const unsigned _initialMinMoves;
     bool _firstTime{true};
