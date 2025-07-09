@@ -37,7 +37,7 @@ void MoveStorage::ShareMoves() noexcept
 // Returns move tree index of last stem node
 NodeX MoveStorage::UpdateMoveTree() noexcept
 {
-    NodeX stemEnd = _leaf._prevNode;
+    NodeX stemEnd = _leafNode._prevNodeIndex;
     {
         Guard rupert(_shared._moveTreeMutex);
         // Copy all the stem moves into the move tree.
@@ -66,7 +66,7 @@ unsigned MoveStorage::PopNextMoveSequence( ) noexcept
     }
     auto nextLeaf = _shared._fringe.Pop();
     if (nextLeaf) {
-        _leaf = nextLeaf->second;
+        _leafNode = nextLeaf->second;
         return nextLeaf->first+_shared._initialMinMoves;
     } else {
         return 0;     // fringe is empty
@@ -76,15 +76,15 @@ void MoveStorage::LoadMoveSequence() noexcept
 {
     // Follow the links to recover all the moves in a sequence in reverse order.
     _currentSequence.clear();
-    for    (NodeX node = _leaf._prevNode; 
+    for    (NodeX node = _leafNode._prevNodeIndex; 
             node != -1U; 
-            node = _shared._moveTree[node]._prevNode){
+            node = _shared._moveTree[node]._prevNodeIndex){
         const MoveSpec &mv = _shared._moveTree[node]._move;
         _currentSequence.push_front(mv);
     }
     _startSize = _currentSequence.size();
-    if (!_leaf._move.IsDefault()) 
-        _currentSequence.push_back(_leaf._move);
+    if (!_leafNode._move.IsDefault()) 
+        _currentSequence.push_back(_leafNode._move);
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {

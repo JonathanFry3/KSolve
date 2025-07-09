@@ -89,12 +89,12 @@ public:
 struct MoveNode
 {
     MoveSpec _move;
-    NodeX _prevNode{-1U};
+    NodeX _prevNodeIndex{-1U};
 
     MoveNode() = default;
     MoveNode(const MoveSpec& mv, NodeX prevNode) noexcept
         : _move(mv)
-        , _prevNode(prevNode)
+        , _prevNodeIndex(prevNode)
         {}
 };
 
@@ -158,7 +158,7 @@ public:
 private:
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
-    MoveNode _leaf{};	    // current sequence's starting leaf node 
+    MoveNode _leafNode{};	// current sequence's starting leaf node 
     unsigned _startSize{0}; // number of MoveSpecs gotten from the move tree.
     struct MovePair
     {
