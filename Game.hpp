@@ -387,7 +387,7 @@ unsigned RecycleCount(const SeqType& moves) noexcept
 template <class Container>
 class MoveCounter : public Container
 {
-    unsigned _nMoves;
+    unsigned _nMoves{0};
     using Base = Container;
 public:
     unsigned MoveCount() const noexcept     {return _nMoves;}

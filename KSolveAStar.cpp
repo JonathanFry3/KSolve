@@ -163,17 +163,8 @@ static void Worker(
     CandidateSolution&  minSolution {state._minSolution};
     GameStateMemory&    closedList{state._closedList};
 
-    unsigned minMoves0;
-    while ( !moveStorage.Shared().OverLimit()
-            && (minMoves0 = moveStorage.PopNextMoveSequence())    // <- side effect
-            && minMoves0 < minSolution.MoveCount()) { 
-
-        // Restore game to the state it had when this move
-        // sequence was enqueued.
-        game.Deal();
-        moveStorage.LoadMoveSequence();
-        moveStorage.MakeSequenceMoves(game);
-
+    unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
+    do {
         // Make all the no-choice (stem) moves.  Returns the first choice of moves
         // (the branches from next branching node) or an empty set.
         QMoves availableMoves = state.MakeAutoMoves();
@@ -222,7 +213,10 @@ static void Worker(
             // Share the moves made here
             moveStorage.ShareMoves();
         }
-    } 
+    }   while (!moveStorage.Shared().OverLimit()
+            && (minMoves0 = moveStorage.PopNextMoveSequence(game))    // <- side effect
+            && minMoves0 < minSolution.MoveCount());
+
     return;
 }
 

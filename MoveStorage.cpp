@@ -58,15 +58,16 @@ void MoveStorage::UpdateFringe(NodeX stemEnd) noexcept
         fringe.Emplace(br._offset, br._mv, stemEnd);
     }
 }
-unsigned MoveStorage::PopNextMoveSequence( ) noexcept
+unsigned MoveStorage::PopNextMoveSequence(Game& game ) noexcept
 {
-    if (_shared._firstTime) {
-        _shared._firstTime = false;
-        return _shared._initialMinMoves;
-    }
     auto nextLeaf = _shared._fringe.Pop();
     if (nextLeaf) {
         _leafNode = nextLeaf->second;
+        // Restore game to the state it had when this move
+        // sequence was enqueued.
+        game.Deal();
+        LoadMoveSequence();
+        MakeSequenceMoves(game);
         return nextLeaf->first+_shared._initialMinMoves;
     } else {
         return 0;     // fringe is empty

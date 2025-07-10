@@ -108,7 +108,6 @@ private:
     // Also, the task queue.
     ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
     const unsigned _initialMinMoves;
-    bool _firstTime{true};
     friend class MoveStorage;
 public:
     SharedMoveStorage(size_t moveTreeSizeLimit, unsigned minMoves) noexcept
@@ -116,6 +115,9 @@ public:
         , _initialMinMoves(minMoves)
     {
         _moveTree.reserve(moveTreeSizeLimit+1000);
+    }
+    unsigned InitialMinMoves() const noexcept {
+        return _initialMinMoves;
     }
     unsigned FringeSize() const noexcept{
         return _fringe.Size();
@@ -146,11 +148,9 @@ public:
     // Identify a move sequence with the lowest available minimum move count, 
     // return its minimum move count or, if no more sequences are available.
     // return 0. Remove that sequence from the open queue and make it current.
-    unsigned PopNextMoveSequence() noexcept;
-    // Copy the moves in the current sequence from the move tree.
-    void LoadMoveSequence() noexcept; 
-    // Make all the moves in the current sequence
-    void MakeSequenceMoves(Game&game) const noexcept;
+    // On exit, the deck is redealt and all the moves in 
+    // the current sequence have already been made.
+    unsigned PopNextMoveSequence(Game& game) noexcept;
     // Return a const reference to the current move sequence in its
     // native type.
     using MoveSequenceType = MoveCounter<static_deque<MoveSpec,500>>;
@@ -173,5 +173,9 @@ private:
 
     NodeX UpdateMoveTree() noexcept; // Returns move tree index of last stem node
     void UpdateFringe(NodeX branchIndex) noexcept;
+    // Copy the moves in the current sequence from the move tree.
+    void LoadMoveSequence() noexcept; 
+    // Make all the moves in the current sequence
+    void MakeSequenceMoves(Game&game) const noexcept;
 };
 }   // namespace KSolveNames
