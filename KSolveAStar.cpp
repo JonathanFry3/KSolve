@@ -167,7 +167,7 @@ static void Worker(
     do {
         // Make all the no-choice (stem) moves.  Returns the first choice of moves
         // (the branches from next branching node) or an empty set.
-        QMoves availableMoves = state.MakeAutoMoves();
+        const QMoves availableMoves = state.MakeAutoMoves();
 
         const unsigned movesMadeCount = 
             moveStorage.MoveSequence().MoveCount();
@@ -181,7 +181,7 @@ static void Worker(
             }
         } else {
             // Save the result of each of the possible next moves.
-            for (auto mv: availableMoves){
+            for (const auto mv: availableMoves){
                 game.MakeMove(mv);
                 const unsigned made = movesMadeCount + mv.NMoves();
                 // The following rather convoluted logic for deciding whether or not
@@ -230,8 +230,6 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     threads.reserve(nThreads-1);
     for (unsigned t = 0; t < nThreads-1; ++t) {
         threads.emplace_back(&Worker, &state);
-        if (t == 0)     // MoveStorage must start single-threaded.
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     // Run one more worker in this (main) thread
