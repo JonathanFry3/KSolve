@@ -10,23 +10,25 @@ using NodeX = std::uint32_t;
 using Mutex = std::mutex;
 using Guard = std::lock_guard<Mutex>;
 
+// A ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
+// {I,V} pairs in ascending order by their I values (approximately).  It is
+// implemented as a vector indexed by the I values of stacks of V values.
+// I must be an unsigned integer type.
+// It is efficient only if the I values are all small integers.
+//
+// Pairs sharing the same I values are returned in LIFO order. 
 template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
-    // A ShareableIndexedPriorityQueue<I,V> is a thread-safe priority queue of
-    // {I,V} pairs in ascending order by their I values (approximately).  It is
-    // implemented as a vector indexed by the I values of stacks of V values.
-    // It is efficient if the I values are all small integers.
-    // I must be an unsigned type.
-    //
-    // Pairs sharing the same I values are returned in LIFO order. 
 private:
     using StackT = mf_vector<V,1024>;
-    Mutex _mutex;
     struct ProtectedStackT {
         Mutex _mutex;
         StackT _stack;
     };
+    
+    Mutex _mutex;
     static_vector<ProtectedStackT, Sz>_stacks;
+
     void inline UpsizeTo(I newSize) noexcept
     {
         if (_stacks.size() < newSize) {
@@ -78,11 +80,12 @@ public:
         }
         return result;
     }
-    // Returns total size.  Not accurate when threads are making changes.
+    // Returns total size.  Approximate if threads are making changes.
     unsigned Size() const noexcept
     {
-        return std::accumulate(_stacks.begin(), _stacks.end(), 0U, 
-            [](auto accum, auto& pStack){return accum + pStack._stack.size();});
+        unsigned result{0};
+        for (auto& prStack: _stacks) {result += prStack._stack.size();}
+        return result;
     }
 };
 
@@ -145,11 +148,11 @@ public:
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
     void ShareMoves() noexcept;
-    // Identify a move sequence with the lowest available minimum move count, 
-    // return its minimum move count or, if no more sequences are available.
-    // return 0. Remove that sequence from the open queue and make it current.
-    // On exit, the deck is redealt and all the moves in 
-    // the current sequence have already been made.
+    // If the work queue (aka fringe) is empty, return 0.
+    // Otherwise, pop a move sequence with the lowest available
+    // minimum move count, redeal the deck, make all the moves in
+    // that sequence to return the game to the state it was in when
+    // that sequence was saved, and return its minimum move count.
     unsigned PopNextMoveSequence(Game& game) noexcept;
     // Return a const reference to the current move sequence in its
     // native type.
