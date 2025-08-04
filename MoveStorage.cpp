@@ -84,8 +84,7 @@ void MoveStorage::LoadMoveSequence() noexcept
         _currentSequence.push_front(mv);
     }
     _startSize = _currentSequence.size();
-    if (!_leafNode._move.IsDefault()) 
-        _currentSequence.push_back(_leafNode._move);
+    _currentSequence.push_back(_leafNode._move);
 }
 void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {
