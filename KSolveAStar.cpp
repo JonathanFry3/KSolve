@@ -148,6 +148,68 @@ QMoves WorkerState::MakeAutoMoves() noexcept
     }
     return availableMoves;
 }
+// *Advance()* starts from a game state and grows the tree to the next
+// branching node.  It then pushes each qualifying child of that branching
+// node into the work queue.
+inline static void Advance(
+        WorkerState& state) noexcept
+{
+    // Nicknames
+    MoveStorage&        moveStorage {state._moveStorage};
+    Game&               game {state._game};
+    CandidateSolution&  minSolution {state._minSolution};
+    GameStateMemory&    closedList{state._closedList};
+
+    unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
+    // Make all the no-choice (stem) moves.  Returns the first choice of moves
+    // (the branches from next branching node) or an empty set.
+    const QMoves availableMoves = state.MakeAutoMoves();
+
+    const unsigned movesMadeCount = 
+        moveStorage.MoveSequence().MoveCount();
+
+    if (availableMoves.empty()) {
+        // This could be a dead end or a win.
+        if (game.GameOver()) {
+            // We have a win.  See if it is a new champion
+            minSolution.ReplaceIfShorter(
+                moveStorage.MoveSequence(), movesMadeCount);
+        }
+    } else {
+        // Save the result of each of the possible next moves.
+        for (const auto mv: availableMoves){
+            game.MakeMove(mv);
+            const unsigned made = movesMadeCount + mv.NMoves();
+            // The following rather convoluted logic for deciding whether or not
+            // to save mv attempts to minimize time used in all situations. 
+            // Both MinimumMovesLeft() and IsShortPathToState() are expensive,
+            // but IsShortPathToState() is considerably the more expensive of
+            // the two.  If we already have a solution to test against, we can
+            // call MinimumMovesLeft() first to sometimes avoid calling
+            // IsShortPathToState(). If not, the best we can do is call
+            // IsShortPathToState() first to sometimes avoid calling
+            // MinimumMovesLeft().
+            unsigned minRemaining = -1U;
+            bool pass = true;
+            if (!minSolution.IsEmpty()) { 
+                minRemaining = MinimumMovesLeft(game); // expensive
+                pass = (made + minRemaining) < minSolution.MoveCount();
+            }
+            if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
+                if (minRemaining == -1U) minRemaining = MinimumMovesLeft(game);
+                const unsigned minMoves = made + minRemaining;
+                // The following assert tests the consistency (monotonicity)
+                // of MinimumMovesLeft(), our heuristic.  
+                // Never remove it.
+                assert(minMoves0 <= minMoves);
+                moveStorage.PushBranch(mv,minMoves);
+            }
+            game.UnMakeMove(mv);
+        }
+        // Share the moves made here
+        moveStorage.ShareMoves();
+    }
+}
 
 /*************************************************************************/
 /*************************** Main Loop ***********************************/
@@ -164,64 +226,21 @@ static void Worker(
     GameStateMemory&    closedList{state._closedList};
 
     unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
-    do {
-        // Make all the no-choice (stem) moves.  Returns the first choice of moves
-        // (the branches from next branching node) or an empty set.
-        const QMoves availableMoves = state.MakeAutoMoves();
-
-        const unsigned movesMadeCount = 
-            moveStorage.MoveSequence().MoveCount();
-
-        if (availableMoves.empty()) {
-            // This could be a dead end or a win.
-            if (game.GameOver()) {
-                // We have a win.  See if it is a new champion
-                minSolution.ReplaceIfShorter(
-                    moveStorage.MoveSequence(), movesMadeCount);
-            }
-        } else {
-            // Save the result of each of the possible next moves.
-            for (const auto mv: availableMoves){
-                game.MakeMove(mv);
-                const unsigned made = movesMadeCount + mv.NMoves();
-                // The following rather convoluted logic for deciding whether or not
-                // to save mv attempts to minimize time used in all situations. 
-                // Both MinimumMovesLeft() and IsShortPathToState() are expensive,
-                // but IsShortPathToState() is considerably the more expensive of
-                // the two.  If we already have a solution to test against, we can
-                // call MinimumMovesLeft() first to sometimes avoid calling
-                // IsShortPathToState(). If not, the best we can do is call
-                // IsShortPathToState() first to sometimes avoid calling
-                // MinimumMovesLeft().
-                unsigned minRemaining = -1U;
-                bool pass = true;
-                if (!minSolution.IsEmpty()) { 
-                    minRemaining = MinimumMovesLeft(game); // expensive
-                    pass = (made + minRemaining) < minSolution.MoveCount();
-                }
-                if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
-                    if (minRemaining == -1U) minRemaining = MinimumMovesLeft(game);
-                    const unsigned minMoves = made + minRemaining;
-                    // The following assert tests the consistency (monotonicity)
-                    // of MinimumMovesLeft(), our heuristic.  
-                    // Never remove it.
-                    assert(minMoves0 <= minMoves);
-                    moveStorage.PushBranch(mv,minMoves);
-                }
-                game.UnMakeMove(mv);
-            }
-            // Share the moves made here
-            moveStorage.ShareMoves();
-        }
-    }   while (!moveStorage.Shared().OverLimit()
+    while ( !moveStorage.Shared().OverLimit()
             && (minMoves0 = moveStorage.PopNextMoveSequence(game))    // <- side effect
-            && minMoves0 < minSolution.MoveCount());
-
+            && minMoves0 < minSolution.MoveCount())
+    {
+        Advance(state);
+    }
     return;
 }
 
 static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
 {
+    // Put some work in the work queue by growing the tree from
+    // the root to the first branching node.
+    Advance(state);
+
     if (nThreads == 0)
         nThreads = DefaultThreads();
 
