@@ -135,6 +135,7 @@
 				"-g", "-finline-small-functions",
 				"-std=c++20",
 				"-Wno-placement-new",
+				"-Wno-rvo",
 				"-pthread",
 				"Game.cpp",
 				"GameStateMemory.cpp",
@@ -197,6 +198,7 @@
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
+				"-Wno-rvo",
 			//	"-DNDEBUG",		// comment out to activate assert()
 				"-DFRYSTL_DEBUG",// activate FRYSTL_ASSERT()
 				"Game.cpp",

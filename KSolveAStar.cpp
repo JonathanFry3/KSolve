@@ -155,10 +155,10 @@ inline static void Advance(
         WorkerState& state) noexcept
 {
     // Nicknames
-    MoveStorage&        moveStorage {state._moveStorage};
-    Game&               game {state._game};
-    CandidateSolution&  minSolution {state._minSolution};
-    GameStateMemory&    closedList{state._closedList};
+    auto&  moveStorage  {state._moveStorage};
+    auto&  game         {state._game};
+    auto&  minSolution  {state._minSolution};
+    auto&  closedList   {state._closedList};
 
     unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
     // Make all the no-choice (stem) moves.  Returns the first choice of moves
@@ -191,7 +191,7 @@ inline static void Advance(
             // MinimumMovesLeft().
             unsigned minRemaining = -1U;
             bool pass = true;
-            if (!minSolution.IsEmpty()) { 
+            if (! minSolution.IsEmpty()) { 
                 minRemaining = MinimumMovesLeft(game); // expensive
                 pass = (made + minRemaining) < minSolution.MoveCount();
             }
@@ -217,16 +217,16 @@ inline static void Advance(
 static void Worker(
         WorkerState* pMasterState) noexcept
 {
-    WorkerState         state(*pMasterState);
+    auto   state(*pMasterState);
 
     // Nicknames
-    MoveStorage&        moveStorage {state._moveStorage};
-    Game&               game {state._game};
-    CandidateSolution&  minSolution {state._minSolution};
-    GameStateMemory&    closedList{state._closedList};
+    auto&  moveStorage  {state._moveStorage};
+    auto&  game         {state._game};
+    auto&  minSolution  {state._minSolution};
+    auto&  closedList   {state._closedList};
 
     unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
-    while ( !moveStorage.Shared().OverLimit()
+    while ( ! moveStorage.Shared().OverLimit()
             && (minMoves0 = moveStorage.PopNextMoveSequence(game))    // <- side effect
             && minMoves0 < minSolution.MoveCount())
     {
