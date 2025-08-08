@@ -152,7 +152,8 @@ QMoves WorkerState::MakeAutoMoves() noexcept
 // branching node.  It then pushes each qualifying child of that branching
 // node into the work queue.
 inline static void Advance(
-        WorkerState& state) noexcept
+        WorkerState& state,
+        unsigned minMoves0) noexcept
 {
     // Nicknames
     auto&  moveStorage  {state._moveStorage};
@@ -160,7 +161,6 @@ inline static void Advance(
     auto&  minSolution  {state._minSolution};
     auto&  closedList   {state._closedList};
 
-    unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
     // Make all the no-choice (stem) moves.  Returns the first choice of moves
     // (the branches from next branching node) or an empty set.
     const QMoves availableMoves = state.MakeAutoMoves();
@@ -225,12 +225,12 @@ static void Worker(
     auto&  minSolution  {state._minSolution};
     auto&  closedList   {state._closedList};
 
-    unsigned minMoves0 = moveStorage.Shared().InitialMinMoves();    
+    unsigned minMoves0;    
     while ( ! moveStorage.Shared().OverLimit()
             && (minMoves0 = moveStorage.PopNextMoveSequence(game))    // <- side effect
             && minMoves0 < minSolution.MoveCount())
     {
-        Advance(state);
+        Advance(state, minMoves0);
     }
     return;
 }
@@ -239,7 +239,7 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
 {
     // Put some work in the work queue by growing the tree from
     // the root to the first branching node.
-    Advance(state);
+    Advance(state, state._moveStorage.Shared().InitialMinMoves());
 
     if (nThreads == 0)
         nThreads = DefaultThreads();
