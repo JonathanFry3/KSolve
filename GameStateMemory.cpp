@@ -20,10 +20,11 @@ static inline uint32_t DeflateTableau(const Pile& cards) noexcept
         // The face-up cards in a tableau pile cannot number
         // more than 12, since AvailableMoves() will never move an
         // ace there.
-        unsigned isMajor = 
-            std::accumulate(cards.end()-upCount+1, cards.end(), 0,
-                [](unsigned acc, Card card)
-                    {return acc<<1 | card.IsMajor();});
+        unsigned isMajor{0};
+        unsigned downCount = cards.size()-upCount;
+        for (Card card : cards | views::drop(downCount+1)) {
+            (isMajor<<=1) |= card.IsMajor();
+        }
         const Card top = cards.Top();
         result =  ((top.Suit()
                     <<4  | top.Rank())
@@ -71,7 +72,7 @@ bool GameStateMemory::IsShortPathToState(const Game& game, unsigned moveCount) n
     bool valueChanged{false};
     bool isNewKey = _states.lazy_emplace_l(
         newState,						// (key, value)
-        [&](auto& oldState) {	// run behind lock when key found
+        [&](auto& oldState) {	// run behind lock if key found
             if (moveCount < oldState._moveCount) {
                 oldState._moveCount = moveCount;
                 valueChanged = true;
