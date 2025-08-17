@@ -206,7 +206,7 @@ inline static void Advance(
             }
             game.UnMakeMove(mv);
         }
-        // Share the moves made here
+        // Update shared data structures with the moves made here
         moveStorage.ShareMoves();
     }
 }
@@ -223,11 +223,10 @@ static void Worker(
     auto&  moveStorage  {state._moveStorage};
     auto&  game         {state._game};
     auto&  minSolution  {state._minSolution};
-    auto&  closedList   {state._closedList};
 
     unsigned minMoves0;    
     while ( ! moveStorage.Shared().OverLimit()
-            && (minMoves0 = moveStorage.PopNextMoveSequence(game))    // <- side effect
+            && (minMoves0 = moveStorage.PopNextBranch(game))    // <- side effect
             && minMoves0 < minSolution.MoveCount())
     {
         Advance(state, minMoves0);

@@ -6,7 +6,7 @@
 
 namespace KSolveNames {
 
-using NodeX = std::uint32_t;
+using MoveX = std::uint32_t;
 using Mutex = std::mutex;
 using Guard = std::lock_guard<Mutex>;
 
@@ -89,15 +89,15 @@ public:
     }
 };
 
-struct MoveNode
+struct Branch
 {
     MoveSpec _move;
-    NodeX _prevNodeIndex{-1U};
+    MoveX _prevBranchIndex{-1U};
 
-    MoveNode() = default;
-    MoveNode(const MoveSpec& mv, NodeX prevNode) noexcept
+    Branch() = default;
+    Branch(const MoveSpec& mv, MoveX prevBranch) noexcept
         : _move(mv)
-        , _prevNodeIndex(prevNode)
+        , _prevBranchIndex(prevBranch)
         {}
 };
 
@@ -105,11 +105,11 @@ class SharedMoveStorage
 {
 private:
     const size_t _moveTreeSizeLimit;
-    std::vector<MoveNode> _moveTree;
+    std::vector<Branch> _moveTree;
     Mutex _moveTreeMutex;
-    // The leaf nodes waiting to grow new branches.  
+    // The leaves waiting to grow new branches.  
     // Also, the task queue.
-    ShareableIndexedPriorityQueue<unsigned, MoveNode, 512> _fringe;
+    ShareableIndexedPriorityQueue<unsigned, Branch, 512> _fringe;
     const unsigned _initialMinMoves;
     friend class MoveStorage;
 public:
@@ -148,12 +148,11 @@ public:
     // Push all the moves (stem and branch) from this trip
     // through the main loop into shared storage.
     void ShareMoves() noexcept;
-    // If the work queue (aka fringe) is empty, return 0.
-    // Otherwise, pop a move sequence with the lowest available
-    // minimum move count, redeal the deck, make all the moves in
-    // that sequence to return the game to the state it was in when
-    // that sequence was saved, and return its minimum move count.
-    unsigned PopNextMoveSequence(Game& game) noexcept;
+    // If the task queue is empty return 0.  Otherwise,
+    // pop the next branch from the task queue, restore the 
+    // game to the state it was in when that branch was pushed,
+    // and return the heuristic value of that state.
+    unsigned PopNextBranch(Game& game) noexcept;
     // Return a const reference to the current move sequence in its
     // native type.
     using MoveSequenceType = MoveCounter<static_deque<MoveSpec,500>>;
@@ -161,7 +160,7 @@ public:
 private:
     SharedMoveStorage &_shared;
     MoveSequenceType _currentSequence;
-    MoveNode _leafNode{};	// current sequence's starting leaf node 
+    Branch _leaf{};	        // current sequence's starting leaf
     unsigned _startSize{0}; // number of MoveSpecs gotten from the move tree.
     struct MovePair
     {
@@ -174,8 +173,8 @@ private:
     };
     static_vector<MovePair,32> _branches;
 
-    NodeX UpdateMoveTree() noexcept; // Returns move tree index of last stem node
-    void UpdateFringe(NodeX branchIndex) noexcept;
+    MoveX UpdateMoveTree() noexcept; // Returns move tree index of last stem move
+    void UpdateFringe(MoveX branchIndex) noexcept;
     // Copy the moves in the current sequence from the move tree.
     void LoadMoveSequence() noexcept; 
     // Make all the moves in the current sequence
