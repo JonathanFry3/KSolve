@@ -2,6 +2,7 @@
 #include "GameStateMemory.hpp"
 #include "MoveStorage.hpp"
 #include <thread>
+#include <atomic>
 
 namespace KSolveNames {
 
@@ -96,6 +97,7 @@ unsigned MinimumMovesLeft(const Game& game) noexcept
     }
     return result;
 }
+using AtomicUInt = std::atomic_uint;
 
 struct WorkerState {
 public:
@@ -113,21 +115,25 @@ public:
     // way to get to the same state that is at least as short.
     GameStateMemory& _closedList;
     CandidateSolution & _minSolution;
+    AtomicUInt& _advances;
 
     explicit WorkerState(  Game & gm, 
             CandidateSolution& solution,
             SharedMoveStorage& sharedMoveStorage,
-            GameStateMemory& closed)
+            GameStateMemory& closed,
+            AtomicUInt& loopCount)
         : _game(gm)
         , _moveStorage(sharedMoveStorage)
         , _closedList(closed)
         , _minSolution(solution)
+        , _advances(loopCount)
         {}
     explicit WorkerState(const WorkerState& orig)
         : _game(orig._game)
         , _moveStorage(orig._moveStorage.Shared())
         , _closedList(orig._closedList)
         , _minSolution(orig._minSolution)
+        , _advances(orig._advances)
         {}
             
     QMoves MakeAutoMoves() noexcept;
@@ -224,13 +230,16 @@ static void Worker(
     auto&  game         {state._game};
     auto&  minSolution  {state._minSolution};
 
+    unsigned myLoopCount{0};
     unsigned minMoves0;    
     while ( ! moveStorage.Shared().OverLimit()
             && (minMoves0 = moveStorage.PopNextBranch(game))    // <- side effect
             && minMoves0 < minSolution.MoveCount())
     {
+        ++myLoopCount;
         Advance(state, minMoves0);
     }
+    state._advances += myLoopCount;
     return;
 }
 
@@ -267,11 +276,12 @@ KSolveAStarResult KSolveAStar(
 {
     GameStateMemory closed;
     CandidateSolution solution;
+    AtomicUInt loopCount{0};
 
     const unsigned startMoves = MinimumMovesLeft(game);
     SharedMoveStorage sharedMoveStorage(moveTreeLimit, startMoves);
 
-    WorkerState state(game,solution,sharedMoveStorage,closed);
+    WorkerState state(game,solution,sharedMoveStorage,closed,loopCount);
 
     RunWorkers(nThreads, state);
     
@@ -291,7 +301,9 @@ KSolveAStarResult KSolveAStar(
         solution.GetMoves(),
         state._closedList.Size(),
         sharedMoveStorage.MoveTreeSize(),
-        sharedMoveStorage.FringeSize());
+        sharedMoveStorage.FringeSize(),
+        loopCount
+    );
 }
 
 }   // namespace KSolveNames

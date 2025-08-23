@@ -66,7 +66,7 @@ Specification GetSpec(int argc, char * argv[])
             cout << "-e # or --end #       Sets the last row number (default 10)." << endl;
             cout << "-d # or --draw #      Sets the number of cards to draw (default 1)." << endl;
             cout << "-v or --vegas         Use the Vegas rule - limit passes to the draw number" << endl;
-            cout << "-mv # or --mvlimit    Set the maximum size of the move tree (default 30 million)." << endl;
+            cout << "-mv # or --mvlimit #  Set the maximum size of the move tree (default 30 million)." << endl;
             cout << "-t # or --threads #   Sets the number of threads (see below for default)." << endl;
             cout << "The default number of threads is the number the hardware will run concurrently." << endl;
             cout << "The output on standard out is a tab-delimited file." << endl;
@@ -75,9 +75,10 @@ Specification GetSpec(int argc, char * argv[])
             cout << "the number of moves in the solution if a solution is found," << endl;
             cout << "the number of talon passes in the solution if a solution is found." << endl;
             cout << "the clock time required in seconds, the final size of the fringe," << endl;
-            cout << "the final size of the closed list, and the final size of the move tree." << endl;
+            cout << "the number of elements taken from the fringe (advances), "<< endl;
+            cout << "and the final size of the move tree." << endl;
             cout << "Result codes: 0 = minimum solution found, 1 = some solution found, " << endl;
-            cout << "2 = impossible, 3 = --mvlimit exceeded." << endl;
+            cout << "              2 = impossible, 3 = --mvlimit exceeded." << endl;
             cout << flush;
             exit(0);
         } else if (flag == "-s" || flag == "--seed") {
@@ -126,7 +127,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfringe\tclosed\tmvtree" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfringe\tadvances\tmvtree" << endl;
     unsigned threads = (spec._threads > 0)
                         ? spec._threads
                         : DefaultThreads();
@@ -141,7 +142,7 @@ int main(int argc, char * argv[])
             << spec._drawSpec << "\t" << flush;
         auto startTime = steady_clock::now();
         KSolveAStarResult result = KSolveAStar(game,spec._mvLimit,spec._threads);
-        duration<float, std::milli> elapsed = steady_clock::now() - startTime;
+        duration<double, std::milli> elapsed = steady_clock::now() - startTime;
 
         if (result._solution.size()) 
             TestSolution(game, result._solution);
@@ -161,9 +162,9 @@ int main(int argc, char * argv[])
         cout.precision(4);
         cout << elapsed.count()/1000. << "\t";
 
-        cout << result._finalFringeStackSize << "\t";
+        cout << result._finalFringeSize << "\t";
 
-        cout << result._branchCount << "\t";
+        cout << result._advances << "\t";
 
         cout << result._moveTreeSize;
 

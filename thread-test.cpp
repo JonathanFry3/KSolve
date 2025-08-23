@@ -150,9 +150,9 @@ int main(int argc, char * argv[])
             cout.precision(4);
             cout << elapsed.count()/1000. << "\t";
 
-            cout << result._finalFringeStackSize << "\t";
+            cout << result._finalFringeSize << "\t";
 
-            cout << result._branchCount << "\t";
+            cout << result._stateCount << "\t";
 
             cout << result._moveTreeSize;
 

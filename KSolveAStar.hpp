@@ -40,24 +40,29 @@ namespace KSolveNames {
 // For some insight into how it works, look up the A* algorithm.
 
 enum KSolveAStarCode {SolvedMinimal, Solved, Impossible, GaveUp};
+
 struct KSolveAStarResult
 {
-    KSolveAStarCode _code;
+public:        
     Moves _solution;
-    unsigned _branchCount;
-    unsigned _moveTreeSize;
-    unsigned _finalFringeStackSize;
+    KSolveAStarCode _code;
+    unsigned _stateCount{0};
+    unsigned _moveTreeSize{0};
+    unsigned _finalFringeSize{0};
+    unsigned _advances;
 
     KSolveAStarResult(KSolveAStarCode code, 
                 const Moves& moves, 
                 unsigned branchCount,
                 unsigned moveCount,
-                unsigned finalFringeStackSize)  noexcept
+                unsigned finalFringeStackSize,
+                unsigned loopCount)  noexcept
         : _code(code)
         , _solution(moves)
-        , _branchCount(branchCount)
+        , _stateCount(branchCount)
         , _moveTreeSize(moveCount)
-        , _finalFringeStackSize(finalFringeStackSize)
+        , _finalFringeSize(finalFringeStackSize)
+        , _advances(loopCount)
         {}
 };
 KSolveAStarResult KSolveAStar(
