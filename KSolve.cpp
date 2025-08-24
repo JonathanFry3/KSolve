@@ -269,9 +269,9 @@ int main(int argc, char * argv[]) {
         if (showMoves && canReplay) {
             XMoves xmoves(MakeXMoves(moves,game.DrawSetting()));
             string out = MovesMade(xmoves);
-            cout << out << "\n\n";
+            cout << out << "\n" << endl;
         } else if (showMoves) {
-            cout << "\n";
+            cout << endl;
         }
 
     } while (fileContents.size() > fileIndex);
