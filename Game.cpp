@@ -357,7 +357,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
                                 upCount,uncovered);
-                            moves.back().FlipsTopCard(upCount == moveCount+1);
+                            moves.back().FlipsTopCard(upCount==moveCount+1 && upCount < fromPile.size());
                         }
                     }
                 }
@@ -690,9 +690,10 @@ std::string Peek(const MoveSpec & mv)
         if (n != 1) outStr << "x" << n;
         if (mv.FromUpCount()) outStr << "u" << mv.FromUpCount();
         if (mv.IsLadderMove()) {
-            outStr << ", ";
+            outStr << "L, ";
             outStr << Peek(MoveSpec(mv.From(), mv.LadderPileCode(), 1, mv.FromUpCount()-n));
         }
+        if (mv.FlipsTopCard()) outStr << "F";
     }
     return outStr.str();
 }

@@ -323,7 +323,7 @@ int main()
 		assert(peekb == "wa>di");
 		assert(peekc == "t1>t6x4u1");
 		assert(peekd == "+6d-4c>t3");
-		assert(peeke == "t4>t1x3u4, t4>spu1");
+		assert(peeke == "t4>t1x3u4L, t4>spu1");
 		Moves mvs{a,b,c};
 		string peekmvs = Peek(mvs);
 		assert (peekmvs == "(+6d5>t3, wa>di, t1>t6x4u1)");
