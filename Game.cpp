@@ -357,7 +357,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
                                 upCount,uncovered);
-                            moves.back().FlipsTopCard(upCount==moveCount+1 && upCount < fromPile.size());
+                            moves.back().FlipsTopCard(upCount==moveCount+1 && upCount<fromPile.size());
                         }
                     }
                 }
@@ -372,7 +372,6 @@ struct TalonFuture {
     signed short _drawCount;
     bool _recycle;
 
-    TalonFuture() {};
     TalonFuture(const Card& card, unsigned nMoves, int draw, bool recycle)
         : _card(card)
         , _nMoves(nMoves)
@@ -405,7 +404,7 @@ public:
     }
     void Cycle()
     {
-        _sSize += _wSize;
+        _sSize = _wSize;
         _wSize = 0;
     }
     void Draw(unsigned n)
@@ -452,11 +451,11 @@ static TalonFutureVec TalonCards(const Game & game)
         }	
         if (talon.StockSize()) {
             // Draw from the stock pile
-            nMoves += 1;
+            nMoves++;
             talon.Draw(drawSetting);
         } else {
             // Recycle the waste pile
-            nRecycles += 1;
+            nRecycles++;
             talon.Cycle();
         }
     } while (talon.WasteSize() != originalWasteSize && nRecycles <= maxRecycles);
