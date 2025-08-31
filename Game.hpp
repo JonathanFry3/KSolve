@@ -321,9 +321,9 @@ public:
                                         {return _ladderSuit;}
     PileCodeT LadderPileCode() const noexcept
                                         {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
-    bool Recycle() const noexcept       {return _recycle;}
+    bool Recycle() const noexcept       {return IsStockMove() & _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
-    bool IsLadderMove() const noexcept  {return IsTableau(_from) && _nMoves == 2;}
+    bool IsLadderMove() const noexcept  {return IsTableau(_from) & (_nMoves == 2);}
     bool FlipsTopCard() const noexcept  {return _flipsTopCard;}
     void FlipsTopCard(bool f) noexcept  {_flipsTopCard = f;}
 
