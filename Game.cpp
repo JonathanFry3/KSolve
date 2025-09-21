@@ -266,7 +266,7 @@ void Game::DominantAvailableMoves(
 {
     // Loop over Waste, all Tableau piles
     const auto end = AllPiles().begin() + Tableau7;
-    for (auto iPile = AllPiles().begin() + Waste; iPile<=end; ++iPile) {
+    for (auto iPile = AllPiles().begin() + Waste + (_drawSetting != 1); iPile<=end; ++iPile) {
         const Pile &pile = *iPile;
         if (pile.size()) {
             const Card& card = pile.back();
@@ -274,7 +274,7 @@ void Game::DominantAvailableMoves(
             if (card.Rank() <= minFoundationSize+1 
                     && CanMoveToFoundation(card)) { 
                 const auto toPile = FoundationPileCode(card.Suit());
-                const unsigned up = (fromPile == Waste) ? 0 : pile.UpCount();
+                const unsigned up = pile.UpCount();
                 _domMovesCache.AddNonStockMove(fromPile,toPile,1,up);
                 _domMovesCache.back().FlipsTopCard(pile.IsTableau() && up == 1 && pile.size() > 1);
             }
