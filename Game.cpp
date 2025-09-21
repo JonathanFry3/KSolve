@@ -251,32 +251,37 @@ unsigned Game::MinFoundationPileSize() const noexcept
         {return left.size() < right.size();})->size();
 }
 
-// If there are any available moves from waste, tableau, or
-// top of the stock to a short foundation pile, append one
-// such move to the moves vector.  A short foundation pile
-// here is a foundation pile than which no foundation pile
-// is more than one card shorter.
+// Append all the dominant moves from the current position
+// to the *moves* vector.
 //
-// Such a move is called "dominant", meaning that, if the
-// game can be won from this position, no sequence that
-// does not start with such a move can be shorter than
-// the shortest sequences that start with it.
+// A dominant move is one which, if the game can be won from
+// this position, no sequence that does not start with this
+// move can be shorter than the shortest sequences that
+// start with it.
+//
+// Moves from the tableau and (if playing draw 1) both the
+// waste pile and the top of the stock pile that move to
+// a short foundation pile are dominant.  A foundation pile
+// is "short" for this purpose if no other foundation pile
+// is more than one card shorter.
+// 
 void Game::DominantAvailableMoves(
     MoveCacheType& moves, unsigned minFoundationSize) const noexcept
 {
-    // Loop over Waste, all Tableau piles
+    // Loop over Waste (if _drawSetting == 1), all Tableau piles
     const auto end = AllPiles().begin() + Tableau7;
-    for (auto iPile = AllPiles().begin() + Waste + (_drawSetting != 1); iPile<=end; ++iPile) {
-        const Pile &pile = *iPile;
-        if (pile.size()) {
-            const Card& card = pile.back();
-            const auto fromPile = pile.Code();
+    const auto begin = AllPiles().begin() + Waste + (_drawSetting!=1);
+    for (auto iPile = begin; iPile<=end; ++iPile) {
+        const Pile &fromPile = *iPile;
+        if (fromPile.size()) {
+            const Card& card = fromPile.back();
+            const auto fromCode = fromPile.Code();
             if (card.Rank() <= minFoundationSize+1 
                     && CanMoveToFoundation(card)) { 
-                const auto toPile = FoundationPileCode(card.Suit());
-                const unsigned up = pile.UpCount();
-                _domMovesCache.AddNonStockMove(fromPile,toPile,1,up);
-                _domMovesCache.back().FlipsTopCard(pile.IsTableau() && up == 1 && pile.size() > 1);
+                const auto toCode = FoundationPileCode(card.Suit());
+                const unsigned up = fromPile.UpCount();
+                moves.AddNonStockMove(fromCode,toCode,1,up);
+                moves.back().FlipsTopCard(up==1 && fromPile.size()>1);
             }
         }
     }
@@ -285,7 +290,7 @@ void Game::DominantAvailableMoves(
         if (card.Rank() <= minFoundationSize+1 && CanMoveToFoundation(card))  {
             // Stock MoveSpec: draw one card, move it to foundation
             const auto toPile = FoundationPileCode(_stock.back().Suit());
-            _domMovesCache.AddStockMove(toPile,2,1,false);
+            moves.AddStockMove(toPile,2,1,false);
         }
     }
 }
