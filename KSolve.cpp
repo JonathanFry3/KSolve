@@ -222,10 +222,10 @@ int main(int argc, char * argv[]) {
         KSolveAStarResult outcome = KSolveAStar(game, moveLimit, threads);
         auto & result(outcome._code);
         Moves & moves(outcome._solution); 
-        TestSolution(game,moves);
         unsigned moveCount = MoveCount(moves);
         bool canReplay = false;
         if (result == SolvedMinimal || result == Solved) {
+            TestSolution(game,moves);
             if (result == SolvedMinimal) {
                 cout << "Minimal solution in ";
             } else {
@@ -240,9 +240,9 @@ int main(int argc, char * argv[]) {
             }
             canReplay = true;
         } else if (result == Impossible) {
-            cout << "Impossible.";
+            cout << "Unsolvable.";
         } else if (result == GaveUp) {
-            cout << "Unknown.";
+            cout << "Too big.";
         }
         duration<float, std::milli> elapsed = steady_clock::now() - startTime;
         cout << "\nTook " << setprecision(4) << elapsed.count()/1000. << " sec., ";
