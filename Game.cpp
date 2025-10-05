@@ -523,10 +523,12 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
     }
 }
 
-// Returns a list of valid non-dominant moves - they either do not move
-// a card to the foundation or they unbalance the foundation.
+// Returns a list of valid non-dominant moves. This is really
+// just a list of the moves still available after DominantAvailableMoves()
+// has picked off the dominant moves and those have been made.
+//
 // Rather than generate individual draws from
-// stock to waste, it generates Move objects that represent one or more
+// stock to waste, it generates MoveSpec objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
 void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) const noexcept
 {

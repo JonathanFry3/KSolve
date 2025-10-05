@@ -34,7 +34,7 @@ const unsigned CardsPerSuit     {13};
 const unsigned SuitsPerDeck     {4};
 const unsigned CardsPerDeck     {CardsPerSuit*SuitsPerDeck};
 const unsigned TableauSize      {7};
-const unsigned FoundationSize   {4};
+const unsigned FoundationSize   {SuitsPerDeck};
 
 inline unsigned QuotientRoundedUp(unsigned numerator, unsigned denominator)
 {
@@ -280,7 +280,7 @@ public:
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
-        , _recycle(0)
+        , _recycle(false)
         , _drawCount(draw)
         {}
     // Construct a non-stock MoveSpec.  UnMakeMove() can't infer the count
@@ -297,15 +297,15 @@ public:
     // Construct a ladder MoveSpec
     MoveSpec(PileCodeT from, PileCodeT to, unsigned n, 
         unsigned fromUpCount, Card::SuitT ladderSuit) noexcept
-    : _from(from)
-    , _to(to)
-    , _nMoves(2)
-    , _cardsToMove(n)
-    , _fromUpCount(fromUpCount)
-    , _ladderSuit(ladderSuit)
-    {
-        assert(IsTableau(from) && IsTableau(to));
-    }
+        : _from(from)
+        , _to(to)
+        , _nMoves(2)
+        , _cardsToMove(n)
+        , _fromUpCount(fromUpCount)
+        , _ladderSuit(ladderSuit)
+        {
+            assert(IsTableau(from) && IsTableau(to));
+        }
     MoveSpec() = default;
     bool IsDefault() const noexcept     {return _from == _to;}
 
@@ -323,7 +323,7 @@ public:
                                         {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
     bool Recycle() const noexcept       {return IsStockMove() & _recycle;}
     int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
-    bool IsLadderMove() const noexcept  {return IsTableau(_from) & (_nMoves == 2);}
+    bool IsLadderMove() const noexcept  {return (_from != Stock) & (_nMoves == 2);}
     bool FlipsTopCard() const noexcept  {return _flipsTopCard;}
     void FlipsTopCard(bool f) noexcept  {_flipsTopCard = f;}
 
@@ -383,7 +383,7 @@ unsigned RecycleCount(const SeqType& moves) noexcept
         [&](auto  p) {return p.Recycle();});
 }
 
-// Mix-in to make any sequence container an automatic move counter.
+// Mix-in to make any sequence container of MoveSpecs an automatic move counter.
 template <class Container>
 class MoveCounter : public Container
 {
@@ -407,7 +407,6 @@ public:
         _nMoves -= Base::front().NMoves();
         Base::pop_front();
     }
-
     void push_back(const MoveSpec& mv) 
     {
         _nMoves += mv.NMoves();
@@ -430,7 +429,7 @@ std::string Peek(const Moves_t & mvs)
     outStr << "(";
     if (mvs.size()) {
         outStr << Peek(mvs[0]);
-        for (unsigned imv = 1; imv < mvs.size(); imv+=1)
+        for (unsigned imv = 1; imv < mvs.size(); imv++)
             outStr << ", " <<  Peek(mvs[imv]);
     }
     outStr << ")";
@@ -446,8 +445,6 @@ std::string Peek(const Moves_t & mvs)
 // consecutive, as drawing multiple cards from the stock pile
 // is represented as a single XMove.
 //
-// Pile numbers are given by the enum PileCodeT.
-//
 // Flips of tableau cards are not counted as moves, but they
 // are flagged on the move from the pile of the flip.
 
@@ -457,7 +454,7 @@ class XMove
     PileCodeT _from;
     PileCodeT _to;
     unsigned char _nCards;
-    unsigned char _flip;		// tableau flip?
+    bool _flip;		// tableau flip?
 public:
     XMove()
         : _nCards(0)
@@ -466,7 +463,8 @@ public:
             , PileCodeT from
             , PileCodeT to
             , unsigned nCards
-            , bool flip)
+            , bool flip
+        )
         : _moveNum(moveNum)
         , _from(from)
         , _to(to)
@@ -485,8 +483,8 @@ XMoves MakeXMoves(const Moves & moves, unsigned draw);
 
 
 enum Dir: unsigned {
-    returnTrue,
     returnFalse,
+    returnTrue,
     keepLooking
 };
 static Dir XYZ_Test(MoveSpec prevMove, MoveSpec trialMove) noexcept
