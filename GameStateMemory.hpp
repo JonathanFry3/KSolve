@@ -65,7 +65,7 @@ private:
             Hasher,									// hash function
             phmap::priv::hash_default_eq<GameState>,// == function
             phmap::priv::Allocator<GameState >, 
-            8U, 									// log2(number of submaps)
+            11U, 									// log2(number of submaps)
             std::mutex								// mutex type
         > MapType;
     MapType _states;
