@@ -11,6 +11,7 @@
 			//	"-pg",
 				"-O3",
 				"-std=c++20",
+				"-Wno-interference-size",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
 			//	"-DNDEBUG",		// comment out to activate assert()
@@ -75,6 +76,7 @@
 			//	"-m32",
 			//	"-pg",
 				"-std=c++20",
+				"-Wno-interference-size",
 				"-O3",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
@@ -105,6 +107,7 @@
 			//	"-m32",
 			//	"-pg",
 				"-std=c++20",
+				"-Wno-interference-size",
 			//	"-O1",
 				"-Wno-placement-new",
 				"-DFRYSTL_DEBUG",
@@ -135,6 +138,7 @@
 				"-g", "-finline-small-functions",
 				"-std=c++20",
 				"-Wno-placement-new",
+				"-Wno-interference-size",
 				"-Wno-rvo",
 				"-pthread",
 				"Game.cpp",
@@ -195,6 +199,7 @@
 				"-pthread",
 			//	"-pg", 	// gprof profiling
 				"-std=c++20",
+				"-Wno-interference-size",
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",
@@ -228,6 +233,7 @@
 				"-g", "-Og", "-finline-small-functions",
                 "-pthread",
                 "-std=c++20",
+				"-Wno-interference-size",
 			//	"-DNDEBUG",		// comment out to activate assert()
 				"-O3",
                 "-Wno-placement-new",
@@ -259,6 +265,7 @@
 				"-pthread",
 			//	"-pg", "-O1",	// gprof profiling
 				"-std=c++20",
+				"-Wno-interference-size",
 				"-O3",
 			//	"-O",			// for valgrind builds
 				"-Wno-placement-new",

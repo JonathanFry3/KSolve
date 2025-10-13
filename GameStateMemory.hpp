@@ -7,7 +7,7 @@
 // Instances are thread-safe.
 
 #include "Game.hpp"                     // for Game
-#include "parallel_hashmap/phmap.h"     // for parallel_flat_hash_set
+#include "gtl/phmap.hpp"                // for parallel_flat_hash_set
 #include <mutex>
 namespace KSolveNames {
 // A compact representation of the current game state.
@@ -60,11 +60,11 @@ struct Hasher
 class GameStateMemory
 {
 private:
-    typedef phmap::parallel_flat_hash_set< 
+    typedef gtl::parallel_flat_hash_set< 
             GameState, 								// key type
             Hasher,									// hash function
-            phmap::priv::hash_default_eq<GameState>,// == function
-            phmap::priv::Allocator<GameState >, 
+            gtl::priv::hash_default_eq<GameState>,// == function
+            gtl::priv::Allocator<GameState >, 
             11U, 									// log2(number of submaps)
             std::mutex								// mutex type
         > MapType;
