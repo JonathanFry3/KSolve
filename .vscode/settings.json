@@ -96,7 +96,9 @@
         "execution": "cpp",
         "*.ipp": "cpp",
         "future": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "codecvt": "cpp",
+        "typeindex": "cpp"
     },
     "terminal.explorerKind": "external",
     "workbench.editor.enablePreview": false,
