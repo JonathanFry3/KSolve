@@ -356,14 +356,15 @@ public:
         BaseType::back().SetRecycle(recycle);
     }
     void AddNonStockMove(PileCodeT from, PileCodeT to, 
-        unsigned n, unsigned fromUpCount) noexcept
+        unsigned n, unsigned fromUpCount, bool flipsTopCard) noexcept
     {
-        BaseType::emplace_back(from,to,n,fromUpCount);
+        BaseType::emplace_back(from,to,n,fromUpCount).FlipsTopCard(flipsTopCard);
     }
     void AddLadderMove(PileCodeT from, PileCodeT to, 
-        unsigned n, unsigned fromUpCount, Card ladderCard) noexcept
+        unsigned n, unsigned fromUpCount, Card ladderCard, bool flipsTopCard) noexcept
     {
-        BaseType::emplace_back(from,to,n,fromUpCount,ladderCard.Suit());
+        BaseType::emplace_back(from,to,n,fromUpCount,ladderCard.Suit())
+            .FlipsTopCard(flipsTopCard);
     }
 };
 

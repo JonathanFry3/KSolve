@@ -280,8 +280,8 @@ void Game::DominantAvailableMoves(
                     && CanMoveToFoundation(card)) { 
                 const auto toCode = FoundationPileCode(card.Suit());
                 const unsigned up = fromPile.UpCount();
-                moves.AddNonStockMove(fromCode,toCode,1,up);
-                moves.back().FlipsTopCard(up==1 && fromPile.size()>1);
+                moves.AddNonStockMove(fromCode,toCode,1,up,
+                        up==1 && fromPile.size()>1);
             }
         }
     }
@@ -309,8 +309,8 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         // look for moves from tableau to foundation
         if (CanMoveToFoundation(fromTip)) {
             const auto toPile = FoundationPileCode(fromTip.Suit());
-            moves.AddNonStockMove(fromPile.Code(),toPile,1,upCount);
-            moves.back().FlipsTopCard(upCount == 1 && 1 < fromPile.size());
+            moves.AddNonStockMove(fromPile.Code(),toPile,1,upCount,
+            upCount == 1 && 1 < fromPile.size());
         }
 
         // Look for moves between tableau piles.  These may involve
@@ -325,8 +325,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     && fromPile.size() > upCount) {
                     // toPile is empty, a king sits abottom fromPile's face-up
                     // cards, and it is covering at least one face-down card.
-                    moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount);
-                    moves.back().FlipsTopCard(true);
+                    moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount,true);
                     kingMoved = true;
                 }
             } else {
@@ -352,8 +351,8 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                         // clear a column that's needed for a king.
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
-                        moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount);
-                        moves.back().FlipsTopCard(upCount < fromPile.size());
+                        moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount,
+                            upCount < fromPile.size());
                     } else if (moveCount < upCount || upCount < fromPile.size()) {
                         const Card uncovered = *(fromPile.end()-moveCount-1);
                         if (CanMoveToFoundation(uncovered)){
@@ -361,8 +360,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             // its foundation pile and move it there.
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
-                                upCount,uncovered);
-                            moves.back().FlipsTopCard(upCount==moveCount+1 && upCount<fromPile.size());
+                                upCount,uncovered,upCount==moveCount+1 && upCount<fromPile.size());
                         }
                     }
                 }
@@ -511,11 +509,11 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
         for (const auto& tPile: _tableau) {
             if (tPile.size() > 0) {
                 if (top.Covers(tPile.back())) {
-                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0,false);
                 }
             } else {
                 if (top.Rank() == Card::King) {
-                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0,false);
                     break;  // don't move same king to another tableau pile
                 }
             }
