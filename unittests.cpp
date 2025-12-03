@@ -254,7 +254,7 @@ int main()
 		assert (sol.Tableau()[6][6] == deck[27]);
 		assert (sol.Tableau()[6][5] == deck[26]);
 		assert (sol.Tableau()[5][5] == deck[25]);
-		assert (sol.Tableau()[5].UpCount() == 1);
+		assert (sol.Tableau()[5].DownCount() == 5);
 		Validate(sol);
 
 		// Test Game::MakeMove

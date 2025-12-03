@@ -91,7 +91,7 @@ unsigned MinimumMovesLeft(const Game& game) noexcept
     for (const auto & tPile: game.Tableau()) {
         if (tPile.size()) {
             const auto begin = tPile.begin();
-            const unsigned downCount = tPile.size() - tPile.UpCount();
+            const unsigned downCount = tPile.DownCount();
             result += tPile.size() + MisorderCount(begin, begin+downCount+1);
         }
     }

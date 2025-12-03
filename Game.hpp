@@ -185,6 +185,7 @@ public:
 
     PileCodeT Code() const noexcept		    {return _code;}
     unsigned UpCount() const noexcept		{return _upCount;}
+    unsigned DownCount() const noexcept     {return size()-_upCount;}
     bool IsTableau() const noexcept			{return _isTableau;}
     bool IsFoundation() const noexcept		{return _isFoundation;}
 

@@ -554,12 +554,11 @@ string GameDiagram(const Game& game, unsigned moveNum) {
     for (int i = 0; i < PileCount; i++) {
         ss << pilestring[i] << ": ";
         const Pile & p = game.AllPiles()[i];
-        int downsize = p.size() - p.UpCount();
         for (int j = p.size() - 1; j >= 0; j--) {
             Card c = p[j];
             char rank = RANKS[c.Rank()];
             char suit = SUITS[c.Suit()];
-            if (j >= downsize)
+            if (j >= p.DownCount())
                 ss << rank << suit << ' ';
             else
                 ss << '-' << rank << suit;
@@ -606,10 +605,8 @@ string GameDiagramPysol(const Game& game) {
 
     for (const Pile& p: game.Tableau()) {
         ss << "\n:";
-        unsigned up = p.UpCount();
-        size = p.size();
         for (int j = 0; j < size; j++) {
-            if (j+up < size)
+            if (j+p.UpCount() < p.size())
                 ss << " <" << UpCaseString(p[j]) << ">";
             else
                 ss << ' ' << UpCaseString(p[j]);

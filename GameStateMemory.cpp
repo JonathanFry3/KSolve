@@ -9,8 +9,7 @@ namespace KSolveNames {
 static inline uint32_t DeflateTableau(const Pile& cards) noexcept
 {
     uint32_t result {0};
-    const unsigned upCount = cards.UpCount();
-    if (upCount) {
+    if (cards.size()) {
         // The rules for moving to the tableau piles guarantee
         // all the face-up cards in such a pile can be identified
         // by identifying the bottom card (the first face-up card)
@@ -21,15 +20,14 @@ static inline uint32_t DeflateTableau(const Pile& cards) noexcept
         // more than 12, since AvailableMoves() will never move an
         // ace there.
         unsigned isMajor{0};
-        unsigned downCount = cards.size()-upCount;
-        for (Card card : cards | views::drop(downCount+1)) {
+        for (Card card : cards | views::drop(cards.DownCount()+1)) {
             (isMajor<<=1) |= card.IsMajor();
         }
         const Card top = cards.Top();
         result =  ((top.Suit()
                     <<4  | top.Rank())
                     <<11 | isMajor)
-                    <<4  | upCount;
+                    <<4  | cards.UpCount();
     }
     return result;
 }
