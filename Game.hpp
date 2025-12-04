@@ -171,32 +171,33 @@ class alignas(32)   // align to a cache line
 {
 private:
     PileCodeT _code;
-    unsigned char _upCount;
+    unsigned char _downCount;
     bool _isTableau;
     bool _isFoundation;
 
 public:
     Pile(PileCodeT code)
     : _code(code)
-    , _upCount(0)
+    , _downCount(0)
     , _isTableau(KSolveNames::IsTableau(code))
     , _isFoundation(FoundationBase <= code && code < FoundationBase+SuitsPerDeck)
     {}
 
     PileCodeT Code() const noexcept		    {return _code;}
-    unsigned UpCount() const noexcept		{return _upCount;}
-    unsigned DownCount() const noexcept     {return size()-_upCount;}
+    unsigned UpCount() const noexcept		{return size()-_downCount;}
+    unsigned DownCount() const noexcept     {return _downCount;}
     bool IsTableau() const noexcept			{return _isTableau;}
-    bool IsFoundation() const noexcept		{return _isFoundation;}
+    bool IsFoundation() const noexcept		{return _isFoundation;} 
 
-    void SetUpCount(unsigned up) noexcept	{_upCount = up;}
-    void IncrUpCount(int c) noexcept		{_upCount += c;}
+    void SetDownCount(unsigned dn) noexcept	{_downCount = dn;}
+    void SetUpCount(unsigned up) noexcept   {_downCount = size()-up;}
+    void IncrDownCount(int c) noexcept		{_downCount += c;}
     const PileVec& Cards() const noexcept	{return *this;}
     void Push(Card c) noexcept             	{push_back(c);}
     Card Pop() noexcept			            {Card r = back(); pop_back(); return r;}
     void Draw(Pile & from) noexcept			{push_back(from.back()); from.pop_back();}
-    Card Top() const  noexcept              {return *(end()-_upCount);}
-    void ClearCards() noexcept              {clear(); _upCount = 0;}
+    Card Top() const  noexcept              {return (*this)[_downCount];}
+    void ClearCards() noexcept              {clear(); _downCount = 0;}
     // Take the last n cards from donor preserving order	
     void Take(Pile& donor, unsigned n) noexcept 
     {
