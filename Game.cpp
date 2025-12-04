@@ -154,7 +154,6 @@ void Game::Deal() noexcept
     }
     // Deal last 24 cards to stock, reversing order
     _stock.assign(_deck.crbegin(), _deck.crbegin()+24);
-    _stock.SetDownCount(24);
 }
 
 void Game::MakeMove(MoveSpec mv) noexcept
@@ -170,17 +169,12 @@ void Game::MakeMove(MoveSpec mv) noexcept
         Pile& fromPile = AllPiles()[mv.From()];
         const auto isLadderMove{mv.IsLadderMove()};
         assert (!(fromPile.IsTableau() && fromPile.UpCount() != mv.FromUpCount()));
+        fromPile.IncrDownCount(-mv.FlipsTopCard());
         toPile.Take(fromPile, n);
         if (isLadderMove) {
             _foundation[mv.LadderSuit()].Draw(fromPile);
         }
-        // For tableau piles, DownCount counts face-down cards.  
-        // For other piles, it is undefined.
-        if (fromPile.size()) {
-            fromPile.IncrDownCount(-mv.FlipsTopCard()); 
-        } else {
-            _kingSpaces += fromPile.IsTableau(); // count newly cleared columns
-        }
+        _kingSpaces += fromPile.IsTableau() & fromPile.empty(); // count newly cleared columns
     }
 }
 
@@ -191,7 +185,7 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
     if (mv.IsStockMove()) {
         _waste.Push(toPile.Pop());
         _stock.Draw(_waste,mv.DrawCount());
-        if (mv.Recycle()) --_recycleCount;
+        _recycleCount -= mv.Recycle();
     } else {
         const auto n = mv.NCards();
         Pile & fromPile = AllPiles()[mv.From()];
@@ -205,7 +199,7 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
         _kingSpaces -= fromPile.IsTableau() & fromPile.empty();  // uncount newly cleared columns
         fromPile.Take(toPile, n);
         if (fromPile.IsTableau()) {
-            fromPile.SetUpCount(mv.FromUpCount());
+            fromPile.IncrDownCount(mv.FlipsTopCard());
         }
     }
 }
