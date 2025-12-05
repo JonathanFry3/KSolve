@@ -168,8 +168,9 @@ void Game::MakeMove(MoveSpec mv) noexcept
         const int n = mv.NCards();
         Pile& fromPile = AllPiles()[mv.From()];
         const auto isLadderMove{mv.IsLadderMove()};
-        assert (!(fromPile.IsTableau() && fromPile.UpCount() != mv.FromUpCount()));
-        fromPile.IncrDownCount(-mv.FlipsTopCard());
+        bool flips = mv.FlipsTopCard();
+        assert(n+flips <= fromPile.size());
+        fromPile.IncrDownCount(-flips);
         toPile.Take(fromPile, n);
         if (isLadderMove) {
             _foundation[mv.LadderSuit()].Draw(fromPile);
@@ -268,7 +269,7 @@ void Game::DominantAvailableMoves(
                     && CanMoveToFoundation(card)) { 
                 const auto toCode = FoundationPileCode(card.Suit());
                 const unsigned up = fromPile.UpCount();
-                moves.AddNonStockMove(fromCode,toCode,1,up,
+                moves.AddNonStockMove(fromCode,toCode,1,
                         up==1 && fromPile.size()>1);
             }
         }
@@ -297,7 +298,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         // look for moves from tableau to foundation
         if (CanMoveToFoundation(fromTip)) {
             const auto toPile = FoundationPileCode(fromTip.Suit());
-            moves.AddNonStockMove(fromPile.Code(),toPile,1,upCount,
+            moves.AddNonStockMove(fromPile.Code(),toPile,1,
             upCount == 1 && 1 < fromPile.size());
         }
 
@@ -313,7 +314,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     && fromPile.size() > upCount) {
                     // toPile is empty, a king sits abottom fromPile's face-up
                     // cards, and it is covering at least one face-down card.
-                    moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount,true);
+                    moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,true);
                     kingMoved = true;
                 }
             } else {
@@ -339,7 +340,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                         // clear a column that's needed for a king.
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
-                        moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,upCount,
+                        moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,
                             upCount < fromPile.size());
                     } else if (moveCount < upCount || upCount < fromPile.size()) {
                         const Card uncovered = *(fromPile.end()-moveCount-1);
@@ -348,7 +349,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             // its foundation pile and move it there.
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
-                                upCount,uncovered,upCount==moveCount+1 && upCount<fromPile.size());
+                                uncovered,upCount==moveCount+1 && upCount<fromPile.size());
                         }
                     }
                 }
@@ -497,11 +498,11 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
         for (const auto& tPile: _tableau) {
             if (tPile.size() > 0) {
                 if (top.Covers(tPile.back())) {
-                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0,false);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,false);
                 }
             } else {
                 if (top.Rank() == Card::King) {
-                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,0,false);
+                    moves.AddNonStockMove(fPile.Code(),tPile.Code(),1,false);
                     break;  // don't move same king to another tableau pile
                 }
             }
@@ -680,10 +681,9 @@ std::string Peek(const MoveSpec & mv)
         outStr << PileNames[mv.From()] << ">" << PileNames[mv.To()];
         unsigned n = mv.NCards();
         if (n != 1) outStr << "x" << n;
-        if (mv.FromUpCount()) outStr << "u" << mv.FromUpCount();
         if (mv.IsLadderMove()) {
             outStr << "L, ";
-            outStr << Peek(MoveSpec(mv.From(), mv.LadderPileCode(), 1, mv.FromUpCount()-n));
+            outStr << Peek(MoveSpec(mv.From(), mv.LadderPileCode(), 1, mv.FlipsTopCard()-n));
         }
         if (mv.FlipsTopCard()) outStr << "F";
     }

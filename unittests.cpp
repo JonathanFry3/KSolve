@@ -258,7 +258,7 @@ int main()
 		Validate(sol);
 
 		// Test Game::MakeMove
-		sol.MakeMove(MoveSpec(Tableau1,Tableau2,1,1));
+		sol.MakeMove(MoveSpec(Tableau1,Tableau2,1,false));
 		assert (sol.Tableau()[0].empty());
 		assert (sol.Tableau()[1].size() == 3);
 		assert (sol.Tableau()[0].UpCount() == 0);
@@ -308,9 +308,9 @@ int main()
 		assert(sizeof(MoveSpec)==4);
 		MoveSpec a {Tableau3,6,5};
 		MoveSpec b {Waste,Foundation2D,1,0};
-		MoveSpec c {Tableau1,Tableau6,4,1};
+		MoveSpec c {Tableau1,Tableau6,4,true};
 		MoveSpec d {Tableau3,6,-4};
-		MoveSpec e {Tableau4, Tableau1, 3, 4, Card::Spades};
+		MoveSpec e {Tableau4, Tableau1, 3, false, Card::Spades};
 		d.SetRecycle(true);
 		assert(!a.Recycle());
 		assert(d.Recycle());
@@ -321,24 +321,24 @@ int main()
 		string peeke = Peek(e);
 		assert(peeka == "+6d5>t3");
 		assert(peekb == "wa>di");
-		assert(peekc == "t1>t6x4u1");
+		assert(peekc == "t1>t6x4F");
 		assert(peekd == "+6d-4c>t3");
-		assert(peeke == "t4>t1x3u4L, t4>spu1");
+		//cerr << peeke << endl;
+		assert(peeke == "t4>t1x3L, t4>spF");
 		Moves mvs{a,b,c};
 		string peekmvs = Peek(mvs);
-		assert (peekmvs == "(+6d5>t3, wa>di, t1>t6x4u1)");
+		assert (peekmvs == "(+6d5>t3, wa>di, t1>t6x4F)");
 	}
 	{
 		// Test ABC_Moves
 
 		// Set up a move history
 		vector<MoveSpec> made;
-		made.emplace_back(Tableau2,Tableau3,1,2);	// A. move one card from 2 up cards
-		made.emplace_back(Tableau7,Tableau6,2,5);	// B.
-		made.emplace_back(Tableau7,Tableau5,1,3); 	// C.
-		made.emplace_back(Tableau4,Tableau2,1,4);	// D.
-		made.emplace_back(Tableau4,Tableau1,3,3);	// E.
-		made.back().FlipsTopCard(true);
+		made.emplace_back(Tableau2,Tableau3,1,false);	// A. move one card from 2 up cards
+		made.emplace_back(Tableau7,Tableau6,2,false);	// B.
+		made.emplace_back(Tableau7,Tableau5,1,false); 	// C.
+		made.emplace_back(Tableau4,Tableau2,1,false);	// D.
+		made.emplace_back(Tableau4,Tableau1,3,true);	// E.
 
 		// Test various candidate moves 
 		assert(XYZ_Move(MoveSpec(Tableau5,Tableau7,1,6),made));		// direct reversal of C

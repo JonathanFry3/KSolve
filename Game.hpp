@@ -227,10 +227,6 @@ std::string Peek(const Pile& pile);
 class MoveSpec
 // Directions for a move.  Game::AvailableMoves() creates these.
 //
-// Game::UnMakeMove() cannot infer the value of the from tableau pile's
-// up count before the move (because of flips), so Game::AvailableMoves() 
-// includes that in any MoveSpec from a tableau pile.
-//
 // Game::AvailableMoves creates MoveSpecs around the talon (the waste and
 // stock piles) that must be counted as multiple moves.  The number
 // of actual moves implied by a MoveSpec object is given by NMoves().
@@ -240,15 +236,15 @@ class MoveSpec
 // the tableau.  The MoveSpec for such a move makes that move and then
 // moves the exposed card to the foundation.
 //
-// For a ladder move, FlipsTopCard() indicates whether the move to 
-// the foundation flips a face-down card, not whether the move to
-// a different tableau pile does so.  The card that a ladder move
-// moves to the foundation is always face-up before the ladder move.
-//
 // A ladder move is called that because the author refers to the fairly 
 // common tactic of using a sequence of such moves to dislodge a card 
 // on a tableau pile covering another near the end of the game as "climbing
 // the ladder."
+//
+// For a ladder move, FlipsTopCard() indicates whether the move to 
+// the foundation flips a face-down card, not whether the move to
+// a different tableau pile does so.  The card that a ladder move
+// moves to the foundation is always face-up before the ladder move.
 //
 // Since making this class type-safe at compile time (using std::variant) 
 // requires making it larger (doubling the size of the move tree and the 
@@ -257,14 +253,14 @@ class MoveSpec
 private:
     PileCodeT _from = PileCount;    // _from == Stock means stock MoveSpec
     PileCodeT _to   = PileCount;
-    bool _flipsTopCard:1 = false;
-    unsigned char _nMoves:5 = 0;
-    Card::SuitT _ladderSuit :2 = Card::Clubs; 
+    unsigned char _nMoves = 0;
     union {
+        unsigned char _initializer{0};
         // Non-stock MoveSpec
         struct {
+            bool _flipsTopCard:1;
             unsigned char _cardsToMove:4;
-            unsigned char _fromUpCount:4;
+            Card::SuitT _ladderSuit :2; 
         };
         // Stock MoveSpec
         struct {
@@ -287,23 +283,23 @@ public:
         {}
     // Construct a non-stock MoveSpec.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
-    MoveSpec(PileCodeT from, PileCodeT to, unsigned n, unsigned fromUpCount) noexcept
+    MoveSpec(PileCodeT from, PileCodeT to, unsigned n, bool flipsTopCard) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
         , _cardsToMove(n)
-        , _fromUpCount(fromUpCount)
+        , _flipsTopCard(flipsTopCard)
         {
             assert(from != Stock);
         }
     // Construct a ladder MoveSpec
     MoveSpec(PileCodeT from, PileCodeT to, unsigned n, 
-        unsigned fromUpCount, Card::SuitT ladderSuit) noexcept
+        bool flipsTopCard, Card::SuitT ladderSuit) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(2)
         , _cardsToMove(n)
-        , _fromUpCount(fromUpCount)
+        , _flipsTopCard(flipsTopCard)
         , _ladderSuit(ladderSuit)
         {
             assert(IsTableau(from) && IsTableau(to));
@@ -317,7 +313,6 @@ public:
     PileCodeT From() const noexcept     {return _from;}
     PileCodeT To() const noexcept	    {return _to;}
     unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
-    unsigned FromUpCount()const noexcept{assert(_from != Stock); return _fromUpCount;}
     unsigned NMoves() const	noexcept	{return _nMoves;}
     Card::SuitT LadderSuit() const noexcept
                                         {return _ladderSuit;}
@@ -358,15 +353,14 @@ public:
         BaseType::back().SetRecycle(recycle);
     }
     void AddNonStockMove(PileCodeT from, PileCodeT to, 
-        unsigned n, unsigned fromUpCount, bool flipsTopCard) noexcept
+        unsigned n, bool flipsTopCard) noexcept
     {
-        BaseType::emplace_back(from,to,n,fromUpCount).FlipsTopCard(flipsTopCard);
+        BaseType::emplace_back(from,to,n,flipsTopCard);
     }
     void AddLadderMove(PileCodeT from, PileCodeT to, 
-        unsigned n, unsigned fromUpCount, Card ladderCard, bool flipsTopCard) noexcept
+        unsigned n, Card ladderCard, bool flipsTopCard) noexcept
     {
-        BaseType::emplace_back(from,to,n,fromUpCount,ladderCard.Suit())
-            .FlipsTopCard(flipsTopCard);
+        BaseType::emplace_back(from,to,n,flipsTopCard,ladderCard.Suit());
     }
 };
 
@@ -548,13 +542,12 @@ static bool XYZ_Move(MoveSpec trialMove, const V& movesMade) noexcept
     for (MoveSpec prevMove: views::reverse(movesMade)){ 
         if (prevMove.IsLadderMove()) {
             // Test the move-to-foundation implied by a ladder move
-            MoveSpec foundationMove{
+            MoveSpec foundationMove(
                 prevMove.From(),
                 prevMove.LadderPileCode(),
                 1,
-                prevMove.FromUpCount()-prevMove.NCards()
-            };
-            foundationMove.FlipsTopCard(prevMove.FlipsTopCard());
+                prevMove.FlipsTopCard()
+        );
             switch (XYZ_Test(foundationMove, trialMove)) {
                 case returnTrue: return true;
                 case returnFalse: return false;
