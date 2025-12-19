@@ -40,7 +40,7 @@ std::string Card::AsString() const
 }
 
 // Make a Card from a string like "ah" or "s8".
-// Returns true if it succeeds.
+// Returns the Card if it succeeds.
 std::optional<Card> CardFromString(const std::string& s0) noexcept  
 {
     const std::string s1 = Filtered(LowerCase(s0),suits+ranks+"10");
@@ -146,7 +146,7 @@ void Game::Deal() noexcept
     }
     // Deal 28 cards to the tableau
     auto iDeck = _deck.cbegin();
-    for (unsigned iPile = 0; iPile<TableauSize; iPile+=1) {
+    for (unsigned iPile = 0; iPile<TableauSize; ++iPile) {
         for (unsigned icd = iPile; icd < TableauSize; ++icd)	
             _tableau[icd].push_back(*iDeck++);
         _tableau[iPile].SetDownCount(iPile);      // turn up the top card
@@ -217,7 +217,7 @@ void Game::MakeMove(const XMove & xmv) noexcept
         toPile.Draw(fromPile, n);
     else
         toPile.Take(fromPile, n);
-    if (fromPile.empty() && fromPile.IsTableau())
+    if (fromPile.empty() & fromPile.IsTableau())
         _kingSpaces += 1;
     if (xmv.Flip()){
         fromPile.SetUpCount(1);    // flip the top card
