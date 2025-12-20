@@ -165,11 +165,13 @@ void Game::MakeMove(MoveSpec mv) noexcept
         toPile.Push(_waste.Pop());
         _recycleCount += mv.Recycle();
     } else {
-        const int n = mv.NCards();
-        Pile& fromPile = AllPiles()[mv.From()];
-        const auto isLadderMove{mv.IsLadderMove()};
-        bool flips = mv.FlipsTopCard();
+        const auto  n = mv.NCards();
+        Pile&       fromPile = AllPiles()[mv.From()];
+        const bool  isLadderMove{mv.IsLadderMove()};
+        const bool  flips = mv.FlipsTopCard();
+
         assert(n+flips <= fromPile.size());
+
         fromPile.IncrDownCount(-flips);
         toPile.Take(fromPile, n);
         if (isLadderMove) {
@@ -184,24 +186,21 @@ void  Game::UnMakeMove(MoveSpec mv) noexcept
     const auto to = mv.To();
     Pile & toPile = AllPiles()[to];
     if (mv.IsStockMove()) {
+        _recycleCount -= mv.Recycle();
         _waste.Push(toPile.Pop());
         _stock.Draw(_waste,mv.DrawCount());
-        _recycleCount -= mv.Recycle();
     } else {
-        const auto n = mv.NCards();
-        Pile & fromPile = AllPiles()[mv.From()];
-        if (mv.IsLadderMove()) {
-            // Ladder move
-            // UnMakeMove(NonStockMove(fromPile.Code(), 
-            //    _foundation[mv.LadderSuit()].Code(),1,mv.FromUpCount()));
-            _kingSpaces -= fromPile.empty();
+        const auto  n = mv.NCards();
+        Pile&       fromPile = AllPiles()[mv.From()];
+        const bool  isLadderMove = mv.IsLadderMove();
+        const bool  flips = mv.FlipsTopCard();
+
+        _kingSpaces -= fromPile.IsTableau() & fromPile.empty();  // uncount newly cleared columns
+        if (isLadderMove) {
             fromPile.Draw(_foundation[mv.LadderSuit()]);
         }
-        _kingSpaces -= fromPile.IsTableau() & fromPile.empty();  // uncount newly cleared columns
         fromPile.Take(toPile, n);
-        if (fromPile.IsTableau()) {
-            fromPile.IncrDownCount(mv.FlipsTopCard());
-        }
+        fromPile.IncrDownCount(flips);
     }
 }
 
@@ -342,7 +341,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                         assert(fromBase.Covers(cardToCover));
                         moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,
                             upCount < fromPile.size());
-                    } else if (moveCount < upCount || upCount < fromPile.size()) {
+                    } else if (moveCount < upCount) {
                         const Card uncovered = *(fromPile.end()-moveCount-1);
                         if (CanMoveToFoundation(uncovered)){
                             // This move will uncover a card that can be moved to 
