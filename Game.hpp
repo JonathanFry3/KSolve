@@ -618,7 +618,6 @@ public:
     Game(CardDeck deck,
          unsigned draw=1,
          unsigned recyleLimit=-1);
-    Game(const Game&);
     const Pile & WastePile() const noexcept    	    {return _waste;}
     const Pile & StockPile() const noexcept    	    {return _stock;}
     const FoundationType& Foundation()const noexcept{return _foundation;}

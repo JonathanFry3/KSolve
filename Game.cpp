@@ -122,17 +122,6 @@ Game::Game(CardDeck deck,unsigned draw,unsigned recycleLimit)
 {
     Deal();
 }
-Game::Game(const Game& orig)
-    : _deck(orig._deck)
-    , _waste(orig._waste)
-    , _stock(orig._stock)
-    , _drawSetting(orig._drawSetting)
-    , _recycleLimit(orig._recycleLimit)
-    , _recycleCount(orig._recycleCount)
-    , _kingSpaces(orig._kingSpaces)
-    , _tableau(orig._tableau)
-    , _foundation(orig._foundation)
-    {}
 
 // Deal the cards for Klondike Solitaire.
 void Game::Deal() noexcept
