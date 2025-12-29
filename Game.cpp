@@ -287,7 +287,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         if (CanMoveToFoundation(fromTip)) {
             const auto toPile = FoundationPileCode(fromTip.Suit());
             moves.AddNonStockMove(fromPile.Code(),toPile,1,
-            upCount == 1 && 1 < fromPile.size());
+                upCount == 1 && 1 < fromPile.size());
         }
 
         // Look for moves between tableau piles.  These may involve
@@ -337,7 +337,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                             // its foundation pile and move it there.
                             assert((fromPile.end()-moveCount)->Covers(cardToCover));
                             moves.AddLadderMove(fromPile.Code(),toPile.Code(),moveCount,
-                                uncovered,upCount==moveCount+1 && upCount<fromPile.size());
+                                uncovered,upCount==moveCount+1 && fromPile.DownCount());
                         }
                     }
                 }
