@@ -261,12 +261,12 @@ private:
             bool _flipsTopCard:1;
             unsigned char _cardsToMove:4;
             Card::SuitT _ladderSuit :2; 
-        };
+        } _nonStock;
         // Stock MoveSpec
         struct {
             signed char _drawCount:7;			// draw this many cards (may be negative)
             bool _recycle:1;
-        };
+        } _stock;
     };
 
 public:
@@ -278,18 +278,19 @@ public:
         : _from(Stock)
         , _to(to)
         , _nMoves(nMoves)
-        , _recycle(false)
-        , _drawCount(draw)
-        {}
+        {
+            _stock._recycle = false;
+            _stock._drawCount = draw;
+        }
     // Construct a non-stock MoveSpec.  UnMakeMove() can't infer the count
     // of face-up cards in a tableau pile, so AvailableMoves() saves it.
     MoveSpec(PileCodeT from, PileCodeT to, unsigned n, bool flipsTopCard) noexcept
         : _from(from)
         , _to(to)
         , _nMoves(1)
-        , _cardsToMove(n)
-        , _flipsTopCard(flipsTopCard)
         {
+            _nonStock._cardsToMove = n;
+            _nonStock._flipsTopCard = flipsTopCard;
             assert(from != Stock);
         }
     // Construct a ladder MoveSpec
@@ -298,42 +299,31 @@ public:
         : _from(from)
         , _to(to)
         , _nMoves(2)
-        , _cardsToMove(n)
-        , _flipsTopCard(flipsTopCard)
-        , _ladderSuit(ladderSuit)
         {
+            _nonStock._cardsToMove = n;
+            _nonStock._flipsTopCard = flipsTopCard;
+            _nonStock._ladderSuit = ladderSuit;
             assert(IsTableau(from) && IsTableau(to));
         }
     MoveSpec() = default;
     bool IsDefault() const noexcept     {return _from == _to;}
 
-    void SetRecycle(bool r) noexcept    {_recycle = r;}
+    void SetRecycle(bool r) noexcept    {_stock._recycle = r;}
 
     bool IsStockMove() const noexcept	{return _from==Stock;}
     PileCodeT From() const noexcept     {return _from;}
     PileCodeT To() const noexcept	    {return _to;}
-    unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _cardsToMove;}     
+    unsigned NCards() const noexcept	{return (_from == Stock) ? 1 : _nonStock._cardsToMove;}     
     unsigned NMoves() const	noexcept	{return _nMoves;}
     Card::SuitT LadderSuit() const noexcept
-                                        {return _ladderSuit;}
+                                        {return _nonStock._ladderSuit;}
     PileCodeT LadderPileCode() const noexcept
-                                        {return PileCodeT(unsigned(_ladderSuit)+unsigned(FoundationBase));}
-    bool Recycle() const noexcept       {return IsStockMove() & _recycle;}
-    int DrawCount() const noexcept		{assert(_from == Stock); return _drawCount;}
+                                        {return PileCodeT(unsigned(_nonStock._ladderSuit)+unsigned(FoundationBase));}
+    bool Recycle() const noexcept       {return IsStockMove() & _stock._recycle;}   
+    int DrawCount() const noexcept		{assert(_from == Stock); return _stock._drawCount;} 
     bool IsLadderMove() const noexcept  {return (_from != Stock) & (_nMoves == 2);}
-    bool FlipsTopCard() const noexcept  {return _flipsTopCard;}
-    void FlipsTopCard(bool f) noexcept  {_flipsTopCard = f;}
-
-    bool operator==(const MoveSpec rhs) const noexcept
-    {
-        return  _from == rhs._from &&
-                _to == rhs._to &&
-                _flipsTopCard == rhs._flipsTopCard &&
-                _nMoves == rhs._nMoves &&
-                _ladderSuit == rhs._ladderSuit &&
-                _recycle == rhs._recycle &&
-                _drawCount == rhs._drawCount;
-    }
+    bool FlipsTopCard() const noexcept  {return _nonStock._flipsTopCard;}   
+    void FlipsTopCard(bool f) noexcept  {_nonStock._flipsTopCard = f;}  
 
 };
 static_assert(sizeof(MoveSpec) == 4, "MoveSpec must be 4 bytes long");
