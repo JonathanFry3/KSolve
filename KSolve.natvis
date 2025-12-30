@@ -39,9 +39,9 @@
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
   </Type>
   <Type Name="KSolveNames::MoveSpec">
-    <DisplayString>Move from {_from} to {_to} {_nMoves} moves draw {_drawCount} n {_n} up {_fromUpCount} </DisplayString>
+    <DisplayString>Move {_from} to {_to} moves={_nMoves}</DisplayString>
   </Type>
-  <!-- flat map/set  -->
+  <!-- flat map/set  -->   
   <Type            Name="phmap::flat_hash_set&lt;*,*,*,*&gt;">  
   <AlternativeType Name="phmap::flat_hash_map&lt;*,*,*,*,*&gt;" />  
       <DisplayString>{{size = {size_}}}</DisplayString>  

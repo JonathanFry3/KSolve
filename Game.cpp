@@ -258,7 +258,7 @@ void Game::DominantAvailableMoves(
                 const auto toCode = FoundationPileCode(card.Suit());
                 const unsigned up = fromPile.UpCount();
                 moves.AddNonStockMove(fromCode,toCode,1,
-                        up==1 && fromPile.size()>1);
+                        up==1 && fromPile.DownCount());
             }
         }
     }
@@ -287,7 +287,7 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
         if (CanMoveToFoundation(fromTip)) {
             const auto toPile = FoundationPileCode(fromTip.Suit());
             moves.AddNonStockMove(fromPile.Code(),toPile,1,
-                upCount == 1 && 1 < fromPile.size());
+                upCount == 1 && fromPile.DownCount());
         }
 
         // Look for moves between tableau piles.  These may involve
@@ -297,9 +297,9 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
             if (&fromPile == &toPile) continue;
 
             if (toPile.empty()) { 
-                if (  !kingMoved 
+                if ( ! kingMoved 
                     && fromBase.Rank() == Card::King 
-                    && fromPile.size() > upCount) {
+                    && fromPile.DownCount()) {
                     // toPile is empty, a king sits abottom fromPile's face-up
                     // cards, and it is covering at least one face-down card.
                     moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,true);
@@ -323,13 +323,13 @@ void Game::MovesFromTableau(QMoves & moves) const noexcept
                     // in the to pile, so a move is possible.
                     const unsigned moveCount = cardToCover.Rank() - fromTip.Rank();
                     assert(moveCount <= upCount);
-                    if (moveCount==upCount && (upCount<fromPile.size() || NeedKingSpace())){
+                    if (moveCount==upCount && (fromPile.DownCount() || NeedKingSpace())){
                         // This move will flip a face-down card or
                         // clear a column that's needed for a king.
                         // Move all the face-up cards on the from pile.
                         assert(fromBase.Covers(cardToCover));
                         moves.AddNonStockMove(fromPile.Code(),toPile.Code(),upCount,
-                            upCount < fromPile.size());
+                            fromPile.DownCount());
                     } else if (moveCount < upCount) {
                         const Card uncovered = *(fromPile.end()-moveCount-1);
                         if (CanMoveToFoundation(uncovered)){
