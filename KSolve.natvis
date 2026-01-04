@@ -39,7 +39,7 @@
     <DisplayString> {"CDSH"[_suit]} {"A23456789TJQK"[_rank]} </DisplayString>
   </Type>
   <Type Name="KSolveNames::MoveSpec">
-    <DisplayString>Move {_from} to {_to}, moves={_nMoves}, flips={_nonStock._flipsTopCard}, cards={_nonStock._cardsToMove}, ladderSuit={"CDSH"[_nonStock._ladderSuit]}, draw={_stock._drawCount}, recycle={_stock._recycle}  </DisplayString>
+    <DisplayString>Move {"W1234567KCDSH"[_from]} to {"W1234567KCDSH"[_to]}, moves={_nMoves}, flips={_nonStock._flipsTopCard}, cards={_nonStock._cardsToMove}, ladderSuit={"CDSH"[_nonStock._ladderSuit]}, draw={_stock._drawCount}, recycle={_stock._recycle}  </DisplayString>
   </Type>
   <!-- flat map/set  -->   
   <Type            Name="phmap::flat_hash_set&lt;*,*,*,*&gt;">  
