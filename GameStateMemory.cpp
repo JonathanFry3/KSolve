@@ -21,7 +21,8 @@ static inline uint32_t DeflateTableau(const Pile& cards) noexcept
         // ace there.
         unsigned isMajor{0};
         for (Card card : cards | views::drop(cards.DownCount()+1)) {
-            (isMajor<<=1) |= card.IsMajor();
+            isMajor <<=1 ;
+            isMajor |= card.IsMajor();
         }
         const Card top = cards.Top();
         result =  ((top.Suit()

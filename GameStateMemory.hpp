@@ -61,9 +61,9 @@ class GameStateMemory
 {
 private:
     typedef gtl::parallel_flat_hash_set< 
-            GameState, 								// key type
+            GameState, 								// member type
             Hasher,									// hash function
-            gtl::priv::hash_default_eq<GameState>,// == function
+            gtl::priv::hash_default_eq<GameState>,  // == function
             gtl::priv::Allocator<GameState >, 
             11U, 									// log2(number of submaps)
             std::mutex								// mutex type
@@ -71,15 +71,15 @@ private:
     MapType _states;
 
     // Starting minimum capacity for hash map
-    const unsigned MinCapacity = 4096*1024;
+    const unsigned MinCapacity = 4*1024*1024;
 
 public:
     GameStateMemory() noexcept;
     // Returns true if no equal Game argument has been presented before
-    // to this object or the moveCount argument is lower than that
+    // to this object or the moveCount argument is lower than any
     // associated with previous calls with equal states.
     bool IsShortPathToState(const Game& game, unsigned moveCount) noexcept;
-    // Returns the number of states stored.  
+    // Returns the number of states stored. Expensive
     size_t Size()  noexcept {return _states.size();}
 };
 }   // namespace KSolveNames

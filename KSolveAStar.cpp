@@ -44,7 +44,8 @@ public:
 
 // Counts the number of times a card is higher in the stack
 // than a lower card of the same suit.  Remember that the 
-// stack tops are at the back.
+// stack tops are at the back. For example, if a 4 of hearts
+// is above a 3 of hearts, that is a misorder.
 template <class Iter>
 unsigned MisorderCount(Iter begin, Iter end) noexcept
 {
@@ -81,7 +82,7 @@ unsigned MinimumMovesLeft(const Game& game) noexcept
     const unsigned talonCount = 
         game.WastePile().size() + game.StockPile().size();
 
-    unsigned result = talonCount + QuotientRoundedUp(game.StockPile().size(),draw);
+    unsigned result = talonCount + QuotientRoundedUp(game.StockPile().size(), draw);
 
     if (draw == 1) {
         // This can fail the consistency test for draw setting > 1.
@@ -97,6 +98,7 @@ unsigned MinimumMovesLeft(const Game& game) noexcept
     }
     return result;
 }
+
 using AtomicUInt = std::atomic_uint;
 
 struct WorkerState {
