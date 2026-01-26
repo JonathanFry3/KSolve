@@ -6,8 +6,8 @@ if len(sys.argv) == 3:
         base = pd.read_csv(sys.argv[1], sep="\t")
         test = pd.read_csv(sys.argv[2], sep="\t")
 elif len(sys.argv) == 1:
-        base = pd.read_csv("tests/sm-1-base-100.txt", sep="\t")
-        test = pd.read_csv("tests/sm-1-test-100.txt", sep="\t")
+        base = pd.read_csv("tests/lg-1-base-1000.txt", sep="\t")
+        test = pd.read_csv("tests/lg-1-test-1000.txt", sep="\t")
 else:
         print("Expected two filenames or none.")
         exit
@@ -27,19 +27,28 @@ timeMinus = filter(lambda i:  basex.time[i] > test.time[i], indexes)
 print("   Time-:",len(test.row[timeMinus]))
 form = "{:12.2f}"
 pctForm = "{:+.2f}%"
-baseTot = sum(basex.time)
-testTot = sum(test.time)
-print("Base time:", form.format(baseTot))
-print("Test time:", form.format(testTot), pctForm.format((testTot-baseTot)*100./baseTot))
-baseTot = sum(basex.fringe)
-testTot = sum(test.fringe)
-print ("Base fringe size:     ", f"{baseTot:,}" )
-print ("Test fringe size:     ", f"{testTot:,}", pctForm.format((testTot-baseTot)*100./baseTot) )
-baseTot = sum(basex.advances)
-testTot = sum(test.advances)
-print ("Base advances count:  ", f"{baseTot:,}" )
-print ("Test advances count:  ", f"{testTot:,}", pctForm.format((testTot-baseTot)*100./baseTot) )
-baseTot = sum(basex.mvtree)
-testTot = sum(test.mvtree)
-print ("Base move tree size:  ", f"{baseTot:,}" )
-print ("Test move tree size:  ", f"{testTot:,}", pctForm.format((testTot-baseTot)*100./baseTot) )
+baseTime = sum(basex.time)
+testTime = sum(test.time)
+print("Base time:", form.format(baseTime))
+print("Test time:", form.format(testTime), pctForm.format((testTime-baseTime)*100./baseTime))
+
+def PrintSingleCount(which, label, column):
+        total = sum(column)
+        print ("{0} {1}".format(which, label), f"{total:,}")
+def PrintPair(label, baseColumn, testColumn):
+        baseTot = sum(baseColumn)
+        print ("Base {}".format(label), f"{baseTot:,}")
+        testTot = sum(testColumn)
+        diffString = f"{testTot:,}"
+        pctString = pctForm.format((testTot-baseTot)*100./baseTot)
+        print ("Test {}".format(label), diffString, pctString) 
+def PrintCount(label, colName):
+        if (colName in basex):
+                PrintPair(label, basex[colName], test[colName])
+        else:
+                PrintSingleCount("Test", label, test[colName])
+
+PrintCount("fringe size:      ", "fringe",)
+PrintCount("move tree size:   ", "mvtree")
+PrintCount("advances count:   ", "advances")
+PrintCount("closed list size: ", "closed")

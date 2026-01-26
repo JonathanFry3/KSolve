@@ -127,7 +127,7 @@ int main(int argc, char * argv[])
     
     // If the row number starts at 1, insert a header line
     if (spec._begin == 1)
-        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfringe\tadvances\tmvtree" << endl;
+        cout << "row\tseed\tthreads\tdraw\toutcome\tmoves\tpasses\ttime\tfringe\tmvtree\tadvances\tclosed" << endl;
     unsigned threads = (spec._threads > 0)
                         ? spec._threads
                         : DefaultThreads();
@@ -164,9 +164,11 @@ int main(int argc, char * argv[])
 
         cout << result._finalFringeSize << "\t";
 
-        cout << result._advances << "\t";
+        cout << result._moveTreeSize << "\t";
 
-        cout << result._moveTreeSize;
+        cout << result._advances;
+
+        cout << "\t" << result._stateCount;
 
         cout << endl;
 
