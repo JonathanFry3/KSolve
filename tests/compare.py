@@ -11,8 +11,7 @@ elif len(sys.argv) == 1:
 else:
         print("Expected two filenames or none.")
         exit
-assert test.shape[0] <= base.shape[0]
-indexes = test["seed"]
+indexes = test.seed
 test.set_index("seed",inplace=True)
 base.set_index("seed",inplace=True)
 basex = base.loc[indexes]
