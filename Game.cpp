@@ -374,26 +374,26 @@ public:
         , _wSize(game.WastePile().size())
         , _sSize(game.StockPile().size())
         {}
-    unsigned WasteSize() const
+    unsigned WasteSize() const noexcept
     {
         return _wSize;
     }
-    unsigned StockSize() const
+    unsigned StockSize() const noexcept
     {
         return _sSize;
     }
-    void Cycle()
+    void Cycle() noexcept
     {
         _sSize = _wSize;
         _wSize = 0;
     }
-    void Draw(unsigned n)
+    void Draw(unsigned n) noexcept
     {
         n = std::min<unsigned>(n, _sSize);
         _wSize += n;
         _sSize -= n;
     }
-    Card TopCard() const
+    Card TopCard() const noexcept
     {
         if (_wSize <= _waste.size()){
             return _waste[_wSize-1];
@@ -411,7 +411,7 @@ public:
 //
 // Enforces the limit on recycles
 typedef static_vector<TalonFuture,24> TalonFutureVec;
-static TalonFutureVec TalonCards(const Game & game)
+static TalonFutureVec TalonCards(const Game & game) noexcept
 {
     TalonFutureVec result;
     const unsigned talonSize = game.WastePile().size() + game.StockPile().size();
