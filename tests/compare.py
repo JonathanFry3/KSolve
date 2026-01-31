@@ -16,14 +16,25 @@ test.set_index("seed",inplace=True)
 base.set_index("seed",inplace=True)
 basex = base.loc[indexes]
 print(pd.crosstab(index=basex["outcome"],columns=test["outcome"],rownames=["Base"], colnames=["Test"]))
+
 movesPlus = test["moves"] > basex["moves"]
 print("  Moves+:",list(test.row[movesPlus]))
+
 movesMinus = test["moves"] < basex["moves"]
-print("  Moves-:",list(test.row[movesMinus]))
+print ("  Moves-:",list(test.row[movesMinus]))
+
 timePlus = filter(lambda i:  basex.time[i] < test.time[i], indexes)
-print("   Time+:",len(test.row[timePlus]))
+print ("   Time+:",len(test.row[timePlus]))
+
+bigPlus = test["time"] - basex["time"] > 1
+print ("    Big+:", list(test.row[bigPlus]))
+
 timeMinus = filter(lambda i:  basex.time[i] > test.time[i], indexes)
 print("   Time-:",len(test.row[timeMinus]))
+
+bigMinus = test["time"] - basex["time"] < -1
+print ("    Big-:", list(test.row[bigMinus]))
+
 form = "{:12.2f}"
 pctForm = "{:+.2f}%"
 baseTime = sum(basex.time)
