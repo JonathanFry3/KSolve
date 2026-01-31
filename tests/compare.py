@@ -24,16 +24,12 @@ movesMinus = test["moves"] < basex["moves"]
 print ("  Moves-:",list(test.row[movesMinus]))
 
 timePlus = filter(lambda i:  basex.time[i] < test.time[i], indexes)
-print ("   Time+:",len(test.row[timePlus]))
-
 bigPlus = test["time"] - basex["time"] > 1
-print ("    Big+:", list(test.row[bigPlus]))
+print ("   Time+:",len(test.row[timePlus]), list(test.row[bigPlus]))
 
 timeMinus = filter(lambda i:  basex.time[i] > test.time[i], indexes)
-print("   Time-:",len(test.row[timeMinus]))
-
 bigMinus = test["time"] - basex["time"] < -1
-print ("    Big-:", list(test.row[bigMinus]))
+print("   Time-:",len(test.row[timeMinus]), list(test.row[bigMinus]))
 
 form = "{:12.2f}"
 pctForm = "{:+.2f}%"

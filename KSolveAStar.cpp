@@ -187,30 +187,17 @@ inline static void Advance(
         // Save the result of each of the possible next moves.
         for (const auto mv: availableMoves){
             game.MakeMove(mv);
+
             const unsigned made = movesMadeCount + mv.NMoves();
-            // The following rather convoluted logic for deciding whether or not
-            // to save mv attempts to minimize time used in all situations. 
-            // Both MinimumMovesLeft() and IsShortPathToState() are expensive,
-            // but IsShortPathToState() is considerably the more expensive of
-            // the two.  If we already have a solution to test against, we can
-            // call MinimumMovesLeft() first to sometimes avoid calling
-            // IsShortPathToState(). If not, the best we can do is call
-            // IsShortPathToState() first to sometimes avoid calling
-            // MinimumMovesLeft().
-            unsigned minRemaining = -1U;
-            bool pass = true;
-            if (! minSolution.IsEmpty()) { 
-                minRemaining = MinimumMovesLeft(game); // expensive
-                pass = (made + minRemaining) < minSolution.MoveCount();
-            }
-            if (pass && closedList.IsShortPathToState(game, made)) { // <- side effect
-                if (minRemaining == -1U) minRemaining = MinimumMovesLeft(game);
+
+            if (closedList.IsShortPathToState(game, made))
+            { 
+                unsigned minRemaining = MinimumMovesLeft(game); 
                 const unsigned minMoves = made + minRemaining;
-                // The following assert tests the consistency (monotonicity)
-                // of MinimumMovesLeft(), our heuristic.  
-                // Never remove it.
-                assert(minMoves0 <= minMoves);
-                moveStorage.PushBranch(mv,minMoves);
+                assert(minMoves0 <= minMoves);  // consistency test
+                
+                if (minSolution.IsEmpty() || minMoves < minSolution.MoveCount())
+                    moveStorage.PushBranch(mv,minMoves);
             }
             game.UnMakeMove(mv);
         }
