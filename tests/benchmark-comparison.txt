@@ -1,24 +1,5 @@
 
 Comparing lg-1-base-1000.txt with lg-1-test-1000.txt
-Test    0   2   3
-Base             
-0     907   0   0
-2       0  81   0
-3       0   0  12
-  Moves+: []
-  Moves-: []
-   Time+: 320 []
-   Time-: 663 []
-Base time:      1210.46
-Test time:      1211.79 +0.11%
-Base fringe size:       4,283,212,428
-Test fringe size:       4,283,092,755 -0.00%
-Base move tree size:    2,850,945,274
-Test move tree size:    2,851,208,879 +0.01%
-Base advances count:    4,099,995,348
-Test advances count:    4,100,309,839 +0.01%
-Base closed list size:  8,163,013,088
-Test closed list size:  8,241,258,590 +0.96%
 
 Comparing lg-3-base-1000.txt with lg-3-test-1000.txt
 Test    0    2  3
@@ -28,15 +9,15 @@ Base
 3       0    0  8
   Moves+: []
   Moves-: []
-   Time+: 258 []
-   Time-: 726 []
-Base time:       969.60
-Test time:       966.59 -0.31%
-Base fringe size:       1,910,725,487
-Test fringe size:       1,914,608,564 +0.20%
-Base move tree size:    2,629,372,925
-Test move tree size:    2,631,692,157 +0.09%
-Base advances count:    3,711,952,754
-Test advances count:    3,712,984,375 +0.03%
-Base closed list size:  5,369,250,274
-Test closed list size:  5,420,729,391 +0.96%
+   Time+: 268 []
+   Time-: 694 []
+Base time:       966.59
+Test time:       964.95 -0.17%
+Base fringe size:       1,914,608,564
+Test fringe size:       1,914,064,275 -0.03%
+Base move tree size:    2,631,692,157
+Test move tree size:    2,631,545,849 -0.01%
+Base advances count:    3,712,984,375
+Test advances count:    3,712,940,069 -0.00%
+Base closed list size:  5,420,729,391
+Test closed list size:  5,420,639,776 -0.00%
