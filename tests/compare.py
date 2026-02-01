@@ -1,5 +1,6 @@
 import pandas as pd
 import sys
+import copy
 if len(sys.argv) == 3:
         print ("")
         print("Comparing", sys.argv[1], "with", sys.argv[2])
@@ -11,6 +12,9 @@ elif len(sys.argv) == 1:
 else:
         print("Expected two filenames or none.")
         exit
+if (base["seed"][0] != test["seed"][0]):
+        base = copy.deepcopy(test)
+        print ("Files use different seeds.  Printing results for the test file.")
 indexes = test.seed
 test.set_index("seed",inplace=True)
 base.set_index("seed",inplace=True)
