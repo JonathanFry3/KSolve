@@ -196,7 +196,7 @@ inline static void Advance(
                 const unsigned minMoves = made + minRemaining;
                 assert(minMoves0 <= minMoves);  // consistency test
                 
-                if (minSolution.IsEmpty() || minMoves < minSolution.MoveCount())
+                if (minMoves < minSolution.MoveCount())
                     moveStorage.PushBranch(mv,minMoves);
             }
             game.UnMakeMove(mv);

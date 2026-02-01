@@ -3,318 +3,475 @@ Flat profile:
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls   s/call   s/call  name    
- 34.06      1.32     1.32 15052524     0.00     0.00  KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int)
- 13.88      1.86     0.54 15052524     0.00     0.00  KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int)
-  9.25      2.23     0.36  2468674     0.00     0.00  KSolveNames::Game::MovesFromStock(KSolveNames::QMoves&, unsigned int) const
-  8.48      2.56     0.33 76029872     0.00     0.00  KSolveNames::Game::MakeMove(KSolveNames::MoveSpec)
-  7.97      2.87     0.31  2468674     0.00     0.00  KSolveNames::Game::MovesFromTableau(KSolveNames::QMoves&) const
-  4.88      3.06     0.19 16276671     0.00     0.00  bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&)
-  4.11      3.21     0.16  2500551     0.00     0.00  KSolveNames::MoveStorage::LoadMoveSequence()
-  3.34      3.35     0.13  2500553     0.00     0.00  KSolveNames::Game::Deal()
-  2.83      3.46     0.11 56966710     0.00     0.00  unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*)
-  1.80      3.52     0.07 15070404     0.00     0.00  KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec)
-  1.29      3.58     0.05  7383266     0.00     0.00  KSolveNames::Game::MinimumMovesLeft() const
-  1.29      3.62     0.05  2468050     0.00     0.00  KSolveNames::Game::MovesFromFoundation(KSolveNames::QMoves&, unsigned int) const
-  1.03      3.67     0.04  7292786     0.00     0.00  phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long)
-  0.77      3.69     0.03  2500552     0.00     0.00  KSolveNames::MoveStorage::PopNextSequenceIndex()
-  0.77      3.73     0.03  2500551     0.00     0.00  KSolveNames::WorkerState::MakeAutoMoves()
-  0.77      3.75     0.03  1938907     0.00     0.00  KSolveNames::MoveStorage::UpdateMoveTree()
-  0.51      3.77     0.02  2960401     0.00     0.00  KSolveNames::Game::UnfilteredAvailableMoves() const
-  0.51      3.79     0.02      294     0.00     0.00  phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long)
-  0.51      3.81     0.02        1     0.02     3.86  KSolveNames::Worker(KSolveNames::WorkerState*)
-  0.26      3.83     0.01 20481299     0.00     0.00  KSolveNames::XYZ_Test(KSolveNames::MoveSpec, KSolveNames::MoveSpec)
-  0.26      3.83     0.01 15052524     0.00     0.00  void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>)
-  0.26      3.85     0.01  7358501     0.00     0.00  KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int)
-  0.26      3.85     0.01  2960398     0.00     0.00  KSolveNames::Game::OneMoveToShortFoundationPile(KSolveNames::QMoves&, unsigned int) const
-  0.26      3.87     0.01  2500551     0.00     0.00  KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const
-  0.26      3.88     0.01  1938907     0.00     0.00  KSolveNames::MoveStorage::UpdateFringe(unsigned int)
-  0.26      3.88     0.01                             _init
-  0.13      3.89     0.01        1     0.01     0.02  KSolveNames::GameStateMemory::GameStateMemory()
-  0.00      3.89     0.00  2960401     0.00     0.00  KSolveNames::Game::MinFoundationPileSize() const
-  0.00      3.89     0.00  2453919     0.00     0.00  KSolveNames::MoveStorage::ShareMoves()
-  0.00      3.89     0.00   459850     0.00     0.00  KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec)
-  0.00      3.89     0.00    46633     0.00     0.00  KSolveNames::Game::GameOver() const
-  0.00      3.89     0.00      294     0.00     0.00  void phmap::priv::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long)
-  0.00      3.89     0.00       78     0.00     0.00  KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int)
-  0.00      3.89     0.00       78     0.00     0.00  KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const
-  0.00      3.89     0.00       56     0.00     0.00  void frystl::Destroy<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*)
-  0.00      3.89     0.00       56     0.00     0.00  void frystl::Construct<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*)
-  0.00      3.89     0.00       52     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()()
-  0.00      3.89     0.00       52     0.00     0.00  unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&)
-  0.00      3.89     0.00       14     0.00     0.00  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&)
-  0.00      3.89     0.00        3     0.00     0.00  GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-  0.00      3.89     0.00        3     0.00     0.00  KSolveNames::Game::Game(KSolveNames::Game const&)
-  0.00      3.89     0.00        2     0.00     0.00  KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&)
-  0.00      3.89     0.00        2     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long)
-  0.00      3.89     0.00        2     0.00     0.00  void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag)
-  0.00      3.89     0.00        2     0.00     0.00  bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)
-  0.00      3.89     0.00        1     0.00     0.00  GetSpec(int, char**)
-  0.00      3.89     0.00        1     0.00     3.88  KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int)
-  0.00      3.89     0.00        1     0.00     0.00  KSolveNames::NumberedDeal(unsigned int)
-  0.00      3.89     0.00        1     0.00     0.00  KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int)
-  0.00      3.89     0.00        1     0.00     0.00  KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int)
-  0.00      3.89     0.00        1     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand()
-  0.00      3.89     0.00        1     0.00     0.00  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()
+ 41.78      7.73     7.73 59259984     0.00     0.00  KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int)
+ 12.00      9.95     2.22 59259984     0.00     0.00  KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int)
+  8.54     11.53     1.58  8656318     0.00     0.00  KSolveNames::Game::MovesFromTalon(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
+  5.89     12.62     1.09  8656318     0.00     0.00  KSolveNames::Game::MovesFromTableau(KSolveNames::QMovesTemplate<43u>&) const
+  4.22     13.40     0.78 252858021     0.00     0.00  KSolveNames::Game::MakeMove(KSolveNames::MoveSpec)
+  4.16     14.17     0.77  8638341     0.00     0.00  KSolveNames::MoveStorage::LoadMoveSequence()
+  3.57     14.83     0.66 197473968     0.00     0.00  KSolveNames::Pile::Draw(KSolveNames::Pile&, int)
+  2.92     15.37     0.54 218407165     0.00     0.00  unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*)
+  2.65     15.86     0.49  8638343     0.00     0.00  KSolveNames::Game::Deal()
+  2.43     16.31     0.45 114644037     0.00     0.00  KSolveNames::Pile::Take(KSolveNames::Pile&, unsigned int)
+  1.95     16.67     0.36     4096     0.00     0.00  gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long)
+  1.68     16.98     0.31  8638341     0.00     0.00  KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::Pop()
+  1.35     17.23     0.25  6510676     0.00     0.00  KSolveNames::MoveStorage::UpdateFringe(unsigned int)
+  0.92     17.40     0.17 63460242     0.00     0.00  bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&)
+  0.76     17.54     0.14  8638341     0.00     0.00  KSolveNames::WorkerState::MakeAutoMoves()
+  0.76     17.68     0.14  8638341     0.00     0.00  KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int)
+  0.54     17.78     0.10 59259984     0.00     0.00  KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec)
+  0.43     17.86     0.08  8638341     0.00     0.00  KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&)
+  0.43     17.94     0.08  8638341     0.00     0.00  KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const
+  0.38     18.01     0.07 28350473     0.00     0.00  KSolveNames::MinimumMovesLeft(KSolveNames::Game const&)
+  0.38     18.08     0.07 10401302     0.00     0.00  KSolveNames::Game::MinFoundationPileSize() const
+  0.38     18.15     0.07 10399961     0.00     0.00  KSolveNames::Game::DominantAvailableMoves(KSolveNames::QMovesTemplate<9u>&, unsigned int) const
+  0.38     18.22     0.07  8656318     0.00     0.00  KSolveNames::Game::MovesFromFoundation(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
+  0.38     18.29     0.07  6510676     0.00     0.00  KSolveNames::MoveStorage::UpdateMoveTree()
+  0.27     18.34     0.05 28085651     0.00     0.00  gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long)
+  0.27     18.39     0.05                             _init
+  0.16     18.42     0.03 59259984     0.00     0.00  void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>)
+  0.16     18.45     0.03  8656318     0.00     0.00  KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
+  0.11     18.47     0.02        1     0.02    18.44  KSolveNames::Worker(KSolveNames::WorkerState*)
+  0.05     18.48     0.01 28350472     0.00     0.00  KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int)
+  0.05     18.49     0.01  8635997     0.00     0.00  KSolveNames::MoveStorage::ShareMoves()
+  0.05     18.50     0.01        3     0.00     0.00  KSolveNames::Game::Game(KSolveNames::Game const&)
+  0.00     18.50     0.00  6510676     0.00     0.00  void std::__introsort_loop<KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}> >(KSolveNames::MoveStorage::MovePair*, KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}>)
+  0.00     18.50     0.00  1762961     0.00     0.00  KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec)
+  0.00     18.50     0.00     6144     0.00     0.00  gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::initialize_slots(unsigned long)
+  0.00     18.50     0.00     4096     0.00     0.00  void gtl::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long)
+  0.00     18.50     0.00     2345     0.00     0.00  KSolveNames::Game::GameOver() const
+  0.00     18.50     0.00       83     0.00     0.00  KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int)
+  0.00     18.50     0.00       83     0.00     0.00  KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const
+  0.00     18.50     0.00       50     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()()
+  0.00     18.50     0.00       50     0.00     0.00  unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&)
+  0.00     18.50     0.00       48     0.00     0.00  void frystl::Construct<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT>(KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT*)
+  0.00     18.50     0.00       20     0.00     0.00  frystl::static_vector<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT, 512u>::resize(unsigned int)
+  0.00     18.50     0.00       14     0.00     0.00  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&)
+  0.00     18.50     0.00        3     0.00     0.00  GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
+  0.00     18.50     0.00        2     0.00     0.00  KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&)
+  0.00     18.50     0.00        2     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long)
+  0.00     18.50     0.00        2     0.00     0.00  bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)
+  0.00     18.50     0.00        1     0.00     0.00  GetSpec(int, char**)
+  0.00     18.50     0.00        1     0.00    18.45  KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int)
+  0.00     18.50     0.00        1     0.00     0.00  KSolveNames::NumberedDeal(unsigned int)
+  0.00     18.50     0.00        1     0.00     0.00  KSolveNames::GameStateMemory::GameStateMemory()
+  0.00     18.50     0.00        1     0.00     0.00  KSolveNames::SharedMoveStorage::~SharedMoveStorage()
+  0.00     18.50     0.00        1     0.00     0.00  KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int)
+  0.00     18.50     0.00        1     0.00     0.00  KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int)
+  0.00     18.50     0.00        1     0.00     0.00  std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand()
+  0.00     18.50     0.00        1     0.00     0.00  void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag)
+  0.00     18.50     0.00        1     0.00     0.00  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
 
-			Call graph
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 4 byte(s) for 0.26% of 3.89 seconds
+granularity: each sample hit covers 4 byte(s) for 0.05% of 18.50 seconds
 
 index % time    self  children    called     name
                                                  <spontaneous>
-[1]     99.7    0.00    3.88                 main [1]
-                0.00    3.88       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-                0.00    0.00      78/76029872     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [9]
-                0.00    0.00       1/2500553     KSolveNames::Game::Deal() [15]
-                0.00    0.00       1/1           KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [31]
-                0.00    0.00      78/78          KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [43]
-                0.00    0.00       1/1           GetSpec(int, char**) [55]
-                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [50]
-                0.00    0.00       1/46633       KSolveNames::Game::GameOver() const [40]
-                0.00    0.00       1/1           KSolveNames::NumberedDeal(unsigned int) [56]
+[1]     99.7    0.00   18.45                 main [1]
+                0.00   18.45       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [34]
+                0.00    0.00      83/252858021     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+                0.00    0.00       1/1           KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [35]
+                0.00    0.00       1/8638343     KSolveNames::Game::Deal() [18]
+                0.00    0.00      83/83          KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [48]
+                0.00    0.00       1/1           GetSpec(int, char**) [58]
+                0.00    0.00       1/2345        KSolveNames::Game::GameOver() const [46]
+                0.00    0.00       1/1           KSolveNames::NumberedDeal(unsigned int) [59]
 -----------------------------------------------
-                0.00    3.88       1/1           main [1]
-[2]     99.7    0.00    3.88       1         KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-                0.02    3.84       1/1           KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-                0.01    0.02       1/1           KSolveNames::GameStateMemory::GameStateMemory() [23]
-                0.00    0.00       1/7383266     KSolveNames::Game::MinimumMovesLeft() const [13]
-                0.00    0.00     256/294         void phmap::priv::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [41]
-                0.00    0.00      56/56          void frystl::Destroy<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [44]
-                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [50]
-                0.00    0.00       1/2           KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [51]
+                0.00   18.45       1/1           main [1]
+[2]     99.7    0.00   18.45       1         KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+                0.02   18.42       1/1           KSolveNames::Worker(KSolveNames::WorkerState*) [3]
+                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [34]
+                0.00    0.00       1/8638341     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+                0.00    0.00       1/28350473     KSolveNames::MinimumMovesLeft(KSolveNames::Game const&) [16]
+                0.00    0.00       1/1           KSolveNames::GameStateMemory::GameStateMemory() [60]
+                0.00    0.00       1/2           KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [55]
+                0.00    0.00       1/1           KSolveNames::SharedMoveStorage::~SharedMoveStorage() [61]
 -----------------------------------------------
-                0.02    3.84       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-[3]     99.2    0.02    3.84       1         KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-                1.32    0.59 15052524/15052524     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [4]
-                0.03    0.95 2500551/2500551     KSolveNames::WorkerState::MakeAutoMoves() [5]
-                0.01    0.26 2500551/2500551     KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [11]
-                0.16    0.00 2500551/2500551     KSolveNames::MoveStorage::LoadMoveSequence() [14]
-                0.05    0.11 7383265/7383266     KSolveNames::Game::MinimumMovesLeft() const [13]
-                0.13    0.00 2500551/2500553     KSolveNames::Game::Deal() [15]
-                0.07    0.00 15070404/15070404     KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [17]
-                0.07    0.00 15070404/76029872     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [9]
-                0.00    0.04 2453919/2453919     KSolveNames::MoveStorage::ShareMoves() [20]
-                0.03    0.00 2500552/2500552     KSolveNames::MoveStorage::PopNextSequenceIndex() [21]
-                0.01    0.00 7358501/7358501     KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [27]
-                0.00    0.00   46632/46633       KSolveNames::Game::GameOver() const [40]
-                0.00    0.00       2/2           void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag) [53]
-                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [50]
-                0.00    0.00       1/2           KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [51]
+                0.02   18.42       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+[3]     99.7    0.02   18.42       1         KSolveNames::Worker(KSolveNames::WorkerState*) [3]
+                0.14   15.27 8638340/8638341     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+                0.08    2.93 8638341/8638341     KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+                0.00    0.00       1/3           KSolveNames::Game::Game(KSolveNames::Game const&) [34]
+                0.00    0.00       1/2           KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [55]
 -----------------------------------------------
-                1.32    0.59 15052524/15052524     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[4]     49.3    1.32    0.59 15052524         KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [4]
-                0.54    0.01 15052524/15052524     KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [7]
-                0.04    0.00 7292786/7292786     phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [19]
+                0.00    0.00       1/8638341     KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+                0.14   15.27 8638340/8638341     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
+[4]     83.3    0.14   15.27 8638341         KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+                7.73    2.66 59259984/59259984     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [5]
+                0.14    3.09 8638341/8638341     KSolveNames::WorkerState::MakeAutoMoves() [6]
+                0.07    0.54 28350472/28350473     KSolveNames::MinimumMovesLeft(KSolveNames::Game const&) [16]
+                0.18    0.21 59259984/252858021     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+                0.01    0.32 8635997/8635997     KSolveNames::MoveStorage::ShareMoves() [22]
+                0.10    0.21 59259984/59259984     KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [24]
+                0.01    0.00 28350472/28350472     KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [33]
+                0.00    0.00    2344/2345        KSolveNames::Game::GameOver() const [46]
+                0.00    0.00       1/1           void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag) [64]
 -----------------------------------------------
-                0.03    0.95 2500551/2500551     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[5]     25.2    0.03    0.95 2500551         KSolveNames::WorkerState::MakeAutoMoves() [5]
-                0.02    0.73 2960401/2960401     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-                0.19    0.01 16276671/16276671     bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) [12]
-                0.00    0.00  459850/76029872     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [9]
-                0.00    0.00  459850/459850      KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [39]
+                7.73    2.66 59259984/59259984     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[5]     56.2    7.73    2.66 59259984         KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [5]
+                2.22    0.03 59259984/59259984     KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [9]
+                0.05    0.36 28085651/28085651     gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [20]
 -----------------------------------------------
-                0.02    0.73 2960401/2960401     KSolveNames::WorkerState::MakeAutoMoves() [5]
-[6]     19.3    0.02    0.73 2960401         KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-                0.36    0.00 2468674/2468674     KSolveNames::Game::MovesFromStock(KSolveNames::QMoves&, unsigned int) const [8]
-                0.31    0.00 2468674/2468674     KSolveNames::Game::MovesFromTableau(KSolveNames::QMoves&) const [10]
-                0.05    0.00 2468050/2468050     KSolveNames::Game::MovesFromFoundation(KSolveNames::QMoves&, unsigned int) const [18]
-                0.01    0.00 2960398/2960398     KSolveNames::Game::OneMoveToShortFoundationPile(KSolveNames::QMoves&, unsigned int) const [28]
-                0.00    0.00 2960401/2960401     KSolveNames::Game::MinFoundationPileSize() const [38]
+                0.14    3.09 8638341/8638341     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[6]     17.5    0.14    3.09 8638341         KSolveNames::WorkerState::MakeAutoMoves() [6]
+                0.03    2.74 8656318/8656318     KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [8]
+                0.17    0.00 63460242/63460242     bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) [26]
+                0.07    0.00 10401302/10401302     KSolveNames::Game::MinFoundationPileSize() const [27]
+                0.07    0.00 10399961/10399961     KSolveNames::Game::DominantAvailableMoves(KSolveNames::QMovesTemplate<9u>&, unsigned int) const [28]
+                0.01    0.01 1762961/252858021     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+                0.00    0.00 1762961/1762961     KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [43]
 -----------------------------------------------
-                0.54    0.01 15052524/15052524     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [4]
-[7]     14.1    0.54    0.01 15052524         KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [7]
-                0.01    0.00 15052524/15052524     void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>) [26]
+                0.08    2.93 8638341/8638341     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
+[7]     16.2    0.08    2.93 8638341         KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+                0.08    1.28 8638341/8638341     KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [12]
+                0.77    0.00 8638341/8638341     KSolveNames::MoveStorage::LoadMoveSequence() [14]
+                0.49    0.00 8638341/8638343     KSolveNames::Game::Deal() [18]
+                0.31    0.00 8638341/8638341     KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::Pop() [23]
 -----------------------------------------------
-                0.36    0.00 2468674/2468674     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-[8]      9.3    0.36    0.00 2468674         KSolveNames::Game::MovesFromStock(KSolveNames::QMoves&, unsigned int) const [8]
+                0.03    2.74 8656318/8656318     KSolveNames::WorkerState::MakeAutoMoves() [6]
+[8]     15.0    0.03    2.74 8656318         KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [8]
+                1.58    0.00 8656318/8656318     KSolveNames::Game::MovesFromTalon(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [11]
+                1.09    0.00 8656318/8656318     KSolveNames::Game::MovesFromTableau(KSolveNames::QMovesTemplate<43u>&) const [13]
+                0.07    0.00 8656318/8656318     KSolveNames::Game::MovesFromFoundation(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [29]
 -----------------------------------------------
-                0.00    0.00      78/76029872     main [1]
-                0.00    0.00  459850/76029872     KSolveNames::WorkerState::MakeAutoMoves() [5]
-                0.07    0.00 15070404/76029872     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-                0.26    0.00 60499540/76029872     KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [11]
-[9]      8.5    0.33    0.00 76029872         KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [9]
+                2.22    0.03 59259984/59259984     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [5]
+[9]     12.2    2.22    0.03 59259984         KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [9]
+                0.03    0.00 59259984/59259984     void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>) [32]
 -----------------------------------------------
-                0.31    0.00 2468674/2468674     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-[10]     8.0    0.31    0.00 2468674         KSolveNames::Game::MovesFromTableau(KSolveNames::QMoves&) const [10]
+                0.00    0.00      83/252858021     main [1]
+                0.01    0.01 1762961/252858021     KSolveNames::WorkerState::MakeAutoMoves() [6]
+                0.18    0.21 59259984/252858021     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+                0.59    0.68 191834993/252858021     KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [12]
+[10]     9.1    0.78    0.90 252858021         KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+                0.52    0.00 156033754/197473968     KSolveNames::Pile::Draw(KSolveNames::Pile&, int) [15]
+                0.38    0.00 96824267/114644037     KSolveNames::Pile::Take(KSolveNames::Pile&, unsigned int) [19]
 -----------------------------------------------
-                0.01    0.26 2500551/2500551     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[11]     7.0    0.01    0.26 2500551         KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [11]
-                0.26    0.00 60499540/76029872     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [9]
+                1.58    0.00 8656318/8656318     KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [8]
+[11]     8.5    1.58    0.00 8656318         KSolveNames::Game::MovesFromTalon(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [11]
 -----------------------------------------------
-                0.19    0.01 16276671/16276671     KSolveNames::WorkerState::MakeAutoMoves() [5]
-[12]     5.1    0.19    0.01 16276671         bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) [12]
-                0.01    0.00 20481299/20481299     KSolveNames::XYZ_Test(KSolveNames::MoveSpec, KSolveNames::MoveSpec) [25]
+                0.08    1.28 8638341/8638341     KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+[12]     7.3    0.08    1.28 8638341         KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [12]
+                0.59    0.68 191834993/252858021     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
 -----------------------------------------------
-                0.00    0.00       1/7383266     KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-                0.05    0.11 7383265/7383266     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[13]     4.1    0.05    0.11 7383266         KSolveNames::Game::MinimumMovesLeft() const [13]
-                0.11    0.00 56966710/56966710     unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [16]
+                1.09    0.00 8656318/8656318     KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [8]
+[13]     5.9    1.09    0.00 8656318         KSolveNames::Game::MovesFromTableau(KSolveNames::QMovesTemplate<43u>&) const [13]
 -----------------------------------------------
-                0.16    0.00 2500551/2500551     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[14]     4.1    0.16    0.00 2500551         KSolveNames::MoveStorage::LoadMoveSequence() [14]
+                0.77    0.00 8638341/8638341     KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+[14]     4.2    0.77    0.00 8638341         KSolveNames::MoveStorage::LoadMoveSequence() [14]
 -----------------------------------------------
-                0.00    0.00       1/2500553     KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [31]
-                0.00    0.00       1/2500553     main [1]
-                0.13    0.00 2500551/2500553     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[15]     3.3    0.13    0.00 2500553         KSolveNames::Game::Deal() [15]
+                0.14    0.00 41440214/197473968     KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [24]
+                0.52    0.00 156033754/197473968     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+[15]     3.6    0.66    0.00 197473968         KSolveNames::Pile::Draw(KSolveNames::Pile&, int) [15]
 -----------------------------------------------
-                0.11    0.00 56966710/56966710     KSolveNames::Game::MinimumMovesLeft() const [13]
-[16]     2.8    0.11    0.00 56966710         unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [16]
+                0.00    0.00       1/28350473     KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+                0.07    0.54 28350472/28350473     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[16]     3.3    0.07    0.54 28350473         KSolveNames::MinimumMovesLeft(KSolveNames::Game const&) [16]
+                0.54    0.00 218407165/218407165     unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [17]
 -----------------------------------------------
-                0.07    0.00 15070404/15070404     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[17]     1.8    0.07    0.00 15070404         KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [17]
+                0.54    0.00 218407165/218407165     KSolveNames::MinimumMovesLeft(KSolveNames::Game const&) [16]
+[17]     2.9    0.54    0.00 218407165         unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [17]
 -----------------------------------------------
-                0.05    0.00 2468050/2468050     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-[18]     1.3    0.05    0.00 2468050         KSolveNames::Game::MovesFromFoundation(KSolveNames::QMoves&, unsigned int) const [18]
+                0.00    0.00       1/8638343     KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [35]
+                0.00    0.00       1/8638343     main [1]
+                0.49    0.00 8638341/8638343     KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+[18]     2.6    0.49    0.00 8638343         KSolveNames::Game::Deal() [18]
 -----------------------------------------------
-                0.04    0.00 7292786/7292786     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [4]
-[19]     1.1    0.04    0.00 7292786         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [19]
-                0.00    0.00      38/294         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [24]
+                0.07    0.00 17819770/114644037     KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [24]
+                0.38    0.00 96824267/114644037     KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [10]
+[19]     2.4    0.45    0.00 114644037         KSolveNames::Pile::Take(KSolveNames::Pile&, unsigned int) [19]
 -----------------------------------------------
-                0.00    0.04 2453919/2453919     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[20]     1.0    0.00    0.04 2453919         KSolveNames::MoveStorage::ShareMoves() [20]
-                0.03    0.00 1938907/1938907     KSolveNames::MoveStorage::UpdateMoveTree() [22]
-                0.01    0.00 1938907/1938907     KSolveNames::MoveStorage::UpdateFringe(unsigned int) [29]
+                0.05    0.36 28085651/28085651     KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [5]
+[20]     2.2    0.05    0.36 28085651         gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [20]
+                0.36    0.00    4096/4096        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [21]
 -----------------------------------------------
-                0.03    0.00 2500552/2500552     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[21]     0.8    0.03    0.00 2500552         KSolveNames::MoveStorage::PopNextSequenceIndex() [21]
+                0.36    0.00    4096/4096        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [20]
+[21]     1.9    0.36    0.00    4096         gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [21]
+                0.00    0.00    4096/6144        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::initialize_slots(unsigned long) [44]
+                0.00    0.00    4096/4096        void gtl::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [45]
 -----------------------------------------------
-                0.03    0.00 1938907/1938907     KSolveNames::MoveStorage::ShareMoves() [20]
-[22]     0.8    0.03    0.00 1938907         KSolveNames::MoveStorage::UpdateMoveTree() [22]
+                0.01    0.32 8635997/8635997     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[22]     1.8    0.01    0.32 8635997         KSolveNames::MoveStorage::ShareMoves() [22]
+                0.25    0.00 6510676/6510676     KSolveNames::MoveStorage::UpdateFringe(unsigned int) [25]
+                0.07    0.00 6510676/6510676     KSolveNames::MoveStorage::UpdateMoveTree() [30]
 -----------------------------------------------
-                0.01    0.02       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-[23]     0.6    0.01    0.02       1         KSolveNames::GameStateMemory::GameStateMemory() [23]
-                0.02    0.00     256/294         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [24]
+                0.31    0.00 8638341/8638341     KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [7]
+[23]     1.7    0.31    0.00 8638341         KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::Pop() [23]
 -----------------------------------------------
-                0.00    0.00      38/294         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [19]
-                0.02    0.00     256/294         KSolveNames::GameStateMemory::GameStateMemory() [23]
-[24]     0.5    0.02    0.00     294         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [24]
-                0.00    0.00      38/294         void phmap::priv::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [41]
+                0.10    0.21 59259984/59259984     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[24]     1.7    0.10    0.21 59259984         KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [24]
+                0.14    0.00 41440214/197473968     KSolveNames::Pile::Draw(KSolveNames::Pile&, int) [15]
+                0.07    0.00 17819770/114644037     KSolveNames::Pile::Take(KSolveNames::Pile&, unsigned int) [19]
 -----------------------------------------------
-                0.01    0.00 20481299/20481299     bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) [12]
-[25]     0.3    0.01    0.00 20481299         KSolveNames::XYZ_Test(KSolveNames::MoveSpec, KSolveNames::MoveSpec) [25]
+                0.25    0.00 6510676/6510676     KSolveNames::MoveStorage::ShareMoves() [22]
+[25]     1.4    0.25    0.00 6510676         KSolveNames::MoveStorage::UpdateFringe(unsigned int) [25]
+                0.00    0.00 6510676/6510676     void std::__introsort_loop<KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}> >(KSolveNames::MoveStorage::MovePair*, KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}>) [42]
+                0.00    0.00      20/20          frystl::static_vector<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT, 512u>::resize(unsigned int) [52]
 -----------------------------------------------
-                0.01    0.00 15052524/15052524     KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [7]
-[26]     0.3    0.01    0.00 15052524         void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>) [26]
+                0.17    0.00 63460242/63460242     KSolveNames::WorkerState::MakeAutoMoves() [6]
+[26]     0.9    0.17    0.00 63460242         bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) [26]
 -----------------------------------------------
-                0.01    0.00 7358501/7358501     KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[27]     0.3    0.01    0.00 7358501         KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [27]
+                0.07    0.00 10401302/10401302     KSolveNames::WorkerState::MakeAutoMoves() [6]
+[27]     0.4    0.07    0.00 10401302         KSolveNames::Game::MinFoundationPileSize() const [27]
 -----------------------------------------------
-                0.01    0.00 2960398/2960398     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-[28]     0.3    0.01    0.00 2960398         KSolveNames::Game::OneMoveToShortFoundationPile(KSolveNames::QMoves&, unsigned int) const [28]
+                0.07    0.00 10399961/10399961     KSolveNames::WorkerState::MakeAutoMoves() [6]
+[28]     0.4    0.07    0.00 10399961         KSolveNames::Game::DominantAvailableMoves(KSolveNames::QMovesTemplate<9u>&, unsigned int) const [28]
 -----------------------------------------------
-                0.01    0.00 1938907/1938907     KSolveNames::MoveStorage::ShareMoves() [20]
-[29]     0.3    0.01    0.00 1938907         KSolveNames::MoveStorage::UpdateFringe(unsigned int) [29]
-                0.00    0.00      56/56          void frystl::Construct<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [45]
+                0.07    0.00 8656318/8656318     KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [8]
+[29]     0.4    0.07    0.00 8656318         KSolveNames::Game::MovesFromFoundation(KSolveNames::QMovesTemplate<43u>&, unsigned int) const [29]
+-----------------------------------------------
+                0.07    0.00 6510676/6510676     KSolveNames::MoveStorage::ShareMoves() [22]
+[30]     0.4    0.07    0.00 6510676         KSolveNames::MoveStorage::UpdateMoveTree() [30]
 -----------------------------------------------
                                                  <spontaneous>
-[30]     0.3    0.01    0.00                 _init [30]
+[31]     0.3    0.05    0.00                 _init [31]
 -----------------------------------------------
-                0.00    0.00       1/1           main [1]
-[31]     0.0    0.00    0.00       1         KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [31]
-                0.00    0.00       1/2500553     KSolveNames::Game::Deal() [15]
+                0.03    0.00 59259984/59259984     KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [9]
+[32]     0.2    0.03    0.00 59259984         void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>) [32]
 -----------------------------------------------
-                0.00    0.00 2960401/2960401     KSolveNames::Game::UnfilteredAvailableMoves() const [6]
-[38]     0.0    0.00    0.00 2960401         KSolveNames::Game::MinFoundationPileSize() const [38]
------------------------------------------------
-                0.00    0.00  459850/459850      KSolveNames::WorkerState::MakeAutoMoves() [5]
-[39]     0.0    0.00    0.00  459850         KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [39]
------------------------------------------------
-                0.00    0.00       1/46633       main [1]
-                0.00    0.00   46632/46633       KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[40]     0.0    0.00    0.00   46633         KSolveNames::Game::GameOver() const [40]
------------------------------------------------
-                0.00    0.00      38/294         phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [24]
-                0.00    0.00     256/294         KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-[41]     0.0    0.00    0.00     294         void phmap::priv::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [41]
------------------------------------------------
-                0.00    0.00      78/78          KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [43]
-[42]     0.0    0.00    0.00      78         KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) [42]
------------------------------------------------
-                0.00    0.00      78/78          main [1]
-[43]     0.0    0.00    0.00      78         KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [43]
-                0.00    0.00      78/78          KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) [42]
------------------------------------------------
-                0.00    0.00      56/56          KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-[44]     0.0    0.00    0.00      56         void frystl::Destroy<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [44]
------------------------------------------------
-                0.00    0.00      56/56          KSolveNames::MoveStorage::UpdateFringe(unsigned int) [29]
-[45]     0.0    0.00    0.00      56         void frystl::Construct<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [45]
------------------------------------------------
-                0.00    0.00      52/52          unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [47]
-[46]     0.0    0.00    0.00      52         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [46]
-                0.00    0.00       1/1           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand() [58]
------------------------------------------------
-                0.00    0.00      52/52          KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [57]
-[47]     0.0    0.00    0.00      52         unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [47]
-                0.00    0.00      52/52          std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [46]
------------------------------------------------
-                0.00    0.00       1/14          GetSpec(int, char**) [55]
-                0.00    0.00      13/14          _GLOBAL__sub_I__ZNK11KSolveNames4Card8AsStringB5cxx11Ev [60]
-[48]     0.0    0.00    0.00      14         std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [48]
------------------------------------------------
-                0.00    0.00       3/3           GetSpec(int, char**) [55]
-[49]     0.0    0.00    0.00       3         GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [49]
+                0.01    0.00 28350472/28350472     KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[33]     0.1    0.01    0.00 28350472         KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [33]
 -----------------------------------------------
                 0.00    0.00       1/3           KSolveNames::Worker(KSolveNames::WorkerState*) [3]
                 0.00    0.00       1/3           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
                 0.00    0.00       1/3           main [1]
-[50]     0.0    0.00    0.00       3         KSolveNames::Game::Game(KSolveNames::Game const&) [50]
+[34]     0.1    0.01    0.00       3         KSolveNames::Game::Game(KSolveNames::Game const&) [34]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[35]     0.0    0.00    0.00       1         KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [35]
+                0.00    0.00       1/8638343     KSolveNames::Game::Deal() [18]
+-----------------------------------------------
+                0.00    0.00 6510676/6510676     KSolveNames::MoveStorage::UpdateFringe(unsigned int) [25]
+[42]     0.0    0.00    0.00 6510676         void std::__introsort_loop<KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}> >(KSolveNames::MoveStorage::MovePair*, KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}>) [42]
+-----------------------------------------------
+                0.00    0.00 1762961/1762961     KSolveNames::WorkerState::MakeAutoMoves() [6]
+[43]     0.0    0.00    0.00 1762961         KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [43]
+-----------------------------------------------
+                0.00    0.00    2048/6144        KSolveNames::GameStateMemory::GameStateMemory() [60]
+                0.00    0.00    4096/6144        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [21]
+[44]     0.0    0.00    0.00    6144         gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::initialize_slots(unsigned long) [44]
+-----------------------------------------------
+                0.00    0.00    4096/4096        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [21]
+[45]     0.0    0.00    0.00    4096         void gtl::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [45]
+-----------------------------------------------
+                0.00    0.00       1/2345        main [1]
+                0.00    0.00    2344/2345        KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[46]     0.0    0.00    0.00    2345         KSolveNames::Game::GameOver() const [46]
+-----------------------------------------------
+                0.00    0.00      83/83          KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [48]
+[47]     0.0    0.00    0.00      83         KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) [47]
+-----------------------------------------------
+                0.00    0.00      83/83          main [1]
+[48]     0.0    0.00    0.00      83         KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const [48]
+                0.00    0.00      83/83          KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) [47]
+-----------------------------------------------
+                0.00    0.00      50/50          unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [50]
+[49]     0.0    0.00    0.00      50         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [49]
+                0.00    0.00       1/1           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand() [63]
+-----------------------------------------------
+                0.00    0.00      50/50          KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [62]
+[50]     0.0    0.00    0.00      50         unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [50]
+                0.00    0.00      50/50          std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [49]
+-----------------------------------------------
+                0.00    0.00      48/48          frystl::static_vector<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT, 512u>::resize(unsigned int) [52]
+[51]     0.0    0.00    0.00      48         void frystl::Construct<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT>(KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT*) [51]
+-----------------------------------------------
+                0.00    0.00      20/20          KSolveNames::MoveStorage::UpdateFringe(unsigned int) [25]
+[52]     0.0    0.00    0.00      20         frystl::static_vector<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT, 512u>::resize(unsigned int) [52]
+                0.00    0.00      48/48          void frystl::Construct<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT>(KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT*) [51]
+-----------------------------------------------
+                0.00    0.00       1/14          GetSpec(int, char**) [58]
+                0.00    0.00      13/14          _GLOBAL__sub_I__ZNK11KSolveNames4Card8AsStringB5cxx11Ev [66]
+[53]     0.0    0.00    0.00      14         std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [53]
+-----------------------------------------------
+                0.00    0.00       3/3           GetSpec(int, char**) [58]
+[54]     0.0    0.00    0.00       3         GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [54]
 -----------------------------------------------
                 0.00    0.00       1/2           KSolveNames::Worker(KSolveNames::WorkerState*) [3]
                 0.00    0.00       1/2           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
-[51]     0.0    0.00    0.00       2         KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [51]
+[55]     0.0    0.00    0.00       2         KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [55]
 -----------------------------------------------
-                0.00    0.00       2/2           KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [57]
-[52]     0.0    0.00    0.00       2         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long) [52]
+                0.00    0.00       2/2           KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [62]
+[56]     0.0    0.00    0.00       2         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long) [56]
 -----------------------------------------------
-                0.00    0.00       2/2           KSolveNames::Worker(KSolveNames::WorkerState*) [3]
-[53]     0.0    0.00    0.00       2         void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag) [53]
------------------------------------------------
-                0.00    0.00       2/2           GetSpec(int, char**) [55]
-[54]     0.0    0.00    0.00       2         bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*) [54]
+                0.00    0.00       2/2           GetSpec(int, char**) [58]
+[57]     0.0    0.00    0.00       2         bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*) [57]
 -----------------------------------------------
                 0.00    0.00       1/1           main [1]
-[55]     0.0    0.00    0.00       1         GetSpec(int, char**) [55]
-                0.00    0.00       3/3           GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [49]
-                0.00    0.00       2/2           bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*) [54]
-                0.00    0.00       1/14          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [48]
-                0.00    0.00       1/1           std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() [59]
+[58]     0.0    0.00    0.00       1         GetSpec(int, char**) [58]
+                0.00    0.00       3/3           GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [54]
+                0.00    0.00       2/2           bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*) [57]
+                0.00    0.00       1/14          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [53]
+                0.00    0.00       1/1           std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() [65]
 -----------------------------------------------
                 0.00    0.00       1/1           main [1]
-[56]     0.0    0.00    0.00       1         KSolveNames::NumberedDeal(unsigned int) [56]
-                0.00    0.00       1/1           KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [57]
+[59]     0.0    0.00    0.00       1         KSolveNames::NumberedDeal(unsigned int) [59]
+                0.00    0.00       1/1           KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [62]
 -----------------------------------------------
-                0.00    0.00       1/1           KSolveNames::NumberedDeal(unsigned int) [56]
-[57]     0.0    0.00    0.00       1         KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [57]
-                0.00    0.00      52/52          unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [47]
-                0.00    0.00       2/2           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long) [52]
+                0.00    0.00       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+[60]     0.0    0.00    0.00       1         KSolveNames::GameStateMemory::GameStateMemory() [60]
+                0.00    0.00    2048/6144        gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::initialize_slots(unsigned long) [44]
 -----------------------------------------------
-                0.00    0.00       1/1           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [46]
-[58]     0.0    0.00    0.00       1         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand() [58]
+                0.00    0.00       1/1           KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [2]
+[61]     0.0    0.00    0.00       1         KSolveNames::SharedMoveStorage::~SharedMoveStorage() [61]
 -----------------------------------------------
-                0.00    0.00       1/1           GetSpec(int, char**) [55]
-[59]     0.0    0.00    0.00       1         std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() [59]
+                0.00    0.00       1/1           KSolveNames::NumberedDeal(unsigned int) [59]
+[62]     0.0    0.00    0.00       1         KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [62]
+                0.00    0.00      50/50          unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&) [50]
+                0.00    0.00       2/2           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long) [56]
 -----------------------------------------------
+                0.00    0.00       1/1           std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()() [49]
+[63]     0.0    0.00    0.00       1         std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand() [63]
+-----------------------------------------------
+                0.00    0.00       1/1           KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) [4]
+[64]     0.0    0.00    0.00       1         void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag) [64]
+-----------------------------------------------
+                0.00    0.00       1/1           GetSpec(int, char**) [58]
+[65]     0.0    0.00    0.00       1         std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() [65]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
 
 Index by function name
 
-  [55] GetSpec(int, char**)    [9] KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [18] KSolveNames::Game::MovesFromFoundation(KSolveNames::QMoves&, unsigned int) const
-  [49] GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [31] KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [38] KSolveNames::Game::MinFoundationPileSize() const
-   [2] KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [50] KSolveNames::Game::Game(KSolveNames::Game const&) [6] KSolveNames::Game::UnfilteredAvailableMoves() const
-  [27] KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [57] KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [28] KSolveNames::Game::OneMoveToShortFoundationPile(KSolveNames::QMoves&, unsigned int) const
-  [20] KSolveNames::MoveStorage::ShareMoves() [7] KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [43] KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const
-  [29] KSolveNames::MoveStorage::UpdateFringe(unsigned int) [42] KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) (Game.cpp) [40] KSolveNames::Game::GameOver() const
-  [22] KSolveNames::MoveStorage::UpdateMoveTree() [3] KSolveNames::Worker(KSolveNames::WorkerState*) (KSolveAStar.cpp) [58] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand()
-  [14] KSolveNames::MoveStorage::LoadMoveSequence() [12] bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) (Game.hpp) [52] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long)
-  [21] KSolveNames::MoveStorage::PopNextSequenceIndex() [25] KSolveNames::XYZ_Test(KSolveNames::MoveSpec, KSolveNames::MoveSpec) (Game.hpp) [46] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()()
-  [39] KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [41] void phmap::priv::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [47] unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&)
-  [51] KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [19] phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [53] void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag)
-   [5] KSolveNames::WorkerState::MakeAutoMoves() [24] phmap::priv::raw_hash_set<phmap::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, phmap::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [59] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()
-  [56] KSolveNames::NumberedDeal(unsigned int) [44] void frystl::Destroy<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [48] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&)
-  [16] unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [45] void frystl::Construct<KSolveNames::SharedMoveStorage::FringeElement>(KSolveNames::SharedMoveStorage::FringeElement*) [26] void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>)
-   [4] KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [11] KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const [54] bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)
-  [23] KSolveNames::GameStateMemory::GameStateMemory() [8] KSolveNames::Game::MovesFromStock(KSolveNames::QMoves&, unsigned int) const [30] _init
-  [17] KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [13] KSolveNames::Game::MinimumMovesLeft() const
-  [15] KSolveNames::Game::Deal() [10] KSolveNames::Game::MovesFromTableau(KSolveNames::QMoves&) const
+  [58] GetSpec(int, char**)   [18] KSolveNames::Game::Deal() [13] KSolveNames::Game::MovesFromTableau(KSolveNames::QMovesTemplate<43u>&) const
+  [54] GetNumber(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [10] KSolveNames::Game::MakeMove(KSolveNames::MoveSpec) [29] KSolveNames::Game::MovesFromFoundation(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
+   [2] KSolveNames::KSolveAStar(KSolveNames::Game&, unsigned int, unsigned int) [35] KSolveNames::Game::Game(KSolveNames::CardDeck, unsigned int, unsigned int) [27] KSolveNames::Game::MinFoundationPileSize() const
+  [33] KSolveNames::MoveStorage::PushBranch(KSolveNames::MoveSpec, unsigned int) [34] KSolveNames::Game::Game(KSolveNames::Game const&) [28] KSolveNames::Game::DominantAvailableMoves(KSolveNames::QMovesTemplate<9u>&, unsigned int) const
+  [22] KSolveNames::MoveStorage::ShareMoves() [15] KSolveNames::Pile::Draw(KSolveNames::Pile&, int) [8] KSolveNames::Game::NonDominantAvailableMoves(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
+  [25] KSolveNames::MoveStorage::UpdateFringe(unsigned int) [19] KSolveNames::Pile::Take(KSolveNames::Pile&, unsigned int) [48] KSolveNames::Game::IsValid(KSolveNames::MoveSpec) const
+   [7] KSolveNames::MoveStorage::PopNextBranch(KSolveNames::Game&) [62] KSolveNames::Shuffle(KSolveNames::CardDeck&, unsigned int) [46] KSolveNames::Game::GameOver() const
+  [30] KSolveNames::MoveStorage::UpdateMoveTree() [9] KSolveNames::GameState::GameState(KSolveNames::Game const&, unsigned int) [63] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::_M_gen_rand()
+  [14] KSolveNames::MoveStorage::LoadMoveSequence() [47] KSolveNames::Valid(KSolveNames::Game const&, unsigned int, unsigned int, unsigned int) (Game.cpp) [56] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::seed(unsigned long)
+  [43] KSolveNames::MoveStorage::PushStem(KSolveNames::MoveSpec) [3] KSolveNames::Worker(KSolveNames::WorkerState*) (KSolveAStar.cpp) [49] std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>::operator()()
+  [55] KSolveNames::MoveStorage::MoveStorage(KSolveNames::SharedMoveStorage&) [4] KSolveNames::Advance(KSolveNames::WorkerState&, unsigned int) (KSolveAStar.cpp) [50] unsigned int std::uniform_int_distribution<unsigned int>::operator()<std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul> >(std::mersenne_twister_engine<unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul>&, std::uniform_int_distribution<unsigned int>::param_type const&)
+   [6] KSolveNames::WorkerState::MakeAutoMoves() [26] bool KSolveNames::XYZ_Move<KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > >(KSolveNames::MoveSpec, KSolveNames::MoveCounter<frystl::static_deque<KSolveNames::MoveSpec, 500u> > const&) (Game.hpp) [64] void std::vector<KSolveNames::MoveSpec, std::allocator<KSolveNames::MoveSpec> >::_M_assign_aux<KSolveNames::MoveSpec const*>(KSolveNames::MoveSpec const*, KSolveNames::MoveSpec const*, std::forward_iterator_tag)
+  [59] KSolveNames::NumberedDeal(unsigned int) [45] void gtl::Deallocate<8ul, std::allocator<KSolveNames::GameState> >(std::allocator<KSolveNames::GameState>*, void*, unsigned long) [65] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()
+  [17] unsigned int KSolveNames::MisorderCount<KSolveNames::Card const*>(KSolveNames::Card const*, KSolveNames::Card const*) [20] gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::prepare_insert(unsigned long) [53] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&)
+   [5] KSolveNames::GameStateMemory::IsShortPathToState(KSolveNames::Game const&, unsigned int) [44] gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::initialize_slots(unsigned long) [42] void std::__introsort_loop<KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}> >(KSolveNames::MoveStorage::MovePair*, KSolveNames::MoveStorage::MovePair*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::greater, unsigned int KSolveNames::MoveStorage::MovePair::*>(std::ranges::greater&, unsigned int KSolveNames::MoveStorage::MovePair::*&)::{lambda(auto:1&&, auto:2&&)#1}>)
+  [60] KSolveNames::GameStateMemory::GameStateMemory() [21] gtl::priv::raw_hash_set<gtl::priv::FlatHashSetPolicy<KSolveNames::GameState>, KSolveNames::Hasher, gtl::EqualTo<KSolveNames::GameState>, std::allocator<KSolveNames::GameState> >::resize(unsigned long) [32] void std::__introsort_loop<unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}> >(unsigned int*, unsigned int*, long, __gnu_cxx::__ops::_Iter_comp_iter<std::ranges::__detail::__make_comp_proj<std::ranges::less, std::identity>(std::ranges::less&, std::identity&)::{lambda(auto:1&&, auto:2&&)#1}>)
+  [16] KSolveNames::MinimumMovesLeft(KSolveNames::Game const&) [52] frystl::static_vector<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT, 512u>::resize(unsigned int) [57] bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)
+  [61] KSolveNames::SharedMoveStorage::~SharedMoveStorage() [51] void frystl::Construct<KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT>(KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::ProtectedStackT*) [31] _init
+  [23] KSolveNames::ShareableIndexedPriorityQueue<unsigned int, KSolveNames::Branch, 512u>::Pop() [12] KSolveNames::MoveStorage::MakeSequenceMoves(KSolveNames::Game&) const
+  [24] KSolveNames::Game::UnMakeMove(KSolveNames::MoveSpec) [11] KSolveNames::Game::MovesFromTalon(KSolveNames::QMovesTemplate<43u>&, unsigned int) const
