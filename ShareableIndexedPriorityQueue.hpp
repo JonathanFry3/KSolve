@@ -24,7 +24,7 @@ template <typename I, typename V, unsigned Sz>
 class ShareableIndexedPriorityQueue {
 private:
     using StackT = mf_vector<V,1024>;
-    struct ProtectedStackT {
+    struct alignas(64) ProtectedStackT {
         Mutex _mutex;
         StackT _stack;
     };
