@@ -5,8 +5,16 @@ namespace KSolveNames {
 
 MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
-    , _startSize(0)
-    {}
+{
+    _treeBuffer.reserve(_maxBufferSize);
+    _fringeBuffer.reserve(_maxBufferSize);
+}
+MoveStorage::MoveStorage(const MoveStorage& orig) noexcept
+    : _shared(orig._shared)
+{
+    _treeBuffer.reserve(_maxBufferSize);
+    _fringeBuffer.reserve(_maxBufferSize);
+}
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
     // This is where the program fails when XYZ_Test give false negatives.
@@ -20,41 +28,37 @@ void MoveStorage::PushStem(MoveSpec move) noexcept
 }
 void MoveStorage::PushBranch(MoveSpec mv, unsigned nMoves) noexcept
 {
-    _branches.emplace_back(mv,nMoves-Shared()._initialMinMoves);
+    _branches.emplace_back(mv,nMoves);
 }
 void MoveStorage::ShareMoves() noexcept
 {
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem moves that led to it.
     if (_branches.size()) {
-        MoveX stemEnd      // index in _moveTree of last stem Branch
-            = UpdateMoveTree();
-        UpdateFringe(stemEnd);
+        UpdateMoveTree();
+        UpdateFringe();
         _branches.clear();
     }
 }
-// Returns move tree index of last stem move
-MoveX MoveStorage::UpdateMoveTree() noexcept
+void MoveStorage::UpdateMoveTree() noexcept
 {
-    MoveX stemEnd = _leaf._prevBranchIndex;
-    {
-        Guard rupert(_shared._moveTreeMutex);
-        // Copy all the stem moves into the move tree.
-        for (auto m: _currentSequence | views::drop(_startSize))
+
+    if (_currentSequence.size() > _startSize) {
+        _treeBuffer.emplace_back(_currentSequence[_startSize], _leaf._prevBranchIndex, false);
+        for (auto m: _currentSequence | views::drop(_startSize+1))
         {
-            // Each stem move points to the previous move.
-            _shared._moveTree.emplace_back(m, stemEnd);
-            stemEnd =  _shared._moveTree.size() - 1;
+            _treeBuffer.emplace_back(m, _treeBuffer.size()-1, true);
         }
     }
-    return stemEnd;
+
 } 
-void MoveStorage::UpdateFringe(MoveX stemEnd) noexcept
+void MoveStorage::UpdateFringe() noexcept
 {
-    ranges::sort(_branches,ranges::greater(),&MovePair::_offset);  // descending by offset
-    auto & fringe = _shared._fringe;
+    unsigned backIndex = (_treeBuffer.size())
+                         ? _treeBuffer.size()-1
+                         : _leaf._prevBranchIndex;
     for (const auto &br: _branches) {
-        fringe.Emplace(br._offset, br._mv, stemEnd);
+        _fringeBuffer.emplace_back(br._mv, backIndex, br._nMoves-_shared._initialMinMoves);
     }
 }
 // If the work queue (aka fringe) is empty, return 0.
@@ -64,15 +68,32 @@ void MoveStorage::UpdateFringe(MoveX stemEnd) noexcept
 // that sequence was saved, and return its minimum move count.
 unsigned MoveStorage::PopNextBranch(Game& game ) noexcept
 {
-    auto nextLeaf = _shared._fringe.Pop();
+    if (BuffersNearlyFull()) Flush();  
+    
+    auto & fringe {_shared._fringe};
+    auto nextLeaf = fringe.Pop();
+
+    if (! nextLeaf)  {
+        Flush();
+        nextLeaf = fringe.Pop();
+    }
     if (nextLeaf) {
+        if (_fringeBuffer.MinOffset() < nextLeaf->first) {
+            // Fringe buffer has a better next item than the fringe does.
+            fringe.Emplace(nextLeaf->first, nextLeaf->second);
+            Flush();
+            nextLeaf = fringe.Pop();
+        }
+    }
+    if (nextLeaf) {
+        unsigned offset = nextLeaf->first;
         _leaf = nextLeaf->second;
         // Restore game to the state it had when this move
         // sequence was enqueued.
         game.Deal();
         LoadMoveSequence();
         MakeSequenceMoves(game);
-        return nextLeaf->first+_shared._initialMinMoves;
+        return offset +_shared._initialMinMoves;
     } else {
         return 0;     // fringe is empty
     }
@@ -96,4 +117,43 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
         game.MakeMove(move);
     }
 }
-}   // namespace KSolveNames
+void MoveStorage::Flush() noexcept
+{
+    // Nicknames
+    auto & moveTree{_shared._moveTree};
+    size_t treeSize;
+
+    {
+        Guard Alysa(_shared._moveTreeMutex);
+        treeSize = moveTree.size();
+        for (auto mv: _treeBuffer){
+            uint32_t loc = mv._location;
+            if (mv._isRelative) loc += treeSize;
+            moveTree.emplace_back(mv._move, loc);
+        }
+    }
+    {
+        std::sort(_fringeBuffer.begin(), _fringeBuffer.end()); // TODO ranges
+
+        static_vector<Branch, _maxBufferSize> branches;
+
+        for (unsigned i = 0; i < _fringeBuffer.size();){
+            branches.clear();
+            unsigned offset = _fringeBuffer[i]._offset;
+
+            do {
+                auto &elem{_fringeBuffer[i]};
+                branches.emplace_back(elem._move, elem._location+treeSize);
+                ++i;
+            } while (i < _fringeBuffer.size() && 
+                    _fringeBuffer[i]._offset == offset);
+                    
+            _shared._fringe.Push(offset, branches);
+        }
+        _treeBuffer.clear();
+        _fringeBuffer.clear();
+    }
+}
+}   // namespace KSolveNames    // Flush the buffer to the shared data structures
+
+    

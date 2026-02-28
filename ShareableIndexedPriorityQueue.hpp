@@ -50,9 +50,15 @@ public:
         Guard esperanto(pStack._mutex);
         pStack._stack.emplace_back(std::forward<Args>(args)...);
     }
-    void Push(I index, const V& value) noexcept
+    template <class MV>
+    void Push(I index, const MV& sequence)
     {
-        Emplace(index, value);
+        UpsizeTo(index+1);
+        auto& pStack = _stacks[index];
+        Guard esperanto(pStack._mutex);
+        for (auto & x: sequence)  {
+            pStack._stack.push_back(x);
+        }      
     }
     std::optional<std::pair<I,V>> Pop() noexcept
     {

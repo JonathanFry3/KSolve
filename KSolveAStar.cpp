@@ -237,6 +237,7 @@ static void RunWorkers(unsigned nThreads, WorkerState & state) noexcept
     // Put some work in the work queue by growing the tree from
     // the root to the first branching node.
     Advance(state, state._moveStorage.Shared().InitialMinMoves());
+    state._moveStorage.Flush();
 
     if (nThreads == 0)
         nThreads = DefaultThreads();

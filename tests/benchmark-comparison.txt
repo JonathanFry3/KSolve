@@ -7,18 +7,18 @@ Base
 3       0   0  11
   Moves+: []
   Moves-: []
-   Time+: 56 []
-   Time-: 942 []
-Base time:      1205.31
-Test time:      1182.46 -1.90%
-Base fringe size:       4,016,583,821
-Test fringe size:       4,021,104,292 +0.11%
-Base move tree size:    2,846,023,082
-Test move tree size:    2,847,499,660 +0.05%
-Base advances count:    4,134,301,831
-Test advances count:    4,135,414,426 +0.03%
-Base closed list size:  8,073,773,467
-Test closed list size:  8,076,124,533 +0.03%
+   Time+: 28 []
+   Time-: 972 [32, 52, 87, 175, 259, 283, 293, 316, 331, 343, 388, 438, 510, 524, 634, 683, 706, 721, 732, 832, 916, 962, 983]
+Base time:      1182.46
+Test time:      1086.17 -8.14%
+Base fringe size:       4,021,104,292
+Test fringe size:       4,015,657,628 -0.14%
+Base move tree size:    2,847,499,660
+Test move tree size:    2,839,478,330 -0.28%
+Base advances count:    4,135,414,426
+Test advances count:    4,139,319,762 +0.09%
+Base closed list size:  8,076,124,533
+Test closed list size:  8,077,805,545 +0.02%
 
 Comparing lg-3-base-1000.txt with lg-3-test-1000.txt
 Test    0    2  3
@@ -28,15 +28,15 @@ Base
 3       0    0  8
   Moves+: []
   Moves-: []
-   Time+: 755 []
-   Time-: 239 []
-Base time:       970.06
-Test time:       978.54 +0.87%
-Base fringe size:       1,911,007,415
-Test fringe size:       1,915,965,807 +0.26%
-Base move tree size:    2,630,062,949
-Test move tree size:    2,632,453,065 +0.09%
-Base advances count:    3,712,456,672
-Test advances count:    3,713,831,216 +0.04%
-Base closed list size:  5,419,510,648
-Test closed list size:  5,422,034,824 +0.05%
+   Time+: 63 []
+   Time-: 937 [26, 86, 194, 220, 253, 290, 299, 339, 416, 421, 442, 477, 489, 492, 506, 707, 722, 837, 893, 895]
+Base time:       978.54
+Test time:       870.84 -11.01%
+Base fringe size:       1,915,965,807
+Test fringe size:       1,911,178,989 -0.25%
+Base move tree size:    2,632,453,065
+Test move tree size:    2,627,031,630 -0.21%
+Base advances count:    3,713,831,216
+Test advances count:    3,715,301,112 +0.04%
+Base closed list size:  5,422,034,824
+Test closed list size:  5,422,870,870 +0.02%
