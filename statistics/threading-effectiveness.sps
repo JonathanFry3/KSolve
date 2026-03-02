@@ -1,6 +1,6 @@
 GET DATA
   /TYPE=TXT
-  /FILE="/home/jon/prj/KSolve/thread-test.txt"
+  /FILE="/home/jon/prj/KSolve/statistics/thread-test-34041.csv"
   /ARRANGEMENT=DELIMITED
   /DELCASE=LINE
   /FIRSTCASE=2
@@ -24,7 +24,7 @@ AGGREGATE OUTFILE=* MODE=ADDVARIABLES
  
 compute constant = 1.
  aggregate out=* mode=add / break = constant / gl_max_time "Global Maximum Time" = max(min_time).
- compute Speedup = gl_max_time/min_time.
+ compute Speedup = gl_max_time/min_time-1.
  GRAPH SCATTERPLOT(BIVARIATE) = threads WITH Speedup.
  select if (threads <= 16).
  GRAPH SCATTERPLOT(BIVARIATE) = threads WITH Speedup.
@@ -34,9 +34,9 @@ REGRESSION
 	/DEPENDENT= Speedup
 	/METHOD=ENTER
 	/STATISTICS=COEFF R.
-
+temporary.
+compute threads = threads-1.
 compute hi_threads = threads*(threads > 8).
-execute.
  REGRESSION
 	/VARIABLES= threads hi_threads
 	/DEPENDENT= Speedup
