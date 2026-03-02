@@ -93,8 +93,8 @@ private:
         {}
     };
     static_vector<MovePair,32> _branches{};
-    void  UpdateMoveTree() noexcept; 
-    void UpdateFringe() noexcept;
+    void  UpdateMoveTreeBuffer() noexcept; 
+    void UpdateFringeBuffer() noexcept;
 
     // Copy the moves in the current sequence from the move tree.
     void LoadMoveSequence() noexcept; 

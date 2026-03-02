@@ -35,12 +35,12 @@ void MoveStorage::ShareMoves() noexcept
     // If _branches is empty, a dead end has been reached.  There
     // is no need to store any stem moves that led to it.
     if (_branches.size()) {
-        UpdateMoveTree();
-        UpdateFringe();
+        UpdateMoveTreeBuffer();
+        UpdateFringeBuffer();
         _branches.clear();
     }
 }
-void MoveStorage::UpdateMoveTree() noexcept
+void MoveStorage::UpdateMoveTreeBuffer() noexcept
 {
 
     if (_currentSequence.size() > _startSize) {
@@ -52,7 +52,7 @@ void MoveStorage::UpdateMoveTree() noexcept
     }
 
 } 
-void MoveStorage::UpdateFringe() noexcept
+void MoveStorage::UpdateFringeBuffer() noexcept
 {
     unsigned backIndex = (_treeBuffer.size())
                          ? _treeBuffer.size()-1
@@ -117,6 +117,7 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
         game.MakeMove(move);
     }
 }
+// Flush the buffers to the shared data structures
 void MoveStorage::Flush() noexcept
 {
     // Nicknames
@@ -133,7 +134,7 @@ void MoveStorage::Flush() noexcept
         }
     }
     {
-        std::sort(_fringeBuffer.begin(), _fringeBuffer.end()); // TODO ranges
+        std::sort(_fringeBuffer.begin(), _fringeBuffer.end());
 
         static_vector<Branch, _maxBufferSize> branches;
 
@@ -154,6 +155,6 @@ void MoveStorage::Flush() noexcept
         _fringeBuffer.clear();
     }
 }
-}   // namespace KSolveNames    // Flush the buffer to the shared data structures
+}   // namespace KSolveNames 
 
     
