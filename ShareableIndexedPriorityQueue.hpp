@@ -50,7 +50,14 @@ public:
         Guard esperanto(pStack._mutex);
         pStack._stack.emplace_back(std::forward<Args>(args)...);
     }
-    template <class MV>
+    void Push(I index, const V& value)
+    {
+        UpsizeTo(index+1);
+        auto& pStack = _stacks[index];
+        Guard esperanto(pStack._mutex);
+        pStack.push_back(value);
+    }
+    template <std::ranges::range MV>
     void Push(I index, const MV& sequence)
     {
         UpsizeTo(index+1);
