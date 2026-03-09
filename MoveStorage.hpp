@@ -5,6 +5,7 @@
 namespace KSolveNames {
 
 using MoveX = uint32_t;
+static const unsigned maxOffset{512};
 
 struct Branch
 {
@@ -26,7 +27,7 @@ private:
     Mutex _moveTreeMutex;
     // The leaves waiting to grow new branches.  
     // Also, the task queue.
-    ShareableIndexedPriorityQueue<unsigned, Branch, 512> _fringe;
+    ShareableIndexedPriorityQueue<unsigned, Branch, maxOffset> _fringe;
     const unsigned _initialMinMoves;
     friend class MoveStorage;
 public:
@@ -107,43 +108,69 @@ private:
         uint32_t _location;      // subscript in _moveTree or offset from end of tree
         bool _isRelative;        // _location is relative to _moveTree size -1
     };
-    struct FringeElement {
-        MoveSpec _move;
-        uint32_t _location;         // offset from end of tree at start of Flush()
-        uint32_t _offset;
-        bool operator<(const FringeElement & other) const noexcept
-        {
-            return _offset < other._offset;
-        }
-    };
 
     static const unsigned _maxBufferSize{256};
     std::vector<MoveTreeElement> _treeBuffer{};
-    class FringeBufferT : public std::vector<FringeElement> 
+
+    // A priority queue of Branches ordered by minimum moves offset.
+    class FringeBufferT
     {
-    private:    
-        unsigned _minOffset{-1U};
-        using Base = std::vector<FringeElement>;
     public:
-        void emplace_back(MoveSpec move, uint32_t location, uint32_t offset) noexcept
+        using Bin = std::vector<Branch>;
+        using iterator = std::vector<Branch>;
+    private:
+        std::vector<Bin> _bins;
+        unsigned _size{0};
+        unsigned _minOffset{-1U};
+        unsigned _pastMaxOffset{0};
+
+        void GrowTo(unsigned maxBins) noexcept
         {
-            if (offset < _minOffset) _minOffset = offset;
-            Base::emplace_back(move, location, offset);
+            //_bins.reserve(maxBins);
+            if (_bins.size() < maxBins) {
+                _bins.resize(maxBins);
+            }
+        }
+    public:
+        Bin& operator[](unsigned bin) noexcept
+        {
+            assert(bin < _bins.size());
+            return _bins[bin];
+        }
+        unsigned Size() const noexcept {return _size;}
+        void Clear() noexcept
+        {
+            for (auto& bin: _bins) {
+                bin.clear();
+            }
+            _size = 0;
+            _minOffset = -1U;
+            _pastMaxOffset = 0;
         }
         unsigned MinOffset() const noexcept
         {
             return _minOffset;
         }
-        void clear() noexcept
+        unsigned PastMaxOffset() const noexcept
         {
-            _minOffset = -1U;
-            Base::clear();
+            return _pastMaxOffset;
         }
-    }   _fringeBuffer{};
+        template <class... Args>
+        void Emplace(unsigned bin, Args && ... args) noexcept 
+        {
+            GrowTo(bin+1);
+            if (_pastMaxOffset <  bin+1) _pastMaxOffset = bin+1;
+            if (bin < _minOffset) _minOffset = bin;
+            ++_size;
+            _bins[bin].emplace_back(std::forward<Args>(args)...);
+        }
+    };
+
+    FringeBufferT _fringeBuffer;
 
     bool BuffersNearlyFull() {
         return _maxBufferSize < _treeBuffer.size()+52 
-            || _maxBufferSize < _fringeBuffer.size()+20;
+            || _maxBufferSize < _fringeBuffer.Size()+20;
     }
 };
 }   // namespace KSolveNames

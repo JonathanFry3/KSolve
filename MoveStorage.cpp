@@ -7,13 +7,11 @@ MoveStorage::MoveStorage(SharedMoveStorage& shared) noexcept
     : _shared(shared)
 {
     _treeBuffer.reserve(_maxBufferSize);
-    _fringeBuffer.reserve(_maxBufferSize);
 }
 MoveStorage::MoveStorage(const MoveStorage& orig) noexcept
     : _shared(orig._shared)
 {
     _treeBuffer.reserve(_maxBufferSize);
-    _fringeBuffer.reserve(_maxBufferSize);
 }
 void MoveStorage::PushStem(MoveSpec move) noexcept
 {
@@ -55,10 +53,10 @@ void MoveStorage::UpdateMoveTreeBuffer() noexcept
 void MoveStorage::UpdateFringeBuffer() noexcept
 {
     unsigned backIndex = (_treeBuffer.size())
-                         ? _treeBuffer.size()-1
+                         ? -(_treeBuffer.size()+1)
                          : _leaf._prevBranchIndex;
     for (const auto &br: _branches) {
-        _fringeBuffer.emplace_back(br._mv, backIndex, br._nMoves-_shared._initialMinMoves);
+        _fringeBuffer.Emplace(br._nMoves-_shared._initialMinMoves, br._mv, backIndex);
     }
 }
 // If the work queue (aka fringe) is empty, return 0.
@@ -125,7 +123,7 @@ void MoveStorage::Flush() noexcept
     size_t treeSize;
 
     {
-        Guard Alysa(_shared._moveTreeMutex);
+        Guard alysa(_shared._moveTreeMutex);
         treeSize = moveTree.size();
         for (auto mv: _treeBuffer){
             uint32_t loc = mv._location;
@@ -133,27 +131,24 @@ void MoveStorage::Flush() noexcept
             moveTree.emplace_back(mv._move, loc);
         }
     }
+    for (unsigned binx = _fringeBuffer.MinOffset();
+         binx < _fringeBuffer.PastMaxOffset();
+         ++binx)
     {
-        std::sort(_fringeBuffer.begin(), _fringeBuffer.end());
-
-        static_vector<Branch, _maxBufferSize> branches;
-
-        for (unsigned i = 0; i < _fringeBuffer.size();){
-            branches.clear();
-            unsigned offset = _fringeBuffer[i]._offset;
-
-            do {
-                auto &elem{_fringeBuffer[i]};
-                branches.emplace_back(elem._move, elem._location+treeSize);
-                ++i;
-            } while (i < _fringeBuffer.size() && 
-                    _fringeBuffer[i]._offset == offset);
-                    
-            _shared._fringe.Push(offset, branches);
+        auto & bin{_fringeBuffer[binx]};
+        if (bin.size()) {
+            for (auto & branch : bin) {
+                unsigned& index = branch._prevBranchIndex;
+                if (treeSize < index && index != -1U)
+                {
+                    index = treeSize - (index+2);
+                }
+            }
+            _shared._fringe.Push(binx, bin);
         }
-        _treeBuffer.clear();
-        _fringeBuffer.clear();
     }
+    _treeBuffer.clear();
+    _fringeBuffer.Clear();
 }
 }   // namespace KSolveNames 
 
