@@ -64,20 +64,28 @@ void MoveStorage::UpdateFringeBuffer() noexcept
 // Flush the buffers to the shared data structures
 void MoveStorage::Flush() noexcept
 {
+    unsigned treeSize = FlushTreeBuffer();
+    FlushFringeBuffer(treeSize);
+}
+uint32_t MoveStorage::FlushTreeBuffer() noexcept 
+{
     // Nicknames
     auto & moveTree{_shared._moveTree};
-    size_t treeSize;
-
+    uint32_t treeSize;
     {
         Guard Alysa(_shared._moveTreeMutex);
         treeSize = moveTree.size();
-        for (auto mv: _treeBuffer){
+        for (auto mv: _treeBuffer) {
             uint32_t loc = mv._location;
             if (mv._isRelative) loc += treeSize;
             moveTree.emplace_back(mv._move, loc);
         }
     }
-
+    _treeBuffer.clear();
+    return treeSize;
+}
+void MoveStorage::FlushFringeBuffer(uint32_t treeSize)  noexcept
+{
     std::sort(_fringeBuffer.begin(), _fringeBuffer.end());
 
     static_vector<Branch, _maxBufferSize> branches;
@@ -97,7 +105,6 @@ void MoveStorage::Flush() noexcept
                 
         _shared._fringe.Push(offset, branches);
     }
-    _treeBuffer.clear();
     _fringeBuffer.clear();
 }
 // If the work queue (aka fringe) is empty, return 0.

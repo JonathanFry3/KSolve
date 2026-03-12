@@ -95,6 +95,8 @@ private:
     static_vector<MovePair,32> _branches{};
     void  UpdateMoveTreeBuffer() noexcept; 
     void UpdateFringeBuffer() noexcept;
+    uint32_t FlushTreeBuffer() noexcept;
+    void FlushFringeBuffer(uint32_t treeSize) noexcept;
 
     // Copy the moves in the current sequence from the move tree.
     void LoadMoveSequence() noexcept; 
