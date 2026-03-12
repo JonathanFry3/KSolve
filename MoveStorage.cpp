@@ -61,6 +61,45 @@ void MoveStorage::UpdateFringeBuffer() noexcept
         _fringeBuffer.emplace_back(br._mv, backIndex, br._nMoves-_shared._initialMinMoves);
     }
 }
+// Flush the buffers to the shared data structures
+void MoveStorage::Flush() noexcept
+{
+    // Nicknames
+    auto & moveTree{_shared._moveTree};
+    size_t treeSize;
+
+    {
+        Guard Alysa(_shared._moveTreeMutex);
+        treeSize = moveTree.size();
+        for (auto mv: _treeBuffer){
+            uint32_t loc = mv._location;
+            if (mv._isRelative) loc += treeSize;
+            moveTree.emplace_back(mv._move, loc);
+        }
+    }
+
+    std::sort(_fringeBuffer.begin(), _fringeBuffer.end());
+
+    static_vector<Branch, _maxBufferSize> branches;
+
+    for (unsigned i = 0; i < _fringeBuffer.size();){
+        branches.clear();
+        unsigned offset = _fringeBuffer[i]._offset;
+
+        // In *branches*, create runs of Branches with equal
+        // minimum move counts.
+        do {
+            auto &elem{_fringeBuffer[i]};
+            branches.emplace_back(elem._move, elem._location+treeSize);
+            ++i;
+        } while (i < _fringeBuffer.size() && 
+                _fringeBuffer[i]._offset == offset);
+                
+        _shared._fringe.Push(offset, branches);
+    }
+    _treeBuffer.clear();
+    _fringeBuffer.clear();
+}
 // If the work queue (aka fringe) is empty, return 0.
 // Otherwise, pop a move sequence with the lowest available
 // minimum move count, redeal the deck, make all the moves in
@@ -115,44 +154,6 @@ void MoveStorage::MakeSequenceMoves(Game&game) const noexcept
 {
     for (auto & move: _currentSequence){
         game.MakeMove(move);
-    }
-}
-// Flush the buffers to the shared data structures
-void MoveStorage::Flush() noexcept
-{
-    // Nicknames
-    auto & moveTree{_shared._moveTree};
-    size_t treeSize;
-
-    {
-        Guard Alysa(_shared._moveTreeMutex);
-        treeSize = moveTree.size();
-        for (auto mv: _treeBuffer){
-            uint32_t loc = mv._location;
-            if (mv._isRelative) loc += treeSize;
-            moveTree.emplace_back(mv._move, loc);
-        }
-    }
-    {
-        std::sort(_fringeBuffer.begin(), _fringeBuffer.end());
-
-        static_vector<Branch, _maxBufferSize> branches;
-
-        for (unsigned i = 0; i < _fringeBuffer.size();){
-            branches.clear();
-            unsigned offset = _fringeBuffer[i]._offset;
-
-            do {
-                auto &elem{_fringeBuffer[i]};
-                branches.emplace_back(elem._move, elem._location+treeSize);
-                ++i;
-            } while (i < _fringeBuffer.size() && 
-                    _fringeBuffer[i]._offset == offset);
-                    
-            _shared._fringe.Push(offset, branches);
-        }
-        _treeBuffer.clear();
-        _fringeBuffer.clear();
     }
 }
 }   // namespace KSolveNames 
