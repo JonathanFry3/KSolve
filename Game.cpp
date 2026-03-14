@@ -247,7 +247,7 @@ void Game::DominantAvailableMoves(
 {
     // Loop over Waste (if _drawSetting == 1), all Tableau piles
     for (auto fromPile: AllPiles() 
-            | views::take(Tableau7) 
+            | views::take(Tableau7+1) 
             | views::drop(Waste + (_drawSetting!=1))) {
         if (fromPile.size()) {
             const Card& card = fromPile.back();
