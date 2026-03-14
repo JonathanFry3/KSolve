@@ -104,7 +104,7 @@ void Shuffle(CardDeck & deck, uint32_t seed)
 CardDeck NumberedDeal(uint32_t seed)
 {
     // Create a new sorted pack of cards
-    CardDeck deck(52);
+    CardDeck deck(CardsPerDeck);
     std::iota(deck.begin(), deck.end(), 0);
     // Randomly shuffle the deck
     Shuffle(deck, seed);
@@ -215,16 +215,16 @@ void Game::MakeMove(const XMove & xmv) noexcept
 // Return true if all CardsPerDeck cards are in the foundation
 bool Game::GameOver() const noexcept
 {
-    return std::all_of(_foundation.cbegin(), _foundation.cend(),
-        [&] (const auto& pile) {return pile.size() == CardsPerSuit;});
+    return ranges::all_of(_foundation,
+        [] (const auto& pile) {return pile.size() == CardsPerSuit;});
 }
 
-// Return the height of the shortest foundation pile
+// Return the size of the smallest foundation pile
 unsigned Game::MinFoundationPileSize() const noexcept
 {
     const auto& fnd = _foundation;
-    return std::min_element(fnd.cbegin(), fnd.cend(), 
-        [&](auto& left, auto& right)
+    return ranges::min_element(fnd, 
+        [](auto& left, auto& right)
         {return left.size() < right.size();})->size();
 }
 
@@ -246,10 +246,9 @@ void Game::DominantAvailableMoves(
     MoveCacheType& moves, unsigned minFoundationSize) const noexcept
 {
     // Loop over Waste (if _drawSetting == 1), all Tableau piles
-    const auto end = AllPiles().begin() + Tableau7;
-    const auto begin = AllPiles().begin() + Waste + (_drawSetting!=1);
-    for (auto iPile = begin; iPile<=end; ++iPile) {
-        const Pile &fromPile = *iPile;
+    for (auto fromPile: AllPiles() 
+            | views::take(Tableau7) 
+            | views::drop(Waste + (_drawSetting!=1))) {
         if (fromPile.size()) {
             const Card& card = fromPile.back();
             const auto fromCode = fromPile.Code();

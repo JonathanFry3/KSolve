@@ -46,14 +46,13 @@ public:
 // than a lower card of the same suit.  Remember that the 
 // stack tops are at the back. For example, if a 4 of hearts
 // is above a 3 of hearts, that is a misorder.
-template <class Iter>
-unsigned MisorderCount(Iter begin, Iter end) noexcept
+unsigned MisorderCount(ranges::range auto&& cards) noexcept
 {
     unsigned  minRanks[SuitsPerDeck] {14,14,14,14};
     unsigned result = 0;
-    for (auto i = begin; i != end; ++i){
-        const auto rank = i->Rank();
-        const auto suit = i->Suit();
+    for (const Card& card: cards){
+        const auto rank = card.Rank();
+        const auto suit = card.Suit();
         if (rank < minRanks[suit])
             minRanks[suit] = rank;
         else
@@ -86,14 +85,13 @@ unsigned MinimumMovesLeft(const Game& game) noexcept
 
     if (draw == 1) {
         // This can fail the consistency test for draw setting > 1.
-        result += MisorderCount(game.WastePile().begin(), game.WastePile().end());
+        result += MisorderCount(game.WastePile());
     }
 
     for (const auto & tPile: game.Tableau()) {
         if (tPile.size()) {
-            const auto begin = tPile.begin();
             const unsigned downCount = tPile.DownCount();
-            result += tPile.size() + MisorderCount(begin, begin+downCount+1);
+            result += tPile.size() + MisorderCount(tPile | views::take(downCount+1));
         }
     }
     return result;
