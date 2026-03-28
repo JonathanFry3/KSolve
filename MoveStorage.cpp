@@ -43,6 +43,7 @@ void MoveStorage::ShareMoves() noexcept
 void MoveStorage::UpdateMoveTreeBuffer() noexcept
 {
 
+    // Skip the case where the initial layout has no stem moves.
     if (_currentSequence.size() > _startSize) {
         _treeBuffer.emplace_back(_currentSequence[_startSize], _leaf._prevBranchIndex, false);
         for (auto m: _currentSequence | views::drop(_startSize+1))
@@ -126,7 +127,9 @@ unsigned MoveStorage::PopNextBranch(Game& game ) noexcept
     if (nextLeaf) {
         if (_fringeBuffer.MinOffset() < nextLeaf->first) {
             // Fringe buffer has a better next item than the fringe does.
+            // Return nextLeaf to fringe.
             fringe.Emplace(nextLeaf->first, nextLeaf->second);
+
             Flush();
             nextLeaf = fringe.Pop();
         }
