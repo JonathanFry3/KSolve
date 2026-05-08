@@ -219,15 +219,6 @@ bool Game::GameOver() const noexcept
         [] (const auto& pile) {return pile.size() == CardsPerSuit;});
 }
 
-// Return the size of the smallest foundation pile
-unsigned Game::MinFoundationPileSize() const noexcept
-{
-    const auto& fnd = _foundation;
-    return ranges::min_element(fnd, 
-        [](auto& left, auto& right)
-        {return left.size() < right.size();})->size();
-}
-
 // Append all the dominant moves from the current position
 // to the *moves* vector.
 //
@@ -243,7 +234,7 @@ unsigned Game::MinFoundationPileSize() const noexcept
 // is more than one card shorter.
 // 
 void Game::DominantAvailableMoves(
-    MoveCacheType& moves, unsigned minFoundationSize) const noexcept
+    MoveCacheType& moves, const SafeMoveTester& tester) const noexcept
 {
     // Loop over Waste (if _drawSetting == 1), all Tableau piles
     for (auto fromPile: AllPiles() 
@@ -252,7 +243,7 @@ void Game::DominantAvailableMoves(
         if (fromPile.size()) {
             const Card& card = fromPile.back();
             const auto fromCode = fromPile.Code();
-            if (card.Rank() <= minFoundationSize+1 
+            if (tester.IsMoveSafe(card) 
                     && CanMoveToFoundation(card)) { 
                 const auto toCode = FoundationPileCode(card.Suit());
                 const unsigned up = fromPile.UpCount();
@@ -263,7 +254,7 @@ void Game::DominantAvailableMoves(
     }
     if (_drawSetting == 1 && _stock.size()) {
         const Card& card = _stock.back();
-        if (card.Rank() <= minFoundationSize+1 && CanMoveToFoundation(card))  {
+        if (tester.IsMoveSafe(card) && CanMoveToFoundation(card))  {
             // Stock MoveSpec: draw one card, move it to foundation
             const auto toPile = FoundationPileCode(_stock.back().Suit());
             moves.AddStockMove(toPile,2,1,false);
@@ -442,7 +433,7 @@ static TalonFutureVec TalonCards(const Game & game) noexcept
 }
 
 // Append to "moves" any available moves from the talon.
-void Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noexcept
+void Game::MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const noexcept
 {
     // Look for move from the talon to tableau or foundation, including moves that become available 
     // after one or more draws.  
@@ -452,7 +443,7 @@ void Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
         if (CanMoveToFoundation(talonCard._card)) {
             const auto pileNo = FoundationPileCode(talonCard._card.Suit());
             moves.AddStockMove(pileNo, talonCard._nMoves+1, talonCard._drawCount, recycle);
-            if (talonCard._card.Rank() <= minFoundationSize+1){
+            if (tester.IsMoveSafe(talonCard._card)){
                 if (_drawSetting == 1) {
                     break;		// This is best next move from among the remaining talon cards
                 } else
@@ -476,11 +467,13 @@ void Game::MovesFromTalon(QMoves & moves, unsigned minFoundationSize) const noex
 }
 
 // Look for moves from foundation piles to tableau piles.
-void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const noexcept
+void Game::MovesFromFoundation(QMoves & moves, const SafeMoveTester& tester) const noexcept
 {
-    for (const auto& fPile: _foundation) {
+    for ( unsigned suitNo = 0; suitNo < SuitsPerDeck; ++ suitNo) {
         // Avoid generating moves whose reversals are dominant.
-        if (fPile.size() <= minFoundationSize+2) continue;
+        auto suit = Card::SuitT(suitNo);
+        if ( ! tester.IsReverseMoveSafe(suit)) continue;
+        auto& fPile(_foundation[suit]);
         const Card& top = fPile.back();
         for (const auto& tPile: _tableau) {
             if (tPile.size() > 0) {
@@ -504,11 +497,11 @@ void Game::MovesFromFoundation(QMoves & moves, unsigned minFoundationSize) const
 // Rather than generate individual draws from
 // stock to waste, it generates MoveSpec objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-void Game::NonDominantAvailableMoves(QMoves& moves, unsigned minFoundationSize) const noexcept
+void Game::NonDominantAvailableMoves(QMoves& moves, const SafeMoveTester& tester) const noexcept
 {
     MovesFromTableau(moves);
-    MovesFromTalon(moves, minFoundationSize); 
-    MovesFromFoundation(moves, minFoundationSize);
+    MovesFromTalon(moves, tester); 
+    MovesFromFoundation(moves, tester);
     return;
 }
 

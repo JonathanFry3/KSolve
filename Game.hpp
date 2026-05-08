@@ -589,18 +589,42 @@ private:
     using MoveCacheType = QMovesTemplate<9>;
     mutable MoveCacheType _domMovesCache;
 
+        class SafeMoveTester
+    {
+        unsigned _maxSafeMoveRank;
+        const FoundationType & _foundation;
+    public:
+        SafeMoveTester(const Game & game)
+        : _foundation(game.Foundation())
+        {
+            const auto& fnd = _foundation;
+            _maxSafeMoveRank = ranges::min_element(_foundation, 
+                [](auto& left, auto& right)
+                {return left.size() < right.size();})->size() +1;
+        }
+        bool IsMoveSafe(Card card) const
+        {
+            return card.Rank ()<= _maxSafeMoveRank;
+        }
+        bool IsReverseMoveSafe(Card::SuitT suit) const
+        {
+            return _foundation[suit].size() + 1 > _maxSafeMoveRank;
+        }
+    };
+
+
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
 
-    void DominantAvailableMoves(MoveCacheType & moves, unsigned minFndSize) const noexcept;
+    void DominantAvailableMoves(MoveCacheType & moves, const SafeMoveTester& tester) const noexcept;
 
-    void NonDominantAvailableMoves(QMoves& avail, unsigned minFoundationSize) const noexcept;
+    void NonDominantAvailableMoves(QMoves& avail, const SafeMoveTester& tester) const noexcept;
     // Parts of NonDominantAvailableMoves()
     void MovesFromTableau(QMoves & moves) const noexcept;
-    void MovesFromTalon(QMoves & moves, unsigned minFndSize) const noexcept;
-    void MovesFromFoundation(QMoves & moves, unsigned minFndSize) const noexcept;
+    void MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const noexcept;
+    void MovesFromFoundation(QMoves & moves, const SafeMoveTester& tester) const noexcept;
 
-    std::array<Pile,PileCount>& AllPiles() {
+    auto& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
     }
     
@@ -629,7 +653,6 @@ public:
     void        MakeMove(const XMove& xmv) noexcept;
     bool        IsValid(MoveSpec mv) const noexcept;
     bool        IsValid(XMove xmv) const noexcept;
-    unsigned    MinFoundationPileSize() const noexcept;
     bool        GameOver() const noexcept;
 
     // Return a vector of the available moves that pass the XYZ_Move filter.
@@ -638,11 +661,11 @@ public:
     QMoves AvailableMoves(const V& movesMade) noexcept
     {
         QMoves avail;
-        const unsigned minFoundationSize = MinFoundationPileSize();
-        if (minFoundationSize == CardsPerSuit) return avail;		// game won
+        if (GameOver()) return avail;		// game won
+        SafeMoveTester tester(*this);
 
         if (_domMovesCache.empty()) {
-            DominantAvailableMoves(_domMovesCache, minFoundationSize);
+            DominantAvailableMoves(_domMovesCache, tester);
             XYZ_Filter(_domMovesCache, movesMade);
         }
         if (_domMovesCache.size()) {
@@ -651,12 +674,13 @@ public:
             return avail;
         }
 
-        NonDominantAvailableMoves(avail, minFoundationSize);
+        NonDominantAvailableMoves(avail, tester);
         XYZ_Filter(avail, movesMade);
         return avail;
     }
 
 };
+
 
 // Validate a solution
 template <class Container>
