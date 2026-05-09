@@ -589,40 +589,44 @@ private:
     using MoveCacheType = QMovesTemplate<9>;
     mutable MoveCacheType _domMovesCache;
 
-        class SafeMoveTester
+public:
+    class DominantMoveTester
     {
-        unsigned _maxSafeMoveRank;
+        unsigned _maxDominantMoveRank;
         const FoundationType & _foundation;
     public:
-        SafeMoveTester(const Game & game)
+        DominantMoveTester(const Game & game)
         : _foundation(game.Foundation())
         {
-            const auto& fnd = _foundation;
-            _maxSafeMoveRank = ranges::min_element(_foundation, 
+            _maxDominantMoveRank = ranges::min_element(_foundation, 
                 [](auto& left, auto& right)
-                {return left.size() < right.size();})->size() +1;
+                {return left.size() < right.size();})->size() + 1;
         }
-        bool IsMoveSafe(Card card) const
+        // Moving this card to its foundation pile is a dominant move if legal.
+        bool IsMoveDominant(Card card) const
         {
-            return card.Rank ()<= _maxSafeMoveRank;
+            return  card.Rank() <= _maxDominantMoveRank;
         }
-        bool IsReverseMoveSafe(Card::SuitT suit) const
+        // If the top card is moved from _foundation[suit] to 
+        // the tableau, it will come right back because 
+        // moving it back will be dominant move.
+        bool IsReverseMoveDominant(Card::SuitT suit) const
         {
-            return _foundation[suit].size() + 1 > _maxSafeMoveRank;
+            return _foundation[suit].size() <= _maxDominantMoveRank + 1;
         }
     };
 
-
+private:
     // Return true if any more empty columns are needed for kings
     bool NeedKingSpace() const noexcept {return _kingSpaces < SuitsPerDeck;}
 
-    void DominantAvailableMoves(MoveCacheType & moves, const SafeMoveTester& tester) const noexcept;
+    void DominantAvailableMoves(MoveCacheType & moves, const DominantMoveTester& tester) const noexcept;
 
-    void NonDominantAvailableMoves(QMoves& avail, const SafeMoveTester& tester) const noexcept;
+    void NonDominantAvailableMoves(QMoves& avail, const DominantMoveTester& tester) const noexcept;
     // Parts of NonDominantAvailableMoves()
     void MovesFromTableau(QMoves & moves) const noexcept;
-    void MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const noexcept;
-    void MovesFromFoundation(QMoves & moves, const SafeMoveTester& tester) const noexcept;
+    void MovesFromTalon(QMoves & moves, const DominantMoveTester& tester) const noexcept;
+    void MovesFromFoundation(QMoves & moves, const DominantMoveTester& tester) const noexcept;
 
     auto& AllPiles() {
         return *reinterpret_cast<std::array<Pile,PileCount>* >(&_waste);
@@ -635,6 +639,8 @@ public:
     const Pile & WastePile() const noexcept    	    {return _waste;}
     const Pile & StockPile() const noexcept    	    {return _stock;}
     const FoundationType& Foundation()const noexcept{return _foundation;}
+    FoundationType& Foundation() noexcept           {return _foundation;}  // needed in unittests
+    TableauType& Tableau() noexcept                 {return _tableau;}     // needed in unittests
     const TableauType& Tableau() const noexcept     {return _tableau;}
     unsigned DrawSetting() const noexcept           {return _drawSetting;}
     unsigned RecycleLimit() const noexcept          {return _recycleLimit;}
@@ -662,7 +668,7 @@ public:
     {
         QMoves avail;
         if (GameOver()) return avail;		// game won
-        SafeMoveTester tester(*this);
+        DominantMoveTester tester(*this);
 
         if (_domMovesCache.empty()) {
             DominantAvailableMoves(_domMovesCache, tester);

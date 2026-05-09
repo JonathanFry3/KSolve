@@ -234,7 +234,7 @@ bool Game::GameOver() const noexcept
 // is more than one card shorter.
 // 
 void Game::DominantAvailableMoves(
-    MoveCacheType& moves, const SafeMoveTester& tester) const noexcept
+    MoveCacheType& moves, const DominantMoveTester& tester) const noexcept
 {
     // Loop over Waste (if _drawSetting == 1), all Tableau piles
     for (auto fromPile: AllPiles() 
@@ -243,7 +243,7 @@ void Game::DominantAvailableMoves(
         if (fromPile.size()) {
             const Card& card = fromPile.back();
             const auto fromCode = fromPile.Code();
-            if (tester.IsMoveSafe(card) 
+            if (tester.IsMoveDominant(card) 
                     && CanMoveToFoundation(card)) { 
                 const auto toCode = FoundationPileCode(card.Suit());
                 const unsigned up = fromPile.UpCount();
@@ -254,7 +254,7 @@ void Game::DominantAvailableMoves(
     }
     if (_drawSetting == 1 && _stock.size()) {
         const Card& card = _stock.back();
-        if (tester.IsMoveSafe(card) && CanMoveToFoundation(card))  {
+        if (tester.IsMoveDominant(card) && CanMoveToFoundation(card))  {
             // Stock MoveSpec: draw one card, move it to foundation
             const auto toPile = FoundationPileCode(_stock.back().Suit());
             moves.AddStockMove(toPile,2,1,false);
@@ -433,7 +433,7 @@ static TalonFutureVec TalonCards(const Game & game) noexcept
 }
 
 // Append to "moves" any available moves from the talon.
-void Game::MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const noexcept
+void Game::MovesFromTalon(QMoves & moves, const DominantMoveTester& tester) const noexcept
 {
     // Look for move from the talon to tableau or foundation, including moves that become available 
     // after one or more draws.  
@@ -443,7 +443,7 @@ void Game::MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const no
         if (CanMoveToFoundation(talonCard._card)) {
             const auto pileNo = FoundationPileCode(talonCard._card.Suit());
             moves.AddStockMove(pileNo, talonCard._nMoves+1, talonCard._drawCount, recycle);
-            if (tester.IsMoveSafe(talonCard._card)){
+            if (tester.IsMoveDominant(talonCard._card)){
                 if (_drawSetting == 1) {
                     break;		// This is best next move from among the remaining talon cards
                 } else
@@ -467,12 +467,12 @@ void Game::MovesFromTalon(QMoves & moves, const SafeMoveTester& tester) const no
 }
 
 // Look for moves from foundation piles to tableau piles.
-void Game::MovesFromFoundation(QMoves & moves, const SafeMoveTester& tester) const noexcept
+void Game::MovesFromFoundation(QMoves & moves, const DominantMoveTester& tester) const noexcept
 {
     for ( unsigned suitNo = 0; suitNo < SuitsPerDeck; ++ suitNo) {
         // Avoid generating moves whose reversals are dominant.
         auto suit = Card::SuitT(suitNo);
-        if ( ! tester.IsReverseMoveSafe(suit)) continue;
+        if (tester.IsReverseMoveDominant(suit)) continue;
         auto& fPile(_foundation[suit]);
         const Card& top = fPile.back();
         for (const auto& tPile: _tableau) {
@@ -497,7 +497,7 @@ void Game::MovesFromFoundation(QMoves & moves, const SafeMoveTester& tester) con
 // Rather than generate individual draws from
 // stock to waste, it generates MoveSpec objects that represent one or more
 // draws and that expose a playable top waste card and then play that card.
-void Game::NonDominantAvailableMoves(QMoves& moves, const SafeMoveTester& tester) const noexcept
+void Game::NonDominantAvailableMoves(QMoves& moves, const DominantMoveTester& tester) const noexcept
 {
     MovesFromTableau(moves);
     MovesFromTalon(moves, tester); 

@@ -330,6 +330,26 @@ int main()
 		assert (peekmvs == "(+6d5>t3, wa>di, t1>t6x4F)");
 	}
 	{
+		// Test DominantMoveTester
+		Game gm(NumberedDeal(1));  // deal does not matter
+		gm.Deal();
+		gm.Foundation()[1].Take(gm.Tableau()[6],1);
+		gm.Foundation()[2].Take(gm.Tableau()[6],2);
+		gm.Foundation()[3].Take(gm.Tableau()[6],3);
+
+		Game::DominantMoveTester tester(gm);
+		assert(tester.IsMoveDominant(*CardFromString("ca")));
+		assert(tester.IsMoveDominant(*CardFromString("c2")));
+		assert(!tester.IsMoveDominant(*CardFromString("c3")));
+		assert(!tester.IsMoveDominant(*CardFromString("c4")));
+		assert(!tester.IsMoveDominant(*CardFromString("c5")));
+
+		assert(tester.IsReverseMoveDominant(Card::Clubs));
+		assert(tester.IsReverseMoveDominant(Card::Diamonds));
+		assert(tester.IsReverseMoveDominant(Card::Spades));
+		assert(!tester.IsReverseMoveDominant(Card::Hearts));
+	}
+	{
 		// Test ABC_Moves
 
 		// Set up a move history
