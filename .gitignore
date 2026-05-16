@@ -8,6 +8,7 @@ KSolve
 *.obj
 *.pdb
 *.ilk
+build/*
 frystl/tests
 frystl/.vscode
 frystl/.editorconfig
