@@ -6,9 +6,15 @@ add_library (KSolveAStar Game.cpp KSolveAStar.cpp GameStateMemory.cpp MoveStorag
 
 add_executable(unittests unittests.cpp)
 target_link_libraries(unittests PRIVATE KSolveAStar)
+
 add_executable(ran ran.cpp)
 target_link_libraries(ran PRIVATE KSolveAStar)
+
 add_executable(KSolve KSolve.cpp)
 target_link_libraries(KSolve PRIVATE KSolveAStar)
+
 add_executable(KSolve2Solvitaire KSolve2Solvitaire.cpp)
 target_link_libraries(KSolve2Solvitaire PRIVATE KSolveAStar)
+
+add_executable(thread-test thread-test.cpp)
+target_link_libraries(thread-test PRIVATE KSolveAStar)
